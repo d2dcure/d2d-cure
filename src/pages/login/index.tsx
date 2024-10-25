@@ -110,6 +110,15 @@ const Login = () => {
     <>
       <NavBar />
       <div className="flex justify-center items-center h-screen" style = {{marginTop: "36px"}}>
+      <div
+        style={{
+          position: "absolute", 
+          width: "100%", 
+          height: "100%", 
+          background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
+          zIndex: -1, 
+        }}
+      ></div>
           <Card style={{
             width: "448px",
             height: "580px",
@@ -203,7 +212,9 @@ const Login = () => {
               </CardBody>
 
             </Card>
+
         </div>
+
       </>
   );
 };

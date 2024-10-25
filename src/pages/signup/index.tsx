@@ -89,6 +89,15 @@ const SignUpPage = () => {
                 alignItems: "center", 
                 justifyContent: "center",     height: "100vh", 
                   width: "100vw"}}>
+                  <div
+                    style={{
+                      position: "absolute", 
+                      width: "100%", 
+                      height: "100%", 
+                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
+                      zIndex: -1, 
+                    }}
+                  ></div>
             <Card 
               style={{
                 width: "448px", 
@@ -180,6 +189,15 @@ const SignUpPage = () => {
                 alignItems: "center", 
                 justifyContent: "center",     height: "100vh", 
                   width: "100vw"}}>
+              <div
+                    style={{
+                      position: "absolute", 
+                      width: "100%", 
+                      height: "100%", 
+                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
+                      zIndex: -1, 
+                    }}
+                  ></div>
             <Card 
               style={{
                 width: "448px", 
@@ -227,7 +245,18 @@ const SignUpPage = () => {
       <>
         <NavBar />
         <div className="flex flex-col justify-center items-center min-h-screen">
+        <div
+                    style={{
+                      position: "absolute", 
+                      top: "300px",
+                      width: "100%", 
+                      height: "100%", 
+                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
+                      zIndex: -1, 
+                    }}
+                  ></div>
           <div className="w-full max-w-lg p-4">
+            
             <Card
               style={{
                 width: "100%",
@@ -368,6 +397,16 @@ const SignUpPage = () => {
         <>
           <NavBar />
           <div className="flex flex-col justify-center items-center min-h-screen">
+              <div
+                    style={{
+                      position: "absolute", 
+                      top: "300px",
+                      width: "100%", 
+                      height: "100%", 
+                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
+                      zIndex: -1, 
+                    }}
+                  ></div>
             <div className="w-full max-w-lg p-4">
             <Card
                 style={{
