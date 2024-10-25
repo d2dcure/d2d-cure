@@ -1,0 +1,38 @@
+.table-container {
+    margin: 20px;
+    font-family: 'Arial', sans-serif; /* Use a cleaner font */
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f9f9f9; /* Zebra striping */
+  }
+  
+  tr:hover {
+    background-color: #f1f1f1; /* Highlight on hover */
+  }
+  
+  .meta-data {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fafafa;
+    margin-bottom: 20px;
+  }
