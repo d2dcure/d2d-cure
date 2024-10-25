@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../../firebaseConfig';
 import { useRouter } from 'next/router';
+import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+import {Input} from "@nextui-org/react";
+import {Select, SelectSection, SelectItem} from "@nextui-org/select";
+import {Button} from "@nextui-org/react";
 
 const SignUpPage = () => {
   const [userType, setUserType] = useState("");
@@ -78,245 +82,426 @@ const SignUpPage = () => {
 
   if (userType === "") {
     return (
-      <div>
+      <>
         <NavBar />
-        <div className="mt-8 text-center">
-          <h1 className="text-2xl font-bold">New User Registration</h1>
-          <p onClick={() => setUserType("professor")} className="text-blue-600 underline hover:text-blue-800">
-              I am a faculty member
-          </p>
-          <p onClick={() => setUserType("student")} className="text-blue-600 underline hover:text-blue-800">
-              I am a student
-          </p>
+          <div style = {{ display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                justifyContent: "center",     height: "100vh", 
+                  width: "100vw"}}>
+            <Card 
+              style={{
+                width: "448px", 
+                height: "380px", 
+                borderRadius: "14px", 
+                padding: "32px", 
+                gap: "24px", 
+                display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                justifyContent: "center"
+              }}
+            >
+              <h1 
+                className="text-2xl text-center" 
+                style={{
+                  fontSize: "30px", 
+                  fontWeight: "400", 
+                  lineHeight: "40px", 
+                  marginBottom: "16px"
+                }}
+              >
+                New User Registration
+              </h1>
+              <h2 
+                style={{
+                  fontSize: "16px", 
+                  lineHeight: "24px", 
+                  color: "#525252"
+                }}
+              >
+                Register as...
+              </h2>
+              <Button 
+                onClick={() => setUserType("professor")} 
+                variant="bordered" 
+                size="lg"
+                className="text-blue-600 hover:text-blue-800" 
+                style={{
+                  textDecoration: "none", 
+                  width: "384px", 
+                  height: "48px",
+                  color: "#06B7DB", 
+                  borderColor: "#06B7DB"
+                }}
+              >
+                A faculty member
+              </Button>
+              <Button 
+                onClick={() => setUserType("student")} 
+                variant="bordered" 
+                className="text-blue-600 hover:text-blue-800" 
+                size = "lg"
+                style={{
+                  textDecoration: "none", 
+                  width: "384px", 
+                  color: "#06B7DB", 
+                  borderColor: "#06B7DB", 
+                  marginBottom: "16px"
+                }}
+              >
+                A student
+              </Button>
+              <Button 
+                onClick={() => setUserType("neither")} 
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "0",
+                  color: "#06B7DB",
+                  cursor: "pointer",
+                  width: "384px",
+                  textAlign: "center"
+                }}
+              >
+                I am neither a student nor faculty
+              </Button>
+            </Card>
+          </div>
+        </>
 
-        </div>
-      </div>
     );
-  } else if (userType === "professor") {
+  } else if(userType === "neither"){
+    return(
+     <>
+        <NavBar />
+          <div style = {{ display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                justifyContent: "center",     height: "100vh", 
+                  width: "100vw"}}>
+            <Card 
+              style={{
+                width: "448px", 
+                height: "524px", 
+                borderRadius: "14px", 
+                padding: "32px", 
+                gap: "24px", 
+                display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                justifyContent: "center"
+              }}
+            >
+              <h1 
+                style={{
+                  fontSize: "30px", 
+                  fontWeight: "400", 
+                  lineHeight: "40px", 
+                  marginBottom: "16px"
+                }}
+              >
+                New User Registration
+              </h1>
+                <p style = {{width: "384px", gap: "24px", height: "144px", fontSize: "16px", color: "#525252"}}>
+                  User accounts for this website are intended for individuals affiliated with undergraduate laboratories from institutions that have been selected to participate in the CURE network. 
+                  The majority of such users will be either the faculty primary investigator (PI) or the PI's students. 
+                </p>
+
+                <p style={{color: "#525252"}}>If you do not fall into one of these two categories yet still feel that you need access to the secure pages of this website for such things as data submission, <a href="mailto:webmaster@d2dcure.com" style={{color: "#06B7DB"}}>please email the webmaster to request access.</a> </p>
+              <div style={{display: "flex", flexDirection: "column", gap: "0px"}}>
+                <Link href="/login" style={{color: "#06B7DB", margin: "0", padding: "0"}}>Already a member of the D2D Cure Network?</Link>
+                <Link href="/login" style={{color:"#06B7DB",margin: "0", padding: "0",                 display: "flex", 
+                flexDirection: "column", 
+                alignItems: "center", 
+                justifyContent: "center"}}>Click here to login.</Link>
+              </div>
+              </Card>
+          </div>
+        </>
+    );
+  }
+  
+  else if (userType === "professor") {
     return (
-      <div className="flex flex-col justify-center items-center h-full bg-gray-100">
-        <p onClick={() => setUserType("professor")} className="mt-2 text-blue-600 underline hover:text-blue-800">
-            I am a faculty member
-        </p>
-        <p onClick={() => setUserType("student")} className="text-blue-600 underline hover:text-blue-800">
-            I am a student
-        </p>
-        <div className="w-1/2 max-w-s">
-          <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                New User Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="username"
-                type="username"
-                placeholder="New User Name"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pi">
-                Institution
-              </label>
-              <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="institution"
-                // placeholder="Primary Investigator"
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-                required
-              >
-                <option value=""></option>
-                {
-                  institutions.map((institution) => {
-                    return <option key={institution.id} value={institution.abbr}>{institution.fullname}</option>
-                  })
-                }
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="given_name">
-                Given Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="given_name"
-                type="text"
-                placeholder="Given Name"
-                value={givenName}
-                onChange={(e) => setGivenName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="given_name">
-                Title
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="title"
-                type="text"
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="email"
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                Password
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-                id="password"
-                type="password"
-                placeholder="******************"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+      <>
+        <NavBar />
+        <div className="flex flex-col justify-center items-center min-h-screen">
+          <div className="w-full max-w-lg p-4">
+            <Card
+              style={{
+                width: "100%",
+                borderRadius: "14px",
+                padding: "32px",
+                gap: "36px",
+                display: "flex", // Make the Card a flex container
+                justifyContent: "center", // Center content horizontally
+                alignItems: "center", // Center content vertically
+                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Add subtle shadow for better visual
+                marginTop: "72px"
+              }}
+            >
+              <form onSubmit={handleSubmit} style={{ gap: "36px", width: "100%" }}>
+                <p className="block text-gray-700 text-sm mb-2">All fields required.</p>
 
-            <div className="flex items-center justify-between">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="submit"
-              >
-                Sign Up
-              </button>
-            </div>
-
-            {error && <p className="text-red-500 text-xs italic">{error}</p>}
-          </form>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
+                    Username
+                  </label>
+                  <Input
+                    id="username"
+                    type="username"
+                    placeholder="Enter your new username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    variant="bordered"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="pi">
+                    Institution
+                  </label>
+                  <Select
+                    placeholder="Select your institution"
+                    variant = "bordered"
+                    selectedKeys={new Set([institution])}
+                    onSelectionChange={(value) => setInstitution(Array.from(value).join(''))}
+                  >
+                    {institutions.map((institution) => (
+                      <SelectItem key={institution.abbr} textValue={institution.fullname}>
+                        {institution.fullname}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="given_name">
+                    Given Name
+                  </label>
+                  <Input
+                    id="given_name"
+                    type="text"
+                    placeholder="Enter your given name"
+                    value={givenName}
+                    onChange={(e) => setGivenName(e.target.value)}
+                    variant="bordered"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="title">
+                    Title
+                  </label>
+                  <Input
+                    id="title"
+                    type="text"
+                    placeholder="Enter your title"
+                    value={title}
+                    variant="bordered"
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+                    Email
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    variant="bordered"
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+                    Password
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your new password"
+                    value={password}
+                    variant="bordered"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit"
+                    style={{
+                      fontSize: "16px",
+                      background: "#06B7DB",
+                      width: "100%",
+                      height: "48px",
+                      borderRadius: "12px",
+                      borderColor: "#E4E4E7",
+                      border: "2px solid",
+                      paddingRight: "16px",
+                      paddingLeft: "16px",
+                      gap: "12px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "36px",
+                    }}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+                {error && <p className="text-red-500 text-xs italic">{error}</p>}
+              </form>
+            </Card>
+          </div>
         </div>
-      </div>
-    );
+      </>
+
+);
   } else if (userType === "student") {
     return (
-      <div className="flex flex-col justify-center items-center h-full bg-gray-100">
-        <p onClick={() => setUserType("professor")} className="mt-2 text-blue-600 underline hover:text-blue-800">
-            I am a faculty member
-        </p>
-        <p onClick={() => setUserType("student")} className="text-blue-600 underline hover:text-blue-800">
-            I am a student
-        </p>
-        <div className="w-1/2 max-w-s">
-          <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                New User Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="username"
-                type="username"
-                placeholder="New User Name"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="given_name">
-                Given Name
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="given_name"
-                type="text"
-                placeholder="Given Name"
-                value={givenName}
-                onChange={(e) => setGivenName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pi">
-                Primary Investigator (your professor)
-              </label>
-              <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="pi"
-                // placeholder="Primary Investigator"
-                value={pi}
-                onChange={(e) => {
-                  setpi(e.target.value);
-                  setInstitution(
-                    professors
-                      .find((professor) => professor.given_name === e.target.value)
-                      .institution
-                  );
+        <>
+          <NavBar />
+          <div className="flex flex-col justify-center items-center min-h-screen">
+            <div className="w-full max-w-lg p-4">
+            <Card
+                style={{
+                  width: "100%",
+                  borderRadius: "14px",
+                  padding: "32px",
+                  gap: "36px",
+                  display: "flex", // Make the Card a flex container
+                  justifyContent: "center", // Center content horizontally
+                  alignItems: "center", // Center content vertically
+                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Add subtle shadow for better visual
+                  marginTop: "72px"
                 }}
-                required
               >
-                <option value=""></option>
-                {
-                  professors.map((professor) => {
-                    return <option key={professor.id} value={professor.given_name}>{professor.given_name} ({professor.institution})</option>
-                  })
-                }
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="email"
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                Password
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-                id="password"
-                type="password"
-                placeholder="******************"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="submit"
+              <form
+                onSubmit={handleSubmit} style = {{width: "100%"}}
               >
-                Sign Up
-              </button>
-            </div>
+                <p className="block text-gray-700 text-sm mb-2">All fields required.</p>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
+                    Username
+                  </label>
+                  <Input
+                    id="username"
+                    type="username"
+                    placeholder="Enter your new username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    variant = "bordered"
+                    required
+                  />
+                </div>
 
-            {error && <p className="text-red-500 text-xs italic">{error}</p>}
-          </form>
-        </div>
-      </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="given_name">
+                    Given Name
+                  </label>
+                  <Input
+                    id="given_name"
+                    type="text"
+                    placeholder="Enter your given name"
+                    value={givenName}
+                    variant = "bordered"
+                    onChange={(e) => setGivenName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="pi">
+                    Primary Investigator (your professor)
+                  </label>
+                      <Select
+                        variant = "bordered"
+                        placeholder="Select your PI"
+                        selectedKeys={new Set([pi])}
+                        onSelectionChange={(value) => {
+                          const selectedPI = Array.from(value).join('');
+                          setpi(selectedPI);
+                          setInstitution(
+                            professors.find((professor) => professor.given_name === selectedPI)?.institution || ''
+                          );
+                        }}
+                      >
+                        {professors.map((professor) => (
+                          <SelectItem key={professor.given_name} textValue={professor.given_name}>
+                            {professor.given_name} ({professor.institution})
+                          </SelectItem>
+                        ))}
+                      </Select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+                    Email
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    variant = "bordered"
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+                    Password
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your new password"
+                    value={password}
+                    variant = "bordered"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <button
+                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      type="submit"
+                      style={{
+                        fontSize: "16px",
+                        background: "#06B7DB",
+                        width: "100%",
+                        height: "48px",
+                        borderRadius: "12px",
+                        borderColor: "#E4E4E7",
+                        border: "2px solid",
+                        paddingRight: "16px",
+                        paddingLeft: "16px",
+                        gap: "12px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginTop: "36px",
+                      }}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+
+                {error && <p className="text-red-500 text-xs italic">{error}</p>}
+              </form>
+              </Card>
+            </div>
+          </div>
+        </>
+
     );
   }
 }
