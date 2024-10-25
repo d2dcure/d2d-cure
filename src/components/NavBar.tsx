@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
+import { Dropdown, Avatar } from 'flowbite-react'; // Import Flowbite components
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebaseConfig";
+import { useRouter } from 'next/router';
 
 const NavBar = () => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -26,8 +31,14 @@ const NavBar = () => {
     setActiveDropdown(null);
   };
 
-  const toggleDropdown = (dropdownName: string) => {
-    setActiveDropdown(prevDropdown => prevDropdown === dropdownName ? null : dropdownName);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
   };
 
   return (
@@ -43,10 +54,15 @@ const NavBar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8 ml-8">
+              {user && (
+                <Link href="/dashboard" className="text-gray-900 hover:text-[#06B7DB] dark:text-white">
+                  Dashboard
+                </Link>
+              )}
               {/* Database Dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => toggleDropdown('database')}
+                  onClick={() => setActiveDropdown('database')}
                   className="flex items-center space-x-1 text-gray-900 hover:text-[#06B7DB] dark:text-white"
                 >
                   <span>Database</span>
@@ -61,7 +77,7 @@ const NavBar = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 <div
                   className={`absolute top-full left-0 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 transition-all duration-200 transform origin-top ${
                     activeDropdown === 'database'
@@ -86,24 +102,19 @@ const NavBar = () => {
               </div>
 
               {/* Resources Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => toggleDropdown('resources')}
-                  className="flex items-center space-x-1 text-gray-900 hover:text-[#06B7DB] dark:text-white"
-                >
+              <div className="relative" onMouseEnter={() => setActiveDropdown('resources')} onMouseLeave={() => setActiveDropdown(null)}>
+                <Link href="/resources" className="flex items-center space-x-1 text-gray-900 hover:text-[#06B7DB] dark:text-white">
                   <span>Resources</span>
                   <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      activeDropdown === 'resources' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                </button>
-                
+                </Link>
+
                 <div
                   className={`absolute top-full left-0 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 transition-all duration-200 transform origin-top ${
                     activeDropdown === 'resources'
@@ -132,14 +143,40 @@ const NavBar = () => {
             </div>
           </div>
 
-          {/* Right Side - Login & Mobile Menu */}
+          {/* Right Side - Profile or Login */}
           <div className="flex items-center space-x-4">
-            <Link
-              href="/login"
-              className="px-4 py-2 font-semibold bg-[#06B7DB] text-white rounded-lg hover:bg-[#05a5c6] transition-colors duration-200"
-            >
-              Login
-            </Link>
+            {user ? (
+              <Dropdown
+                label={
+                  <Avatar
+                    alt="User profile"
+                    img={user.profilePic || '/default-profile.png'}
+                    rounded={true}
+                  />
+                }
+                arrowIcon={false}
+                inline={true}
+              >
+                <Dropdown.Header>
+                  <span className="block text-sm">{user.name}</span>
+                  <span className="block text-sm font-medium">{user.email}</span>
+                </Dropdown.Header>
+                <Dropdown.Item>
+                  <Link href="/user-settings">Settings</Link>
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={handleLogout}>
+                  Log out
+                </Dropdown.Item>
+              </Dropdown>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 font-semibold bg-[#06B7DB] text-white rounded-lg hover:bg-[#05a5c6] transition-colors duration-200"
+              >
+                Login
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -147,17 +184,12 @@ const NavBar = () => {
               className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
             >
               <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                  d={isMobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
                 />
               </svg>
             </button>
@@ -166,39 +198,19 @@ const NavBar = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen
-              ? 'max-h-96 opacity-100'
-              : 'max-h-0 opacity-0 overflow-hidden'
-          }`}
+          className={`md:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
         >
           <div className="pt-2 pb-4 space-y-1">
             {/* Mobile Database Dropdown */}
             <div>
-              <button
-                onClick={() => toggleDropdown('mobile-database')}
-                className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-              >
+              <button onClick={() => setActiveDropdown('mobile-database')} className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                 <span>Database</span>
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    activeDropdown === 'mobile-database' ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-database' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              
-              <div
-                className={`transition-all duration-200 ${
-                  activeDropdown === 'mobile-database'
-                    ? 'max-h-48 opacity-100'
-                    : 'max-h-0 opacity-0 overflow-hidden'
-                }`}
-              >
+
+              <div className={`transition-all duration-200 ${activeDropdown === 'mobile-database' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <Link href="/data" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   BglB Characterization
                 </Link>
@@ -217,30 +229,22 @@ const NavBar = () => {
 
             {/* Mobile Resources Dropdown */}
             <div>
-              <button
-                onClick={() => toggleDropdown('mobile-resources')}
-                className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-              >
-                <span>Resources</span>
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    activeDropdown === 'mobile-resources' ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              <div
-                className={`transition-all duration-200 ${
-                  activeDropdown === 'mobile-resources'
-                    ? 'max-h-48 opacity-100'
-                    : 'max-h-0 opacity-0 overflow-hidden'
-                }`}
-              >
+              <Link href="/resources" className="w-full">
+                <button onClick={(e) => {
+                  e.preventDefault();
+                  setActiveDropdown('mobile-resources');
+                }} className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span>Resources</span>
+                  <svg className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-resources' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </Link>
+
+              <div className={`transition-all duration-200 ${activeDropdown === 'mobile-resources' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                <Link href="/resources" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  All Resources
+                </Link>
                 <Link href="/resources/StructuredFiles" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   Structured Files
                 </Link>
@@ -259,7 +263,6 @@ const NavBar = () => {
             <Link href="/contact" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
               Contact
             </Link>
-
           </div>
         </div>
       </div>
