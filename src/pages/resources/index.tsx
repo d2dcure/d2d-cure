@@ -80,7 +80,7 @@ const Resources = () => {
               <CardFooter>
                 <Link
                   href={item.link}
-                  className="text-sm pl-4 pb-3 hover:text-blue-500"
+                  className="text-sm pl-4 pb-3 text-[#06B7DB]"
                 >
                   {item.linkText} {'>'}
                 </Link>
@@ -115,7 +115,7 @@ const Resources = () => {
               <CardFooter>
                 <Link
                   href={item.link}
-                  className="text-sm pl-4 pb-3 hover:text-blue-500"
+                  className="text-sm pl-4 pb-3 text-[#06B7DB]"
                 >
                   {item.linkText} {'>'}
                 </Link>

@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import "../app/globals.css"; 
 import NavBar from '@/components/NavBar';
 import { useUser } from '@/components/UserProvider';
@@ -8,36 +9,63 @@ import Footer from '@/components/Footer';
 
 export default function Home() {
   const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.user_name) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   return (
     <div>
       <NavBar />
       {/* Container for content with responsive padding */}
-      <div className="mx-4 sm:mx-8 lg:mx-24 py-20 bg-white">
-        <div className="mt-8 text-center">
-          <div className="flex flex-col lg:flex-row justify-center items-center pb-2">
-            <img src="/resources/images/D2D_Logo.svg" draggable="false" className="h-16 select-none sm:h-20 pr-0 lg:pr-6 pb-3" alt="logo" />
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl mb-5 font-semibold" style={{ color: '#06B7DB' }}>Database</h1>
+<section
+  className="pt-8 lg:pt-10 bg-[url('/resources/images/ng.png')] bg-center bg-fill bg-no-repeat"
+>
+          <div className="max-w-2xl text-center mx-auto">
+    <div className="flex flex-col lg:flex-row justify-center items-center pb-1">
+            <img src="/resources/images/D2D_Logo.svg" draggable="false" className="h-16 select-none h-16 lg:h-20 lg:pr-6 pb-3" alt="logo" />
+            <h1 className="text-6xl sm:text-4xl md:text-5xl lg:text-8xl mb-5 font-extrabold" style={{ color: '#3C99AC', opacity: 0.38 }}>CURE</h1>
           </div>
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-light text-[#518C98]">
             Unpacking protein structure-to-function relationships
           </h1>
-          <h1 className="text-lg sm:text-xl lg:text-2xl mb-5 font-semibold">
+          <h1 className="text-lg sm:text-xl lg:text-2xl mb-5 font-light text-[#518C98]">
             through large, high-resolution, quantitative datasets.
           </h1>
-          <Button
-            className="mb-10 lg:mb-40"
-            onPress={() => window.location.href = '/login'}
-            style={{ width: '250px', height: '40px', fontWeight: 'semibold', backgroundColor: "#06B7DB", color: "white" }}
-          >
-            About us
-          </Button>
+          <div className="flex space-x-2 pt-5 pb-10 justify-center">
+                  <Button
+                    className="bg-[#06B7DB] text-white rounded-lg flex-1"
+                    size="sm"
+                  > Get Started
+                  </Button>
+                  <Button
+                    className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg flex-1"
+                    size="sm"
+                    color="primary"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+    </div>
 
-          {/* Conditionally render message */}
-          {user?.user_name && (
-            <p>Hello, {user?.user_name}</p>
-          )}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 relative text-center">
+        <div className="flex justify-center">
+          <img
+            src="/resources/images/thumb.png"
+            alt="Dashboard image" className="rounded-t-3xl h-auto w-1/2object-cover"
+          />
         </div>
+      </div>
+    </section>
+                                            
+
+
+
+
+      <div className="mx-4 sm:mx-8 lg:mx-24 py-20 bg-white">
 
         {/* Mission Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10">
