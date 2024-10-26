@@ -128,7 +128,7 @@ const NavBar = () => {
                   <Link href="/resources/oligosearch" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                     Oligo Search
                   </Link>
-                  <Link href="/resources/Publications" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <Link href="/resources/publications" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                     Publications
                   </Link>
                 </div>
@@ -245,13 +245,13 @@ const NavBar = () => {
                 <Link href="/resources" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   All Resources
                 </Link>
-                <Link href="/resources/StructuredFiles" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                <Link href="/resources/structuredfiles" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   Structured Files
                 </Link>
-                <Link href="/resources/OligoSearch" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                <Link href="/resources/oligosearch" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   Oligo Search
                 </Link>
-                <Link href="/resources/Publications" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                <Link href="/resources/publications" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   Publications
                 </Link>
               </div>
