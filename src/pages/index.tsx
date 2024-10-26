@@ -115,11 +115,11 @@ export default function Home() {
 
         {/* Curate Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10 items-center">
-          <div className="flex justify-center lg:justify-start">
-            <img src="/resources/images/card_large.png"  draggable="false" 
+          <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
+            <img src="/resources/images/card_large.png" draggable="false" 
             className="max-w-full select-none" alt="mockup" />
           </div>
-          <div className="lg:pt-1">
+          <div className="order-1 lg:order-2 lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
               Instructors and faculty members can approve or reject submitted data...
