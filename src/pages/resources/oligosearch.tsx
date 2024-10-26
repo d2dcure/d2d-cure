@@ -1,4 +1,3 @@
-// Important: does not yet support multiple proteins. It defaults to the BglB database regardless of what enzyme the user selects. All the major logic is done though
 import NavBar from '@/components/NavBar';
 import React, { useState, useEffect } from 'react';
 import "../../app/globals.css";
@@ -13,8 +12,6 @@ import Footer from '@/components/Footer';
 
 const OligoSearchPage = () => {
   const { user } = useUser();
-
-  console.log(user);
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
   const [enzymeVariant, setEnzymeVariant] = useState('');
@@ -53,89 +50,84 @@ const OligoSearchPage = () => {
   return (
     <>
       <NavBar />
-      <div className="m-24 bg-white">
-        <div className="col-span-1 items-center">
+      <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white ">
+        <div className="w-full">
           <Breadcrumbs
-            itemClasses={{
-              item: "text-black data-[current=true]:text-gray-300", // White text for breadcrumb items, lighter for current item
-              separator: "text-black/40", // Lighter white for separators
-            }}
           >
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem>Resources</BreadcrumbItem>
             <BreadcrumbItem>Oligo Search</BreadcrumbItem>
           </Breadcrumbs>
+          
           <div className="pt-8">
-            <h1 className="mb-4 text-4xl font-inter md:text-4xl xl:text-5xl dark:text-white">Oligo Search</h1>
-            <p className="mb-2 text-left" style={{ color: 'grey', marginBottom: '80px' }}>
-              Select the enzyme and enter an enzyme variant code to search for a reverse-compliment, <br />
+            <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
+              Oligo Search
+            </h1>
+            <p className="mb-12 text-left text-gray-600 max-w-2xl">
+              Select the enzyme and enter an enzyme variant code to search for a reverse-compliment,
               codon-optimized DNA 33-mer for use as a primer for the gene mutant.
             </p>
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-2">
-                <div style={{ marginBottom: '10px', marginRight: '50px' }}>
-                  <label htmlFor="enzyme" style={{ display: 'block', marginBottom: '10px' }}>Enzyme</label>
-                  {sizes.includes("sm") && (
-                    <Select
-                      size="sm"
-                      id="enzyme"
-                      value={enzyme}
-                      onChange={(e) => setEnzyme(e.target.value)}
-                      label="Select Enzyme"
-                      style={{ width: '300px', borderRadius: '8px' }}
-                    >
-                      {enzymeList.map((enzyme) => (
-                        <SelectItem key={enzyme.id} value={enzyme.abbr}>
-                          {enzyme.abbr}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="enzymeVariant">Enzyme Variant</label>
-                  {variants.map((variant) => (
-                    sizes.map((size) => (
-                      variant === "bordered" && size === "lg" && (
-                        <div key={`${size}-${variant}`} style={{ marginTop: '10px' }}>
-                          <Input
-                            key={`${size}-${variant}`}
-                            type="text"
-                            id="enzymeVariant"
-                            value={enzymeVariant}
-                            onChange={(e) => setEnzymeVariant(e.target.value)}
-                            placeholder="Search"
-                            size={size}
-                            variant={variant}
-                            style={{ width: '200px' }}
-                            radius="sm"
-                          />
-                        </div>
-                      )
-                    ))
-                  ))}
-                </div>
-                <Button
-                  onClick={handleSubmit}
-                  style={{ marginTop: '35px', height: '45px', backgroundColor: "#06B7DB", color: "white" }}
-                  radius="sm"
+            
+            <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+              <div className="w-full md:w-auto min-w-[200px]">
+                <label htmlFor="enzyme" className="block mb-2">
+                  Enzyme
+                </label>
+                <Select
+                  size="sm"
+                  id="enzyme"
+                  value={enzyme}
+                  onChange={(e) => setEnzyme(e.target.value)}
+                  label="Select Enzyme"
+                  className="w-full"
                 >
-                  Search
-                </Button>
+                  {enzymeList.map((enzyme) => (
+                    <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                      {enzyme.abbr}
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
+
+              <div className="w-full md:w-auto">
+                <label htmlFor="enzymeVariant" className="block mb-2">
+                  Enzyme Variant
+                </label>
+                <Input
+                  type="text"
+                  id="enzymeVariant"
+                  value={enzymeVariant}
+                  onChange={(e) => setEnzymeVariant(e.target.value)}
+                  placeholder="Search"
+                  size="lg"
+                  variant="bordered"
+                  className="w-full md:w-[200px]"
+                  radius="sm"
+                />
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
+                radius="sm"
+              >
+                Search
+              </Button>
             </div>
-            <div style={{ marginTop: '20px' }}>
-              <label style={{ padding: '10px' }}> Results </label>
-              {oligosDisplay && (
-                <div className="mt-4" style={{ padding: '10px', color: 'grey' }}>
-                  <p style={{ marginBottom: '20px' }}>
-                    The optimized DNA oligomer sequence to use as a DNA primer for the <br />
-                    production of BgIB variant <div style={{ color: 'black', display: 'inline', fontWeight: 'bold' }}>{enzymeVariant}</div> is:
+
+            {oligosDisplay && (
+              <div className="mt-8 space-y-4">
+                <h2 className="text-lg font-semibold">Results</h2>
+                <div className="text-gray-600">
+                  <p className="mb-4">
+                    The optimized DNA oligomer sequence to use as a DNA primer for the
+                    production of BgIB variant{" "}
+                    <span className="text-black font-bold">{enzymeVariant}</span> is:
                   </p>
-                  <div style={{ color: 'black', fontWeight: 'bold' }}>{oligosDisplay}</div>
+                  <p className="text-black font-bold break-words">{oligosDisplay}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

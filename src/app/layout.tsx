@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Head from "next/head"; 
+import Script from 'next/script';  // Import the Next.js Script component
+import NavBar from '@/components/NavBar';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <Head>
+        <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+      </Head>
+      <body className={inter.className}>
+        <div className="m-24 p-12 bg-gray-200 min-h-screen">
+          {children}
+        </div>
+        <Script
+          src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"
+          strategy="afterInteractive"  // Ensures the script is loaded after page has loaded
+        />
+      </body>
     </html>
   );
 }

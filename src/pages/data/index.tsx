@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "@nextui-org/react";
 import "../../app/globals.css";
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 
 function Page({ id, variant }: { id: string, variant:string }) {
   const link = "/bglb?id=" + id;
@@ -193,7 +195,9 @@ const DataPage = () => {
     };
 
   return (
-    <div className="flex flex-col items-center p-4">
+    <>
+      <NavBar />
+          <div className="flex flex-col items-center p-4">
       <h1 className="text-xl font-bold mb-4">BglB Variant Characterization Data</h1>
       <p className="text-center mb-4">
         Hover over any column for a description of that parameter.
@@ -328,6 +332,9 @@ const DataPage = () => {
       </div>
 
     </div>
+    <Footer></Footer>
+    </>
+
   );
 };
 
