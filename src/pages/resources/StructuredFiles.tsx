@@ -17,7 +17,7 @@ const Test = () => {
             <BreadcrumbItem>Structure & Sequence Files</BreadcrumbItem>
           </Breadcrumbs>
           <div className="pt-6">
-            <h1 className="mb-2 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
+            <h1 className="mb-2 text-3xl md:text-4xl lg:text-5xl font-inter">
               Structure & Sequence Files
             </h1>
           </div>
@@ -25,9 +25,9 @@ const Test = () => {
       </div>
 
       <div className="px-6 md:px-12 lg:px-24 py-2">
-        <h1 className="mb-8 text-2xl md:text-3xl text-slate-500 font-inter tracking-tight leading-none dark:text-white">
+        <h2 className="mb-8 text-2xl text-[#525252] font-light md:text-3xl font-inter tracking-tight leading-none dark:text-white">
           β-glucosidase B (BglB)
-        </h1>
+        </h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3].map((item) => (
@@ -52,7 +52,7 @@ const Test = () => {
       </div>
 
       <div className="px-6 md:px-12 lg:px-24 py-8">
-        <h1 className="mb-8 text-2xl md:text-3xl text-slate-500 font-inter dark:text-white">
+        <h1 className="mb-8 text-2xl text-[#525252] font-light md:text-3xl text-slate-500 font-inter dark:text-white">
           Assay Data Spreadsheet Templates
         </h1>
         
