@@ -86,7 +86,7 @@ const ProfileSettings = () => {
           {/* Right Section - Variant Profiles & Gel Image Uploads */}
           <div className="w-3/4 p-8">
             <h1 className="text-3xl  mb-8">My Variant Profiles</h1>
-            <Table aria-label="Variant Profiles" bordered className="mb-12">
+            <Table aria-label="Variant Profiles" className="border-collapse border border-gray-300 mb-12">
               <TableHeader>
                 <TableColumn>STATUS</TableColumn>
                 <TableColumn>Enzyme</TableColumn>
@@ -128,7 +128,7 @@ const ProfileSettings = () => {
             </Table>
 
             <h1 className="text-3xl  mb-8">My Gel Image Uploads</h1>
-            <Table aria-label="Gel Image Uploads" bordered>
+            <Table aria-label="Gel Image Uploads" className="border-collapse border border-gray-300">
               <TableHeader>
                 <TableColumn>Gel ID</TableColumn>
                 <TableColumn>Upload Date</TableColumn>
