@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { CardFooter } from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
@@ -50,13 +51,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col">
         <NavBar />
         <div className="flex-grow flex rounded-full items-center justify-center">
-          <Modal backdrop="blur" isOpen={true} hideCloseButton>
-            <ModalContent>
-              <ModalBody className="py-10 text-center">
-                <Spinner size="lg" color="primary" />
-                <p className="mt-4 text-lg text-gray-600">Hold tight, we&apos;re synthesizing the data. Enzyme magic takes time! 🧬✨</p>              </ModalBody>
-            </ModalContent>
-          </Modal>
+          <LoadingSpinner isOpen={true} />
         </div>
         <Footer />
       </div>

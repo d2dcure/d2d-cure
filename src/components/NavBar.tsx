@@ -12,7 +12,6 @@ const NavBar = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -184,49 +183,32 @@ const NavBar = () => {
           {/* Right Side - Profile or Login */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <div 
-                className="relative"
-                onMouseEnter={() => setIsProfileDropdownOpen(true)}
-                onMouseLeave={() => setIsProfileDropdownOpen(false)}
-              >
-                <div className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 group cursor-pointer">
-                  <Avatar
-                    alt="User profile"
-                    img={user.profilePic || undefined}
-                    rounded={true}
-                    className="w-10 h-10"
-                  />
-                  <svg 
-                    className="w-4 h-4 text-gray-600 dark:text-gray-300 group-hover:text-[#06B7DB] transition-all duration-200 transform group-hover:rotate-180" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-
-                {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10">
-                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
-                      <div>{user.name}</div>
-                      <div className="font-medium truncate">{user.email}</div>
-                    </div>
-                    <hr className="border-gray-200 dark:border-gray-700" />
-                    <Link href="/user-settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
-                      Settings
-                    </Link>
-                    <hr className="border-gray-200 dark:border-gray-700" />
-                    <button 
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              <Dropdown
+                label={
+                  <div className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                    <Avatar
+                      alt="User profile"
+                      img={user.profilePic || undefined}
+                      rounded={true}
+                      className="w-10 h-10"
                     >
-                      Log out
-                    </button>
+                    </Avatar>
                   </div>
-                )}
-              </div>
+                }
+                arrowIcon={false}
+                inline={true}
+              >
+                <Dropdown.Header>
+                  <span className="block text-sm">{user.name}</span>
+                  <span className="block text-sm font-medium">{user.email}</span>
+                </Dropdown.Header>
+                <Dropdown.Item>
+                  <Link href="/user-settings">Settings</Link>
+                </Dropdown.Item>
+                <Dropdown.Item onClick={handleLogout}>
+                  Log out
+                </Dropdown.Item>
+              </Dropdown>
             ) : (
               <Link
                 href="/login"
