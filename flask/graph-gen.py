@@ -1,3 +1,5 @@
+# This is the edited version of plot_data.py, so that it works with our frontend (for kinetic assay)
+# Uses Flask to create an API endpoint (/plotit). It can handle HTTP POST requests, allowing it to dynamically receive input data/files, process it, and generate a response with the plot image
 
 from flask import Flask, request, send_file, jsonify
 
