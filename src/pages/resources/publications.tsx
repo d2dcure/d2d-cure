@@ -64,13 +64,13 @@ const PublicationsPage = () => {
               {publications.length === 0 && (
                 <>
                   <li className="text-sm md:text-base leading-relaxed text-gray-700">
-                    Carlin, D.A.; Caster, R.W.; Wang, X.; Betzenderfer, S.A.; Chen, C.X.; Duong, V.M.; Ryklansky, C.V.; Alpekin, A.; Beaumont, N.; Kapoor, H.; Kim, N.; Mohabbot, H.; Pang, B.; Teel, R.; Whithaus, L.; Tagkopoulos, I.; & Siegel, J.B. (2016) "Kinetic Characterization of 100 Glycoside Hydrolase Mutants Enables the Discovery of Structural Features Correlated with Kinetic Constants." PLoS ONE 11(1), e0147596.
+                    Carlin, D.A.; Caster, R.W.; Wang, X.; Betzenderfer, S.A.; Chen, C.X.; Duong, V.M.; Ryklansky, C.V.; Alpekin, A.; Beaumont, N.; Kapoor, H.; Kim, N.; Mohabbot, H.; Pang, B.; Teel, R.; Whithaus, L.; Tagkopoulos, I.; & Siegel, J.B. (2016) &quote;Kinetic Characterization of 100 Glycoside Hydrolase Mutants Enables the Discovery of Structural Features Correlated with Kinetic Constants.&quot; PLoS ONE 11(1), e0147596.
                   </li>
                   <li className="text-sm md:text-base leading-relaxed text-gray-700">
-                    Carlin, D.A.; Hapig-Ward S.; Chan, B.W.; Damrau, N.; Riley, M.; Caster, R.W.; Bethards, B.; & Siegel, J.B. (2017) "Thermal stability and kinetic constants for 129 variants of a family 1 glycoside hydrolase reveal that enzyme activity and stability can be separately designed." PLoS ONE 12(5), e0176255.
+                    Carlin, D.A.; Hapig-Ward S.; Chan, B.W.; Damrau, N.; Riley, M.; Caster, R.W.; Bethards, B.; & Siegel, J.B. (2017) &quot;Thermal stability and kinetic constants for 129 variants of a family 1 glycoside hydrolase reveal that enzyme activity and stability can be separately designed.&quot; PLoS ONE 12(5), e0176255.
                   </li>
                   <li className="text-sm md:text-base leading-relaxed text-gray-700">
-                    Huang, P.; Chu, S.K.; Frizzo, H.N.; Connolly, M.P.; Caster, R.W.; & Siegel, J. B. (2020) "Evaluating Protein Engineering Thermostability Prediction Tools Using an Independently Generated Dataset." ACS Omega 5(12), 6487–6493.
+                    Huang, P.; Chu, S.K.; Frizzo, H.N.; Connolly, M.P.; Caster, R.W.; & Siegel, J. B. (2020) &quot;Evaluating Protein Engineering Thermostability Prediction Tools Using an Independently Generated Dataset.&quot; ACS Omega 5(12), 6487–6493.
                   </li>
                 </>
               )}

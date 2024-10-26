@@ -223,7 +223,7 @@ const SignUpPage = () => {
               </h1>
                 <p style = {{width: "384px", gap: "24px", height: "144px", fontSize: "16px", color: "#525252"}}>
                   User accounts for this website are intended for individuals affiliated with undergraduate laboratories from institutions that have been selected to participate in the CURE network. 
-                  The majority of such users will be either the faculty primary investigator (PI) or the PI's students. 
+                  The majority of such users will be either the faculty primary investigator (PI) or the PI&apos;s students. 
                 </p>
 
                 <p style={{color: "#525252"}}>If you do not fall into one of these two categories yet still feel that you need access to the secure pages of this website for such things as data submission, <a href="mailto:webmaster@d2dcure.com" style={{color: "#06B7DB"}}>please email the webmaster to request access.</a> </p>

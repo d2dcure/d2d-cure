@@ -18,7 +18,7 @@ const Dashboard = () => {
     }
   }, [user, loading]);
 
-  const toggleAccordion = (index) => {
+  const toggleAccordion = (index:any) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
   
@@ -54,7 +54,7 @@ const Dashboard = () => {
             <ModalContent>
               <ModalBody className="py-10 text-center">
                 <Spinner size="lg" color="primary" />
-                <p className="mt-4 text-lg text-gray-600">Hold tight, we're synthesizing the data. Enzyme magic takes time! 🧬✨</p>              </ModalBody>
+                <p className="mt-4 text-lg text-gray-600">Hold tight, we&apos;re synthesizing the data. Enzyme magic takes time! 🧬✨</p>              </ModalBody>
             </ModalContent>
           </Modal>
         </div>
@@ -69,7 +69,7 @@ const Dashboard = () => {
         <NavBar />
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
           <h1 className="text-6xl font-bold text-[#06B7DB]">404</h1>
-          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn't exist.</p>
+          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn&apos;t exist.</p>
           <Link href="/login" passHref>
             <Button color="primary" className="bg-[#06B7DB]">
               Go to Login
@@ -83,7 +83,7 @@ const Dashboard = () => {
             <ModalBody className="py-12 text-center">
               <h1 className="text-4xl font-bold mb-4">Whoa there, enzyme explorer! 🧬</h1>
               <p className="text-xl mb-8">
-                We can't let you into our top-secret enzyme research lab until you log in. 
+                We can&apos;t let you into our top-secret enzyme research lab until you log in. 
                 Your enzyme predictions will have to wait… for now! 🔐
               </p>
               <Link href="/login" passHref>
