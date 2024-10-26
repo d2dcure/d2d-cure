@@ -12,6 +12,7 @@ const NavBar = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -41,6 +42,11 @@ const NavBar = () => {
     }
   };
 
+  // Helper function to determine if a link is active
+  const isActiveLink = (href: string) => {
+    return router.pathname === href || router.pathname.startsWith(href + '/');
+  };
+
   return (
     <nav ref={navRef} className="bg-white py-4 border-b border-gray-200 dark:bg-gray-900">
       <div className="max-w-screen-xl mx-auto px-4">
@@ -55,7 +61,14 @@ const NavBar = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8 ml-8">
               {user && (
-                <Link href="/dashboard" className="text-gray-900 hover:text-[#06B7DB] dark:text-white">
+                <Link
+                  href="/dashboard"
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 ${
+                    isActiveLink('/dashboard')
+                      ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                  }`}
+                >
                   Dashboard
                 </Link>
               )}
@@ -63,7 +76,11 @@ const NavBar = () => {
               <div className="relative">
                 <button
                   onClick={() => setActiveDropdown('database')}
-                  className="flex items-center space-x-1 text-gray-900 hover:text-[#06B7DB] dark:text-white"
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                    isActiveLink('/data') || isActiveLink('/submit') || isActiveLink('/curate')
+                      ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                  }`}
                 >
                   <span>Database</span>
                   <svg
@@ -103,7 +120,14 @@ const NavBar = () => {
 
               {/* Resources Dropdown */}
               <div className="relative" onMouseEnter={() => setActiveDropdown('resources')} onMouseLeave={() => setActiveDropdown(null)}>
-                <Link href="/resources" className="flex items-center space-x-1 text-gray-900 hover:text-[#06B7DB] dark:text-white">
+                <Link
+                  href="/resources"
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                    isActiveLink('/resources')
+                      ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                  }`}
+                >
                   <span>Resources</span>
                   <svg
                     className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`}
@@ -134,10 +158,24 @@ const NavBar = () => {
                 </div>
               </div>
 
-              <Link href="/about" className="text-gray-900 hover:text-[#06B7DB] dark:text-white">
+              <Link
+                href="/about"
+                className={`px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isActiveLink('/about')
+                    ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                    : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                }`}
+              >
                 About
               </Link>
-              <Link href="/contact" className="text-gray-900 hover:text-[#06B7DB] dark:text-white">
+              <Link
+                href="/contact"
+                className={`px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isActiveLink('/contact')
+                    ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                    : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                }`}
+              >
                 Contact us
               </Link>
             </div>
@@ -146,29 +184,49 @@ const NavBar = () => {
           {/* Right Side - Profile or Login */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <Dropdown
-                label={
+              <div 
+                className="relative"
+                onMouseEnter={() => setIsProfileDropdownOpen(true)}
+                onMouseLeave={() => setIsProfileDropdownOpen(false)}
+              >
+                <div className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 group cursor-pointer">
                   <Avatar
                     alt="User profile"
-                    img={user.profilePic || '/default-profile.png'}
+                    img={user.profilePic || undefined}
                     rounded={true}
+                    className="w-10 h-10"
                   />
-                }
-                arrowIcon={false}
-                inline={true}
-              >
-                <Dropdown.Header>
-                  <span className="block text-sm">{user.name}</span>
-                  <span className="block text-sm font-medium">{user.email}</span>
-                </Dropdown.Header>
-                <Dropdown.Item>
-                  <Link href="/user-settings">Settings</Link>
-                </Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item onClick={handleLogout}>
-                  Log out
-                </Dropdown.Item>
-              </Dropdown>
+                  <svg 
+                    className="w-4 h-4 text-gray-600 dark:text-gray-300 group-hover:text-[#06B7DB] transition-all duration-200 transform group-hover:rotate-180" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10">
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
+                      <div>{user.name}</div>
+                      <div className="font-medium truncate">{user.email}</div>
+                    </div>
+                    <hr className="border-gray-200 dark:border-gray-700" />
+                    <Link href="/user-settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                      Settings
+                    </Link>
+                    <hr className="border-gray-200 dark:border-gray-700" />
+                    <button 
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 href="/login"
@@ -203,7 +261,14 @@ const NavBar = () => {
           <div className="pt-2 pb-4 space-y-1">
             {/* Mobile Database Dropdown */}
             <div>
-              <button onClick={() => setActiveDropdown('mobile-database')} className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+              <button
+                onClick={() => setActiveDropdown('mobile-database')}
+                className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-200 ${
+                  isActiveLink('/data') || isActiveLink('/submit') || isActiveLink('/curate')
+                    ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                    : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                }`}
+              >
                 <span>Database</span>
                 <svg className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-database' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -230,10 +295,17 @@ const NavBar = () => {
             {/* Mobile Resources Dropdown */}
             <div>
               <Link href="/resources" className="w-full">
-                <button onClick={(e) => {
-                  e.preventDefault();
-                  setActiveDropdown('mobile-resources');
-                }} className="w-full flex items-center justify-between px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveDropdown('mobile-resources');
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isActiveLink('/resources')
+                      ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                      : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                  }`}
+                >
                   <span>Resources</span>
                   <svg className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-resources' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -257,10 +329,24 @@ const NavBar = () => {
               </div>
             </div>
 
-            <Link href="/about" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+            <Link
+              href="/about"
+              className={`block px-4 py-2 rounded-lg transition-colors duration-200 ${
+                isActiveLink('/about')
+                  ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                  : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+              }`}
+            >
               About
             </Link>
-            <Link href="/contact" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+            <Link
+              href="/contact"
+              className={`block px-4 py-2 rounded-lg transition-colors duration-200 ${
+                isActiveLink('/contact')
+                  ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                  : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+              }`}
+            >
               Contact
             </Link>
           </div>

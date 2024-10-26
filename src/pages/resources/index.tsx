@@ -27,7 +27,7 @@ const Resources = () => {
           </div>
           <div className="hidden lg:flex justify-center items-center">
             <img 
-              src="/resources/images/resource.png" 
+              src="/resources/images/resources.png" 
               alt="mockup" 
               className="max-w-full h-auto"
             />
