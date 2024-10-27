@@ -58,7 +58,7 @@ const NavBar = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8 ml-8">
+            <div className="hidden md:flex items-center space-x-4 ml-8">
               {user && (
                 <Link
                   href="/dashboard"
