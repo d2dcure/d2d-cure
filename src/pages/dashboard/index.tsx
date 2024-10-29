@@ -12,16 +12,38 @@ const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
   const [activeIndex, setActiveIndex] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const [characterizationData, setCharacterizationData] = useState([]);
   
   useEffect(() => {
-    if (!loading && !user) {
-      onOpen();
+    if (!loading && user) {
+      fetchCharacterizationData(user.user_name);
+    } else if (!loading && !user) {
+      onOpen(); // Trigger the modal if the user isn't logged in.
     }
   }, [user, loading]);
+
+  const fetchCharacterizationData = async (userName:any) => {
+    try {
+      const response = await fetch(`/api/getCharacterizationDataForUser?userName=${userName}`);
+      const data = await response.json();
+      setCharacterizationData(data);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
 
   const toggleAccordion = (index:any) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
+
+
+  const renderStatus = (data:any) => {
+    if (data.curated) return 'Curated';
+    if (data.submitted_for_curation) return 'Submitted';
+    return 'Not Submitted';
+  };
+
+  const renderVariant = (data:any) => `${data.resid}${data.resnum}${data.resmut}`;
   
   const faqs = [
     {
@@ -153,46 +175,50 @@ const Dashboard = () => {
           <div className="mb-12">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl text-gray-500">Variant Profiles</h3>
-              <Button color="primary" className="bg-[#06B7DB]">Submit New Data</Button>
+              <Link href="/submit" passHref>
+                <Button color="primary" className="bg-[#06B7DB]">
+                  Submit New Data
+                </Button>
+              </Link>
             </div>
             <Table aria-label="Variant Profiles">
               <TableHeader>
                 <TableColumn>STATUS</TableColumn>
                 <TableColumn>Enzyme</TableColumn>
                 <TableColumn>Variant</TableColumn>
-                <TableColumn>Date Created</TableColumn>
                 <TableColumn>Comments</TableColumn>
                 <TableColumn>Actions</TableColumn>
               </TableHeader>
               <TableBody>
-                <TableRow key="1">
-                  <TableCell>
-                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">In Progress</Chip>
-                  </TableCell>
-                  <TableCell>BglB</TableCell>
-                  <TableCell>Q124W</TableCell>
-                  <TableCell>04-04-2024</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                    This is practice, def delete later. This is practice, def delete later.
-                  </TableCell>
-                  <TableCell>
-                    <Link href="#" className="text-[#06B7DB]">View</Link>
-                  </TableCell>
-                </TableRow>
-                <TableRow key="2">
-                  <TableCell>
-                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">In Progress</Chip>
-                  </TableCell>
-                  <TableCell>BglB</TableCell>
-                  <TableCell>Q124W</TableCell>
-                  <TableCell>04-04-2024</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                    Need to add the kinetic assay data. This is a long comment to show truncation.
-                  </TableCell>
-                  <TableCell>
-                    <Link href="#" className="text-[#06B7DB]">View</Link>
-                  </TableCell>
-                </TableRow>
+                {characterizationData.map((data: any, index: any) => {
+                  const variant = renderVariant(data);
+                  const viewUrl = 
+                    variant === "XOX" 
+                      ? `/submit/wild_type/${data.id}` 
+                      : `/submit/single_variant/${data.id}`;
+
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
+                          {renderStatus(data)}
+                        </Chip>
+                      </TableCell>
+                      <TableCell>BglB</TableCell>
+                      <TableCell>{variant}</TableCell>
+                      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                        {data.comments || 'No comments'}
+                      </TableCell>
+                      <TableCell>
+                        <Link href={viewUrl} passHref>
+                          <Button as="a" color="primary" className="bg-[#06B7DB]">
+                            View
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
