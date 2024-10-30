@@ -98,7 +98,7 @@ const AboutD2D = () => {
   </p>
   <div className="mt-8 aspect-w-16 aspect-h-9">
     <iframe 
-      src="https://kumu.io/awvater/d2d-institution-network-map" 
+      src="https://embed.kumu.io/54d29a647a7b3825ed3a1111620c9a5e" 
       width="100%" 
       height="600" 
       frameBorder="0"
