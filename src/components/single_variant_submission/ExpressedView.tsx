@@ -45,6 +45,13 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
         className="block w-full p-2 bg-gray-100 border border-gray-300 rounded"
         placeholder="Enter yield average"
       />
+
+      {/* Display Current Yield Average */}
+      <p className="text-lg font-semibold">
+        Yield average value: {entryData.yield_avg !== null ? `${entryData.yield_avg} mg/ml` : 'N/A'}
+      </p>
+
+      {/* Save button */}
       <button
         onClick={updateYieldAverage}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
