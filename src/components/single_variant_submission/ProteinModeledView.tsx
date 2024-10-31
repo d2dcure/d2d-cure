@@ -8,8 +8,52 @@ interface ProteinModeledViewProps {
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView }) => {
   const [WT, setWT] = useState<string>('');
   const [variant, setVariant] = useState<string>('');
+  const [wtScoreWarning, setWTScoreWarning] = useState('');
+  const [variantScoreWarning, setVariantScoreWarning] = useState('');
+  const [deltaScoreWarning, setDeltaScoreWarning] = useState('');
+
+  const expectedWTScore = -1089.697; // Example expected score
+
+  const validateScores = () => {
+    let isValid = true;
+
+    // WT Score Validation
+    if (parseFloat(WT) !== expectedWTScore) {
+      setWTScoreWarning(
+        `The expected score for the WT enzyme is ${expectedWTScore}. Please confirm and resubmit.`
+      );
+      isValid = false;
+    } else {
+      setWTScoreWarning(''); // Clear warning if valid
+    }
+
+    // Check if WT score and Variant score are identical
+    if (parseFloat(WT) === parseFloat(variant)) {
+      setVariantScoreWarning(
+        'It is highly unlikely for both WT and Variant scores to be the same. Please confirm.'
+      );
+      isValid = false;
+    } else {
+      setVariantScoreWarning(''); // Clear warning if valid
+    }
+
+    // Delta Score Validation (within -20 to 20 range)
+    const delta = parseFloat(variant) - parseFloat(WT);
+    if (delta < -20 || delta > 20) {
+      setDeltaScoreWarning(
+        'Variants rarely express if the change in score is greater than 20. Please review the values.'
+      );
+      isValid = false;
+    } else {
+      setDeltaScoreWarning(''); // Clear warning if valid
+    }
+
+    return isValid;
+  };
 
   const updateRosettaScore = async () => {
+    if (!validateScores()) return; // Stop if validation fails
+
     try {
       const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
         method: 'POST',
@@ -23,6 +67,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (!response.ok) {
         throw new Error('Failed to update Rosetta score');
       }
+
       setCurrentView('checklist'); // Go back to checklist after saving
     } catch (error) {
       console.error('Error updating Rosetta score:', error);
@@ -38,6 +83,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
         &lt; Back to Checklist
       </button>
       <h2 className="text-2xl font-bold text-left">Foldit Scores</h2>
+
+      {/* Input Fields */}
       <div className="flex flex-col space-y-2">
         <label className="block">
           WT (starting) score:
@@ -49,6 +96,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
             placeholder="Enter WT score"
           />
         </label>
+        {wtScoreWarning && <p className="text-red-500">{wtScoreWarning}</p>}
+
         <label className="block">
           Variant (ending) score:
           <input 
@@ -59,7 +108,18 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
             placeholder="Enter Variant score"
           />
         </label>
+        {variantScoreWarning && <p className="text-red-500">{variantScoreWarning}</p>}
       </div>
+
+      {/* Current Rosetta Score */}
+      <p className="text-lg font-semibold">
+        Current Rosetta score value: {entryData.Rosetta_score !== null ? entryData.Rosetta_score : 'N/A'}
+      </p>
+
+      {/* Delta Score Warning */}
+      {deltaScoreWarning && <p className="text-red-500">{deltaScoreWarning}</p>}
+
+      {/* Save Button */}
       <div className="flex justify-start space-x-2">
         <button 
           onClick={updateRosettaScore}

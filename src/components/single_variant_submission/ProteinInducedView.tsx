@@ -45,6 +45,13 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({ entryData, setC
         <option value="yes">Yes</option>
         <option value="no">No</option>
       </select>
+
+      {/* Display Current Protein Induced Status */}
+      <p className="text-lg font-semibold">
+        Protein induced: {entryData.expressed === true ? 'Yes' : 'No'}
+      </p>
+
+      {/* Save button */}
       <button
         onClick={updateProteinInduced}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

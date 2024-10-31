@@ -136,12 +136,12 @@ const Dashboard = () => {
           {[
             {
               title: "Single Variant",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {
               title: "Wild Type",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {

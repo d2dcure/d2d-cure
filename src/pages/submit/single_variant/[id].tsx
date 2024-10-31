@@ -46,6 +46,23 @@ const SingleVariant = () => {
     fetchEntryData();
   }, [id, user]); 
 
+  // for downloading the AB1 file from the checklist view, if it exists 
+  const handleAB1Download = async (filename: string) => {
+    try {
+      const url = await s3.getSignedUrlPromise("getObject", {
+        Bucket: "d2dcurebucket",
+        Key: `sequencing/${filename}`,
+      });
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download file. Please try again.");
+    }
+  };
+
   const renderChecklistTable = () => {
     const checklistItems = [
       "Protein Modeled",
@@ -61,79 +78,54 @@ const SingleVariant = () => {
       "Gel uploaded"
     ];
 
-    const getStatusStyle = (item:any) => {
+    const getStatusStyle = (item: any) => {
       switch (item) {
         case "Protein Modeled":
-          if (entryData.Rosetta_score === null) {
-            return {
-              text: "Incomplete",
-              className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-            };
-          } else {
-            return {
-              text: "Complete",
-              className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-            };
-          }
+          return entryData.Rosetta_score === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Oligonucleotide ordered":
-            return {
-              text: "Complete",
-              className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-            };
+          return { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Plasmid sequence verified":
-          if (entryData.plasmid_verified === false) {
-            return {
-              text: "Incomplete",
-              className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-            };
-          } else {
-            return {
-              text: "Complete",
-              className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-            };
-          }
+          return entryData.plasmid_verified === false
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Protein induced":
-          if (entryData.expressed === null) {
-            return {
-              text: "Incomplete",
-              className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-            };
-          } else {
-            return {
-              text: "Complete",
-              className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-            };
-          }
+          return entryData.expressed === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Expressed":
-        if (entryData.yield_avg === null) {
-          return {
-            text: "Incomplete",
-            className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-          };
-        } else {
-          return {
-            text: "Complete",
-            className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-          };
-        }
+          return entryData.yield_avg === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Wild type kinetic data uploaded":
-          if (entryData.WT_raw_data_id === 0) {
-            return {
-              text: "Incomplete",
-              className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-            };
-          } else {
-            return {
-              text: "Complete",
-              className: "text-green-700 bg-green-100 rounded-full px-4 py-1"
-            };
-          }
+          return entryData.WT_raw_data_id === 0
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         default:
-          return {
-            text: "Incomplete",
-            className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1"
-          };
+          return { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" };
       }
+    };
+  
+
+    const renderAdditionalInfo = (item: string) => {
+      if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
+        return `ΔΔG = ${entryData.Rosetta_score} REU`;
+      }
+      if (item === "Plasmid sequence verified" && entryData.ab1_filename) {
+        return (
+          <button
+            className="text-blue-500 hover:underline"
+            onClick={() => handleAB1Download(entryData.ab1_filename)}
+          >
+            (Download)
+          </button>
+        );
+      }
+      if (item === "Expressed" && entryData.yield_avg !== null) {
+        return `c = ${entryData.yield_avg} mg/ml`;
+      }
+      return null;
     };
 
     return (
@@ -156,6 +148,7 @@ const SingleVariant = () => {
                 <tr>
                   <th className="px-4 py-2">Status</th>
                   <th className="px-4 py-2">Checklist Item</th>
+                  <th className="px-4 py-2">Additional Info</th> 
                   <th className="px-4 py-2">Action</th>
                 </tr>
               </thead>
@@ -168,6 +161,11 @@ const SingleVariant = () => {
                       </span>
                     </td>
                     <td className="px-4 py-2">{item}</td>
+
+                    <td className="px-4 py-2 text-center">
+                      {renderAdditionalInfo(item)}
+                    </td>
+                    
                     <td className="px-4 py-2 text-center">
                       <button 
                         className="px-4 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"

@@ -1,3 +1,5 @@
+// KineticAssayDataView.tsx
+
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
@@ -12,13 +14,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   setCurrentView,
 }) => {
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
-  const [graphImageUrl, setGraphImageUrl] = useState<string | null>(null);
+  const [mentenImageUrl, setMentenImageUrl] = useState<string | null>(null);
+  const [lineweaverImageUrl, setLineweaverImageUrl] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (!file) return;
+    const selectedFile = event.target.files ? event.target.files[0] : null;
+    if (!selectedFile) return;
 
-    Papa.parse(file, {
+    setFile(selectedFile);
+
+    Papa.parse(selectedFile, {
       complete: (result) => {
         console.log('Parsed Result:', result);
         setKineticAssayData(result.data as any[][]);
@@ -28,16 +34,16 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     if (entryData.resid && entryData.resnum && entryData.resmut) {
       try {
-        await generateGraphFromFile(file);
+        await generateGraphFromFile(selectedFile);
       } catch (error) {
         console.error('Error generating graph:', error);
       }
     }
   };
 
-  const generateGraphFromFile = async (file: File) => {
+  const generateGraphFromFile = async (selectedFile: File) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', selectedFile);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -46,24 +52,27 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     try {
       const response = await axios.post('http://127.0.0.1:5002/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob',
       });
 
-      const imageBlob = new Blob([response.data], { type: 'image/png' });
-      const imageUrl = URL.createObjectURL(imageBlob);
-      setGraphImageUrl(imageUrl);
+      const responseData = response.data;
+      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
+      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
+
+      // Handle additional data if needed
+      // For example, you can store kcat, KM, etc.
     } catch (error) {
       console.error('Error uploading file:', error);
     }
   };
 
   const generateGraphFromTable = async () => {
+    // Convert the kineticAssayData back to CSV
     const csvContent = Papa.unparse(kineticAssayData);
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const file = new File([blob], 'edited_data.csv', { type: 'text/csv' });
+    const editedFile = new File([blob], 'edited_data.csv', { type: 'text/csv' });
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', editedFile);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -72,12 +81,13 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     try {
       const response = await axios.post('http://127.0.0.1:5002/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob',
       });
 
-      const imageBlob = new Blob([response.data], { type: 'image/png' });
-      const imageUrl = URL.createObjectURL(imageBlob);
-      setGraphImageUrl(imageUrl);
+      const responseData = response.data;
+      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
+      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
+
+      // Handle additional data if needed
     } catch (error) {
       console.error('Error generating graph from table data:', error);
     }
@@ -123,13 +133,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                   <tr key={index}>
                     <td className="border border-gray-400 px-4 py-2">{rowLabel}</td>
                     <td className="border border-gray-400 px-4 py-2">
-                      {['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'][index]}
+                      {['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.00'][index]}
                     </td>
-                    {[2, 3, 4].map((col) => (
+                    {[2, 3, 4].map((col, colIndex) => (
                       <td key={col} className="border border-gray-400 px-4 py-2">
                         <input
                           type="text"
-                          value={kineticAssayData[index + 4]?.[col] || ''}
+                          value={
+                            kineticAssayData[index + 4]?.[col] !== undefined
+                              ? kineticAssayData[index + 4][col]
+                              : ''
+                          }
                           onChange={(e) => handleInputChange(e, index + 4, col)}
                           className="w-full"
                         />
@@ -148,13 +162,25 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
             Regenerate Graph
           </button>
 
-          {graphImageUrl && (
+          {mentenImageUrl && (
             <img
-              id="graphImage"
-              src={graphImageUrl}
-              alt="Graph generated from the uploaded data"
+              src={mentenImageUrl}
+              alt="Michaelis-Menten Plot"
               className="mt-4"
             />
+          )}
+
+          {lineweaverImageUrl && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-blue-500 hover:text-blue-700">
+                Show/hide Lineweaver–Burk Plot
+              </summary>
+              <img
+                src={lineweaverImageUrl}
+                alt="Lineweaver–Burk Plot"
+                className="mt-2"
+              />
+            </details>
           )}
         </>
       )}
