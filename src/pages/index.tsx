@@ -72,8 +72,8 @@ export default function Home() {
         {/* Mission Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10">
           <div className="lg:pt-1">
-            <p className="text-lg font-semibold text-gray-500" style={{ color: '#06B7DB' }}>
-              Our mission
+            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
+              OUR MISSION
             </p>
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Innovative Protein Engineering</h1>
             <p className="mb-6 pb-6 text-gray-500 text-lg dark:text-gray-200">
@@ -100,12 +100,12 @@ export default function Home() {
         {/* Analyze and Submit Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-20 items-center">
           <div className="lg:pt-1">
-            <p className="text-lg font-semibold text-gray-500" style={{ color: '#06B7DB' }}>
+            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
               HOW IT WORKS
             </p>
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze and Submit</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              After conducting research on their enzyme, students will upload and submit their data for approval...
+              D2D students upload their colorimetric kinetic and thermal assay data for enzyme va that they studied.
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
@@ -122,7 +122,7 @@ export default function Home() {
           <div className="order-1 lg:order-2 lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              Instructors and faculty members can approve or reject submitted data...
+              D2D faculty and admin in a two-step process review and approve data with appropriate controls; data that fails to meet network standards is flagged for replication.
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function Home() {
           <div className="lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Characterize</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              Once the data is approved it will be available for the public to view...
+              The D2D system facilitates characterization contributions of thousands of students to solve the next generation challenge in protein design: function prediction.
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
