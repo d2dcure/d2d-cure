@@ -5,6 +5,18 @@ import NavBar from '@/components/NavBar';
 import firebaseAdmin from "../../../firebaseAdmin"; 
 import { getAuth, deleteUser } from "firebase/auth";
 import { auth } from "firebase-admin";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell
+} from "@nextui-org/table";
+import { Button, Link, Checkbox} from "@nextui-org/react";
+import {useAsyncList} from "@react-stately/data";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faCheck } from '@fortawesome/free-solid-svg-icons'; // Use a left chevron icon
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -187,116 +199,120 @@ const handleDeleteFirebase = async () => {
   
 
   return (
-    <div>
-      <NavBar />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ marginTop: '10px', marginBottom: '10px' }}>Welcome, {user.status}!</h1>
-        <h2 style={{ marginBottom: '10px' }}>Members of labs at {user.institution}</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            style={{ marginRight: '10px', marginBottom: '10px' }}
+  <>
+  <NavBar />
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "48px", gap: "10px"}}>
+
+  <Table
+    aria-label="Members Table"
+
+    style={{
+      height: "auto",
+      minWidth: "100%",
+      borderRadius: "12px", 
+      width: "1280px",
+    }}
+    topContent = {(
+      <>
+        <Link href="/login" style={{ marginBottom: '20px', color:'var(--colors-base-primary, rgba(6, 183, 219, 1))'}}>
+          <FontAwesomeIcon icon={faChevronLeft} style={{ marginRight: '8px' }} />
+          <span>Back to profile</span>
+        </Link>
+        <div style={{
+        display: 'flex', // Use flexbox
+        justifyContent: 'space-between', // Space between elements
+        alignItems: 'center', // Center vertically
+        marginBottom: '10px', // Optional: margin for spacing
+      }}>
+        <h2 style={{ margin: 0 }}>Members of labs at {user.institution}</h2>
+        <div style={{
+          display: 'flex', // Use flexbox for buttons
+          justifyContent: 'flex-end' // Align buttons to the right
+        }}>
+          <Button
+            size="md" // Medium button size
+            variant="solid" // Solid variant
             onClick={handleApprove}
+            style={{
+              marginRight: '10px', // Space between buttons
+              borderRadius: '12px',
+              width: '100px',
+              height: '40px',
+              paddingRight: '16px',
+              paddingLeft: '16px',
+              gap: '12px',
+              color: 'white',
+              backgroundColor: 'var(--colors-base-primary, rgba(6, 183, 219, 1))'
+            }}
           >
             Approve
-          </button>
-          <button style={{ marginBottom: '10px' }}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
+          </Button>
+          <Button
+            color="danger"
+            variant="bordered"
+            size="md"
             onClick={() => {
               handleDeleteFirebase();
               handleDelete();
-          }}
+            }}
+            style={{
+              borderRadius: '12px',
+              width: '100px',
+              height: '40px',
+              borderWidth: '2px',
+              paddingRight: '16px',
+              paddingLeft: '16px',
+              gap: '12px'
+            }}
           >
             Delete
-          </button>
+          </Button>
         </div>
-        <table>
-        <thead>
-              <tr>
-                <th style={{ color: '#40E0D0', textDecoration: 'underline' }}>Check</th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('user_name')}
-                >
-                  User Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('given_name')}
-                >
-                  Given Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('title')}
-                >
-                  Title
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('institution')}
-                >
-                  Institution
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('status')}
-                >
-                  Status/Role
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('pi')}
-                >
-                  PI
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('email')}
-                >
-                  Email
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('reg_date')}
-                >
-                  RegDate
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('approved')}
-                >
-                  Approved
-                </th>
-              </tr>
-            </thead>
-          <tbody>
-            {sortedUsers.map((user) => (
-              <tr key={user.id}>
-                <td style={{ marginLeft: '10px' }}>
-                  <input
-                    type="checkbox"
-                    checked={checkedUsers[user.id] || false}
-                    onChange={() => handleCheckboxChange(user.id)}
-                  />
-                </td>
-                <td>{user.user_name}</td>
-                <td>{user.given_name}</td>
-                <td>{user.title}</td>
-                <td>{user.institution}</td>
-                <td>{user.status}</td>
-                <td>{user.pi}</td>
-                <td>{user.email}</td>
-                <td>{user.reg_date}</td>
-                <td>{user.approved ? '1' : '0'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
-    </div>
+      </>
+    )}
+  >
+
+
+    <TableHeader>
+      <TableColumn width = "40">Check</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('user_name')} style={{ cursor: 'pointer' }}>Username</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('given_name')} style={{ cursor: 'pointer' }}>Given Name</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('title')} style={{ cursor: 'pointer' }}>Title</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('institution')} style={{ cursor: 'pointer' }}>Institution</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('status')} style={{ cursor: 'pointer' }}>Status/Role</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('pi')} style={{ cursor: 'pointer' }}>PI</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('email')} style={{ cursor: 'pointer' }}>Email</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('reg_date')} style={{ cursor: 'pointer' }}>Registered Date</TableColumn>
+      <TableColumn width = "40" onClick={() => sortTable('approved')} style={{ cursor: 'pointer' }}>Approved</TableColumn>
+    </TableHeader>
+    
+    <TableBody>
+      {sortedUsers.map((user) => (
+        <TableRow key={user.id}>
+          <TableCell>
+            <Checkbox
+              isSelected={checkedUsers[user.id] || false}
+              onChange={() => handleCheckboxChange(user.id)}
+            />
+          </TableCell>
+          <TableCell>{user.user_name}</TableCell>
+          <TableCell>{user.given_name}</TableCell>
+          <TableCell>{user.title}</TableCell>
+          <TableCell>{user.institution}</TableCell>
+          <TableCell>{user.status}</TableCell>
+          <TableCell>{user.pi}</TableCell>
+          <TableCell>{user.email}</TableCell>
+          <TableCell>{user.reg_date}</TableCell>
+          <TableCell>
+            {user.approved ? <FontAwesomeIcon icon={faCheck} /> : ''}
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
+</>
   );
 }
 

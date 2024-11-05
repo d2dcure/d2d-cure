@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
 import { useRouter } from 'next/router';
+import NavBar from '@/components/NavBar';
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+import { Button } from "@nextui-org/react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight} from '@fortawesome/free-solid-svg-icons'; 
+import { Select, SelectItem } from "@nextui-org/react";
+import { Input } from "@nextui-org/input";
 
 const SubmitPage = () => {
   const { user } = useUser();
@@ -133,50 +141,139 @@ const SubmitPage = () => {
     fetchEnzymes(); 
   }, []);
 
+  const sizes = ["sm", "md", "lg"];
+  const variants = ["flat", "bordered", "underlined", "faded"];
+
   return (
-    <div className="mt-8 text-center">
-      <h1 className="text-2xl font-bold">Data Analysis and Submission</h1>
-      <div className="space-x-4">
+    <>
+    <NavBar />
+    <div className="m-24 bg-white">
+      <div className="col-span-1 items-center">
+      <Breadcrumbs
+            itemClasses={{
+              item: "text-black data-[current=true]:text-gray-300", // White text for breadcrumb items, lighter for current item
+              separator: "text-black/40", // Lighter white for separators
+            }}
+          >
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href = "/submit">Data Analysis & Submission</BreadcrumbItem>
+              {selection === 'single_variant' && (
+                <BreadcrumbItem>Single Variant Data</BreadcrumbItem>
+              )}
+              {selection === 'wild_type' && (
+                <BreadcrumbItem>Wild Type Data</BreadcrumbItem>
+              )}
+          </Breadcrumbs>
         {/* Initial options */}
+        <div className = "pt-8" style = {{marginBottom: "24px", }}>
+          
+          {selection === '' && (
+            <h1 className="text-2xl font-bold" style = {{fontSize: "40px", lineHeight: "28px", fontWeight: "350", font: "inter"}}>Data Analysis & Submission</h1>
+          )}
+          {selection == 'single_variant' && (
+            <>
+            <h1 className="text-2xl font-bold" style = {{fontSize: "40px", lineHeight: "28px", fontWeight: "350", font: "inter", marginBottom: '30px'}}>Single Variant Data Submission</h1>
+            <p className="mb-2 text-left" style={{ color: 'grey', marginBottom: '50px' }}>
+              Select the enzyme from the list and enter the variant code (e.g., A123C) corresponding to your mutation.
+            </p>
+            </>
+          )}
+          {selection === 'wild_type' && (
+            <h1 className="text-2xl font-bold" style = {{fontSize: "40px", lineHeight: "28px", fontWeight: "350", font: "inter"}}>Wild Type Data Submission</h1>
+          )}
+        </div>
         {!selection && (
           <div>
-          <h2>What type of data would you like to submit?</h2>
-          <div className="space-x-4">
-              <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-              <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
+            <h2 style = {{fontSize: "18px", lineHeight: "28px", font: "inter", fontWeight: "300", color: "var(--Text-text-secondary, rgba(82, 82, 82, 1))", marginBottom: "64px"}}>Please select one of the options to submit data or upload a gel image.</h2>
+          <div className="space-x-4" style = {{display: "flex", gap: "64px"}}>
+            <Card style={{width: "301px", height: "192px"}}>
+              <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "8px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Single Variant</CardBody>
+              <CardFooter>
+                <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
+                  Submit Data
+                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                </button>
+              </CardFooter>
+            </Card>
+
+            <Card style={{width: "301px", height: "192px"}}>
+              <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "3.27px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Wild Type</CardBody>
+              <CardFooter>
+                <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
+                  Submit Data
+                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                </button>
+              </CardFooter>
+            </Card>
+
+            <Card style={{width: "301px", height: "192px"}}>
+              <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "3.27px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Gel Image</CardBody>
+              <CardFooter>
+                <button className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
+                  Upload Image
+                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                </button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
         )}
 
         {/* Single Variant form */}
         {selection === 'single_variant' && (
-          <div>
-                <h2>Single Variant Form</h2>
-                <div className="space-x-4">
-                    <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-                    <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
-                </div>
-                <p>Select the enzyme from the list and enter the enzyme variant code (e.g., A123C) corresponding to your mutation.</p>
-                <div className="flex justify-center items-center gap-2 mb-4">
-                    <span className="font-bold">Enzyme:</span>
-                    <select className="border border-gray-300 rounded p-1"
-                            value={enzyme}
-                            onChange={(e) => setEnzyme(e.target.value)}>
-                    <option value="">Select an enzyme</option>
-                    {enzymeList.map((enzyme) => (
-                        <option key={enzyme.id} value={enzyme.abbr}>{enzyme.abbr}</option>
-                    ))}
-                    </select>
-                    <span className="font-bold">Enzyme Variant:</span>
-                    <input type="text" 
-                        className="border border-gray-300 rounded p-1"
-                        value={enzymeVariant}
-                        onChange={(e) => setEnzymeVariant(e.target.value)}
-                        placeholder="A123C" 
-                    />
-                    <button onClick={handleSubmit} className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Submit
-                    </button>
+                    <div className="pt-8">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex gap-2">
+                        <div style={{ marginBottom: '10px', marginRight: '50px' }}>
+                          <label htmlFor="enzyme" style={{ display: 'block', marginBottom: '10px' }}>Enzyme</label>
+                          {sizes.includes("sm") && (
+                            <Select
+                              size="sm"
+                              id="enzyme"
+                              value={enzyme}
+                              onChange={(e) => setEnzyme(e.target.value)}
+                              label="Select Enzyme"
+                              style={{ width: '300px', borderRadius: '8px' }}
+                            >
+                              {enzymeList.map((enzyme) => (
+                                <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                                  {enzyme.abbr}
+                                </SelectItem>
+                              ))}
+                            </Select>
+                          )}
+                        </div>
+                        <div>
+                          <label htmlFor="enzymeVariant">Enzyme Variant</label>
+                          {variants.map((variant) => (
+                            sizes.map((size) => (
+                              variant === "bordered" && size === "lg" && (
+                                <div key={`${size}-${variant}`} style={{ marginTop: '10px' }}>
+                                  <Input
+                                    key={`${size}-${variant}`}
+                                    type="text"
+                                    id="enzymeVariant"
+                                    value={enzymeVariant}
+                                    onChange={(e) => setEnzymeVariant(e.target.value)}
+                                    placeholder="Search"
+                                    size={size}
+                                    variant={variant}
+                                    style={{ width: '200px' }}
+                                    radius="sm"
+                                  />
+                                </div>
+                              )
+                            ))
+                          ))}
+                        </div>
+
+                <Button
+                  onClick={handleSubmit}
+                  style={{ marginTop: '35px', height: '45px', backgroundColor: "#06B7DB", color: "white" }}
+                  radius="sm"
+                >
+                  Search
+                </Button>
                     {error && <p className="text-red-500">{error}</p>}
                 </div>
                 {entered !== 'null' && (
@@ -199,7 +296,8 @@ const SubmitPage = () => {
                   <button onClick={handleCreateNewDataset} className="mt-5 text-blue font-bold py-2 px-4 rounded">Create New Dataset</button>
                   </>
                 )}
-          </div>
+              </div>
+            </div>
         )}
 
         {/* Wild Type form */}
@@ -214,6 +312,7 @@ const SubmitPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
