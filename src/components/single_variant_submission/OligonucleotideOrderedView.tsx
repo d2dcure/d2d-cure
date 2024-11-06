@@ -54,6 +54,13 @@ const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
           </select>
         </label>
       </div>
+
+      {/* Current Order Status */}
+      <p className="text-lg font-semibold">
+        Current order status: {entryData.oligo_ordered ? 'Yes' : 'No'}
+      </p>
+
+      {/* Save button */}
       <div className="flex justify-start space-x-2">
         <button 
           onClick={updateOligoOrdered} 

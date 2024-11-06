@@ -136,12 +136,12 @@ const Dashboard = () => {
           {[
             {
               title: "Single Variant",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {
               title: "Wild Type",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {
@@ -186,6 +186,7 @@ const Dashboard = () => {
                 <TableColumn>STATUS</TableColumn>
                 <TableColumn>Enzyme</TableColumn>
                 <TableColumn>Variant</TableColumn>
+                <TableColumn>ID</TableColumn>
                 <TableColumn>Comments</TableColumn>
                 <TableColumn>Actions</TableColumn>
               </TableHeader>
@@ -206,6 +207,7 @@ const Dashboard = () => {
                       </TableCell>
                       <TableCell>BglB</TableCell>
                       <TableCell>{variant}</TableCell>
+                      <TableCell>{data.id}</TableCell> 
                       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
                         {data.comments || 'No comments'}
                       </TableCell>

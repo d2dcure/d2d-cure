@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser } from '@/components/UserProvider'; 
+import { useUser } from '@/components/UserProvider';
 import s3 from '../../../s3config';
 
 interface PlasmidSequenceVerifiedViewProps {
@@ -11,47 +11,64 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
   entryData,
   setCurrentView,
 }) => {
-  const { user } = useUser(); 
+  const { user } = useUser();
   const [plasmidFile, setPlasmidFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState('');
 
   const handlePlasmidFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
-    setPlasmidFile(file);
+    if (file) {
+      const fileType = file.name.split('.').pop()?.toLowerCase();
+      if (fileType !== 'ab1') {
+        setFileError('Only .ab1 files are allowed');
+        setPlasmidFile(null);
+      } else if (file.size > 500000) {
+        setFileError('Sequencing data files must be smaller than 500 kB');
+        setPlasmidFile(null);
+      } else {
+        setFileError('');
+        setPlasmidFile(file);
+      }
+    }
   };
 
   const updatePlasmid = async () => {
-    if (!plasmidFile) return;
+    if (!plasmidFile) {
+      setFileError('*A data file must be uploaded');
+      return;
+    }
 
-    const fileExtension = plasmidFile.name.split('.').pop();
-    const newFileName = `${user.user_name}-BglB-${entryData.resid}${entryData.resnum}${entryData.resmut}-${entryData.id}.${fileExtension}`;
-    const newFile = new File([plasmidFile], newFileName, { type: plasmidFile.type });
+    const newFileName = `${user.user_name}-BglB-${entryData.resid}${entryData.resnum}${entryData.resmut}-${entryData.id}.ab1`;
 
     try {
       const params = {
         Bucket: 'd2dcurebucket',
         Key: `sequencing/${newFileName}`,
-        Body: newFile,
+        Body: plasmidFile,
         ContentType: plasmidFile.type,
       };
-      const data = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', data.Location);
+      await s3.upload(params).promise();
 
-      const response = await fetch('/api/updateCharacterizationDataPlasmidStuff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: entryData.id,
-          ab1_filename: newFileName,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update database');
-      }
-
+      alert('File uploaded successfully!');
       setCurrentView('checklist');
     } catch (error) {
-      console.error('Error uploading plasmid file:', error);
+      console.error('Error uploading file:', error);
+      setFileError('There was an error uploading the file. Please try again.');
+    }
+  };
+
+  const downloadFile = async (filename: string) => {
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `sequencing/${filename}`,
+        Expires: 60, // URL expires in 60 seconds
+      };
+      const url = await s3.getSignedUrlPromise('getObject', params);
+      window.open(url, '_blank'); // Open the URL in a new tab to trigger download
+    } catch (error) {
+      console.error('Error generating download link:', error);
+      setFileError('Could not generate download link. Please try again.');
     }
   };
 
@@ -63,26 +80,39 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
       >
         &lt; Back to Checklist
       </button>
-      <h2 className="text-2xl font-bold text-left">Plasmid Sequence Verified?</h2>
-      <div className="flex flex-col space-y-2">
-        <label className="block">
-          Upload File:
-          <input
-            type="file"
-            onChange={handlePlasmidFileChange}
-            className="mt-1 block w-full p-2 bg-gray-100 border border-gray-300 rounded"
-          />
-        </label>
-        {plasmidFile && <p>Selected file: {plasmidFile.name}</p>}
-      </div>
-      <div className="flex justify-start space-x-2">
-        <button
-          onClick={updatePlasmid}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save
-        </button>
-      </div>
+      <h2 className="text-2xl font-bold">Plasmid Sequence Verified?</h2>
+
+      <label className="block">
+        Upload File:
+        <input
+          type="file"
+          onChange={handlePlasmidFileChange}
+          className="mt-1 block w-full p-2 bg-gray-100 border rounded"
+        />
+      </label>
+      {fileError && <p className="text-red-500">{fileError}</p>}
+
+      <p className="text-lg font-semibold">
+        Plasmid verified: {entryData.plasmid_verified ? 'Yes' : 'No'}
+      </p>
+      <p className="text-lg font-semibold">
+        AB1 Filename: {entryData.ab1_filename || 'N/A'}{' '}
+        {entryData.ab1_filename && (
+          <span
+            className="text-blue-500 hover:underline cursor-pointer"
+            onClick={() => downloadFile(entryData.ab1_filename)}
+          >
+            (download)
+          </span>
+        )}
+      </p>
+
+      <button
+        onClick={updatePlasmid}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Save
+      </button>
     </div>
   );
 };
