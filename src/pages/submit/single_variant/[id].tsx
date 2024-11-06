@@ -5,7 +5,7 @@ import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import SingleVarSidebar from '@/components/single_variant_submission/SingleVarSidebar';
 
-// Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
+// Import your component views
 import ProteinModeledView from '@/components/single_variant_submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/single_variant_submission/OligonucleotideOrderedView';
 import PlasmidSequenceVerifiedView from '@/components/single_variant_submission/PlasmidSequenceVerifiedView';
@@ -25,8 +25,8 @@ const SingleVariant = () => {
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
-  const [entryData, setEntryData] = useState<any>([]);
-
+  const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row 
+  const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row 
 
   useEffect(() => {
     const fetchEntryData = async () => {
@@ -44,7 +44,45 @@ const SingleVariant = () => {
     };
 
     fetchEntryData();
-  }, [id, user]); 
+  }, [id, user]);
+
+  // Fetch entryData2 using entryData.id
+  useEffect(() => {
+    const fetchEntryData2 = async () => {
+      if (!entryData.id) return;
+      try {
+        const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
+        if (!response.ok) {
+          console.error('No KineticRawData entry found for this parent_id');
+          setEntryData2(null);
+          return;
+        }
+        const data = await response.json();
+        setEntryData2(data);
+      } catch (error) {
+        console.error('Error fetching KineticRawData entry:', error);
+        setEntryData2(null);
+      }
+    };
+
+    fetchEntryData2();
+  }, [entryData.id]);
+
+  // Mapping function to convert enum to display value (for yield_units in KineticRawData)
+  const mapYieldUnitsBack = (enumValue: string): string => {
+    switch (enumValue.trim()) {
+      case 'A280_':
+        return 'A280*';
+      case 'mg_mL_':
+        return 'mg/mL';
+      case 'mM_':
+        return 'mM';
+      case 'M_':
+        return 'M';
+      default:
+        return enumValue;
+    }
+  };
 
   // for downloading the AB1 file from the checklist view, if it exists 
   const handleAB1Download = async (filename: string) => {
@@ -98,6 +136,10 @@ const SingleVariant = () => {
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
             : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+        case "Kinetic assay data uploaded":
+          return entryData.KM_avg === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Wild type kinetic data uploaded":
           return entryData.WT_raw_data_id === 0
             ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
@@ -106,7 +148,6 @@ const SingleVariant = () => {
           return { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" };
       }
     };
-  
 
     const renderAdditionalInfo = (item: string) => {
       if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
@@ -122,9 +163,47 @@ const SingleVariant = () => {
           </button>
         );
       }
-      if (item === "Expressed" && entryData.yield_avg !== null) {
-        return `c = ${entryData.yield_avg} mg/ml`;
+      if (item === "Expressed" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
+        const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
+        return `c = ${entryData.yield_avg} ${yieldUnitsDisplay}`;
       }
+      if (
+        item === "Kinetic assay data uploaded" &&
+        entryData.KM_avg !== null &&
+        entryData.kcat_avg !== null
+      ) {
+        // Parse values to numbers and round them
+        const kmAvg = parseFloat(entryData.KM_avg);
+        const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
+        const kcatAvg = parseFloat(entryData.kcat_avg);
+        const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
+
+        const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
+        const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
+        const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
+        const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
+
+        return (
+          <>
+            K<sub>M</sub> = {kmAvgRounded}
+            {kmSdRounded !== null ? (
+              <>
+                {" "}
+                &plusmn; {kmSdRounded}
+              </>
+            ) : null}{" "}
+            mM; K<sub>cat</sub> = {kcatAvgRounded}
+            {kcatSdRounded !== null ? (
+              <>
+                {" "}
+                &plusmn; {kcatSdRounded}
+              </>
+            ) : null}{" "}
+            min<sup>-1</sup>
+          </>
+        );
+      }
+
       return null;
     };
 
@@ -140,7 +219,7 @@ const SingleVariant = () => {
               Submit for Review
             </button>
           </div>
-    
+
           {/* Table container */}
           <div className="rounded-lg shadow-lg">
             <table className="w-full">
@@ -237,8 +316,6 @@ const SingleVariant = () => {
       </div>
     </>
   );
-  
 };
-
 
 export default SingleVariant;
