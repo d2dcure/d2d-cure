@@ -25,52 +25,52 @@ const BglBPage = () => {
       </div>
 
       {/* Info Section */}
-      <div className="px-6 md:px-12 lg:px-24 py-8 bg-white">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="px-6 md:px-12 lg:px-24 py-4 bg-white">
+        <div className="flex flex-col lg:flex-row gap-2">
           <div className="lg:w-1/2">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">Species:</span>
-                <span>Paenibacillus polymyxa</span>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
+                <span className="text-sm text-gray-600">Paenibacillus polymyxa</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">EC Number:</span>
-                <span>3.2.1.21</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
+                <span className="text-sm text-gray-600">3.2.1.21</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">UniProt Number:</span>
-                <span>P22505</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">UniProt Number:</span>
+                <span className="text-sm text-gray-600">P22505</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">PCB Entries:</span>
-                <span>2JIE 2O9P 2O9R 2O9T 2Z1S</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">PCB Entries:</span>
+                <span className="text-sm text-gray-600">2JIE 2O9P 2O9R 2O9T 2Z1S</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">Molar Mass:</span>
-                <span>51,573 Da</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">Molar Mass:</span>
+                <span className="text-sm text-gray-600">51,573 Da</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold w-48">Extinction Coefficient (εBglB):</span>
-                <span>113,330 m−1 cm−1</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (εBglB):</span>
+                <span className="text-sm text-gray-600">113,330 m−1 cm−1</span>
               </div>
               <Link 
                 href="#"
-                className="inline-block mt-4 text-[#06B7DB] hover:underline"
+                className="inline-block mt-3 text-sm text-[#06B7DB] hover:underline"
               >
                 View Full Sequence {'>'}
               </Link>
             </div>
           </div>
-          <div className="lg:w-1/2">
+          <div className="w-full lg:w-1/2 mt-8 lg:-mt-24 lg:-ml-32 flex justify-center lg:justify-start">
             <img 
               src="/resources/images/prettyBglB.png"
               alt="BglB Structure"
-              className="w-[400px] mx-auto"
+              className="w-[280px] sm:w-[320px] lg:w-[350px] max-w-full"
             />
           </div>
         </div>
 
-        <div className="mt-12 space-y-6">
+        <div className="mt-12 space-y-6 max-w-3xl">
           <p className="text-gray-600">
             β-glucosidase B (BglB, lovingly called "Bagel B" by our teams) is an enzyme that catalyzes 
             the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage. 
@@ -110,9 +110,11 @@ const BglBPage = () => {
               as={Link}
               href={item.link}
             >
-              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light">
-                <h3 className="pl-4 pt-2">{item.title}</h3>
-                <span className="text-sm pl-4 pt-4 text-[#06B7DB] hover:font-semibold">
+              <CardBody className="flex flex-col justify-between h-full">
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                  {item.title}
+                </h3>
+                <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
                   {item.linkText} {'>'}
                 </span>
               </CardBody>

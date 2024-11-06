@@ -4,6 +4,7 @@ import { useUser } from '@/components/UserProvider';
 import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import SingleVarSidebar from '@/components/single_variant_submission/SingleVarSidebar';
+import { AuthChecker } from '@/components/AuthChecker';
 
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinModeledView from '@/components/single_variant_submission/ProteinModeledView';
@@ -220,21 +221,23 @@ const SingleVariant = () => {
   return (
     <>
       <NavBar />
-      <div className="flex mt-8">
-        {/* Sidebar for variant information */}
-        <SingleVarSidebar entryData={entryData} />
-  
-        {/* Main content area for checklist table */}
-        <div className="flex-1 overflow-auto p-4">
-          {currentView === 'checklist' ? (
-            <div>{renderChecklistTable()}</div>
-          ) : (
-            <div className="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto">
-              {renderDetailView()}
-            </div>
-          )}
+      <AuthChecker minimumStatus="student">
+        <div className="flex mt-8">
+          {/* Sidebar for variant information */}
+          <SingleVarSidebar entryData={entryData} />
+    
+          {/* Main content area for checklist table */}
+          <div className="flex-1 overflow-auto p-4">
+            {currentView === 'checklist' ? (
+              <div>{renderChecklistTable()}</div>
+            ) : (
+              <div className="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto">
+                {renderDetailView()}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </AuthChecker>
     </>
   );
   

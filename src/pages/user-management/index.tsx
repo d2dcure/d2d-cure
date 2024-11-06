@@ -5,6 +5,8 @@ import NavBar from '@/components/NavBar';
 import firebaseAdmin from "../../../firebaseAdmin"; 
 import { getAuth, deleteUser } from "firebase/auth";
 import { auth } from "firebase-admin";
+import { Button } from "@nextui-org/react";
+import Link from "next/link";
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -39,17 +41,39 @@ function UserManagement() {
   //protect pages if status is not admin or professor
   if (!user?.status) {
       return (
-          <div>
-              <h1>Please login to gain access to this page.</h1>
-          </div>
+          <>
+              <NavBar />
+              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
+                  <h1 className="text-6xl font-bold text-[#06B7DB]">🔬 Access Denied!</h1>
+                  <p className="text-2xl text-gray-600 mb-8">
+                      Hold on, science enthusiast! You need to log in to manage our research team.
+                  </p>
+                  <Link href="/login" passHref>
+                      <Button color="primary" className="bg-[#06B7DB]">
+                          Enter the Lab 🧪
+                      </Button>
+                  </Link>
+              </div>
+          </>
       )
   }
 
   if (user?.status !== "professor" && user?.status !== "ADMIN") {
       return (
-          <div>
-              <h1>You do not have permission to access this page.</h1>
-          </div>
+          <>
+              <NavBar />
+              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
+                  <h1 className="text-6xl font-bold text-[#06B7DB]">🚫 Restricted Area</h1>
+                  <p className="text-2xl text-gray-600 mb-8">
+                      Sorry! This area is reserved for our lab leaders and administrators only.
+                  </p>
+                  <Link href="/dashboard" passHref>
+                      <Button color="primary" className="bg-[#06B7DB]">
+                          Back to Safety 🔬
+                      </Button>
+                  </Link>
+              </div>
+          </>
       )
   }
 

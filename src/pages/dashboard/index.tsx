@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { CardFooter } from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { AuthChecker } from '@/components/AuthChecker';
 
 const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
@@ -68,18 +68,6 @@ const Dashboard = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <NavBar />
-        <div className="flex-grow flex rounded-full items-center justify-center">
-          <LoadingSpinner isOpen={true} />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   if (!user) {
     return (
       <>
@@ -118,6 +106,8 @@ const Dashboard = () => {
   return (
     <>
       <NavBar />
+      <AuthChecker minimumStatus="student">
+
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
         {/* Welcome Section */}
         <div className="flex items-center space-x-4 mb-16">
@@ -145,7 +135,7 @@ const Dashboard = () => {
               linkText: "Submit Data",
             },
             {
-              title: "SDS-PAGE Gel Image Upload",
+              title: "Gel Image Upload",
               link: "#",
               linkText: "Upload Image",
             },
@@ -309,7 +299,7 @@ const Dashboard = () => {
         </div>
       </div>
     </section>
-
+      </AuthChecker>
       <Footer />
     </>
   );

@@ -72,11 +72,11 @@ const NavBar = () => {
                 </Link>
               )}
               {/* Database Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setActiveDropdown('database')}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('database')} onMouseLeave={() => setActiveDropdown(null)}>
+              <Link
+                  href="/database"
                   className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
-                    isActiveLink('/data') || isActiveLink('/submit') || isActiveLink('/curate')
+                    isActiveLink('/database')
                       ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
                       : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
                   }`}
@@ -92,7 +92,7 @@ const NavBar = () => {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                </button>
+                </Link>
 
                 <div
                   className={`absolute top-full left-0 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 transition-all duration-200 transform origin-top ${
@@ -101,7 +101,7 @@ const NavBar = () => {
                       : 'opacity-0 scale-95 pointer-events-none'
                   }`}
                 >
-                  <Link href="/data" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <Link href="/database/BglB_Characterization" className="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                     BglB Characterization
                   </Link>
                   {user?.status && (
