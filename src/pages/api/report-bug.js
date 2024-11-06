@@ -18,7 +18,7 @@ router.use(upload.single('file'));
 
 router.post(async (req, res) => {
   try {
-    const { fullName, date, email, phone, comment } = req.body;
+    const { fullName, date, email, phone, comment, category } = req.body;
     
     // Create transporter
     const transporter = nodemailer.createTransport({
@@ -65,6 +65,10 @@ router.post(async (req, res) => {
               <tr>
                 <td style="padding: 12px 0; color: #666666;">Phone:</td>
                 <td style="padding: 12px 0; color: #000000;">${phone || "Not provided"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; color: #666666;">Category:</td>
+                <td style="padding: 12px 0; color: #000000;">${category || "Not specified"}</td>
               </tr>
               <tr>
                 <td style="padding: 12px 0; color: #666666;">Reference:</td>

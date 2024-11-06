@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, useDisclosure } from "@nextui-org/react";
+import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, useDisclosure, Select, SelectItem } from "@nextui-org/react";
 import Link from 'next/link';
 import { DatePicker } from "@nextui-org/date-picker";
 import { Card, CardBody } from '@nextui-org/react';
@@ -15,7 +15,8 @@ const ReportBug = () => {
     email: "",
     phone: "",
     comment: "",
-    file: null as File | null
+    file: null as File | null,
+    category: ""
   });
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -66,6 +67,7 @@ const ReportBug = () => {
       if (formData.file) {
         formDataToSend.append('file', formData.file);
       }
+      formDataToSend.append('category', formData.category);
 
       const response = await fetch("/api/report-bug", {
         method: "POST",
@@ -85,7 +87,8 @@ const ReportBug = () => {
           email: "",
           phone: "",
           comment: "",
-          file: null
+          file: null,
+          category: ""
         });
         setPreview(null);
       } else {
@@ -146,7 +149,7 @@ const ReportBug = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 dark:text-white mb-2">Date <span className="text-red-500">*</span></label>
+                    <label className="block text-gray-700 dark:text-white mb-2">Date of Occurrence<span className="text-red-500">*</span></label>
                     <DatePicker 
                       name="date" 
                       radius="sm" 
@@ -183,6 +186,26 @@ const ReportBug = () => {
                       onChange={handleChange}
                     />
                   </div>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-gray-700 dark:text-white mb-2">Category <span className="text-red-500">*</span></label>
+                  <Select
+                    name="category"
+                    radius="sm"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full"
+                    placeholder="Select a category"
+                    isRequired
+                    errorMessage={formData.category === "" && "Category is required"}
+                  >
+                    <SelectItem key="" value="">Select a category</SelectItem>
+                    <SelectItem key="UI/Interface" value="ui">UI/Interface</SelectItem>
+                    <SelectItem key="Functionality" value="functionality">Functionality</SelectItem>
+                    <SelectItem key="Performance" value="performance">Performance</SelectItem>
+                    <SelectItem key="Security" value="security">Security</SelectItem>
+                    <SelectItem key="Other" value="other">Other</SelectItem>
+                  </Select>
                 </div>
                 <div className="mb-6">
                   <label className="block text-gray-700 dark:text-white mb-2">Bug Description <span className="text-red-500">*</span></label>

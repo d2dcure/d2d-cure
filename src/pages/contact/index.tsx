@@ -171,7 +171,7 @@ const ContactUs = () => {
                 <Button 
                   type="submit"
                   variant="solid" 
-                  className="w-full bg-[#06B7DB] text-white font-semibold rounded-lg hover:bg-blue-600"
+                  className="w-full bg-[#06B7DB] text-white font-semibold rounded-lg"
                 >
                   Send Message
                 </Button>
