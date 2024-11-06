@@ -1,3 +1,6 @@
+# This is the original code for generating graphs for kinetic data (not used in our application, refer to graph-gen.py)
+# Takes command-line arguments to perform its tasks. The user needs to provide inputs directly via the command line when running the script (or, arguments need to be passed to the cmd line somehow, like how Jason handled it). There are no web endpoints
+
 from sys import argv
 from math import ceil, sqrt
 from numpy import diag, sqrt, linspace, inf

@@ -200,7 +200,7 @@ const Login = () => {
                 </div>
                 
                   <div style={{ marginTop: "36px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "400px", lineHeight: "20px" }}>
-                    <p style={{ display: "inline-block" }}>Don't have an account?</p>
+                    <p style={{ display: "inline-block" }}>Don&apos;t have an account?</p>
                     <Link
                       href="/signup"
                       className="text-blue-600 underline hover:text-blue-800"
