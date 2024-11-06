@@ -5,6 +5,83 @@ import {Button} from "@nextui-org/react";
 import Footer from '@/components/Footer';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
 
+interface ResourceCard {
+  id: number;
+  title: string;
+  subtitle?: string;
+  imagePath: string;
+  downloadUrl: string;
+}
+
+const bglbFiles: ResourceCard[] = [
+  { id: 1, title: "BglB.pdb", imagePath: "/resources/images/download.png", downloadUrl: "/downloads/BglB.pdb" },
+  { id: 2, title: "BglB Foldit Files (zipped)", imagePath: "/resources/images/download.png", downloadUrl: "/downloads/BglB-foldit.zip" },
+  { id: 3, title: "BglB FastA Sequence File", imagePath: "/resources/images/download.png", downloadUrl: "/downloads/BglB.fasta" },
+];
+
+const assayTemplates: ResourceCard[] = [
+  { id: 1, title: "Kinetic Assay Data", imagePath: "/resources/images/download.png", downloadUrl: "/downloads/kinetic-assay-template.xlsx" },
+  { 
+    id: 2, 
+    title: "Temperature Assay Data",
+    subtitle: "(standard vertical temperature gradient)", 
+    imagePath: "/resources/images/download.png",
+    downloadUrl: "/downloads/temperature-assay-template-1.xlsx"
+  },
+  { 
+    id: 3, 
+    title: "Temperature Assay Data",
+    subtitle: "(alternate horizontal temperature gradient)", 
+    imagePath: "/resources/images/download.png",
+    downloadUrl: "/downloads/temperature-assay-template-2.xlsx"
+  },
+];
+
+const ResourceCardComponent: React.FC<ResourceCard> = ({ title, subtitle, imagePath, downloadUrl }) => (
+  <Card className="h-[200px] w-full sm:w-[300px] hover:scale-105 transition-transform">
+    <CardBody className="text-4xl pt-8 font-light overflow-hidden">
+      <img 
+        src={imagePath}
+        className="pl-4 pt-2 w-14 h-12 select-none pointer-events-none" 
+        draggable="false"
+        alt="mockup" 
+      />
+      <h1 className="text-lg pl-5 pt-2 font-regular">{title}</h1>
+      {subtitle && (
+        <p className="text-xs pl-5 text-gray-500 -mt-1">{subtitle}</p>
+      )}
+    </CardBody>
+    <CardFooter>
+      <Button 
+        variant="bordered" 
+        onPress={() => window.location.href = downloadUrl} 
+        className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
+        style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
+      >
+        <span className="group-hover:text-white">Download</span>
+      </Button>
+    </CardFooter>
+  </Card>
+);
+
+interface ResourceSectionProps {
+  title: string;
+  resources: ResourceCard[];
+}
+
+const ResourceSection: React.FC<ResourceSectionProps> = ({ title, resources }) => (
+  <div>
+    <h2 className="mb-8 text-2xl text-[#525252] font-light md:text-3xl font-inter tracking-tight leading-none dark:text-white">
+      {title}
+    </h2>
+    <div className="grid mb-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 justify-items-center">
+      {resources.map((resource) => (
+        <ResourceCardComponent key={resource.id} {...resource} />
+      ))}
+    </div>
+  </div>
+);
+
 const Test = () => {
   return (
     <>
@@ -23,59 +100,9 @@ const Test = () => {
           </div>
         </div>
       </div>
-
-      <div className="px-6 md:px-12 lg:px-24 py-2">
-        <h2 className="mb-8 text-2xl text-[#525252] font-light md:text-3xl font-inter tracking-tight leading-none dark:text-white">
-          β-glucosidase B (BglB)
-        </h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[1, 2, 3].map((item) => (
-            <Card key={item} className="h-[190px]">
-              <CardBody className="text-4xl pt-6 font-light overflow-hidden">
-                <img src="/resources/images/download.png" className="pl-4 pt-4 w-14 h-15" alt="mockup" />
-                <h1 className="text-xl pl-5 pt-2 font-semibold">BglB.pdb</h1>
-              </CardBody>
-              <CardFooter>
-                <Button 
-                  variant="bordered" 
-                  onPress={() => window.location.href = '/login'} 
-                  className="w-full h-[45px] font-semibold border-[3px]"
-                  style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
-                >
-                  Download
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-6 md:px-12 lg:px-24 py-8">
-        <h1 className="mb-8 text-2xl text-[#525252] font-light md:text-3xl text-slate-500 font-inter dark:text-white">
-          Assay Data Spreadsheet Templates
-        </h1>
-        
-        <div className="grid mb-10  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[1, 2].map((item) => (
-            <Card key={item} className="h-[190px]">
-              <CardBody className="text-4xl pt-6 font-light overflow-hidden">
-                <img src="/resources/images/download.png" className="pl-4 pt-4 w-14 h-15" alt="mockup" />
-                <h1 className="text-xl pl-5 pt-2 font-semibold">BglB.pdb</h1>
-              </CardBody>
-              <CardFooter>
-                <Button 
-                  variant="bordered" 
-                  onPress={() => window.location.href = '/login'} 
-                  className="w-full h-[45px] font-semibold border-[3px] hover:bg-blue-300"
-                  style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
-                >
-                  Download
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      <div className="px-6 md:px-12 lg:px-24 mb-20 flex flex-col gap-8">
+        <ResourceSection title="β-glucosidase B (BglB)" resources={bglbFiles} />
+        <ResourceSection title="Assay Data Spreadsheet Templates" resources={assayTemplates} />
       </div>
       <Footer/>
     </>

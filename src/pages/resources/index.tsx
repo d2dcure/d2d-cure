@@ -30,6 +30,9 @@ const Resources = () => {
               src="/resources/images/resources.png" 
               alt="mockup" 
               className="max-w-full h-auto"
+              draggable="false"
+              loading="lazy"
+              unselectable="on"
             />
           </div>
         </div>
@@ -44,46 +47,48 @@ const Resources = () => {
           {[
             {
               title: "Structure & Sequence Files",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "View Files"
             },
             {
               title: "Oligo Search",
               link: "/resources/oligosearch",
-              linkText: "Search Databases"
+              linkText: "Search Database"
             },
             {
               title: "Complete BgLb Sequence",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "View Sequence"
             },
             {
               title: "How data is calculated",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "Learn More"
             },
             {
               title: "How to interpret data",
-              link: "https://github.com/nextui-org/nextui",
-              linkText: "Visit Calculator"
+              link: "#",
+              linkText: "Learn More"
             },
             {
               title: "Enzyme Rate Calculator",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "Visit Calculator"
             }
           ].map((item, index) => (
-            <Card key={index} className="h-[170px]">
-              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light">
-                <h3 className="pl-4 pt-2 pb-5">{item.title}</h3>
+            <Card 
+              key={index} 
+              className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
+              as={Link}
+              href={item.link}
+            >
+              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
+                <h3 className="pl-4 pt-2">{item.title}</h3>
               </CardBody>
               <CardFooter>
-                <Link
-                  href={item.link}
-                  className="text-sm pl-4 pb-3 text-[#06B7DB]"
-                >
+                <span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
                   {item.linkText} {'>'}
-                </Link>
+                </span>
               </CardFooter>
             </Card>
           ))}
@@ -91,7 +96,7 @@ const Resources = () => {
       </div>
 
       {/* Process Section */}
-      <div className="px-4 md:px-8 lg:px-24 py-8 md:py-16">
+      <div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
           Process
         </h2>
@@ -99,26 +104,60 @@ const Resources = () => {
           {[
             {
               title: "Lab Manual",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "Open Manual"
             },
             {
               title: "Publications",
-              link: "https://github.com/nextui-org/nextui",
+              link: "#",
               linkText: "Learn More"
             }
           ].map((item, index) => (
-            <Card key={index} className="h-[170px]">
-              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light">
-                <h3 className="pl-4 pt-2 pb-5">{item.title}</h3>
+            <Card 
+              key={index} 
+              className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
+              as={Link}
+              href={item.link}
+            >
+              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
+                <h3 className="pl-4 pt-2">{item.title}</h3>
               </CardBody>
               <CardFooter>
-                <Link
-                  href={item.link}
-                  className="text-sm pl-4 pb-3 text-[#06B7DB]"
-                >
+                <span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
                   {item.linkText} {'>'}
-                </Link>
+                </span>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Protein Science Section */}
+      <div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
+          Protein Science
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              title: "Rosetta Education Hub",
+              link: "#",
+              linkText: "Visit Website"
+            }
+          ].map((item, index) => (
+            <Card 
+              key={index} 
+              className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
+              as={Link}
+              href={item.link}
+            >
+              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
+                <h3 className="pl-4 pt-2">{item.title}</h3>
+              </CardBody>
+              <CardFooter>
+                <span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
+                  {item.linkText} {'>'}
+                </span>
               </CardFooter>
             </Card>
           ))}
