@@ -6,21 +6,44 @@ import Footer from '@/components/Footer';
 import { CardFooter } from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
   const [activeIndex, setActiveIndex] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const [characterizationData, setCharacterizationData] = useState([]);
   
   useEffect(() => {
-    if (!loading && !user) {
-      onOpen();
+    if (!loading && user) {
+      fetchCharacterizationData(user.user_name);
+    } else if (!loading && !user) {
+      onOpen(); // Trigger the modal if the user isn't logged in.
     }
   }, [user, loading]);
 
-  const toggleAccordion = (index) => {
+  const fetchCharacterizationData = async (userName:any) => {
+    try {
+      const response = await fetch(`/api/getCharacterizationDataForUser?userName=${userName}`);
+      const data = await response.json();
+      setCharacterizationData(data);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
+
+  const toggleAccordion = (index:any) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
+
+
+  const renderStatus = (data:any) => {
+    if (data.curated) return 'Curated';
+    if (data.submitted_for_curation) return 'Submitted';
+    return 'Not Submitted';
+  };
+
+  const renderVariant = (data:any) => `${data.resid}${data.resnum}${data.resmut}`;
   
   const faqs = [
     {
@@ -50,13 +73,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col">
         <NavBar />
         <div className="flex-grow flex rounded-full items-center justify-center">
-          <Modal backdrop="blur" isOpen={true} hideCloseButton>
-            <ModalContent>
-              <ModalBody className="py-10 text-center">
-                <Spinner size="lg" color="primary" />
-                <p className="mt-4 text-lg text-gray-600">Hold tight, we're synthesizing the data. Enzyme magic takes time! 🧬✨</p>              </ModalBody>
-            </ModalContent>
-          </Modal>
+          <LoadingSpinner isOpen={true} />
         </div>
         <Footer />
       </div>
@@ -69,7 +86,7 @@ const Dashboard = () => {
         <NavBar />
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
           <h1 className="text-6xl font-bold text-[#06B7DB]">404</h1>
-          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn't exist.</p>
+          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn&apos;t exist.</p>
           <Link href="/login" passHref>
             <Button color="primary" className="bg-[#06B7DB]">
               Go to Login
@@ -83,7 +100,7 @@ const Dashboard = () => {
             <ModalBody className="py-12 text-center">
               <h1 className="text-4xl font-bold mb-4">Whoa there, enzyme explorer! 🧬</h1>
               <p className="text-xl mb-8">
-                We can't let you into our top-secret enzyme research lab until you log in. 
+                We can&apos;t let you into our top-secret enzyme research lab until you log in. 
                 Your enzyme predictions will have to wait… for now! 🔐
               </p>
               <Link href="/login" passHref>
@@ -119,12 +136,12 @@ const Dashboard = () => {
           {[
             {
               title: "Single Variant",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {
               title: "Wild Type",
-              link: "#",
+              link: "/submit",
               linkText: "Submit Data",
             },
             {
@@ -158,46 +175,52 @@ const Dashboard = () => {
           <div className="mb-12">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl text-gray-500">Variant Profiles</h3>
-              <Button color="primary" className="bg-[#06B7DB]">Submit New Data</Button>
+              <Link href="/submit" passHref>
+                <Button color="primary" className="bg-[#06B7DB]">
+                  Submit New Data
+                </Button>
+              </Link>
             </div>
             <Table aria-label="Variant Profiles">
               <TableHeader>
                 <TableColumn>STATUS</TableColumn>
                 <TableColumn>Enzyme</TableColumn>
                 <TableColumn>Variant</TableColumn>
-                <TableColumn>Date Created</TableColumn>
+                <TableColumn>ID</TableColumn>
                 <TableColumn>Comments</TableColumn>
                 <TableColumn>Actions</TableColumn>
               </TableHeader>
               <TableBody>
-                <TableRow key="1">
-                  <TableCell>
-                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">In Progress</Chip>
-                  </TableCell>
-                  <TableCell>BglB</TableCell>
-                  <TableCell>Q124W</TableCell>
-                  <TableCell>04-04-2024</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                    This is practice, def delete later. This is practice, def delete later.
-                  </TableCell>
-                  <TableCell>
-                    <Link href="#" className="text-[#06B7DB]">View</Link>
-                  </TableCell>
-                </TableRow>
-                <TableRow key="2">
-                  <TableCell>
-                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">In Progress</Chip>
-                  </TableCell>
-                  <TableCell>BglB</TableCell>
-                  <TableCell>Q124W</TableCell>
-                  <TableCell>04-04-2024</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                    Need to add the kinetic assay data. This is a long comment to show truncation.
-                  </TableCell>
-                  <TableCell>
-                    <Link href="#" className="text-[#06B7DB]">View</Link>
-                  </TableCell>
-                </TableRow>
+                {characterizationData.map((data: any, index: any) => {
+                  const variant = renderVariant(data);
+                  const viewUrl = 
+                    variant === "XOX" 
+                      ? `/submit/wild_type/${data.id}` 
+                      : `/submit/single_variant/${data.id}`;
+
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
+                          {renderStatus(data)}
+                        </Chip>
+                      </TableCell>
+                      <TableCell>BglB</TableCell>
+                      <TableCell>{variant}</TableCell>
+                      <TableCell>{data.id}</TableCell> 
+                      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                        {data.comments || 'No comments'}
+                      </TableCell>
+                      <TableCell>
+                        <Link href={viewUrl} passHref>
+                          <Button as="a" color="primary" className="bg-[#06B7DB]">
+                            View
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

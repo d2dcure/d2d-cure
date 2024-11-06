@@ -22,44 +22,46 @@ export default function Home() {
       <NavBar />
       {/* Container for content with responsive padding */}
 <section
-  className="pt-8 lg:pt-10 bg-[url('/resources/images/ng.png')] bg-center bg-fill bg-no-repeat"
+  className="pt-14 lg:pt-14 bg-[url('/resources/images/ng.png')] bg-center bg-fill bg-no-repeat"
 >
-          <div className="max-w-2xl text-center mx-auto">
-    <div className="flex flex-col lg:flex-row justify-center items-center pb-1">
-            <img src="/resources/images/D2D_Logo.svg" draggable="false" className="h-16 select-none h-16 lg:h-20 lg:pr-6 pb-3" alt="logo" />
-            <h1 className="text-6xl sm:text-4xl md:text-5xl lg:text-8xl mb-5 font-extrabold" style={{ color: '#3C99AC', opacity: 0.38 }}>CURE</h1>
-          </div>
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-light text-[#518C98]">
-            Unpacking protein structure-to-function relationships
-          </h1>
-          <h1 className="text-lg sm:text-xl lg:text-2xl mb-5 font-light text-[#518C98]">
-            through large, high-resolution, quantitative datasets.
-          </h1>
-          <div className="flex space-x-2 pt-5 pb-10 justify-center">
-                  <Button
-                    className="bg-[#06B7DB] text-white rounded-lg flex-1"
-                    size="sm"
-                  > Get Started
-                  </Button>
-                  <Button
-                    className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg flex-1"
-                    size="sm"
-                    color="primary"
-                  >
-                    Learn More
-                  </Button>
-                </div>
+  <div className="max-w-2xl text-center mx-auto">
+    <div className="flex pb-3 flex-row justify-center items-center pb-1">
+      <img src="/resources/images/D2D_Logo.svg" draggable="false" className="h-12 sm:h-16 lg:h-20 select-none pr-2 lg:pr-3" alt="logo" />
+      <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold font-poppins" style={{ color: '#3C99AC', opacity: 0.38 }}>CURE</h1>
     </div>
+    <p className="text-base sm:text-lg lg:text-xl font-light text-[#518C98]">
+      Unpacking protein structure-to-function relationships
+    </p>
+    <p className="text-base sm:text-lg lg:text-xl mb-5 font-light text-[#518C98]">
+      through large, high-resolution, quantitative datasets.
+    </p>
+    <div className="flex space-x-4 pt-2 pb-10 justify-center">
+      <Button
+        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        size="md"
+      >
+        Get Started
+      </Button>
+      <Button
+        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
+        size="md"
+        color="primary"
+      >
+        Learn More
+      </Button>
+    </div>
+  </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 relative text-center">
-        <div className="flex justify-center">
-          <img
-            src="/resources/images/thumb.png"
-            alt="Dashboard image" className="rounded-t-3xl h-auto w-1/2object-cover"
-          />
-        </div>
-      </div>
-    </section>
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 relative text-center">
+    <div className="flex justify-center">
+      <img
+        src="/resources/images/thumb.png"
+        alt="Dashboard image" 
+        className="rounded-t-3xl w-full max-w-[1000px] h-auto object-cover" // Updated classes
+      />
+    </div>
+  </div>
+</section>
                                             
 
 
@@ -80,13 +82,18 @@ export default function Home() {
             <Button
               variant="bordered"
               onPress={() => window.location.href = '/login'}
-              style={{ width: '250px', height: '40px', fontWeight: 'semibold', borderColor: "#06B7DB", borderWidth: '2px', color: "#06B7DB" }}
+              className="w-[250px] h-[40px] font-semibold border-[#06B7DB] border-2 text-[#06B7DB] transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
             >
               Learn More
             </Button>
           </div>
           <div className="flex justify-center lg:justify-start">
-            <img src="/resources/images/Homepage.png" draggable="false" className="select-none max-w-full" alt="mockup" />
+            <img 
+              src="/resources/images/Homepage.png" 
+              draggable="false" 
+              className="select-none rounded-lg object-cover max-w-full" 
+              alt="mockup" 
+            />
           </div>
         </div>
 
@@ -108,11 +115,11 @@ export default function Home() {
 
         {/* Curate Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10 items-center">
-          <div className="flex justify-center lg:justify-start">
-            <img src="/resources/images/card_large.png"  draggable="false" 
+          <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
+            <img src="/resources/images/card_large.png" draggable="false" 
             className="max-w-full select-none" alt="mockup" />
           </div>
-          <div className="lg:pt-1">
+          <div className="order-1 lg:order-2 lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
               Instructors and faculty members can approve or reject submitted data...
@@ -137,7 +144,7 @@ export default function Home() {
         <div className="flex justify-center mt-10 lg:mt-20">
           <Button
             onPress={() => window.location.href = '/login'}
-            style={{ width: '250px', height: '40px', fontWeight: 'semibold', backgroundColor: "#06B7DB", color: "white" }}
+            className="w-[250px] h-[40px] font-semibold bg-[#06B7DB] text-white transition-all duration-300 hover:shadow-xl hover:scale-105"
           >
             Submit Data
           </Button>
