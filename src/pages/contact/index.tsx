@@ -2,18 +2,26 @@ import React, { useState } from 'react';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { Button, Input, Textarea } from "@nextui-org/react";
+import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, useDisclosure } from "@nextui-org/react";
 import Link from 'next/link';
 import { DatePicker } from "@nextui-org/date-picker";
 import { Card, CardBody } from '@nextui-org/react';
+import { DateValue, today } from '@internationalized/date';
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     fullName: "",
-    date: "",
+    date: today('UTC') as DateValue,
     email: "",
     phone: "",
     comment: "",
+  });
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isLoading, setIsLoading] = useState(false);
+  const [modalContent, setModalContent] = useState({
+    title: "",
+    message: ""
   });
 
   const handleChange = (e: { target: { name: any; value: any; }; }) => {
@@ -22,22 +30,55 @@ const ContactUs = () => {
 
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
+
+    const formDataToSend = {
+      ...formData,
+      date: formData.date.toString()
+    };
+
+    if (!formDataToSend.fullName || !formDataToSend.date || !formDataToSend.email || !formDataToSend.comment) {
+      setModalContent({
+        title: "Validation Error",
+        message: "Please fill in all required fields."
+      });
+      onOpen();
+      return;
+    }
+
+    setIsLoading(true);
+    onOpen();
+    setModalContent({
+      title: "Sending your message",
+      message: "Please hold on while we process your request..."
+    });
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formDataToSend),
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert(result.message);
+        setModalContent({
+          title: "Message Sent Successfully!",
+          message: "Thank you for contacting us. We'll get back to you within 24-48 business hours."
+        });
+        setFormData({ fullName: "", date: today('UTC') as DateValue, email: "", phone: "", comment: "" });
       } else {
-        alert(`Error: ${result.message}`);
+        setModalContent({
+          title: "Error",
+          message: `Error: ${result.message}`
+        });
       }
     } catch (error) {
-      console.error("An error occurred:", error);
-      alert("There was an error sending your message.");
+      setModalContent({
+        title: "Error",
+        message: "There was an error sending your message. Please try again later."
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -64,29 +105,68 @@ const ContactUs = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-gray-700 dark:text-white mb-2">Full Name <span className="text-red-500">*</span></label>
-                    <Input name="fullName" type="text" radius="sm" placeholder="Your Full Name" required className="w-full" onChange={handleChange} />
+                    <Input
+                      name="fullName"
+                      type="text"
+                      radius="sm"
+                      placeholder="Your Full Name"
+                      value={formData.fullName}
+                      isRequired
+                      errorMessage={formData.fullName === "" && "Full name is required"}
+                      className="w-full"
+                      onChange={handleChange}
+                    />
                   </div>
                   <div>
                     <label className="block text-gray-700 dark:text-white mb-2">Date <span className="text-red-500">*</span></label>
                     <DatePicker 
                       name="date" 
                       radius="sm" 
+                      isRequired
                       className="w-full" 
-                      onChange={(date) => setFormData({ ...formData, date: date?.toString() || '' })} 
+                      value={formData.date}
+                      errorMessage={!formData.date && "Date is required"}
+                      onChange={(date) => setFormData({ ...formData, date })} 
                     />
                   </div>
                   <div>
                     <label className="block text-gray-700 dark:text-white mb-2">Email <span className="text-red-500">*</span></label>
-                    <Input name="email" type="email" radius="sm" placeholder="Your Email" required className="w-full" onChange={handleChange} />
+                    <Input
+                      name="email"
+                      type="email"
+                      radius="sm"
+                      placeholder="Your Email"
+                      value={formData.email}
+                      isRequired
+                      errorMessage={formData.email === "" && "Email is required"}
+                      className="w-full"
+                      onChange={handleChange}
+                    />
                   </div>
                   <div>
                     <label className="block text-gray-700 dark:text-white mb-2">Phone Number</label>
-                    <Input name="phone" radius="sm" type="tel" placeholder="Your Phone Number" className="w-full" onChange={handleChange} />
+                    <Input
+                      name="phone"
+                      radius="sm"
+                      type="tel"
+                      placeholder="Your Phone Number"
+                      value={formData.phone}
+                      className="w-full"
+                      onChange={handleChange}
+                    />
                   </div>
                 </div>
                 <div className="mb-6">
                   <label className="block text-gray-700 dark:text-white mb-2">Comment <span className="text-red-500">*</span></label>
-                  <Textarea name="comment" radius="sm" placeholder="Your Message" required className="w-full" onChange={handleChange} />
+                  <Textarea
+                    name="comment"
+                    radius="sm"
+                    placeholder="Your Message"
+                    value={formData.comment}
+                    isRequired
+                    className="w-full"
+                    onChange={handleChange}
+                  />
                 </div>
                 <Button 
                   type="submit"
@@ -106,6 +186,22 @@ const ContactUs = () => {
         </div>
       </div>
       <Footer />
+      
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalContent>
+          <ModalHeader>{modalContent.title}</ModalHeader>
+          <ModalBody className="py-6">
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#06B7DB]" />
+                <p>{modalContent.message}</p>
+              </div>
+            ) : (
+              <p>{modalContent.message}</p>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 };
