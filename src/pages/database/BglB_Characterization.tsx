@@ -55,14 +55,14 @@ const DataPage = () => {
 
   // Define your columns
   const columns = [
-    { name: "Variant", uid: "variant" },
-    { name: "Yield", uid: "yield" },
-    { name: "Km", uid: "km" },
-    { name: "Kcat", uid: "kcat" },
-    { name: "Kcat/Km", uid: "kcat_km" },
-    { name: "T50", uid: "t50" },
-    { name: "Tm", uid: "tm" },
-    { name: "Rosetta Score", uid: "rosetta" }
+    { name: "Variant", uid: "variant", sortable: true },
+    { name: "Yield", uid: "yield", sortable: true },
+    { name: "Km", uid: "km", sortable: true },
+    { name: "Kcat", uid: "kcat", sortable: true },
+    { name: "Kcat/Km", uid: "kcat_km", sortable: true },
+    { name: "T50", uid: "t50", sortable: true },
+    { name: "Tm", uid: "tm", sortable: true },
+    { name: "Rosetta Score", uid: "rosetta", sortable: true }
   ];
 
   const resetFilters = () => {
@@ -253,6 +253,18 @@ const DataPage = () => {
           page * rowsPerPage
         );
 
+  // Add this function at the top of your component
+  const scrollToTable = () => {
+    const tableElement = document.querySelector('#characterization-table');
+    tableElement?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // In your component where you handle page changes:
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    scrollToTable();
+  };
+
   return (
     <>
       <NavBar />
@@ -271,133 +283,134 @@ const DataPage = () => {
 
             {/* New flex container */}
             <div className="flex w-full gap-4 flex-col lg:flex-row">
-              {/* Sidebar */}
+              {/* Sidebar - Make sticky */}
               <div className="w-full lg:w-1/5">
-                {/* Mobile toggle button */}
-                <Button
-                  className={`lg:hidden w-full flex items-center justify-center gap-2 bg-gray-100 ${isSidebarOpen ? 'mb-4' : '-mb-2'}`}
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                >
-                  <FaInfoCircle className="text-[#06B7DB]" />
-                  <span>{isSidebarOpen ? "Hide Information Key" : "Show Information Key"}</span>
-                </Button>
+                <div className="lg:sticky lg:top-4">
+                  {/* Mobile toggle button */}
+                  <Button
+                    className={`lg:hidden w-full flex items-center justify-center gap-2 bg-gray-100 ${isSidebarOpen ? 'mb-4' : '-mb-2'}`}
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  >
+                    <FaInfoCircle className="text-[#06B7DB]" />
+                    <span>{isSidebarOpen ? "Hide Information Key" : "Show Information Key"}</span>
+                  </Button>
 
-                {/* Sidebar content - hidden by default on mobile, shown when toggled */}
-                <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-                  <div className="flex pr-0 lg:pr-6 flex-col gap-4">
-                    {/* Color Key section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-light mb-2">Color Key</h2>
-                      
-                      <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
-                        View full BglB Sequence {'>'}
-                      </Link>
-                      
-                      {/* Color gradient bar */}
-                      <div className="flex items-center gap-[2px] mb-2">
-                        {[
-                          '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
-                          '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
-                          '#FAC498', '#F68932'
-                        ].map((color, index) => (
-                          <div 
-                            key={index}
-                            style={{
-                              backgroundColor: color,
-                              width: '100%',
-                              height: '23px',
-                              borderRadius: '4px'
-                            }}
-                          />
-                        ))}
-                      </div>
-                      
-                      {/* Scale numbers - Updated for better alignment */}
-                      <div className="relative w-full h-6 mb-2">
-                        {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
-                          <div
-                            key={index}
-                            className="absolute transform -translate-x-1/2 text-xs"
-                            style={{
-                              left: `${(index) * (100 / 10)}%`,
-                              top: 0
-                            }}
-                          >
-                            {number}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Labels */}
-                      <div className="flex justify-between text-sm text-gray-600 mb-8">
-                        <div>Underperform<br/>WT</div>
-                        <div className="text-right">Outperform<br/>WT</div>
-                      </div>
-                    </div>
-
-                    {/* Variant Analysis section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
-                      
-                      <Link href="#" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
-                        How were these data calculated?
-                      </Link>
-                      
-                      <div className="space-y-4 text-gray-600">
-                        <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
-                          <p className='text-sm'>
-                            For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
-                          </p>
-                          
-                          <p className='text-sm'>
-                            log 1/KM is used so that larger values are "better".
-                          </p>
-                          
-                          <p className='text-sm'>
-                            For T50 and TM values and Rosetta scores, a linear scale is used.
-                          </p>
-                          
-                          <p className='text-sm'>
-                            Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
-                          </p>
-                          
-                          <p className='text-sm'>
-                            Variants marked with an asterisk (*) expressed, but no yield was recorded.
-                          </p>
+                  {/* Sidebar content - hidden by default on mobile, shown when toggled */}
+                  <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+                    <div className="flex pr-0 lg:pr-6 flex-col gap-4">
+                      {/* Color Key section */}
+                      <div className="mb-6">
+                        <h2 className="text-xl font-light mb-2">Color Key</h2>
+                        
+                        <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
+                          View full BglB Sequence {'>'}
+                        </Link>
+                        
+                        {/* Color gradient bar */}
+                        <div className="flex items-center gap-[2px] mb-2">
+                          {[
+                            '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
+                            '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
+                            '#FAC498', '#F68932'
+                          ].map((color, index) => (
+                            <div 
+                              key={index}
+                              style={{
+                                backgroundColor: color,
+                                width: '100%',
+                                height: '23px',
+                                borderRadius: '4px'
+                              }}
+                            />
+                          ))}
                         </div>
                         
-                        <button 
-                          onClick={() => setShowFullText(!showFullText)}
-                          className="text-gray-600 text-sm hover:underline"
-                        >
-                          {showFullText ? "Show Less" : "Read More"}
-                        </button>
+                        {/* Scale numbers - Updated for better alignment */}
+                        <div className="relative w-full h-6 mb-2">
+                          {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
+                            <div
+                              key={index}
+                              className="absolute transform -translate-x-1/2 text-xs"
+                              style={{
+                                left: `${(index) * (100 / 10)}%`,
+                                top: 0
+                              }}
+                            >
+                              {number}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Labels */}
+                        <div className="flex justify-between text-sm text-gray-600 mb-8">
+                          <div>Underperform<br/>WT</div>
+                          <div className="text-right">Outperform<br/>WT</div>
+                        </div>
                       </div>
 
-                      <Button 
-                        className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB] bg-white"
-                        variant="bordered"
-                        size="sm"
-                      >
-                        Download CSV file
-                      </Button>
-                    </div>
+                      {/* Variant Analysis section */}
+                      <div className="mb-6">
+                        <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
+                        
+                        <Link href="#" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
+                          How were these data calculated?
+                        </Link>
+                        
+                        <div className="space-y-4 text-gray-600">
+                          <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
+                            <p className='text-sm'>
+                              For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
+                            </p>
+                            
+                            <p className='text-sm'>
+                              log 1/KM is used so that larger values are "better".
+                            </p>
+                            
+                            <p className='text-sm'>
+                              For T50 and TM values and Rosetta scores, a linear scale is used.
+                            </p>
+                            
+                            <p className='text-sm'>
+                              Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
+                            </p>
+                            
+                            <p className='text-sm'>
+                              Variants marked with an asterisk (*) expressed, but no yield was recorded.
+                            </p>
+                          </div>
+                          
+                          <button 
+                            onClick={() => setShowFullText(!showFullText)}
+                            className="text-gray-600 text-sm hover:underline"
+                          >
+                            {showFullText ? "Show Less" : "Read More"}
+                          </button>
+                        </div>
 
-                    {/* Additional filter options can go here */}
+                        <Button 
+                          className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB] bg-white"
+                          variant="bordered"
+                          size="sm"
+                        >
+                          Download CSV file
+                        </Button>
+                      </div>
+
+                      {/* Additional filter options can go here */}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Main content area */}
               <div className="w-full lg:w-4/5">
-                {/* Search controls above table */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 items-start sm:items-end">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3">
                     <div className="flex flex-wrap gap-2 items-center w-full sm:max-w-[44%]">
                       <Input
                         isClearable
                         classNames={{
-                          base: "w-full sm:w-auto",
+                          base: "w-full sm:max-w-[300px]",
                         }}
                         placeholder="Search for residue number..."
                         size="sm"
@@ -609,6 +622,7 @@ const DataPage = () => {
                                   size="sm"
                                   color="primary" 
                                   className="bg-[#06B7DB] text-sm"
+                                  onPress={() => setIsFilterOpen(false)}
                                 >
                                   Apply Filters
                                 </Button>
@@ -620,200 +634,234 @@ const DataPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between mb-2 items-center">
-                    <span className="text-default-400 text-small">
-                      {displayData.length} Records Found
+                  {/* Records count and rows selector */}
+                  <div className="flex flex-col sm:flex-row justify-between items-center">
+                    {/* Left-aligned total records */}
+                    <span className="text-small text-default-400">
+                      Total {displayData.length} records
                     </span>
+
+                    {/* Right-aligned rows selector */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-small text-default-400">Rows per page:</span>
+                      <Select
+                        size="sm"
+                        defaultSelectedKeys={["30"]}
+                        className="w-20"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setRowsPerPage(value === "all" ? displayData.length : Number(value));
+                          setPage(1);
+                        }}
+                      >
+                        <SelectItem key="20" value="20">20</SelectItem>
+                        <SelectItem key="30" value="30">30</SelectItem>
+                        <SelectItem key="50" value="50">50</SelectItem>
+                        <SelectItem key="all" value="all">All</SelectItem>
+                      </Select>
+                    </div>
                   </div>
-                </div>
 
-                {/* Table component */}
-                <div >
-                  <Table
-                    isHeaderSticky
-                    aria-label="BglB Variant Characterization Data"
-                    classNames={{
-                      base: "max-h-[600px] rounded-lg",
-                      table: "min-h-[600px] min-w-[800px]",
-                      wrapper: "w-full"
-                    }}
-                  >
-                    <TableHeader>
-                      <TableColumn>Variant</TableColumn>
-                      <TableColumn>Yield</TableColumn>
-                      <TableColumn>Km</TableColumn>
-                      <TableColumn>Kcat</TableColumn>
-                      <TableColumn>Kcat/Km</TableColumn>
-                      <TableColumn>T50</TableColumn>
-                      <TableColumn>Tm</TableColumn>
-                      <TableColumn>Rosetta Score Change</TableColumn>
-                    </TableHeader>
-                    <TableBody
-                      items={paginatedData}
-                    >
-                      {(data) => (
-                        <TableRow key={`${data.resid}${data.resnum}${data.resmut}`}>
-                          {/* Variant cell */}
-                          <TableCell>
-                            {data.isAggregate ? (
-                              <span title={`Average of ${data.count} separate experiments. Click to expand`} className="text-xs text-grey" onClick={() => setExpandData(true)} style={{cursor: 'pointer'}}>►</span>
-                            ) : ''}  
-                            <Page id={data.raw_data_id} wt_id={data.WT_raw_data_id} variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} />
-                          </TableCell>
-                          
-                          {/* Yield cell */}
-                          <TableCell>
-                            <div style={{ 
-                              backgroundColor: data.expressed ? '#D1D5DB' : '#D1D5DB',
-                              color: data.expressed ? '#000000' : '#000000',
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '40px',         // Smaller width for yield since it has less content
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content'
-                            }}>
-                              {data.yield_avg !== null && !isNaN(data.yield_avg) ? roundTo(data.yield_avg, 2) : data.expressed ? '*' : '—'}
-                            </div>
-                          </TableCell>
-
-                          {/* KM_avg cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '100px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-                            }}>
-                              {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
-                            </div>
-                          </TableCell>
-
-                          {/* kcat_avg cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '100px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-                            }}>
-                              {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'}
-                            </div>
-                          </TableCell>
-
-                          {/* kcat_over_KM cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '100px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-   
-                            }}>
-                              {data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` : '—'}
-                            </div>
-                          </TableCell>
-                          
-                          {/* T50 cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '80px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-   
-                            }}>
-                              {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'}
-                            </div>
-                          </TableCell>
-                          
-                          {/* Tm cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '80px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-   
-                            }}>
-                              {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 1)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 1) : '—'}` : '—'}
-                            </div>
-                          </TableCell>
-
-                          {/* Rosetta cell */}
-                          <TableCell>
-                            <div style={{
-                              backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
-                              borderRadius: '4px',
-                              padding: '1px 6px',
-                              textAlign: 'center',
-                              width: '80px',         // Fixed width for consistency
-                              margin: '0 auto',
-                              display: 'inline-block',
-                              minWidth: 'fit-content' // Ensures the div grows if content is larger
-   
-                            }}>
-                              {data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? roundTo(data.Rosetta_score, 1) : '—'}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination below table */}
-                <div className="py-4 px-2 flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <Pagination
-                    showControls
-                    classNames={{
-                      cursor: "bg-foreground text-background",
-                      wrapper: "w-full sm:w-auto justify-center",
-                    }}
-                    color="default"
-                    page={page}
-                    total={rowsPerPage === 0 ? 1 : Math.ceil(displayData.length / rowsPerPage)}
-                    variant="light"
-                    onChange={setPage}
-                  />
-                  <div className="flex items-center gap-2">
-                    <span className="text-small text-default-400 whitespace-nowrap">Rows per page:</span>
-                    <Select
-                      size="sm"
-                      defaultSelectedKeys={["30"]}
-                      className="w-20"
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        // If "all" is selected, set rowsPerPage to displayData.length
-                        setRowsPerPage(value === "all" ? displayData.length : Number(value));
+                  {/* Add id to table for scrolling */}
+                  <div id="characterization-table">
+                    <Table
+                      isHeaderSticky
+                      aria-label="BglB Variant Characterization Data"
+                      classNames={{
+                        base: "max-h-[3000px] rounded-lg",
+                        table: "min-h-[600px] min-w-[800px]",
+                        wrapper: "w-full"
                       }}
                     >
-                      <SelectItem key="20" value="20">20</SelectItem>
-                      <SelectItem key="30" value="30">30</SelectItem>
-                      <SelectItem key="50" value="50">50</SelectItem>
-                      <SelectItem key="all" value="all">All</SelectItem>
-                    </Select>
+                      <TableHeader>
+                        {columns
+                          .filter(column => visibleColumns.has(column.uid))
+                          .map(column => (
+                            <TableColumn key={column.uid}>
+                              {column.name}
+                            </TableColumn>
+                          ))}
+                      </TableHeader>
+                      <TableBody items={paginatedData}>
+                        {(data) => (
+                          <TableRow key={`${data.resid}${data.resnum}${data.resmut}`}>
+                            {/* Only render cells for visible columns */}
+                            {columns
+                              .filter(column => visibleColumns.has(column.uid))
+                              .map(column => {
+                                let cell;
+                                switch (column.uid) {
+                                  case "variant":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        {data.isAggregate ? (
+                                          <span 
+                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
+                                            className="text-xs text-grey" 
+                                            onClick={() => setExpandData(true)} 
+                                            style={{cursor: 'pointer'}}
+                                          >►</span>
+                                        ) : ''}  
+                                        <Page 
+                                          id={data.raw_data_id} 
+                                          wt_id={data.WT_raw_data_id} 
+                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
+                                        />
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "yield":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{ 
+                                          backgroundColor: data.expressed ? '#D1D5DB' : '#D1D5DB',
+                                          color: data.expressed ? '#000000' : '#000000',
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '40px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.yield_avg !== null && !isNaN(data.yield_avg) ? roundTo(data.yield_avg, 2) : data.expressed ? '*' : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "km":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "kcat":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 2)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "kcat_km":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues.WT_log_kcat_over_KM : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? roundTo(data.kcat_over_KM, 2) : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "t50":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues.WT_T50) / WTValues.WT_T50 : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 2)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "tm":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues.WT_Tm) / WTValues.WT_Tm : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 2)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "rosetta":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'center',
+                                          width: '100px',
+                                          margin: '0 auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? roundTo(data.Rosetta_score, 2) : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  default:
+                                    cell = <TableCell key={column.uid}>—</TableCell>;
+                                }
+                                return cell;
+                              })}
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Bottom pagination - remove rows selector */}
+                  <div className="py-4 px-2 flex justify-center">
+                    <Pagination
+                      showControls
+                      classNames={{
+                        cursor: "bg-foreground text-background",
+                        wrapper: "justify-center",
+                      }}
+                      color="default"
+                      page={page}
+                      total={rowsPerPage === 0 ? 1 : Math.ceil(displayData.length / rowsPerPage)}
+                      variant="light"
+                      onChange={handlePageChange}  // Use new handler
+                    />
                   </div>
                 </div>
               </div>

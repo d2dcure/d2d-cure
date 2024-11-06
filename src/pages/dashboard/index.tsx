@@ -38,9 +38,36 @@ const Dashboard = () => {
 
 
   const renderStatus = (data:any) => {
-    if (data.curated) return 'Curated';
-    if (data.submitted_for_curation) return 'Submitted';
-    return 'Not Submitted';
+    const statusConfig = {
+      Curated: {
+        color: "success",
+        bgColor: "bg-success-50",
+        textColor: "text-success-600",
+      },
+      Submitted: {
+        color: "warning",
+        bgColor: "bg-warning-50",
+        textColor: "text-warning-600",
+      },
+      "Not Submitted": {
+        color: "danger",
+        bgColor: "bg-danger-50",
+        textColor: "text-danger-600",
+      }
+    };
+
+    const status = data.curated ? 'Curated' : data.submitted_for_curation ? 'Submitted' : 'Not Submitted';
+    const config = statusConfig[status];
+
+    return (
+      <Chip
+        className={`${config.bgColor} ${config.textColor}`}
+        variant="flat"
+        size="sm"
+      >
+        {status}
+      </Chip>
+    );
   };
 
   const renderVariant = (data:any) => `${data.resid}${data.resnum}${data.resmut}`;
@@ -67,6 +94,13 @@ const Dashboard = () => {
       answer: "D2D Cure allows you to connect with other researchers by sharing your findings, collaborating on joint projects, or participating in community forums. Use the collaboration tools available in your dashboard.",
     },
   ];
+
+  // Log the user object to verify its structure and role
+  useEffect(() => {
+    if (!loading) {
+      console.log('User:', user);
+    }
+  }, [user, loading]);
 
   if (!user) {
     return (
@@ -122,7 +156,7 @@ const Dashboard = () => {
         </div>
 
         {/* Action Cards Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+        <div className={`grid gap-6 mb-20 ${user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {[
             {
               title: "Single Variant",
@@ -135,10 +169,15 @@ const Dashboard = () => {
               linkText: "Submit Data",
             },
             {
-              title: "Gel Image Upload",
+              title: "Gel Image ",
               link: "#",
               linkText: "Upload Image",
             },
+            ...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? [{
+              title: "Curate",
+              link: "/curate",
+              linkText: "Curate Data",
+            }] : [])
           ].map((item, index) => (
             <Card key={index} className="h-[150px] w-full">
               <CardBody className="text-3xl pt-2 font-light">
@@ -171,7 +210,14 @@ const Dashboard = () => {
                 </Button>
               </Link>
             </div>
-            <Table aria-label="Variant Profiles">
+            <Table 
+              aria-label="Variant Profiles"
+              classNames={{
+                base: "max-h-[400px]", // Fixed height
+                table: "min-h-[100px]",
+                wrapper: "max-h-[400px]" // Makes table scrollable
+              }}
+            >
               <TableHeader>
                 <TableColumn>STATUS</TableColumn>
                 <TableColumn>Enzyme</TableColumn>
@@ -191,9 +237,7 @@ const Dashboard = () => {
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
-                          {renderStatus(data)}
-                        </Chip>
+                        {renderStatus(data)}
                       </TableCell>
                       <TableCell>BglB</TableCell>
                       <TableCell>{variant}</TableCell>
@@ -202,10 +246,8 @@ const Dashboard = () => {
                         {data.comments || 'No comments'}
                       </TableCell>
                       <TableCell>
-                        <Link href={viewUrl} passHref>
-                          <Button as="a" color="primary" className="bg-[#06B7DB]">
-                            View
-                          </Button>
+                        <Link href={viewUrl} className="text-[#06B7DB]">
+                          View
                         </Link>
                       </TableCell>
                     </TableRow>
@@ -221,7 +263,14 @@ const Dashboard = () => {
               <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
               <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
             </div>
-            <Table aria-label="Gel Image Uploads">
+            <Table 
+              aria-label="Gel Image Uploads"
+              classNames={{
+                base: "max-h-[400px]", // Fixed height
+                table: "min-h-[100px]",
+                wrapper: "max-h-[400px]" // Makes table scrollable
+              }}
+            >
               <TableHeader>
                 <TableColumn>Gel ID</TableColumn>
                 <TableColumn>Upload Date</TableColumn>
@@ -248,7 +297,7 @@ const Dashboard = () => {
         <div className="mb-10">
           <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">FAQs</Chip> {/* Role Tag */}
           <h2 className="text-4xl text-gray-900 leading-[3.25rem]">
-            Frequently Asked Questions
+            Have Questions?
           </h2>
         </div>
 
