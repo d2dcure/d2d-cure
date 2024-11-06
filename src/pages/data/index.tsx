@@ -4,8 +4,8 @@ import "../../app/globals.css";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
-function Page({ id, variant }: { id: string, variant:string }) {
-  const link = "/bglb?id=" + id;
+function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
+  const link = `/bglb?id=${id}&wt_id=${wt_id}`;
   return <Link href={link}>
     <button> {variant} </button>
   </Link>;
@@ -287,7 +287,7 @@ const DataPage = () => {
                 {data.isAggregate ? (
                   <span title={`Average of ${data.count} separate experiments. Click to expand`} className="text-blue-500" onClick={() => setExpandData(true)} style={{cursor: 'pointer'}}>►</span>
                 ) : ''}  
-                {<Page id = { data.id } variant= {getVariantDisplay(data.resid, data.resnum, data.resmut)}></Page>}
+                {<Page id = { data.raw_data_id } wt_id = {data.WT_raw_data_id} variant= {getVariantDisplay(data.resid, data.resnum, data.resmut)}></Page>}
               </td>
               
               {/* Yield cells */}
