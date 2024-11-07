@@ -363,7 +363,7 @@ const DataPage = () => {
                             </p>
                             
                             <p className='text-sm'>
-                              log 1/KM is used so that larger values are "better".
+                              log 1/KM is used so that larger values are &quot;better&quot;.
                             </p>
                             
                             <p className='text-sm'>

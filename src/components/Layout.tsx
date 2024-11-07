@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import NavBar from './NavBar';
 import Footer from './Footer';
-import LoadingSpinner from './LoadingSpinner';
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,7 +13,6 @@ const Layout: React.FC<LayoutProps> = ({ children, loading = false }) => {
       <NavBar />
       <main className="flex-grow">
         {children}
-        <LoadingSpinner isOpen={loading} />
       </main>
       <Footer />
     </div>
