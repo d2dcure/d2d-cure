@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
 import { useRouter } from 'next/router';
+import { AuthChecker } from '@/components/AuthChecker';
+import NavBar from '@/components/NavBar';
 
 const SubmitPage = () => {
   const { user } = useUser();
@@ -134,85 +136,90 @@ const SubmitPage = () => {
   }, []);
 
   return (
-    <div className="mt-8 text-center">
-      <h1 className="text-2xl font-bold">Data Analysis and Submission</h1>
-      <div className="space-x-4">
-        {/* Initial options */}
-        {!selection && (
-          <div>
-          <h2>What type of data would you like to submit?</h2>
+    <div>
+      <NavBar />
+      <AuthChecker minimumStatus="student">
+        <div className="mt-8 text-center">
+          <h1 className="text-2xl font-bold">Data Analysis and Submission</h1>
           <div className="space-x-4">
-              <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-              <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
-          </div>
-        </div>
-        )}
+            {/* Initial options */}
+            {!selection && (
+              <div>
+              <h2>What type of data would you like to submit?</h2>
+              <div className="space-x-4">
+                  <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
+                  <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
+              </div>
+            </div>
+            )}
 
-        {/* Single Variant form */}
-        {selection === 'single_variant' && (
-          <div>
-                <h2>Single Variant Form</h2>
+            {/* Single Variant form */}
+            {selection === 'single_variant' && (
+              <div>
+                    <h2>Single Variant Form</h2>
+                    <div className="space-x-4">
+                        <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
+                        <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
+                    </div>
+                    <p>Select the enzyme from the list and enter the enzyme variant code (e.g., A123C) corresponding to your mutation.</p>
+                    <div className="flex justify-center items-center gap-2 mb-4">
+                        <span className="font-bold">Enzyme:</span>
+                        <select className="border border-gray-300 rounded p-1"
+                                value={enzyme}
+                                onChange={(e) => setEnzyme(e.target.value)}>
+                        <option value="">Select an enzyme</option>
+                        {enzymeList.map((enzyme) => (
+                            <option key={enzyme.id} value={enzyme.abbr}>{enzyme.abbr}</option>
+                        ))}
+                        </select>
+                        <span className="font-bold">Enzyme Variant:</span>
+                        <input type="text" 
+                            className="border border-gray-300 rounded p-1"
+                            value={enzymeVariant}
+                            onChange={(e) => setEnzymeVariant(e.target.value)}
+                            placeholder="A123C" 
+                        />
+                        <button onClick={handleSubmit} className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Submit
+                        </button>
+                        {error && <p className="text-red-500">{error}</p>}
+                    </div>
+                    {entered !== 'null' && (
+                      <>
+                      <div className="text-center mb-10">
+                        <p className="mb-2">Previous datasets:</p>
+                        {matchedData.length > 0 ? (
+                          <ul>
+                            {matchedData.map((item) => (
+                              <li key={item.id}>
+                                <button onClick={() => handleSelectDataset(item.id)} className="mr-3">Select</button>
+                                Dataset created by {item.creator}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p>There are no records that match from your school.</p>
+                        )}
+                      </div>
+                      <button onClick={handleCreateNewDataset} className="mt-5 text-blue font-bold py-2 px-4 rounded">Create New Dataset</button>
+                      </>
+                    )}
+              </div>
+            )}
+
+            {/* Wild Type form */}
+            {selection === 'wild_type' && (
+              <div>
+                <h2>Wild Type Form</h2>
                 <div className="space-x-4">
                     <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
                     <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
                 </div>
-                <p>Select the enzyme from the list and enter the enzyme variant code (e.g., A123C) corresponding to your mutation.</p>
-                <div className="flex justify-center items-center gap-2 mb-4">
-                    <span className="font-bold">Enzyme:</span>
-                    <select className="border border-gray-300 rounded p-1"
-                            value={enzyme}
-                            onChange={(e) => setEnzyme(e.target.value)}>
-                    <option value="">Select an enzyme</option>
-                    {enzymeList.map((enzyme) => (
-                        <option key={enzyme.id} value={enzyme.abbr}>{enzyme.abbr}</option>
-                    ))}
-                    </select>
-                    <span className="font-bold">Enzyme Variant:</span>
-                    <input type="text" 
-                        className="border border-gray-300 rounded p-1"
-                        value={enzymeVariant}
-                        onChange={(e) => setEnzymeVariant(e.target.value)}
-                        placeholder="A123C" 
-                    />
-                    <button onClick={handleSubmit} className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Submit
-                    </button>
-                    {error && <p className="text-red-500">{error}</p>}
-                </div>
-                {entered !== 'null' && (
-                  <>
-                  <div className="text-center mb-10">
-                    <p className="mb-2">Previous datasets:</p>
-                    {matchedData.length > 0 ? (
-                      <ul>
-                        {matchedData.map((item) => (
-                          <li key={item.id}>
-                            <button onClick={() => handleSelectDataset(item.id)} className="mr-3">Select</button>
-                            Dataset created by {item.creator}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>There are no records that match from your school.</p>
-                    )}
-                  </div>
-                  <button onClick={handleCreateNewDataset} className="mt-5 text-blue font-bold py-2 px-4 rounded">Create New Dataset</button>
-                  </>
-                )}
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Wild Type form */}
-        {selection === 'wild_type' && (
-          <div>
-            <h2>Wild Type Form</h2>
-            <div className="space-x-4">
-                <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-                <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      </AuthChecker>
     </div>
   );
 };

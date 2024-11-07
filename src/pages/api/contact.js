@@ -66,18 +66,26 @@ export default async function handler(req, res) {
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-              <a href="mailto:${email}?subject=Re: ${encodeURIComponent(`Contact Form Submission Response - ${referenceId}`)}&body=${encodeURIComponent(`Dear ${fullName},
+              <a href="mailto:${email}?subject=Re: ${encodeURIComponent(`Contact Form Submission Response - ${referenceId}`)}&body=${encodeURIComponent(`Hey ${fullName},
 
-This is regarding your contact inquiry submitted on ${date} where you wrote:
+Thank you for contacting D2D Cure.
 
-"${comment}"
+Reference Details
+• Date: ${date}
+• Reference ID: ${referenceId}
+• Email: ${email}
+• Message: ${comment}
 
-[Your response here]
+Our Response:
+[Type your response here]
+
+
+
 
 Best regards,
-D2D Cure Team
+The D2D Cure Team
 
-Reference ID: ${referenceId}`)}"
+Need help or have questions? Include Reference ID ${referenceId} in future correspondence.`)}"
                 style="display: inline-block; padding: 12px 24px; background-color: #06B7DB; color: white; text-decoration: none; border-radius: 12px; font-weight: 500;">
                 Reply to ${fullName}
               </a>

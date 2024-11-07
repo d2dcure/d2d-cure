@@ -90,18 +90,27 @@ router.post(async (req, res) => {
           ` : ''}
 
           <div style="text-align: center; margin-top: 30px;">
-            <a href="mailto:${email}?subject=Re: ${encodeURIComponent(`Bug Report Response - ${referenceId}`)}&body=${encodeURIComponent(`Dear ${fullName},
+            <a href="mailto:${email}?subject=Re: ${encodeURIComponent(`Bug Report Response - ${referenceId}`)}&body=${encodeURIComponent(`Hey ${fullName},
 
-This is regarding your bug report submitted on ${date} where you wrote:
+Thank you for reporting this bug to D2D Cure.
 
-"${comment}"
+Reference Details
+• Date: ${date}
+• Reference ID: ${referenceId}
+• Email: ${email}
+• Category: ${category || "Not specified"}
+• Description: ${comment}
 
-[Your response here]
+Our Response:
+[Type your response here]
+
+
+
 
 Best regards,
-D2D Cure Team
+The D2D Cure Team
 
-Reference ID: ${referenceId}`)}"
+Need help or have questions? Include Reference ID ${referenceId} in future correspondence.`)}"
               style="display: inline-block; padding: 12px 24px; background-color: #06B7DB; color: white; text-decoration: none; border-radius: 12px; font-weight: 500;">
               Reply to ${fullName}
             </a>
