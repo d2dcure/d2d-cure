@@ -147,8 +147,7 @@ const SubmitPage = () => {
   return (
     <>
     <NavBar />
-    <div className="m-24 bg-white">
-      <div className="col-span-1 items-center">
+    <div className="pt-8">
       <Breadcrumbs
             itemClasses={{
               item: "text-black data-[current=true]:text-gray-300", // White text for breadcrumb items, lighter for current item
@@ -190,8 +189,7 @@ const SubmitPage = () => {
               <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "8px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Single Variant</CardBody>
               <CardFooter>
                 <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
-                  Submit Data
-                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                  Submit Data {'>'}
                 </button>
               </CardFooter>
             </Card>
@@ -200,8 +198,7 @@ const SubmitPage = () => {
               <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "3.27px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Wild Type</CardBody>
               <CardFooter>
                 <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
-                  Submit Data
-                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                  Submit Data {'>'}
                 </button>
               </CardFooter>
             </Card>
@@ -210,12 +207,11 @@ const SubmitPage = () => {
               <CardBody style={{fontSize: "30px", fontWeight: "300", lineHeight: "40px", paddingRight: "3.27px", gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", marginLeft: "5px", marginTop: "20px"}}>Gel Image</CardBody>
               <CardFooter>
                 <button className="text-blue-500 hover:text-blue-700" style={{gap: "8px", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "20px", color: "var(--colors-base-primary, rgba(6, 183, 219, 1))"}}>
-                  Upload Image
-                  <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '8px' }} />
+                  Upload Image {'>'}
                 </button>
               </CardFooter>
             </Card>
-          </div>
+        </div>
         </div>
         )}
 
@@ -311,7 +307,6 @@ const SubmitPage = () => {
           </div>
         )}
       </div>
-    </div>
     </>
   );
 };

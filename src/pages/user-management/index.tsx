@@ -211,42 +211,24 @@ const handleDeleteFirebase = async () => {
       minWidth: "100%",
       borderRadius: "12px", 
       width: "1280px",
+      paddingTop: "18px", 
+      paddingRight: "32px",
+      paddingLeft: "32px",
+      gap: "10px"
     }}
     topContent = {(
       <>
-        <Link href="/login" style={{ marginBottom: '20px', color:'var(--colors-base-primary, rgba(6, 183, 219, 1))'}}>
-          <FontAwesomeIcon icon={faChevronLeft} style={{ marginRight: '8px' }} />
-          <span>Back to profile</span>
-        </Link>
         <div style={{
         display: 'flex', // Use flexbox
         justifyContent: 'space-between', // Space between elements
         alignItems: 'center', // Center vertically
         marginBottom: '10px', // Optional: margin for spacing
       }}>
-        <h2 style={{ margin: 0 }}>Members of labs at {user.institution}</h2>
+        <h2 style={{ margin: 0, marginTop: "10px", marginLeft: "10px" }}>Members of labs at {user.institution}</h2>
         <div style={{
           display: 'flex', // Use flexbox for buttons
           justifyContent: 'flex-end' // Align buttons to the right
         }}>
-          <Button
-            size="md" // Medium button size
-            variant="solid" // Solid variant
-            onClick={handleApprove}
-            style={{
-              marginRight: '10px', // Space between buttons
-              borderRadius: '12px',
-              width: '100px',
-              height: '40px',
-              paddingRight: '16px',
-              paddingLeft: '16px',
-              gap: '12px',
-              color: 'white',
-              backgroundColor: 'var(--colors-base-primary, rgba(6, 183, 219, 1))'
-            }}
-          >
-            Approve
-          </Button>
           <Button
             color="danger"
             variant="bordered"
@@ -261,11 +243,31 @@ const handleDeleteFirebase = async () => {
               height: '40px',
               borderWidth: '2px',
               paddingRight: '16px',
-              paddingLeft: '16px',
+              marginTop: "10px",
               gap: '12px'
             }}
           >
-            Delete
+            Remove User
+          </Button>
+
+          <Button
+            size="md" // Medium button size
+            variant="solid" // Solid variant
+            onClick={handleApprove}
+            style={{
+              marginRight: '10px', // Space between buttons
+              borderRadius: '12px',
+              width: '100px',
+              height: '40px',
+              paddingRight: '16px',
+              paddingLeft: '16px',
+              gap: '12px',
+              color: 'white',
+              marginTop: "10px",
+              backgroundColor: 'var(--colors-base-primary, rgba(6, 183, 219, 1))'
+            }}
+          >
+            Approve
           </Button>
         </div>
       </div>
