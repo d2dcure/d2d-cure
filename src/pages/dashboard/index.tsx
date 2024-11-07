@@ -107,8 +107,8 @@ const Dashboard = () => {
           {user?.user_name && (
             <>
               <div>
+              <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
                 <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
-                <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
               </div>
             </>
           )}
