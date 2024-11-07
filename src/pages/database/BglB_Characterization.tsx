@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Checkbox, Select, SelectItem, Input, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Popover, PopoverTrigger, PopoverContent, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle } from 'react-icons/fa';
+import { HiChevronRight } from "react-icons/hi";
 
 // Add this interface near the top of the file
 interface Institution {
@@ -285,7 +286,7 @@ const DataPage = () => {
             <div className="flex w-full gap-4 flex-col lg:flex-row">
               {/* Sidebar - Make sticky */}
               <div className="w-full lg:w-1/5">
-                <div className="lg:sticky lg:top-4">
+                <div className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
                   {/* Mobile toggle button - Previous styling */}
                   <Button
                     className={`lg:hidden w-full flex items-center justify-center gap-2 bg-gray-100 ${isSidebarOpen ? 'mb-4' : '-mb-2'}`}
@@ -295,9 +296,9 @@ const DataPage = () => {
                     <span>{isSidebarOpen ? "Hide Information Key" : "Show Information Key"}</span>
                   </Button>
 
-                  {/* Sidebar content - hidden by default on mobile, shown when toggled */}
+                  {/* Sidebar content */}
                   <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-                    <div className="bg-gray-50  rounded-lg shadow-sm p-6 mb-6">
+                    <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none p-6 mb-6">
                       <div className="flex flex-col gap-4">
                         {/* Color Key section */}
                         <div className="mb-6">
@@ -389,7 +390,7 @@ const DataPage = () => {
                             
                             <button 
                               onClick={() => setShowFullText(!showFullText)}
-                              className="text-[#06B7DB] hover:underline text-sm mt-1"
+                              className="text-gray-600 hover:underline text-sm mt-1"
                             >
                               {showFullText ? "Show Less ↑" : "Read More ↓"}
                             </button>
@@ -703,19 +704,22 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        {data.isAggregate ? (
-                                          <span 
-                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
-                                            className="text-xs text-grey" 
-                                            onClick={() => setExpandData(true)} 
-                                            style={{cursor: 'pointer'}}
-                                          >►</span>
-                                        ) : ''}  
-                                        <Page 
-                                          id={data.raw_data_id} 
-                                          wt_id={data.WT_raw_data_id} 
-                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
-                                        />
+                                        <div className="flex items-center gap-1">
+                                          <Page 
+                                            id={data.raw_data_id} 
+                                            wt_id={data.WT_raw_data_id} 
+                                            variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
+                                          />
+                                          {data.isAggregate ? (
+                                            <span 
+                                              title={`Average of ${data.count} separate experiments. Click to expand`} 
+                                              className="inline-flex items-center text-gray-500 hover:text-gray-700 cursor-pointer" 
+                                              onClick={() => setExpandData(true)}
+                                            >
+                                              <HiChevronRight className="w-4 h-4" />
+                                            </span>
+                                          ) : ''}
+                                        </div>
                                       </TableCell>
                                     );
                                     break;

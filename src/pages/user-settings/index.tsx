@@ -33,7 +33,7 @@ const ProfileSettings = () => {
             </Breadcrumbs>
 
             <div className="pt-8">
-              <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
+              <h1 className="mb-4 text-2xl md:text-3xl lg:text-4xl font-inter dark:text-white">
                 Account Settings
               </h1>
             </div>
@@ -43,8 +43,8 @@ const ProfileSettings = () => {
               <div className="w-full lg:w-1/4 pt-6 lg:pr-8 mb-6 lg:mb-0">
                 <div className="lg:sticky lg:top-4">
                   {user && (
-                    <Card className="bg-white dark:bg-gray-900 shadow-lg-top">
-                      <CardBody className="p-6 md:p-8">
+                    <div className="bg-white dark:bg-gray-900 shadow-lg-top-top">
+                      <div className="p-6 md:p-8">
                         <div className="flex flex-col">
                           <img
                             alt="User profile"
@@ -83,18 +83,18 @@ const ProfileSettings = () => {
                             </Button>
                           )}
                         </div>
-                      </CardBody>
-                    </Card>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Right Section - Profile Settings */}
               <div className="w-full pt-6 lg:w-3/4">
-                <Card className="bg-white dark:bg-gray-900 shadow-lg-top w-full max-w-4xl">
+                <Card className="bg-white dark:bg-gray-900 shadow-lg-top w-full">
                   <CardBody className="p-6 md:p-8">
-                  <h1 className="text-2xl sm:text-3xl">Personal Information</h1>
-                  <p className="text-gray-500 mb-4">Update your personal details here.</p>
+                    <h1 className="text-2xl sm:text-3xl">Personal Information</h1>
+                    <p className="text-gray-500 mb-4">Update your personal details here.</p>
                     <form className='mt-4'>
                       <div className="grid grid-cols-1 gap-6 mb-6">
                         <div>
@@ -157,62 +157,36 @@ const ProfileSettings = () => {
                             </Button>
                           </div>
                     </form>
+                  </CardBody>
+                </Card>
 
-                    </CardBody>
-                    </Card>
-
-                    <Card className="mt-10">
-                      <CardBody className="p-6 md:p-8">
-                        <h1 className="text-2xl sm:text-3xl">Password</h1>
-                        <p className="text-gray-500 mb-4">Change your account password here.</p>
-                        <form className='mt-4'>
-                        <div className="grid grid-cols-1 gap-6 mb-6">
-                            <div>
-                              <label className="block text-gray-700 dark:text-white mb-2">Current Password</label>
-                              <Input
-                                type="password"
-                                radius="sm"
-                                placeholder="Enter current password"
-                                className="w-full"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-gray-700 dark:text-white mb-2">New Password</label>
-                              <Input
-                                type="password"
-                                radius="sm"
-                                placeholder="Enter new password"
-                                className="w-full"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-gray-700 dark:text-white mb-2">Confirm New Password</label>
-                              <Input
-                                type="password"
-                                radius="sm"
-                                placeholder="Confirm new password"
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex justify-end space-x-2">
-                            <Button 
-                              variant="bordered"
-                              className="border-[#06B7DB] text-[#06B7DB]"
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              type="submit"
-                              className="bg-[#06B7DB] text-white"
-                            >
-                              Update Password
-                            </Button>
-                          </div>
-                        </form>
-                      </CardBody>
-                    </Card>
+                {/* Enhanced password reset card */}
+                <Card className="mt-10 shadow-lg-top">
+                  <CardBody className="p-6 md:p-8">
+                    <div className="flex flex-col space-y-4">
+                      <div>
+                        <h1 className="text-2xl sm:text-3xl font-normal">Forgot Password?</h1>
+                        <p className="text-gray-500 mt-2 text-base leading-relaxed">
+                          No worries! Click the button below to receive a password reset link via email. 
+                          Follow the link to securely reset your password.
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-500 italic">
+                          A reset link will be sent to your registered email address
+                        </p>
+                        <Button 
+                          className="bg-[#06B7DB] text-white px-6"
+                          size="md"
+                          onClick={() => {/* Add password reset handler */}}
+                        >
+                          Reset Password
+                        </Button>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
               </div>
             </div>
           </div>

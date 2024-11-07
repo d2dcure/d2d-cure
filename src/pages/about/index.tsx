@@ -51,9 +51,9 @@ const AboutD2D = () => {
       {/* Enzymes Section */}
       <div className="px-6 md:px-12 lg:px-24 py-16">
         <h2 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet Our Enzymes</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card 
-            className="p-6 hover:scale-105 transition-transform cursor-pointer w-[530px]"
+            className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
             as={Link}
             href="/about/bglb"
           >
@@ -71,7 +71,7 @@ const AboutD2D = () => {
             </span>
           </Card>
           <Card 
-            className="p-6 hover:scale-105 transition-transform cursor-pointer w-[530px]"
+            className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
             as={Link}
             href="/enzymes/beta-glucosidase-b"
           >
@@ -245,7 +245,13 @@ const AboutD2D = () => {
           <div className="md:w-1/2">
             <h2 className="text-4xl font-light dark:text-white">Special thanks to our technical team</h2>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-              This website was designed and developed by a group of students from CodeLab, a software development and design agency at the University of California, Davis.
+              This website was designed and developed by a group of students from 
+              <img 
+                src="/resources/images/codelablogo.png"
+                alt="CodeLab"
+                className="inline-block h-3 ml-1 mb-1.5"
+              />
+              , a software development and design agency at the University of California, Davis.
             </p>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
               <strong>Project Managers:</strong> Mohnish Gopi and Jess Fong
