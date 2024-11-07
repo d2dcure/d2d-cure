@@ -27,9 +27,9 @@ const Resources = () => {
           </div>
           <div className="hidden lg:flex justify-center items-center">
             <img 
-              src="/resources/images/resources.png" 
+              src="/resources/images/Design-Data-class-UC-Davis.webp" 
               alt="mockup" 
-              className="max-w-full h-auto"
+              className="max-w-full h-auto rounded-2xl mt-8"
               draggable="false"
               loading="lazy"
               unselectable="on"

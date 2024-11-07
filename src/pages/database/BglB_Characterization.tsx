@@ -53,6 +53,7 @@ const DataPage = () => {
   ]));
   const [showFullText, setShowFullText] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Define your columns
   const columns = [
@@ -81,28 +82,43 @@ const DataPage = () => {
       setInstitutions(sortedData);
     };
     const fetchData = async () => {
-      const response = await fetch('/api/getCharacterizationData');
-      const data = await response.json();
-      setCharacterizationData(data);
+      setIsLoading(true);
+      try {
+        const [institutionsRes, characterizationRes, sequencesRes] = await Promise.all([
+          fetch('/api/getInstitutions'),
+          fetch('/api/getCharacterizationData'),
+          fetch('/api/getSequenceData')
+        ]);
 
-      // For color coding 
-      const WT_row = data.find((row:any) => row.id === 1); 
-      if (WT_row) {
-        const WT_log_inv_KM = Math.log10(1 / WT_row.KM_avg);
-        const WT_log_kcat = Math.log10(WT_row.kcat_avg);
-        const WT_log_kcat_over_KM = Math.log10(WT_row.kcat_over_KM);
-        const WT_T50 = WT_row.T50;
-        const WT_Tm = WT_row.Tm;
-        const WT_Rosetta_score = WT_row.Rosetta_score;
-  
-        setWTValues({
-          WT_log_inv_KM,
-          WT_log_kcat,
-          WT_log_kcat_over_KM,
-          WT_T50,
-          WT_Tm,
-          WT_Rosetta_score
-        });
+        const [institutionsData, characterizationData, sequencesData] = await Promise.all([
+          institutionsRes.json(),
+          characterizationRes.json(),
+          sequencesRes.json()
+        ]);
+
+        const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
+          a.fullname.localeCompare(b.fullname)
+        );
+        setInstitutions(sortedInstitutions);
+        setCharacterizationData(characterizationData);
+        setSequences(sequencesData);
+
+        // For color coding 
+        const WT_row = characterizationData.find((row:any) => row.id === 1);
+        if (WT_row) {
+          setWTValues({
+            WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
+            WT_log_kcat: Math.log10(WT_row.kcat_avg),
+            WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
+            WT_T50: WT_row.T50,
+            WT_Tm: WT_row.Tm,
+            WT_Rosetta_score: WT_row.Rosetta_score
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     const fetchSequences = async () => {
@@ -617,27 +633,6 @@ const DataPage = () => {
                                 </Select>
                               </div>
                             </DropdownItem>
-
-                            <DropdownItem className="p-0 mt-2">
-                              <div className="flex justify-between">
-                                <Button 
-                                  size="sm"
-                                  variant="bordered" 
-                                  onPress={resetFilters}
-                                  className="border-[#06B7DB] text-[#06B7DB] text-sm"
-                                >
-                                  Reset
-                                </Button>
-                                <Button 
-                                  size="sm"
-                                  color="primary" 
-                                  className="bg-[#06B7DB] text-sm"
-                                  onPress={() => setIsFilterOpen(false)}
-                                >
-                                  Apply Filters
-                                </Button>
-                              </div>
-                            </DropdownItem>
                           </DropdownMenu>
                         </Dropdown>
                       </div>
@@ -704,22 +699,20 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <div className="flex items-center gap-1">
-                                          <Page 
-                                            id={data.raw_data_id} 
-                                            wt_id={data.WT_raw_data_id} 
-                                            variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
-                                          />
-                                          {data.isAggregate ? (
-                                            <span 
-                                              title={`Average of ${data.count} separate experiments. Click to expand`} 
-                                              className="inline-flex items-center text-gray-500 hover:text-gray-700 cursor-pointer" 
-                                              onClick={() => setExpandData(true)}
-                                            >
-                                              <HiChevronRight className="w-4 h-4" />
-                                            </span>
-                                          ) : ''}
-                                        </div>
+                                        <Page 
+                                          id={data.raw_data_id} 
+                                          wt_id={data.WT_raw_data_id} 
+                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
+                                        />
+                                        {data.isAggregate && (
+                                          <span 
+                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
+                                            className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1" 
+                                            onClick={() => setExpandData(true)}
+                                          >
+                                            <HiChevronRight className="w-4 h-4 -ml-1 translate-y-[1px]" />
+                                          </span>
+                                        )}
                                       </TableCell>
                                     );
                                     break;
@@ -860,6 +853,18 @@ const DataPage = () => {
                       </TableBody>
                     </Table>
                   </div>
+
+                  {isLoading && (
+                    <div className="flex justify-center items-center py-8">
+                      <Spinner 
+                        size="lg"
+                        classNames={{
+                          circle1: "border-b-[#06B7DB]",
+                          circle2: "border-b-[#06B7DB]"
+                        }}
+                      />
+                    </div>
+                  )}
 
                   {/* Bottom pagination - remove rows selector */}
                   <div className="py-4 px-2 flex justify-center">
