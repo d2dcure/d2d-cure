@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Card, CardBody, Chip, Avatar, Tooltip, Input, Modal, ModalContent, ModalBody, Spinner } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Card, CardBody, Chip, Avatar, Tooltip, Input, Modal, ModalContent, ModalBody, Spinner, Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -7,12 +7,23 @@ import { CardFooter } from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
 import { AuthChecker } from '@/components/AuthChecker';
+import { RiSparklingFill } from "react-icons/ri";
+
+interface CharacterizationData {
+  curated: boolean;
+  submitted_for_curation: boolean;
+  id: string;
+  comments?: string;
+  resid?: string;
+  resnum?: string;
+  resmut?: string;
+}
 
 const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
   const [activeIndex, setActiveIndex] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
-  const [characterizationData, setCharacterizationData] = useState([]);
+  const [characterizationData, setCharacterizationData] = useState<CharacterizationData[]>([]);
   
   useEffect(() => {
     if (!loading && user) {
@@ -95,6 +106,35 @@ const Dashboard = () => {
     },
   ];
 
+  const ResearchInsight = () => {
+    const curatedCount = characterizationData.filter(d => d.curated).length;
+    const reviewCount = characterizationData.filter(d => !d.curated && d.submitted_for_curation).length;
+    const readyCount = characterizationData.filter(d => !d.submitted_for_curation).length;
+
+    let message ="";
+    
+    if (characterizationData.length === 0) {
+      message += "No variants have been submitted. Would you like to begin your research submission?";
+    } else {
+      message += `You have successfully contributed ${characterizationData.length} variants to the research database. `;
+      
+      if (curatedCount > 0) {
+        message += `\n\n✅ ${curatedCount} submissions have completed the curation process`;
+      }
+      if (reviewCount > 0) {
+        message += `\n\n🔍 ${reviewCount} submissions are pending review`;
+      }
+      if (readyCount > 0) {
+        message += `\n\n💡 ${readyCount} variants are prepared for submission`;
+      }
+    }
+
+    return (
+      <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+        {message}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -107,8 +147,10 @@ const Dashboard = () => {
           {user?.user_name && (
             <>
               <div>
-              <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
-                <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
+                <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
+                </div>
               </div>
             </>
           )}
@@ -254,12 +296,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <section className="py-10">
+      <section className="py-4">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10">
           <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">FAQs</Chip> {/* Role Tag */}
           <h2 className="text-4xl text-gray-900 leading-[3.25rem]">
-            Have Questions?
+            Frequently Asked Questions
           </h2>
         </div>
 
@@ -310,6 +352,29 @@ const Dashboard = () => {
         </div>
       </div>
     </section>
+
+      {/* Replace the floating insight button */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <Popover placement="top-end" showArrow={true}>
+          <PopoverTrigger>
+            <Button
+              isIconOnly
+              className="bg-white/80 backdrop-blur-sm text-gray-500 w-10 h-10 rounded-full shadow-md hover:scale-110 transition-all duration-300 border border-gray-200"
+            >
+              <RiSparklingFill className="w-4 h-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="px-4 py-3">
+              <div className="flex items-center gap-2 mb-2">
+                <RiSparklingFill className="w-4 h-4 text-gray-500" />
+                <h4 className="font-medium text-gray-600">Quick Insights</h4>
+              </div>
+              <ResearchInsight />
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
       </AuthChecker>
       <Footer />
     </>
