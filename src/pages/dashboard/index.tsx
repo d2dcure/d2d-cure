@@ -95,47 +95,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Log the user object to verify its structure and role
-  useEffect(() => {
-    if (!loading) {
-      console.log('User:', user);
-    }
-  }, [user, loading]);
-
-  if (!user) {
-    return (
-      <>
-        <NavBar />
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-          <h1 className="text-6xl font-bold text-[#06B7DB]">404</h1>
-          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn&apos;t exist.</p>
-          <Link href="/login" passHref>
-            <Button color="primary" className="bg-[#06B7DB]">
-              Go to Login
-            </Button>
-          </Link>
-        </div>
-        <Footer />
-
-        <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
-          <ModalContent>
-            <ModalBody className="py-12 text-center">
-              <h1 className="text-4xl font-bold mb-4">Whoa there, enzyme explorer! 🧬</h1>
-              <p className="text-xl mb-8">
-                We can&apos;t let you into our top-secret enzyme research lab until you log in. 
-                Your enzyme predictions will have to wait… for now! 🔐
-              </p>
-              <Link href="/login" passHref>
-                <Button color="primary" className="bg-[#06B7DB]">
-                  Go to Login
-                </Button>
-              </Link>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      </>
-    );
-  }
 
   return (
     <>
@@ -169,7 +128,7 @@ const Dashboard = () => {
               linkText: "Submit Data",
             },
             {
-              title: "Gel Image ",
+              title: "Gel Image",
               link: "#",
               linkText: "Upload Image",
             },
@@ -179,9 +138,12 @@ const Dashboard = () => {
               linkText: "Curate Data",
             }] : [])
           ].map((item, index) => (
-            <Card key={index} className="h-[150px] w-full">
+            <Card 
+              key={index} 
+              className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
+            >
               <CardBody className="text-3xl pt-2 font-light">
-                <h3 className="pl-4 pt-2 pb-5 text-3xl  whitespace-nowrap overflow-hidden text-ellipsis">
+                <h3 className="pl-4 pt-2 pb-5 text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
                   {item.title}
                 </h3>
               </CardBody>

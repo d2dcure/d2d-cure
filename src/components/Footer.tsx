@@ -9,7 +9,7 @@ export default function App() {
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
               <Link href="/" className="flex items-center">
-                  <img src="/resources/images/D2D_Logo.svg" className="h-16 me-3" alt="logo" />
+                  <img src="/resources/images/D2D_Logo.svg" className="h-16 me-3 select-none" alt="logo" draggable="false" />
               </Link>
               <div className="mt-4 text-gray-500 dark:text-gray-400 space-y-2">
                   <p>451 Health Sciences Dr.,<br />Davis, CA 95616</p>
@@ -70,12 +70,12 @@ export default function App() {
       <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
       <div className="flex justify-center space-x-4 mb-4">
           {/* Sample logos */}
-          <img src="/resources/images/CUREnet_logo.png" alt="Sample Logo 1" className="h-10" />
-          <img src="/resources/images/Rosetta_logo.png" alt="Sample Logo 2" className="h-10" />
-          <img src="/resources/images/siteseal_sf_3_h_l_m.gif" alt="Sample Logo 3" className="h-10" />
-          <img src="/resources/images/NSF_logo.png" alt="Sample Logo 4" className="h-10" />
-          <img src="/resources/images/UC Davis_logo.png" alt="Sample Logo 5" className="h-10" />
-          <img src="/resources/images/codelablogo.png" alt="Sample Logo 6" className="h-8" />
+          <img src="/resources/images/CUREnet_logo.png" alt="Sample Logo 1" className="h-10 select-none" draggable="false" />
+          <img src="/resources/images/Rosetta_logo.png" alt="Sample Logo 2" className="h-10 select-none" draggable="false" />
+          <img src="/resources/images/siteseal_sf_3_h_l_m.gif" alt="Sample Logo 3" className="h-10 select-none" draggable="false" />
+          <img src="/resources/images/NSF_logo.png" alt="Sample Logo 4" className="h-10 select-none" draggable="false" />
+          <img src="/resources/images/UC Davis_logo.png" alt="Sample Logo 5" className="h-10 select-none" draggable="false" />
+          <img src="/resources/images/codelablogo.png" alt="Sample Logo 6" className="h-8 select-none" draggable="false" />
 
       </div>
       <div className="sm:flex sm:items-center sm:justify-between">

@@ -251,7 +251,7 @@ const AboutD2D = () => {
               <strong>Project Managers:</strong> Mohnish Gopi and Jess Fong
             </p>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-              <strong>Developers:</strong> Vishal Koppuru, Ryan Ueyeki, Hussain Ali, Kevin Bao, Vikram Karmarkar, Rahul Buhdiraja
+              <strong>Developers:</strong> Vishal Koppuru, Ryan Uyeki, Hussain Ali, Kevin Bao, Vikram Karmarkar, Rahul Buhdiraja
             </p>
             <p className="mt-4 mb-5 text-gray-600 dark:text-gray-300">
               <strong>Designers:</strong> Edyn Stepler, Samantha Tran

@@ -668,9 +668,9 @@ const DataPage = () => {
                       isHeaderSticky
                       aria-label="BglB Variant Characterization Data"
                       classNames={{
-                        base: "max-h-[3000px] rounded-lg",
-                        table: "min-h-[600px] min-w-[800px]",
-                        wrapper: "w-full"
+                        // base: "max-h-[3000px] rounded-lg",
+                        // table: "min-h-[600px] min-w-[800px]",
+                        // wrapper: "w-full"
                       }}
                     >
                       <TableHeader>

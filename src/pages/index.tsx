@@ -37,13 +37,13 @@ export default function Home() {
     </p>
     <div className="flex space-x-4 pt-2 pb-10 justify-center">
       <Button
-        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
       >
         Get Started
       </Button>
       <Button
-        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
+        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
         color="primary"
       >
@@ -57,7 +57,8 @@ export default function Home() {
       <img
         src="/resources/images/thumb.png"
         alt="Dashboard image" 
-        className="rounded-t-3xl w-full max-w-[1000px] h-auto object-cover" // Updated classes
+        className="rounded-t-3xl w-full max-w-[1000px] select-none h-auto object-cover" 
+        draggable="false"
       />
     </div>
   </div>
