@@ -246,7 +246,7 @@ const NavBar = () => {
               <button
                 onClick={() => setActiveDropdown('mobile-database')}
                 className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  isActiveLink('/data') || isActiveLink('/submit') || isActiveLink('/curate')
+                  isActiveLink('/database') || isActiveLink('/submit') || isActiveLink('/curate')
                     ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
                     : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
                 }`}
@@ -258,7 +258,10 @@ const NavBar = () => {
               </button>
 
               <div className={`transition-all duration-200 ${activeDropdown === 'mobile-database' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                <Link href="/data" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                <Link href="/database" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  All Databases
+                </Link>
+                <Link href="/database/BglB_Characterization" className="block px-8 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                   BglB Characterization
                 </Link>
                 {user?.status && (
