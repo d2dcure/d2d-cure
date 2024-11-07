@@ -202,13 +202,23 @@ const handleDeleteFirebase = async () => {
   <>
   <NavBar />
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "48px", gap: "10px"}}>
+  <h1 style={{
+      fontSize: "40px", 
+      lineHeight: "28px", 
+      width: "333px", 
+      gap: "10px", 
+      marginBottom: "48px", 
+      textAlign: "left", 
+      alignSelf: "flex-start"
+  }}>
+      Manage Students
+  </h1>
 
   <Table
     aria-label="Members Table"
 
     style={{
       height: "auto",
-      minWidth: "100%",
       borderRadius: "12px", 
       width: "1280px",
       paddingTop: "18px", 
@@ -244,6 +254,7 @@ const handleDeleteFirebase = async () => {
               borderWidth: '2px',
               paddingRight: '16px',
               marginTop: "10px",
+              marginRight: "20px",
               gap: '12px'
             }}
           >
