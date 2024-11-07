@@ -72,7 +72,7 @@ const BglBPage = () => {
 
         <div className="mt-12 space-y-6 max-w-3xl">
           <p className="text-gray-600">
-            β-glucosidase B (BglB, lovingly called "Bagel B" by our teams) is an enzyme that catalyzes 
+            β-glucosidase B (BglB, lovingly called &quot;Bagel B&quot; by our teams) is an enzyme that catalyzes 
             the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage. 
             It is an essential enzyme for the degradation of cellulose by bacteria and fungi.
           </p>
