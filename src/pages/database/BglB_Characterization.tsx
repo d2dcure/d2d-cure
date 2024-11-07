@@ -276,8 +276,8 @@ const DataPage = () => {
             <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
           </Breadcrumbs>
 
-          <div className="pt-3 ">
-            <h1 className="mb-4 pb-14 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
+          <div className="pt-3">
+            <h1 className="mb-4 pb-4 lg:pb-14 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
               BglB Variant Characterization Data
             </h1>
 
@@ -286,7 +286,7 @@ const DataPage = () => {
               {/* Sidebar - Make sticky */}
               <div className="w-full lg:w-1/5">
                 <div className="lg:sticky lg:top-4">
-                  {/* Mobile toggle button */}
+                  {/* Mobile toggle button - Previous styling */}
                   <Button
                     className={`lg:hidden w-full flex items-center justify-center gap-2 bg-gray-100 ${isSidebarOpen ? 'mb-4' : '-mb-2'}`}
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -297,106 +297,115 @@ const DataPage = () => {
 
                   {/* Sidebar content - hidden by default on mobile, shown when toggled */}
                   <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-                    <div className="flex pr-0 lg:pr-6 flex-col gap-4">
-                      {/* Color Key section */}
-                      <div className="mb-6">
-                        <h2 className="text-xl font-light mb-2">Color Key</h2>
-                        
-                        <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
-                          View full BglB Sequence {'>'}
-                        </Link>
-                        
-                        {/* Color gradient bar */}
-                        <div className="flex items-center gap-[2px] mb-2">
-                          {[
-                            '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
-                            '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
-                            '#FAC498', '#F68932'
-                          ].map((color, index) => (
-                            <div 
-                              key={index}
-                              style={{
-                                backgroundColor: color,
-                                width: '100%',
-                                height: '23px',
-                                borderRadius: '4px'
-                              }}
-                            />
-                          ))}
-                        </div>
-                        
-                        {/* Scale numbers - Updated for better alignment */}
-                        <div className="relative w-full h-6 mb-2">
-                          {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
-                            <div
-                              key={index}
-                              className="absolute transform -translate-x-1/2 text-xs"
-                              style={{
-                                left: `${(index) * (100 / 10)}%`,
-                                top: 0
-                              }}
-                            >
-                              {number}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Labels */}
-                        <div className="flex justify-between text-sm text-gray-600 mb-8">
-                          <div>Underperform<br/>WT</div>
-                          <div className="text-right">Outperform<br/>WT</div>
-                        </div>
-                      </div>
-
-                      {/* Variant Analysis section */}
-                      <div className="mb-6">
-                        <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
-                        
-                        <Link href="#" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
-                          How were these data calculated?
-                        </Link>
-                        
-                        <div className="space-y-4 text-gray-600">
-                          <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
-                            <p className='text-sm'>
-                              For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
-                            </p>
-                            
-                            <p className='text-sm'>
-                              log 1/KM is used so that larger values are &quot;better&quot;.
-                            </p>
-                            
-                            <p className='text-sm'>
-                              For T50 and TM values and Rosetta scores, a linear scale is used.
-                            </p>
-                            
-                            <p className='text-sm'>
-                              Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
-                            </p>
-                            
-                            <p className='text-sm'>
-                              Variants marked with an asterisk (*) expressed, but no yield was recorded.
-                            </p>
+                    <div className="bg-gray-50  rounded-lg shadow-sm p-6 mb-6">
+                      <div className="flex flex-col gap-4">
+                        {/* Color Key section */}
+                        <div className="mb-6">
+                          <h2 className="text-xl font-light mb-2">Color Key</h2>
+                          
+                          <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
+                            View full BglB Sequence
+                          </Link>
+                          
+                          {/* Color gradient bar */}
+                          <div className="flex items-center gap-[2px] mb-2">
+                            {[
+                              '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
+                              '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
+                              '#FAC498', '#F68932'
+                            ].map((color, index) => (
+                              <div 
+                                key={index}
+                                style={{
+                                  backgroundColor: color,
+                                  width: '100%',
+                                  height: '23px',
+                                  borderRadius: '4px'
+                                }}
+                              />
+                            ))}
                           </div>
                           
-                          <button 
-                            onClick={() => setShowFullText(!showFullText)}
-                            className="text-gray-600 text-sm hover:underline"
-                          >
-                            {showFullText ? "Show Less" : "Read More"}
-                          </button>
+                          {/* Scale numbers - Updated for better alignment */}
+                          <div className="relative w-full h-6 mb-2">
+                            {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
+                              <div
+                                key={index}
+                                className="absolute transform -translate-x-1/2 text-xs"
+                                style={{
+                                  left: `${(index) * (100 / 10)}%`,
+                                  top: 0
+                                }}
+                              >
+                                {number}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Labels */}
+                          <div className="flex justify-between text-sm text-gray-600 mb-8">
+                            <div>Underperform<br/>WT</div>
+                            <div className="text-right">Outperform<br/>WT</div>
+                          </div>
                         </div>
 
-                        <Button 
-                          className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB] bg-white"
-                          variant="bordered"
-                          size="sm"
-                        >
-                          Download CSV file
-                        </Button>
-                      </div>
+                        {/* Variant Analysis section */}
+                        <div className="mb-6">
+                          <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
+                          
+                          <Link href="#" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
+                            How is the data calculated?
+                          </Link>
+                          
+                          <div className="text-gray-600">
+                            <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
+                              <div className="text-sm space-y-3">
+                                <p>
+                                  For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
+                                  {!showFullText && "..."}
+                                </p>
+                                
+                                {showFullText && (
+                                  <>
+                                    <p>
+                                      log 1/KM is used so that larger values are &quot;better&quot;.
+                                    </p>
+                                    
+                                    <p>
+                                      For T50 and TM values and Rosetta scores, a linear scale is used.
+                                    </p>
+                                    
+                                    <p>
+                                      Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
+                                    </p>
+                                    
+                                    <p>
+                                      Variants marked with an asterisk (*) expressed, but no yield was recorded.
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <button 
+                              onClick={() => setShowFullText(!showFullText)}
+                              className="text-[#06B7DB] hover:underline text-sm mt-1"
+                            >
+                              {showFullText ? "Show Less ↑" : "Read More ↓"}
+                            </button>
+                          </div>
 
-                      {/* Additional filter options can go here */}
+                          <Button 
+                            className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB]"
+                            variant="bordered"
+                            size="sm"
+                          >
+                            Download CSV file
+                          </Button>
+                        </div>
+
+                        {/* Additional filter options can go here */}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -406,11 +415,11 @@ const DataPage = () => {
               <div className="w-full lg:w-4/5">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row justify-between gap-3">
-                    <div className="flex flex-wrap gap-2 items-center w-full sm:max-w-[44%]">
+                    <div className="flex flex-wrap gap-2 items-center w-full">
                       <Input
                         isClearable
                         classNames={{
-                          base: "w-full sm:max-w-[300px]",
+                          base: "w-full md:w-[300px]",
                         }}
                         placeholder="Search for residue number..."
                         size="sm"
@@ -435,13 +444,13 @@ const DataPage = () => {
                           </svg>
                         }
                       />
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <Dropdown>
-                          <DropdownTrigger className="flex">
+                      <div className="flex gap-2 w-full md:w-auto">
+                        <Dropdown className="w-full md:w-auto">
+                          <DropdownTrigger className="w-full md:w-auto">
                             <Button
                               size="sm"
                               variant="flat"
-                              className="w-full sm:w-auto"
+                              className="w-full md:w-[200px]"
                             >
                               Columns
                             </Button>
@@ -462,13 +471,13 @@ const DataPage = () => {
                           </DropdownMenu>
                         </Dropdown>
                         
-                        <Dropdown>
+                        <Dropdown className="w-full md:w-auto">
                           <DropdownTrigger>
                             <Button 
                               isIconOnly
                               size="sm"
                               variant="flat"
-                              className="w-full sm:w-auto"
+                              className="w-full md:w-auto"
                             >
                               <FaFilter />
                             </Button>
@@ -637,17 +646,17 @@ const DataPage = () => {
                   {/* Records count and rows selector */}
                   <div className="flex flex-col sm:flex-row justify-between items-center">
                     {/* Left-aligned total records */}
-                    <span className="text-small text-default-400">
+                    <span className="text-small text-default-400 mb-2 sm:mb-0">
                       Total {displayData.length} records
                     </span>
 
-                    {/* Right-aligned rows selector */}
-                    <div className="flex items-center gap-2">
+                    {/* Right-aligned rows selector - moved below table on small screens */}
+                    <div className="flex items-center gap-2 order-last sm:order-none mt-4 sm:mt-0">
                       <span className="text-small text-default-400">Rows per page:</span>
                       <Select
                         size="sm"
                         defaultSelectedKeys={["30"]}
-                        className="w-20"
+                        className="w-24"
                         onChange={(e) => {
                           const value = e.target.value;
                           setRowsPerPage(value === "all" ? displayData.length : Number(value));

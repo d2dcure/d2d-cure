@@ -68,15 +68,13 @@ export default function App() {
           </div>
       </div>
       <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-      <div className="flex justify-center space-x-4 mb-4">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 px-2 sm:px-4">
           {/* Sample logos */}
-          <img src="/resources/images/CUREnet_logo.png" alt="Sample Logo 1" className="h-10 select-none" draggable="false" />
-          <img src="/resources/images/Rosetta_logo.png" alt="Sample Logo 2" className="h-10 select-none" draggable="false" />
-          <img src="/resources/images/siteseal_sf_3_h_l_m.gif" alt="Sample Logo 3" className="h-10 select-none" draggable="false" />
-          <img src="/resources/images/NSF_logo.png" alt="Sample Logo 4" className="h-10 select-none" draggable="false" />
-          <img src="/resources/images/UC Davis_logo.png" alt="Sample Logo 5" className="h-10 select-none" draggable="false" />
-          <img src="/resources/images/codelablogo.png" alt="Sample Logo 6" className="h-8 select-none" draggable="false" />
-
+          <img src="/resources/images/CUREnet_logo.png" alt="Sample Logo 1" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
+          <img src="/resources/images/Rosetta_logo.png" alt="Sample Logo 2" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
+          <img src="/resources/images/NSF_logo.png" alt="Sample Logo 4" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
+          <img src="/resources/images/UC Davis_logo.png" alt="Sample Logo 5" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
+          <img src="/resources/images/codelablogo.png" alt="Sample Logo 6" className="h-4 sm:h-6 md:h-8 w-auto select-none" draggable="false" />
       </div>
       <div className="sm:flex sm:items-center sm:justify-between">
           <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <Link href="" className="hover:underline">D2D CURE © 2018–2024 ~ The D2D CURE Program is supported by the National Science Foundation&apos;s Undergraduate Biology Education IUSE Program, award number 1827246. Website maintained by Jason William Labonte. </Link>. All Rights Reserved.
