@@ -314,7 +314,7 @@ const DataPage = () => {
 
                   {/* Sidebar content */}
                   <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-                    <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none p-6 mb-6">
+                    <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none pr-1 mb-6">
                       <div className="flex flex-col gap-4">
                         {/* Color Key section */}
                         <div className="mb-6">
@@ -633,6 +633,7 @@ const DataPage = () => {
                                 </Select>
                               </div>
                             </DropdownItem>
+
                           </DropdownMenu>
                         </Dropdown>
                       </div>

@@ -8,6 +8,7 @@ import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
 import { AuthChecker } from '@/components/AuthChecker';
 import { RiSparklingFill } from "react-icons/ri";
+import StatusChip from '@/components/StatusChip';
 
 interface CharacterizationData {
   curated: boolean;
@@ -241,7 +242,15 @@ const Dashboard = () => {
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        {renderStatus(data)}
+                        <StatusChip 
+                          status={
+                            data.curated 
+                              ? 'approved'
+                              : data.submitted_for_curation 
+                                ? 'pending_approval'
+                                : 'in_progress'
+                          } 
+                        />
                       </TableCell>
                       <TableCell>BglB</TableCell>
                       <TableCell>{variant}</TableCell>

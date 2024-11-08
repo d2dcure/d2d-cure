@@ -5,8 +5,12 @@ import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import SingleVarSidebar from '@/components/single_variant_submission/SingleVarSidebar';
 import { AuthChecker } from '@/components/AuthChecker';
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+// Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 
-// Import your component views
 import ProteinModeledView from '@/components/single_variant_submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/single_variant_submission/OligonucleotideOrderedView';
 import PlasmidSequenceVerifiedView from '@/components/single_variant_submission/PlasmidSequenceVerifiedView';
@@ -18,6 +22,12 @@ import ThermoAssayDataView from '@/components/single_variant_submission/ThermoAs
 import WildTypeThermoDataView from '@/components/single_variant_submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/single_variant_submission/MeltingPointView';
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
+import StatusChip from '@/components/StatusChip';
+import { EditIcon } from "@/components/icons/EditIcon";
+import { DeleteIcon } from "@/components/icons/DeleteIcon";
+import { EyeIcon } from "@/components/icons/EyeIcon";
+import { Tooltip } from "@nextui-org/react";
+import confetti from 'canvas-confetti';
 
 const SingleVariant = () => {
   const { user } = useUser();
@@ -157,7 +167,7 @@ const SingleVariant = () => {
       if (item === "Plasmid sequence verified" && entryData.ab1_filename) {
         return (
           <button
-            className="text-blue-500 hover:underline"
+            className="text-[#06B7DB] hover:underline"
             onClick={() => handleAB1Download(entryData.ab1_filename)}
           >
             (Download)
@@ -209,61 +219,75 @@ const SingleVariant = () => {
     };
 
     return (
-      <div className="flex justify-center mt-5 mb-5">
-        <div className="w-full max-w-4xl">
-          {/* Submit for Review button */}
-          <div className="flex justify-end mb-4">
-            <button 
-              className="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600"
-              onClick={() => {/* Add submit logic here, or create a function for it */}}
-            >
-              Submit for Review
-            </button>
-          </div>
+      <Table 
+        aria-label="Checklist items"
+        classNames={{
+          base: "max-h-[600px]",
+          table: "min-h-[100px]",
+          td: "py-3 text-sm",
+          th: "text-sm",
+        }}
+      >
+        <TableHeader>
+          <TableColumn>Status</TableColumn>
+          <TableColumn>Checklist Item</TableColumn>
+          <TableColumn>Additional Info</TableColumn>
+          <TableColumn align="center">Actions</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {checklistItems.map((item, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <span className={getStatusStyle(item).className}>
+                  {getStatusStyle(item).text}
+                </span>
+              </TableCell>
+              <TableCell>{item}</TableCell>
+              <TableCell className="text-center">
+                {renderAdditionalInfo(item)}
+              </TableCell>
+              <TableCell>
+                <div className="relative flex items-center justify-center gap-2">
+                  <Tooltip content="View Details">
+                    <span 
+                      className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <EyeIcon />
+                    </span>
+                  </Tooltip>
+                  <Tooltip content="Edit">
+                    <span 
+                      className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <EditIcon />
+                    </span>
+                  </Tooltip>
+                  <Tooltip color="danger" content="Delete">
+                    <span 
+                      className="text-lg text-danger cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </span>
+                  </Tooltip>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
-          {/* Table container */}
-          <div className="rounded-lg shadow-lg">
-            <table className="w-full">
-              <thead className="bg-gray-100 text-gray-600">
-                <tr>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2">Checklist Item</th>
-                  <th className="px-4 py-2">Additional Info</th> 
-                  <th className="px-4 py-2">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checklistItems.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2 text-center">
-                      <span className={getStatusStyle(item).className}>
-                        {getStatusStyle(item).text}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{item}</td>
-
-                    <td className="px-4 py-2 text-center">
-                      {renderAdditionalInfo(item)}
-                    </td>
-                    
-                    <td className="px-4 py-2 text-center">
-                      <button 
-                        className="px-4 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
-                        onClick={() => {
-                          setCurrentView('detail');
-                          setSelectedDetail(item);
-                        }}
-                      >
-                        Select
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     );
   };
 
@@ -297,23 +321,102 @@ const SingleVariant = () => {
     }
   };
 
+  const getVariantDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
+    return `${variant} BglB`;
+  };
+
+  const getBreadcrumbDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = getVariantDisplay(data);
+    return `${variant}`;
+  };
+
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const buttonWidth = rect.right - rect.left;
+    
+    // Create multiple confetti bursts across the button
+    for (let i = 0; i < 3; i++) {
+      const x = (rect.left + (buttonWidth * (i/2))) / window.innerWidth;
+      const y = rect.top / window.innerHeight;
+      
+      confetti({
+        particleCount: 40,
+        spread: 55,
+        origin: { x, y },
+        colors: ['#06B7DB', '#0891b2', '#155e75'],
+        startVelocity: 30,
+        gravity: 1.2,
+        ticks: 300
+      });
+    }
+  };
+
   return (
     <>
       <NavBar />
       <AuthChecker minimumStatus="student">
-        <div className="flex mt-8">
-          {/* Sidebar for variant information */}
-          <SingleVarSidebar entryData={entryData} />
-    
-          {/* Main content area for checklist table */}
-          <div className="flex-1 overflow-auto p-4">
-            {currentView === 'checklist' ? (
-              <div>{renderChecklistTable()}</div>
-            ) : (
-              <div className="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto">
-                {renderDetailView()}
+        <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <Breadcrumbs className="mb-2">
+              <BreadcrumbItem>Home</BreadcrumbItem>
+              <BreadcrumbItem>Submit</BreadcrumbItem>
+              <BreadcrumbItem>Single Variant</BreadcrumbItem>
+              <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
+            </Breadcrumbs>
+
+            <div className="pt-3">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
+                    {getVariantDisplay(entryData)}
+                    <Link 
+                      href={`/database/BglB_Characterization?search=${encodeURIComponent(
+                        getVariantDisplay(entryData)
+                          .replace(' BglB', '') // Remove BglB suffix
+                          .trim() // Remove any extra whitespace
+                      )}`}
+                      className="inline-flex items-center hover:text-[#06B7DB]"
+                    >
+                      <ExternalLink className="w-5 h-5 stroke-[1.5]" />
+                    </Link>
+                  </h1>
+                  <StatusChip status="in_progress" />
+                </div>
+                <div className="flex justify-end gap-4 -mb-12">
+                  <button 
+                    className="px-3 py-1 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
+                    onClick={() => {/* Add delete logic here */}}
+                  >
+                    Delete Profile
+                  </button>
+                  <button 
+                    className="px-3 py-1 text-sm font-semibold rounded-xl mr-4 bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
+                    onClick={handleSubmit}
+                  >
+                    Submit for Review
+                  </button>
+                </div>
               </div>
-            )}
+
+              <div className="flex w-full gap-4 flex-col lg:flex-row">
+                <div className="w-full lg:w-1/5">
+                  <div className="lg:sticky lg:top-4">
+                    <SingleVarSidebar entryData={entryData} />
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  {currentView === 'checklist' ? (
+                    <div className="p-4">{renderChecklistTable()}</div>
+                  ) : (
+                    <div className="p-4">{renderDetailView()}</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </AuthChecker>
