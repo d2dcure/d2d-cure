@@ -22,6 +22,11 @@ import WildTypeThermoDataView from '@/components/single_variant_submission/WildT
 import MeltingPointView from '@/components/single_variant_submission/MeltingPointView';
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
 import StatusChip from '@/components/StatusChip';
+import { EditIcon } from "@/components/icons/EditIcon";
+import { DeleteIcon } from "@/components/icons/DeleteIcon";
+import { EyeIcon } from "@/components/icons/EyeIcon";
+import { Tooltip } from "@nextui-org/react";
+import confetti from 'canvas-confetti';
 
 const SingleVariant = () => {
   const { user } = useUser();
@@ -139,13 +144,15 @@ const SingleVariant = () => {
         classNames={{
           base: "max-h-[600px]",
           table: "min-h-[100px]",
+          td: "py-3 text-sm",
+          th: "text-sm",
         }}
       >
         <TableHeader>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn>CHECKLIST ITEM</TableColumn>
-          <TableColumn>ADDITIONAL INFO</TableColumn>
-          <TableColumn>ACTIONS</TableColumn>
+          <TableColumn>Status</TableColumn>
+          <TableColumn>Checklist Item</TableColumn>
+          <TableColumn>Additional Info</TableColumn>
+          <TableColumn align="center">Actions</TableColumn>
         </TableHeader>
         <TableBody>
           {checklistItems.map((item, index) => (
@@ -160,15 +167,41 @@ const SingleVariant = () => {
                 {renderAdditionalInfo(item)}
               </TableCell>
               <TableCell>
-                <button 
-                  className="px-4 py-1 text-white bg-[#06B7DB] rounded hover:bg-[#05a5c6]"
-                  onClick={() => {
-                    setCurrentView('detail');
-                    setSelectedDetail(item);
-                  }}
-                >
-                  Select
-                </button>
+                <div className="relative flex items-center justify-center gap-2">
+                  <Tooltip content="View Details">
+                    <span 
+                      className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <EyeIcon />
+                    </span>
+                  </Tooltip>
+                  <Tooltip content="Edit">
+                    <span 
+                      className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <EditIcon />
+                    </span>
+                  </Tooltip>
+                  <Tooltip color="danger" content="Delete">
+                    <span 
+                      className="text-lg text-danger cursor-pointer active:opacity-50"
+                      onClick={() => {
+                        setCurrentView('detail');
+                        setSelectedDetail(item);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </span>
+                  </Tooltip>
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -219,6 +252,27 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const buttonWidth = rect.right - rect.left;
+    
+    // Create multiple confetti bursts across the button
+    for (let i = 0; i < 3; i++) {
+      const x = (rect.left + (buttonWidth * (i/2))) / window.innerWidth;
+      const y = rect.top / window.innerHeight;
+      
+      confetti({
+        particleCount: 40,
+        spread: 55,
+        origin: { x, y },
+        colors: ['#06B7DB', '#0891b2', '#155e75'],
+        startVelocity: 30,
+        gravity: 1.2,
+        ticks: 300
+      });
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -238,7 +292,11 @@ const SingleVariant = () => {
                   <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                     {getVariantDisplay(entryData)}
                     <Link 
-                      href={`/database/BglB_Characterization?variant=${encodeURIComponent(getVariantDisplay(entryData))}`}
+                      href={`/database/BglB_Characterization?search=${encodeURIComponent(
+                        getVariantDisplay(entryData)
+                          .replace(' BglB', '') // Remove BglB suffix
+                          .trim() // Remove any extra whitespace
+                      )}`}
                       className="inline-flex items-center hover:text-[#06B7DB]"
                     >
                       <ExternalLink className="w-5 h-5 stroke-[1.5]" />
@@ -246,12 +304,20 @@ const SingleVariant = () => {
                   </h1>
                   <StatusChip status="in_progress" />
                 </div>
-                <button 
-                  className="px-6 py-2 bg-[#06B7DB] text-white font-semibold rounded hover:bg-[#05a5c6]"
-                  onClick={() => {/* Add submit logic here */}}
-                >
-                  Submit for Review
-                </button>
+                <div className="flex justify-end gap-4 -mb-12">
+                  <button 
+                    className="px-3 py-1 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
+                    onClick={() => {/* Add delete logic here */}}
+                  >
+                    Delete Profile
+                  </button>
+                  <button 
+                    className="px-3 py-1 text-sm font-semibold rounded-xl mr-4 bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
+                    onClick={handleSubmit}
+                  >
+                    Submit for Review
+                  </button>
+                </div>
               </div>
 
               <div className="flex w-full gap-4 flex-col lg:flex-row">

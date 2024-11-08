@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip } from "@nextui-org/react";
+import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, CardBody } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 
 const SubmitPage = () => {
@@ -167,42 +167,37 @@ const SubmitPage = () => {
 
               {/* Initial Selection Cards */}
               {!selection && (
-                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                  <Card 
+                    isPressable
+                    onPress={() => setSelection('single_variant')}
+                    className="h-[170px] hover:scale-105 transition-transform"
+                  >
+                    <CardBody className="flex flex-col justify-between h-full">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                        Single Variant
+                      </h3>
+                      <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
+                        Submit Data {'>'}
+                      </span>
+                    </CardBody>
+                  </Card>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
-                    <div 
-                      onClick={() => setSelection('single_variant')}
-                      className="cursor-pointer"
-                    >
-                      <div className="h-[170px] hover:scale-105 transition-transform border rounded-lg">
-                        <div className="flex flex-col justify-between h-full p-4">
-                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-light">
-                            Single Variant
-                          </h3>
-                          <span className="text-sm text-[#06B7DB] hover:font-semibold">
-                            Submit Data {'>'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelection('wild_type')}
-                      className="cursor-pointer"
-                    >
-                      <div className="h-[170px] hover:scale-105 transition-transform border rounded-lg">
-                        <div className="flex flex-col justify-between h-full p-4">
-                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-light">
-                            Wild Type
-                          </h3>
-                          <span className="text-sm text-[#06B7DB] hover:font-semibold">
-                            Submit Data {'>'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
+                  <Card 
+                    isPressable
+                    onPress={() => setSelection('wild_type')}
+                    className="h-[170px] hover:scale-105 transition-transform"
+                  >
+                    <CardBody className="flex flex-col justify-between h-full">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                        Wild Type
+                      </h3>
+                      <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
+                        Submit Data {'>'}
+                      </span>
+                    </CardBody>
+                  </Card>
+                </div>
               )}
 
               {/* Form Sections */}

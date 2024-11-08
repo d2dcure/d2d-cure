@@ -18,6 +18,21 @@ const useClipboard = () => {
   return { copied, copy };
 };
 
+const renderCell = (item: any, columnKey: string) => {
+  switch (columnKey) {
+    case 'actions':
+      return (
+        <div className="flex gap-2">
+          {/* Add your action buttons here */}
+          <Button size="sm">Edit</Button>
+          <Button size="sm">Delete</Button>
+        </div>
+      );
+    default:
+      return item[columnKey];
+  }
+};
+
 const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData }) => {
   const { user } = useUser();
   const [oligosData, setOligosData] = useState<any[]>([]);
@@ -100,9 +115,9 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData }) => {
   };
 
   return (
-    <div className="flex flex-col pt-3 gap-6">
+    <div className="flex flex-col pt-5 gap-6">
 
-<span className="font-medium -mb-4 text-sm">Details:</span>
+{/* <span className="font-medium -mb-4 text-sm">Details:</span> */}
 
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
