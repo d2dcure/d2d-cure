@@ -1,8 +1,9 @@
-// KineticAssayDataView.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
+import { useUser } from '@/components/UserProvider';
+import { useRouter } from 'next/router';
+import s3 from '../../../s3config'; // Ensure this is correctly configured
 
 interface KineticAssayDataViewProps {
   entryData: any;
@@ -13,10 +14,83 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   entryData,
   setCurrentView,
 }) => {
+  const { user } = useUser();
+  const router = useRouter();
+
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
   const [mentenImageUrl, setMentenImageUrl] = useState<string | null>(null);
   const [lineweaverImageUrl, setLineweaverImageUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+
+  const [kineticConstants, setKineticConstants] = useState({
+    kcat: null,
+    kcat_SD: null,
+    KM: null,
+    KM_SD: null,
+    kcat_over_KM: null,
+    kcat_over_KM_SD: null,
+  });
+
+  const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchKineticRawDataEntryData = async () => {
+      try {
+        const response = await axios.get('/api/getKineticRawDataEntryData', {
+          params: { parent_id: entryData.id },
+        });
+        if (response.status === 200) {
+          const data = response.data;
+          setKineticRawDataEntryData(data);
+
+          if (data.csv_filename) {
+            // Fetch the CSV file from S3 and process it
+            await fetchAndProcessCSV(data.csv_filename);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching KineticRawData entry:', error);
+      }
+    };
+
+    if (entryData.id) {
+      fetchKineticRawDataEntryData();
+    }
+  }, [entryData.id]);
+
+  const fetchAndProcessCSV = async (filename: string) => {
+    try {
+      // Generate signed URL using AWS SDK
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `kinetic_assays/raw/${filename}`,
+        Expires: 60, // URL expires in 60 seconds
+      };
+
+      const url = await s3.getSignedUrlPromise('getObject', params);
+
+      // Fetch the CSV file using the signed URL
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const csvFile = new File([blob], filename, { type: 'text/csv' });
+
+      setFile(csvFile);
+
+      // Parse the CSV file
+      Papa.parse(csvFile, {
+        complete: (result) => {
+          console.log('Parsed Result:', result);
+          setKineticAssayData(result.data as any[][]);
+        },
+        header: false,
+      });
+
+      // Generate graphs from the file
+      await generateGraphFromFile(csvFile);
+    } catch (error) {
+      console.error('Error fetching and processing CSV file from S3:', error);
+    }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files ? event.target.files[0] : null;
@@ -29,7 +103,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         console.log('Parsed Result:', result);
         setKineticAssayData(result.data as any[][]);
       },
-      header: false, // Disable header row parsing for direct cell access
+      header: false,
     });
 
     if (entryData.resid && entryData.resnum && entryData.resmut) {
@@ -58,8 +132,14 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
       setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
 
-      // Handle additional data if needed
-      // For example, you can store kcat, KM, etc.
+      setKineticConstants({
+        kcat: responseData.kcat,
+        kcat_SD: responseData.kcat_SD,
+        KM: responseData.KM,
+        KM_SD: responseData.KM_SD,
+        kcat_over_KM: responseData.kcat_over_KM,
+        kcat_over_KM_SD: responseData.kcat_over_KM_SD,
+      });
     } catch (error) {
       console.error('Error uploading file:', error);
     }
@@ -87,9 +167,176 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
       setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
 
-      // Handle additional data if needed
+      setKineticConstants({
+        kcat: responseData.kcat,
+        kcat_SD: responseData.kcat_SD,
+        KM: responseData.KM,
+        KM_SD: responseData.KM_SD,
+        kcat_over_KM: responseData.kcat_over_KM,
+        kcat_over_KM_SD: responseData.kcat_over_KM_SD,
+      });
     } catch (error) {
       console.error('Error generating graph from table data:', error);
+    }
+  };
+
+  const generateFilename = (baseName: string, suffix: string = '', extension: string) => {
+    const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
+    return `${user.user_name}-BglB-${variant}-${entryData.id}${suffix}.${extension}`;
+  };
+
+  const base64ToBlob = (base64Data: string, contentType: string) => {
+    const byteCharacters = atob(base64Data);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
+  };
+
+  const handleSave = async () => {
+    // Collect necessary data
+    const user_name = user.user_name;
+    const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
+    const slope_units = kineticAssayData[1][4];
+    const yield_value = entryData.yield_avg;
+    const yield_units = kineticAssayData[1][6];
+    const dilution = kineticAssayData[2][7];
+    let purification_date = kineticAssayData[2][8];
+    if (purification_date && purification_date.includes('#')) {
+      purification_date = null;
+    }
+    let assay_date = kineticAssayData[2][9];
+    if (assay_date && assay_date.includes('#')) {
+      assay_date = null;
+    }
+    const parent_id = entryData.id;
+
+    // Kinetic constants
+    const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
+
+    // Prepare data to send
+    const dataToSend = {
+      user_name,
+      variant,
+      slope_units,
+      yield: yield_value,
+      yield_units,
+      dilution,
+      purification_date,
+      assay_date,
+      parent_id,
+      kcat,
+      kcat_SD,
+      KM,
+      KM_SD,
+      kcat_over_KM,
+      kcat_over_KM_SD,
+      csv_filename: '',
+      plot_filename: '',
+    };
+
+    try {
+      // Generate filenames
+      const csvFilename = generateFilename('', '', 'csv');
+      const mentenPlotFilename = generateFilename('', '', 'png');
+      const lineweaverPlotFilename = generateFilename('', '-LB', 'png');
+
+      // Upload CSV file to S3
+      let csvFileToUpload;
+      if (file) {
+        // If the user uploaded a file, use it
+        csvFileToUpload = new File([file], csvFilename, { type: 'text/csv' });
+      } else {
+        // If the user edited the table, create a new CSV file from the table data
+        const csvContent = Papa.unparse(kineticAssayData);
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        csvFileToUpload = new File([blob], csvFilename, { type: 'text/csv' });
+      }
+
+      // Upload CSV to S3
+      await s3
+        .upload({
+          Bucket: 'd2dcurebucket',
+          Key: `kinetic_assays/raw/${csvFilename}`,
+          Body: csvFileToUpload,
+          ContentType: 'text/csv',
+        })
+        .promise();
+
+      if (!mentenImageUrl || !lineweaverImageUrl) {
+        alert('Plots are not available for upload.');
+        return;
+      }
+
+      // Convert Base64 plots to Blobs
+      const mentenPlotBlob = base64ToBlob(mentenImageUrl.split(',')[1], 'image/png');
+      const lineweaverPlotBlob = base64ToBlob(lineweaverImageUrl.split(',')[1], 'image/png');
+
+      // Upload Menten plot to S3
+      await s3
+        .upload({
+          Bucket: 'd2dcurebucket',
+          Key: `kinetic_assays/plots/${mentenPlotFilename}`,
+          Body: mentenPlotBlob,
+          ContentType: 'image/png',
+        })
+        .promise();
+
+      // Upload Lineweaver plot to S3
+      await s3
+        .upload({
+          Bucket: 'd2dcurebucket',
+          Key: `temp/${lineweaverPlotFilename}`,
+          Body: lineweaverPlotBlob,
+          ContentType: 'image/png',
+        })
+        .promise();
+
+      // Update the filenames in dataToSend
+      dataToSend.csv_filename = csvFilename;
+      dataToSend.plot_filename = mentenPlotFilename;
+
+      // First, save to KineticRawData
+      const response1 = await axios.post('/api/updateKineticRawData', dataToSend);
+
+      if (response1.status === 200) {
+        const raw_data_id = response1.data.kineticRawDataId;
+
+        // Now update CharacterizationData
+        const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {
+          parent_id,
+          kcat,
+          kcat_SD,
+          KM,
+          KM_SD,
+          kcat_over_KM,
+          kcat_over_KM_SD,
+          raw_data_id,
+          yield: yield_value,
+        });
+
+        if (response2.status === 200) {
+          // Success
+          console.log('Data saved successfully');
+          alert('Data saved successfully');
+        } else {
+          console.error('Error updating CharacterizationData:', response2.data);
+          alert('Error updating CharacterizationData');
+        }
+      } else {
+        console.error('Error saving KineticRawData:', response1.data);
+        alert('Error saving KineticRawData');
+      }
+    } catch (error: any) {
+      console.error('Error saving data:', error);
+      alert('Error saving data: ' + error.message);
     }
   };
 
@@ -115,6 +362,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
       <input type="file" accept=".csv" onChange={handleFileChange} />
 
+      {kineticRawDataEntryData && (
+        <p>
+          Uploaded CSV file: {kineticRawDataEntryData.csv_filename || 'N/A'}
+        </p>
+      )}
+
       {kineticAssayData.length > 0 && (
         <>
           <div className="overflow-auto">
@@ -135,7 +388,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     <td className="border border-gray-400 px-4 py-2">
                       {['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.00'][index]}
                     </td>
-                    {[2, 3, 4].map((col, colIndex) => (
+                    {[2, 3, 4].map((col) => (
                       <td key={col} className="border border-gray-400 px-4 py-2">
                         <input
                           type="text"
@@ -182,6 +435,13 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
               />
             </details>
           )}
+
+          <button
+            className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+            onClick={handleSave}
+          >
+            Save
+          </button>
         </>
       )}
     </div>
