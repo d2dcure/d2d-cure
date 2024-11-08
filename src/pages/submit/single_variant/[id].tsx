@@ -5,7 +5,10 @@ import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import SingleVarSidebar from '@/components/single_variant_submission/SingleVarSidebar';
 import { AuthChecker } from '@/components/AuthChecker';
-
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinModeledView from '@/components/single_variant_submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/single_variant_submission/OligonucleotideOrderedView';
@@ -18,6 +21,7 @@ import ThermoAssayDataView from '@/components/single_variant_submission/ThermoAs
 import WildTypeThermoDataView from '@/components/single_variant_submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/single_variant_submission/MeltingPointView';
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
+import StatusChip from '@/components/StatusChip';
 
 const SingleVariant = () => {
   const { user } = useUser();
@@ -116,7 +120,7 @@ const SingleVariant = () => {
       if (item === "Plasmid sequence verified" && entryData.ab1_filename) {
         return (
           <button
-            className="text-blue-500 hover:underline"
+            className="text-[#06B7DB] hover:underline"
             onClick={() => handleAB1Download(entryData.ab1_filename)}
           >
             (Download)
@@ -130,61 +134,46 @@ const SingleVariant = () => {
     };
 
     return (
-      <div className="flex justify-center mt-5 mb-5">
-        <div className="w-full max-w-4xl">
-          {/* Submit for Review button */}
-          <div className="flex justify-end mb-4">
-            <button 
-              className="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600"
-              onClick={() => {/* Add submit logic here, or create a function for it */}}
-            >
-              Submit for Review
-            </button>
-          </div>
-    
-          {/* Table container */}
-          <div className="rounded-lg shadow-lg">
-            <table className="w-full">
-              <thead className="bg-gray-100 text-gray-600">
-                <tr>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2">Checklist Item</th>
-                  <th className="px-4 py-2">Additional Info</th> 
-                  <th className="px-4 py-2">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checklistItems.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2 text-center">
-                      <span className={getStatusStyle(item).className}>
-                        {getStatusStyle(item).text}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{item}</td>
-
-                    <td className="px-4 py-2 text-center">
-                      {renderAdditionalInfo(item)}
-                    </td>
-                    
-                    <td className="px-4 py-2 text-center">
-                      <button 
-                        className="px-4 py-1 text-white bg-blue-500 rounded hover:bg-blue-700"
-                        onClick={() => {
-                          setCurrentView('detail');
-                          setSelectedDetail(item);
-                        }}
-                      >
-                        Select
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <Table 
+        aria-label="Checklist items"
+        classNames={{
+          base: "max-h-[600px]",
+          table: "min-h-[100px]",
+        }}
+      >
+        <TableHeader>
+          <TableColumn>STATUS</TableColumn>
+          <TableColumn>CHECKLIST ITEM</TableColumn>
+          <TableColumn>ADDITIONAL INFO</TableColumn>
+          <TableColumn>ACTIONS</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {checklistItems.map((item, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <span className={getStatusStyle(item).className}>
+                  {getStatusStyle(item).text}
+                </span>
+              </TableCell>
+              <TableCell>{item}</TableCell>
+              <TableCell className="text-center">
+                {renderAdditionalInfo(item)}
+              </TableCell>
+              <TableCell>
+                <button 
+                  className="px-4 py-1 text-white bg-[#06B7DB] rounded hover:bg-[#05a5c6]"
+                  onClick={() => {
+                    setCurrentView('detail');
+                    setSelectedDetail(item);
+                  }}
+                >
+                  Select
+                </button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   };
 
@@ -218,30 +207,74 @@ const SingleVariant = () => {
     }
   };
 
+  const getVariantDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
+    return `${variant} BglB`;
+  };
+
+  const getBreadcrumbDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = getVariantDisplay(data);
+    return `${variant}`;
+  };
+
   return (
     <>
       <NavBar />
       <AuthChecker minimumStatus="student">
-        <div className="flex mt-8">
-          {/* Sidebar for variant information */}
-          <SingleVarSidebar entryData={entryData} />
-    
-          {/* Main content area for checklist table */}
-          <div className="flex-1 overflow-auto p-4">
-            {currentView === 'checklist' ? (
-              <div>{renderChecklistTable()}</div>
-            ) : (
-              <div className="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto">
-                {renderDetailView()}
+        <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <Breadcrumbs className="mb-2">
+              <BreadcrumbItem>Home</BreadcrumbItem>
+              <BreadcrumbItem>Submit</BreadcrumbItem>
+              <BreadcrumbItem>Single Variant</BreadcrumbItem>
+              <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
+            </Breadcrumbs>
+
+            <div className="pt-3">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
+                    {getVariantDisplay(entryData)}
+                    <Link 
+                      href={`/database/BglB_Characterization?variant=${encodeURIComponent(getVariantDisplay(entryData))}`}
+                      className="inline-flex items-center hover:text-[#06B7DB]"
+                    >
+                      <ExternalLink className="w-5 h-5 stroke-[1.5]" />
+                    </Link>
+                  </h1>
+                  <StatusChip status="in_progress" />
+                </div>
+                <button 
+                  className="px-6 py-2 bg-[#06B7DB] text-white font-semibold rounded hover:bg-[#05a5c6]"
+                  onClick={() => {/* Add submit logic here */}}
+                >
+                  Submit for Review
+                </button>
               </div>
-            )}
+
+              <div className="flex w-full gap-4 flex-col lg:flex-row">
+                <div className="w-full lg:w-1/5">
+                  <div className="lg:sticky lg:top-4">
+                    <SingleVarSidebar entryData={entryData} />
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  {currentView === 'checklist' ? (
+                    <div className="p-4">{renderChecklistTable()}</div>
+                  ) : (
+                    <div className="p-4">{renderDetailView()}</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </AuthChecker>
     </>
   );
-  
 };
-
 
 export default SingleVariant;

@@ -1,48 +1,54 @@
+import React from 'react';
 import { Chip } from "@nextui-org/react";
 
-export type ProfileStatus = 
-  | "In Progress"
-  | "Pending Approval"
-  | "Needs Revision"
-  | "Approved"
-  | "Awaiting Replication";
+interface StatusChipProps {
+  status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication';
+}
 
-export type ChecklistStatus = 
-  | "Complete"
-  | "Incomplete";
-
-type StatusChipProps = {
-  status: ProfileStatus | ChecklistStatus;
-};
-
-const StatusChip = ({ status }: StatusChipProps) => {
-  const getStatusColor = (status: ProfileStatus | ChecklistStatus) => {
+const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
+  const getChipProps = (status: string) => {
     switch (status) {
-      case "In Progress":
-        return { bg: "bg-blue-100", text: "text-blue-500" };
-      case "Pending Approval":
-        return { bg: "bg-gray-100", text: "text-gray-500" };
-      case "Needs Revision":
-        return { bg: "bg-red-100", text: "text-red-500" };
-      case "Approved":
-        return { bg: "bg-green-100", text: "text-green-500" };
-      case "Awaiting Replication":
-        return { bg: "bg-yellow-100", text: "text-yellow-500" };
-      case "Complete":
-        return { bg: "bg-green-100", text: "text-green-500" };
-      case "Incomplete":
-        return { bg: "bg-yellow-100", text: "text-yellow-500" };
+      case 'in_progress':
+        return {
+          className: "bg-[#06B7DB]/20 text-[#06B7DB]",
+          children: "In Progress"
+        };
+      case 'pending_approval':
+        return {
+          color: "warning" as const,
+          children: "Pending Approval"
+        };
+      case 'needs_revision':
+        return {
+          color: "danger" as const,
+          children: "Needs Revision"
+        };
+      case 'approved':
+        return {
+          color: "success" as const,
+          children: "Approved"
+        };
+      case 'awaiting_replication':
+        return {
+          color: "secondary" as const,
+          children: "Awaiting Replication"
+        };
       default:
-        return { bg: "bg-gray-100", text: "text-gray-500" };
+        return {
+          color: "default" as const,
+          children: "Unknown Status"
+        };
     }
   };
 
-  const { bg, text } = getStatusColor(status);
+  const chipProps = getChipProps(status);
 
   return (
-    <Chip className={`${bg} ${text}`} variant="flat">
-      {status}
-    </Chip>
+    <Chip
+      size="sm"
+      variant="flat"
+      {...chipProps}
+    />
   );
 };
 
