@@ -43,10 +43,10 @@ const ReportBug = () => {
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.comment) {
+    if (!formData.fullName || !formData.email || !formData.comment || !formData.category) {
       setModalContent({
-        title: "Validation Error",
-        message: "Looks like some required fields are bugging out! 🐛 Please fill them in.",
+        title: "Required Fields Missing",
+        message: "Please fill in all required fields to proceed.",
         type: "error"
       });
       onOpen();
@@ -56,8 +56,8 @@ const ReportBug = () => {
     setIsLoading(true);
     onOpen();
     setModalContent({
-      title: "Sending your bug report",
-      message: "Debugging in progress... 🔍",
+      title: "Processing Report",
+      message: "Analyzing bug details...",
       type: "loading"
     });
 
@@ -82,8 +82,8 @@ const ReportBug = () => {
       
       if (response.ok) {
         setModalContent({
-          title: "Bug Report Sent Successfully!",
-          message: "Thanks for squashing bugs with us! 🐞 Our team will investigate and respond within 24-48 business hours.",
+          title: "Report Submitted Successfully",
+          message: "Thank you for your report. Our team will review it within 24-48 hours.",
           type: "success"
         });
         setFormData({
@@ -98,15 +98,15 @@ const ReportBug = () => {
         setPreview(null);
       } else {
         setModalContent({
-          title: "Error",
-          message: `Oops! This bug caught us off guard! 🪲 Error: ${result.message}`,
+          title: "Submission Error",
+          message: `Unable to process request: ${result.message}`,
           type: "error"
         });
       }
     } catch (error) {
       setModalContent({
-        title: "Error",
-        message: "Looks like we encountered a bug while reporting a bug! 🪲 Please try again later.",
+        title: "System Error",
+        message: "An unexpected error occurred. Please try again later.",
         type: "error"
       });
     } finally {
@@ -298,7 +298,14 @@ const ReportBug = () => {
       </div>
       <Footer />
       
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose}
+        backdrop="blur" 
+        classNames={{
+          base: "border border-gray-200 dark:border-gray-700"
+        }}
+      >
         <ModalContent>
           <ModalHeader className="flex items-center gap-2">
             {modalContent.type === "success" && <FaCheckCircle className="text-green-500 text-xl" />}

@@ -41,8 +41,8 @@ const ContactUs = () => {
 
     if (!formDataToSend.fullName || !formDataToSend.date || !formDataToSend.email || !formDataToSend.comment) {
       setModalContent({
-        title: "Oops! Missing Information",
-        message: "Looks like some fields are feeling lonely! 📝 Please fill in all the required ones.",
+        title: "Missing Information",
+        message: "Please fill in all required fields to continue.",
         type: "error"
       });
       onOpen();
@@ -52,8 +52,8 @@ const ContactUs = () => {
     setIsLoading(true);
     onOpen();
     setModalContent({
-      title: "Message in Transit",
-      message: "Your message is flying through the digital clouds! ✈️",
+      title: "Sending Message",
+      message: "Your message is being processed...",
       type: "loading"
     });
 
@@ -67,22 +67,22 @@ const ContactUs = () => {
       const result = await response.json();
       if (response.ok) {
         setModalContent({
-          title: "Message Delivered Successfully!",
-          message: "Your message has landed safely in our inbox! 🎯 We'll get back to you faster than a caffeinated scientist!",
+          title: "Success!",
+          message: "Message received. We'll respond faster than a caffeinated developer!",
           type: "success"
         });
         setFormData({ fullName: "", date: today('UTC') as DateValue, email: "", phone: "", comment: "" });
       } else {
         setModalContent({
-          title: "Message Delivery Failed",
-          message: `Whoops! Our digital carrier pigeon got lost! 🐦 Error: ${result.message}`,
+          title: "Submission Error",
+          message: "Oops! Our system needs a quick reboot. Please try again.",
           type: "error"
         });
       }
     } catch (error) {
       setModalContent({
-        title: "Communication Breakdown",
-        message: "Houston, we have a problem! 🚀 Our message system needs a coffee break. Please try again later!",
+        title: "System Error",
+        message: "Our servers are doing yoga. Please try again in a moment.",
         type: "error"
       });
     } finally {
@@ -210,7 +210,14 @@ const ContactUs = () => {
       </div>
       <Footer />
       
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose}
+        backdrop="blur"
+        classNames={{
+          base: "border border-gray-200 dark:border-gray-700"
+        }}
+      >
         <ModalContent>
           <ModalHeader className="flex items-center gap-2">
             {modalContent.type === "success" && <FaCheckCircle className="text-green-500 text-xl" />}
