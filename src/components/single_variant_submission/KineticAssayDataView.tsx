@@ -92,6 +92,31 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
   };
 
+  const downloadCsvFile = async () => {
+    if (!file) return;
+
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `kinetic_assays/raw/${file.name}`,
+        Expires: 60,
+      };
+
+      const url = await s3.getSignedUrlPromise('getObject', params);
+
+      // Create a temporary anchor element to trigger the download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error generating download link:', error);
+      alert('Failed to download file. Please try again.');
+    }
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files ? event.target.files[0] : null;
     if (!selectedFile) return;
@@ -124,7 +149,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     );
 
     try {
-      const response = await axios.post('http://127.0.0.1:5002/plotit', formData, {
+      const response = await axios.post('/api/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -362,11 +387,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
       <input type="file" accept=".csv" onChange={handleFileChange} />
 
-      {kineticRawDataEntryData && (
-        <p>
-          Uploaded CSV file: {kineticRawDataEntryData.csv_filename || 'N/A'}
-        </p>
-      )}
+      <p>
+        Saved CSV: {file?.name || 'N/A'}{' '}
+        {file && (
+          <button
+            onClick={downloadCsvFile}
+            className="text-blue-500 hover:text-blue-700 underline"
+          >
+            Download
+          </button>
+        )}
+      </p>
 
       {kineticAssayData.length > 0 && (
         <>
@@ -386,7 +417,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                   <tr key={index}>
                     <td className="border border-gray-400 px-4 py-2">{rowLabel}</td>
                     <td className="border border-gray-400 px-4 py-2">
-                      {['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.00'][index]}
+                      {['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'][index]}
                     </td>
                     {[2, 3, 4].map((col) => (
                       <td key={col} className="border border-gray-400 px-4 py-2">
@@ -406,6 +437,10 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                 ))}
               </tbody>
             </table>
+            <p>Yield: {kineticRawDataEntryData.yield} {kineticRawDataEntryData.yield_units}</p>
+            <p className="mb-2">Dilution: {kineticRawDataEntryData.dilution}x</p>
+            <p>Protein purified on {kineticRawDataEntryData.purification_date} and assayed on {kineticRawDataEntryData.assay_date}.</p>
+            <p>Data uploaded by {kineticRawDataEntryData.user_name} and last updated on {kineticRawDataEntryData.updated}</p>
           </div>
 
           <button
