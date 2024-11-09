@@ -8,10 +8,7 @@ import base64
 from numpy import sqrt, diag, linspace, inf
 from scipy.optimize import curve_fit
 
-# Turn debug mode on or off
-debug_mode = False
-
-# Functions to fit and/or plot
+# Define functions for the calculations and plots
 def kobs_f(S, kcat, KM):
     '''The Michaelis-Menten-like equation.'''
     return (kcat * S) / (KM + S)
@@ -21,13 +18,13 @@ def high_KM_kobs_f(S, kcat_over_KM):
     return kcat_over_KM * S
 
 def inv_v(inv_S, inv_vmax, KM):
-    '''The Lineweaver-Burk plot equation'''
+    '''The Lineweaver-Burk plot equation.'''
     return KM * inv_vmax * inv_S + inv_vmax
 
-# Main function for Vercel to call
-def lambda_handler(request):
+# Main handler function for Next.js API routes
+def handler(request):
     try:
-        # Extract variant name and file
+        # Extract variant name and file from request
         variant_name = request.form['variant-name']
 
         if 'file' not in request.files:
@@ -40,9 +37,8 @@ def lambda_handler(request):
         # Read the CSV file into a DataFrame
         df = pd.read_csv(file, header=None, encoding='iso-8859-1')
 
-        # Extract data
+        # Extract and process the data from the CSV
         string_of_data = ",".join([f"{float(x):.5E}" if pd.notnull(x) else '' for x in df.iloc[4:12, 2:5].values.flatten()])
-
         cleaned_value = re.sub(r'[^\x00-\x7F]+', '', str(df.iloc[2, 6])).strip()
         yield_ = cleaned_value
         dil_factor = df.iloc[2, 7]
@@ -53,7 +49,7 @@ def lambda_handler(request):
         yld_u = yield_units.strip()
         dil = float(dil_factor)
 
-        # Constant values for calculations
+        # Constants for calculations
         epsilon_enz = 113330
         epsilon_byprod = 10660
         molar_mass_enz = 51395.85
@@ -72,27 +68,24 @@ def lambda_handler(request):
             0.309,  0.309,  0.309,
             0.103,  0.103,  0.103,
             0.000,  0.000,  0.000
-        ]  # millimolar
+        ]
 
-        # Parse slopes
-        empty_cells = []
-        slopes = []
+        # Parse and filter slopes
+        empty_cells, slopes = [], []
         for i, slope in enumerate(string_of_data.split(',')):
             if slope == '':
                 empty_cells.append(i)
             else:
                 slopes.append(float(slope))
 
-        # Remove empty cells from substrate concentrations
         c_substrate = [c_substrate[i] for i in range(len(c_substrate)) if i not in empty_cells]
 
-        # Convert slopes to correct units
+        # Convert slopes and yield to correct units
         if '10^-3' in slope_u:
             slopes = [slope / 1000 for slope in slopes]
         if slope_u.endswith('/s)'):
             slopes = [slope * 60 for slope in slopes]
 
-        # Convert yield into common units
         diluted_yld = yld / dil
         c_enz_molar = diluted_yld / molar_mass_enz if yld_u == '(mg/mL)' else diluted_yld / 1000
         rates = [slope / (epsilon_byprod * assay_cell_length) for slope in slopes]
@@ -111,7 +104,6 @@ def lambda_handler(request):
         except RuntimeError:
             return {"statusCode": 400, "body": {"error": "Error in curve fitting"}}
 
-        # Check for high KM
         high_KM = KM > 75
         if high_KM:
             popt, _ = curve_fit(high_KM_kobs_f, c_substrate, kobs, p0=[kcat_over_KM], bounds=(0, inf))
@@ -144,6 +136,7 @@ def lambda_handler(request):
         image2_base64 = base64.b64encode(buf2.read()).decode('utf-8')
         buf2.close()
 
+        # Return the response
         response_data = {
             'menten_plot': image1_base64,
             'lineweaver_plot': image2_base64,
@@ -154,7 +147,6 @@ def lambda_handler(request):
             'kcat_over_KM': kcat_over_KM,
             'kcat_over_KM_SD': kcat_over_KM_SD,
         }
-
         return {"statusCode": 200, "body": response_data}
 
     except Exception as e:
