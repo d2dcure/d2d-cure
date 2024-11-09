@@ -16,7 +16,7 @@ const Custom404 = () => {
               </div>
               
               <h1 className="mt-3 text-2xl font-semibold text-gray-800 dark:text-white md:text-3xl">Oops! We lost this page</h1>
-              <p className="mt-4 text-gray-500 dark:text-gray-400">We searched high and low, but couldn't find what you're looking for. Let's find a better place for you to go.</p>
+              <p className="mt-4 text-gray-500 dark:text-gray-400">We searched high and low, but couldn&apos;t find what you&apos;re looking for. Let&apos;s find a better place for you to go.</p>
 
               <div className="flex items-center w-full mt-6 gap-x-3 shrink-0 sm:w-auto">
                 <Link href="javascript:history.back()" className="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg dark:text-gray-200 gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:border-gray-700">

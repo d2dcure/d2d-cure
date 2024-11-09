@@ -11,12 +11,6 @@ export default function Home() {
   const { user } = useUser();
   const router = useRouter();
 
-  useEffect(() => {
-    if (user?.user_name) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
-
   return (
     <div>
       <NavBar />
@@ -39,13 +33,15 @@ export default function Home() {
       <Button
         className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
+        onClick={() => router.push(user?.user_name ? '/dashboard' : '/login')}
       >
-        Get Started
+        {user?.user_name ? "Dashboard" : "Get Started"}
       </Button>
       <Button
         className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
         color="primary"
+        onClick={() => router.push('/about')}
       >
         Learn More
       </Button>
