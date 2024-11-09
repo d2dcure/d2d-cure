@@ -50,6 +50,63 @@ const AboutD2D = () => {
             />
           </div>
         </div>
+
+        {/* Logo Carousels */}
+        <div className="w-full mt-16">
+          {/* Left to Right carousel */}
+          <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll">
+              {networkLogos.slice(0, 17).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll" aria-hidden="true">
+              {networkLogos.slice(0, 17).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right to Left carousel */}
+          <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)] my-8">
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll-reverse">
+              {networkLogos.slice(17, 34).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll-reverse" aria-hidden="true">
+              {networkLogos.slice(17, 34).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Left to Right carousel */}
+          <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll">
+              {networkLogos.slice(34).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll" aria-hidden="true">
+              {networkLogos.slice(34).map((logo, index) => (
+                <li key={index}>
+                  <img src={logo.src} alt={logo.alt} className="h-16 w-auto object-contain" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
 
       {/* Enzymes Section */}
@@ -219,28 +276,7 @@ const AboutD2D = () => {
           </Link>
         </div>
         
-        {/* Logo Carousel */}
-        <div 
-          x-data="{}"
-          x-init="$nextTick(() => {
-            let ul = $refs.logos;
-            ul.insertAdjacentHTML('afterend', ul.outerHTML);
-            ul.nextSibling.setAttribute('aria-hidden', 'true');
-          })"
-          className="w-full inline-flex flex-nowrap overflow-hidden mt-8 [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]"
-        >
-          <ul x-ref="logos" className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll">
-            {networkLogos.map((logo, index) => (
-              <li key={index}>
-                <img 
-                  src={logo.src} 
-                  alt={logo.alt}
-                  className="h-16 w-auto object-contain"
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
+        
 
         {/* Map iframe */}
         <div className="mt-8 aspect-w-16 aspect-h-9">
@@ -253,6 +289,7 @@ const AboutD2D = () => {
           />
         </div>
       </div>
+      
 
       {/* LinkedIn Section */}
       <div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
@@ -439,13 +476,65 @@ const facultyData = [
 ];
 
 const networkLogos = [
-  { src: "/resources/images/network/logo1.png", alt: "Institution 1" },
-  { src: "/resources/images/network/logo2.png", alt: "Institution 2" },
-  { src: "/resources/images/network/logo3.png", alt: "Institution 3" },
-  { src: "/resources/images/network/logo4.png", alt: "Institution 4" },
-  { src: "/resources/images/network/logo5.png", alt: "Institution 5" },
-  { src: "/resources/images/network/logo6.png", alt: "Institution 6" },
-  // Add more logos as needed
+  // row1
+  { src: "/resources/school_logos/row1/Augustana_logo.png", alt: "Augustana University" },
+  { src: "/resources/school_logos/row1/CCC_logo.png", alt: "California Community Colleges" },
+  { src: "/resources/school_logos/row1/Crown_logo.png", alt: "Crown College" },
+  { src: "/resources/school_logos/row1/FIU_logo.png", alt: "Florida International University" },
+  { src: "/resources/school_logos/row1/Hamline_logo.png", alt: "Hamline University" },
+  { src: "/resources/school_logos/row1/JHU_logo.png", alt: "Johns Hopkins University" },
+  { src: "/resources/school_logos/row1/Lewis_logo.png", alt: "Lewis University" },
+  { src: "/resources/school_logos/row1/MiraCosta_logo.png", alt: "MiraCosta College" },
+  { src: "/resources/school_logos/row1/TMCC_logo.png", alt: "Truckee Meadows Community College" },
+  { src: "/resources/school_logos/row1/UGA_logo.png", alt: "University of Georgia" },
+  { src: "/resources/school_logos/row1/UNLV_logo.png", alt: "University of Nevada, Las Vegas" },
+  { src: "/resources/school_logos/row1/Wayne_logo.png", alt: "Wayne State University" },
+  
+  // row2
+  { src: "/resources/school_logos/row2/Campbell_logo.png", alt: "Campbell University" },
+  { src: "/resources/school_logos/row2/CNM_logo.png", alt: "Central New Mexico Community College" },
+  { src: "/resources/school_logos/row2/CSS_logo.png", alt: "College of St. Scholastica" },
+  { src: "/resources/school_logos/row2/CSU_logo.png", alt: "Colorado State University" },
+  { src: "/resources/school_logos/row2/DUNY_logo.png", alt: "Dominican University New York" },
+  { src: "/resources/school_logos/row2/JCCC_logo.png", alt: "Johnson County Community College" },
+  { src: "/resources/school_logos/row2/KWC_logo.png", alt: "Kentucky Wesleyan College" },
+  { src: "/resources/school_logos/row2/LUC_logo.png", alt: "Loyola University Chicago" },
+  { src: "/resources/school_logos/row2/Mercy_logo.png", alt: "Mercy College" },
+  { src: "/resources/school_logos/row2/MJC_logo.png", alt: "Modesto Junior College" },
+  { src: "/resources/school_logos/row2/SUNY_Geneseo_logo.png", alt: "SUNY Geneseo" },
+  { src: "/resources/school_logos/row2/Taylor_logo.png", alt: "Taylor University" },
+  { src: "/resources/school_logos/row2/UAH_logo.png", alt: "University of Alabama in Huntsville" },
+  { src: "/resources/school_logos/row2/UMW_logo.png", alt: "University of Mary Washington" },
+  { src: "/resources/school_logos/row2/UNH_logo.png", alt: "University of New Hampshire" },
+  { src: "/resources/school_logos/row2/VSU_logo.png", alt: "Valdosta State University" },
+  { src: "/resources/school_logos/row2/Yale_logo.png", alt: "Yale University" },
+
+  // row3
+  { src: "/resources/school_logos/row3/Creighton_logo.png", alt: "Creighton University" },
+  { src: "/resources/school_logos/row3/CSU_Fresno_logo.png", alt: "CSU Fresno" },
+  { src: "/resources/school_logos/row3/Gettysburg_logo.png", alt: "Gettysburg College" },
+  { src: "/resources/school_logos/row3/GHC_logo.png", alt: "Georgia Highlands College" },
+  { src: "/resources/school_logos/row3/Hofstra_logo.png", alt: "Hofstra University" },
+  { src: "/resources/school_logos/row3/JCQUST_logo.png", alt: "JCQUST" },
+  { src: "/resources/school_logos/row3/Juniata_logo.png", alt: "Juniata College" },
+  { src: "/resources/school_logos/row3/KCKCC_logo.png", alt: "Kansas City Kansas Community College" },
+  { src: "/resources/school_logos/row3/La_Sierra_logo.png", alt: "La Sierra University" },
+  { src: "/resources/school_logos/row3/NSU_logo.png", alt: "Norfolk State University" },
+  { src: "/resources/school_logos/row3/Regis_logo.png", alt: "Regis University" },
+  { src: "/resources/school_logos/row3/Smith_logo.png", alt: "Smith College" },
+  { src: "/resources/school_logos/row3/UNF_logo.png", alt: "University of North Florida" },
+
+  // row4
+  { src: "/resources/school_logos/row4/Carthage_logo.png", alt: "Carthage College" },
+  { src: "/resources/school_logos/row4/ECU_logo.png", alt: "East Carolina University" },
+  { src: "/resources/school_logos/row4/Elmhurst_logo.png", alt: "Elmhurst University" },
+  { src: "/resources/school_logos/row4/KU_logo.png", alt: "University of Kansas" },
+  { src: "/resources/school_logos/row4/Mines_logo.png", alt: "Colorado School of Mines" },
+  { src: "/resources/school_logos/row4/MWSU_logo.png", alt: "Missouri Western State University" },
+  { src: "/resources/school_logos/row4/PolyU_logo.png", alt: "Hong Kong Polytechnic University" },
+  { src: "/resources/school_logos/row4/SMCC_logo.png", alt: "Southern Maine Community College" },
+  { src: "/resources/school_logos/row4/UMass_Amherst_logo.png", alt: "University of Massachusetts Amherst" },
+  { src: "/resources/school_logos/row4/UNR_logo.png", alt: "University of Nevada, Reno" }
 ];
 
 export default AboutD2D;
