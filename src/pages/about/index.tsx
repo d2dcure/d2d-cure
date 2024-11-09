@@ -326,6 +326,68 @@ const facultyData = [
     email: "example@email.com",
     linkedin: "https://www.linkedin.com/in/username",
   },
+    // don't have degree from Ashley
+  {
+    name: "Kari Stone",
+    degree: "", 
+    title: "NETs Working Group Lead",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Aeisha Thomas",
+    degree: "", 
+    title: "LOFT Working Group Lead",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Emma Feeney",
+    degree: "", 
+    title: "Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Heather Seitz",
+    degree: "", 
+    title: "Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Daniel Montezano",
+    degree: "", 
+    title: "Learning Evaluator, Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
+    // don't have degree from Ashley
+  {
+    name: "Kari Stone",
+    degree: "", 
+    title: "NETs Working Group Lead",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Aeisha Thomas",
+    degree: "", 
+    title: "LOFT Working Group Lead",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Emma Feeney",
+    degree: "", 
+    title: "Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Heather Seitz",
+    degree: "", 
+    title: "Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
+  {
+    name: "Daniel Montezano",
+    degree: "", 
+    title: "Learning Evaluator, Advisory Board Member",
+    image: "/resources/images/sample.jpg",
+  },
 ];
 
 export default AboutD2D;
