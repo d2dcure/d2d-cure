@@ -139,7 +139,9 @@ const Login = () => {
                 justifyContent: "center", // Center content horizontally
                 alignItems: "center", // Center content vertically
               }}>Welcome back!</CardHeader>
-              <CardBody>
+              <CardBody style={{ 
+                overflowY: 'hidden' // Add this to disable vertical scrolling
+              }}>
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4" style = {{fontSize: "14px"}}>
                     <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
