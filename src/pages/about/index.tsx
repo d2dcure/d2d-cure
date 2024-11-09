@@ -7,7 +7,11 @@ import {Button} from "@nextui-org/react";
 import Link from 'next/link';
 import { MdEmail } from "react-icons/md";
 import { FaLinkedin } from "react-icons/fa";
+import { Tabs, Tab } from "@nextui-org/react";
+
 const AboutD2D = () => {
+  const [selected, setSelected] = React.useState<"operations" | "consultants">("operations");
+
   return (
     <>
       <NavBar />
@@ -97,84 +101,103 @@ const AboutD2D = () => {
       <div className="px-6 md:px-12 lg:px-24 py-16">
         <h2 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet The Faculty</h2>
         
-        {/* D2D Operations Subheading */}
-        <h3 className="text-2xl mb-6 font-light">D2D Operations</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {facultyData.slice(0, 3).map((faculty) => (
-            <div key={faculty.name} className="h-auto">
-              <div className="text-center">
-                <div className="max-w-[250px] mx-auto">
-                  <img
-                    src={faculty.image}
-                    alt={faculty.name}
-                    className="w-full aspect-square object-cover rounded-lg mb-4"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {faculty.name}, {faculty.degree}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">{faculty.title}</p>
-                <div className="flex justify-center gap-4 mt-2">
-                  <a 
-                    href={`mailto:${faculty.email}`} 
-                    className="text-gray-600 hover:text-[#06B7DB] transition-colors"
-                    aria-label={`Email ${faculty.name}`}
-                  >
-                    <MdEmail size={24} />
-                  </a>
-                  <a 
-                    href={faculty.linkedin} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-gray-600 hover:text-[#0077B5] transition-colors"
-                    aria-label={`LinkedIn profile of ${faculty.name}`}
-                  >
-                    <FaLinkedin size={24} />
-                  </a>
-                </div>
+        <div className="flex w-full flex-col">
+          <Tabs 
+            aria-label="Faculty categories"
+            selectedKey={selected}
+            onSelectionChange={setSelected}
+          >
+            <Tab key="operations" title="D2D Operations">
+              <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {facultyData.slice(0, 3).map((faculty) => (
+                  <div key={faculty.name} className="h-auto">
+                    <div className="text-center">
+                      <div className="max-w-[250px] mx-auto">
+                        {faculty.image === "/resources/images/sample.jpg" ? (
+                          <div className="w-full aspect-square rounded-lg mb-4 bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400 text-4xl">No Image</span>
+                          </div>
+                        ) : (
+                          <img
+                            src={faculty.image}
+                            alt={faculty.name}
+                            className="w-full aspect-square object-cover rounded-lg mb-4"
+                          />
+                        )}
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {faculty.name}, {faculty.degree}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300">{faculty.title}</p>
+                      <div className="flex justify-center gap-4 mt-2">
+                        <a 
+                          href={`mailto:${faculty.email}`} 
+                          className="text-gray-600 hover:text-[#06B7DB] transition-colors"
+                          aria-label={`Email ${faculty.name}`}
+                        >
+                          <MdEmail size={24} />
+                        </a>
+                        <a 
+                          href={faculty.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-gray-600 hover:text-[#0077B5] transition-colors"
+                          aria-label={`LinkedIn profile of ${faculty.name}`}
+                        >
+                          <FaLinkedin size={24} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* D2D Consultant Subheading */}
-        <h3 className="text-2xl mb-6 font-light">D2D Consultant</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {facultyData.slice(3).map((faculty) => (
-            <div key={faculty.name} className="h-auto">
-              <div className="text-center">
-                <div className="max-w-[250px] mx-auto">
-                  <img
-                    src={faculty.image}
-                    alt={faculty.name}
-                    className="w-full aspect-square object-cover rounded-lg mb-4"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {faculty.name}, {faculty.degree}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">{faculty.title}</p>
-                <div className="flex justify-center gap-4 mt-2">
-                  <a 
-                    href={`mailto:${faculty.email}`} 
-                    className="text-gray-600 hover:text-[#06B7DB] transition-colors"
-                    aria-label={`Email ${faculty.name}`}
-                  >
-                    <MdEmail size={24} />
-                  </a>
-                  <a 
-                    href={faculty.linkedin} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-gray-600 hover:text-[#0077B5] transition-colors"
-                    aria-label={`LinkedIn profile of ${faculty.name}`}
-                  >
-                    <FaLinkedin size={24} />
-                  </a>
-                </div>
+            </Tab>
+            <Tab key="consultants" title="D2D Consultants">
+              <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {facultyData.slice(3).map((faculty) => (
+                  <div key={faculty.name} className="h-auto">
+                    <div className="text-center">
+                      <div className="max-w-[250px] mx-auto">
+                        {faculty.image === "/resources/images/sample.jpg" ? (
+                          <div className="w-full aspect-square rounded-lg mb-4 bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400 text-4xl">No Image</span>
+                          </div>
+                        ) : (
+                          <img
+                            src={faculty.image}
+                            alt={faculty.name}
+                            className="w-full aspect-square object-cover rounded-lg mb-4"
+                          />
+                        )}
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {faculty.name}, {faculty.degree}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300">{faculty.title}</p>
+                      <div className="flex justify-center gap-4 mt-2">
+                        <a 
+                          href={`mailto:${faculty.email}`} 
+                          className="text-gray-600 hover:text-[#06B7DB] transition-colors"
+                          aria-label={`Email ${faculty.name}`}
+                        >
+                          <MdEmail size={24} />
+                        </a>
+                        <a 
+                          href={faculty.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-gray-600 hover:text-[#0077B5] transition-colors"
+                          aria-label={`LinkedIn profile of ${faculty.name}`}
+                        >
+                          <FaLinkedin size={24} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
+            </Tab>
+          </Tabs>
         </div>
       </div>
 
@@ -195,6 +218,31 @@ const AboutD2D = () => {
             View Map
           </Link>
         </div>
+        
+        {/* Logo Carousel */}
+        <div 
+          x-data="{}"
+          x-init="$nextTick(() => {
+            let ul = $refs.logos;
+            ul.insertAdjacentHTML('afterend', ul.outerHTML);
+            ul.nextSibling.setAttribute('aria-hidden', 'true');
+          })"
+          className="w-full inline-flex flex-nowrap overflow-hidden mt-8 [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]"
+        >
+          <ul x-ref="logos" className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll">
+            {networkLogos.map((logo, index) => (
+              <li key={index}>
+                <img 
+                  src={logo.src} 
+                  alt={logo.alt}
+                  className="h-16 w-auto object-contain"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Map iframe */}
         <div className="mt-8 aspect-w-16 aspect-h-9">
           <iframe 
             src="https://embed.kumu.io/54d29a647a7b3825ed3a1111620c9a5e" 
@@ -202,7 +250,7 @@ const AboutD2D = () => {
             height="600" 
             frameBorder="0"
             title="D2D Institution Network Map"
-          ></iframe>
+          />
         </div>
       </div>
 
@@ -326,6 +374,16 @@ const facultyData = [
     email: "example@email.com",
     linkedin: "https://www.linkedin.com/in/username",
   },
+];
+
+const networkLogos = [
+  { src: "/resources/images/network/logo1.png", alt: "Institution 1" },
+  { src: "/resources/images/network/logo2.png", alt: "Institution 2" },
+  { src: "/resources/images/network/logo3.png", alt: "Institution 3" },
+  { src: "/resources/images/network/logo4.png", alt: "Institution 4" },
+  { src: "/resources/images/network/logo5.png", alt: "Institution 5" },
+  { src: "/resources/images/network/logo6.png", alt: "Institution 6" },
+  // Add more logos as needed
 ];
 
 export default AboutD2D;
