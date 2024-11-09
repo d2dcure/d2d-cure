@@ -29,6 +29,7 @@ const SingleVariant = () => {
   const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row 
   const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row 
 
+
   useEffect(() => {
     const fetchEntryData = async () => {
       if (!id) return; 
@@ -117,6 +118,7 @@ const SingleVariant = () => {
       "Gel uploaded"
     ];
 
+    // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
       switch (item) {
         case "Protein Modeled":
@@ -124,7 +126,9 @@ const SingleVariant = () => {
             ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
             : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Oligonucleotide ordered":
-          return { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+          return entryData.oligo_ordered === false
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Plasmid sequence verified":
           return entryData.plasmid_verified === false
             ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
@@ -143,6 +147,22 @@ const SingleVariant = () => {
             : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         case "Wild type kinetic data uploaded":
           return entryData.WT_raw_data_id === 0
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+        case "Thermostability assay data uploaded":
+          return entryData.T50 === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+        case "Wild type thermostability assay data uploaded":
+          return entryData.WT_temp_raw_data_id === 0
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+        case "Melting point values uploaded":
+          return entryData.Tm === null
+            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
+            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+        case "Gel uploaded":
+          return entryData.gel_filename === null
             ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
             : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
         default:
@@ -201,6 +221,28 @@ const SingleVariant = () => {
               </>
             ) : null}{" "}
             min<sup>-1</sup>
+          </>
+        );
+      }
+
+      if (item === "Thermostability assay data uploaded" && entryData.T50 !== null) {
+
+        const t50 = parseFloat(entryData.T50).toFixed(1); 
+        const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
+        return (
+          <>
+            T<sub>50</sub> = {t50} &plusmn; {t50sd}°C
+          </>
+        );
+      }
+
+      if (item === "Melting point values uploaded" && entryData.Tm !== null) {
+
+        const tm = parseFloat(entryData.Tm).toFixed(1); 
+        const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
+        return (
+          <>
+            T<sub>M</sub> = {tm} &plusmn; {tmSD}°C
           </>
         );
       }
