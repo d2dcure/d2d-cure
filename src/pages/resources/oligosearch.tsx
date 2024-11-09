@@ -9,6 +9,7 @@ import { Input } from "@nextui-org/input";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import Footer from '@/components/Footer';
+import { ErrorChecker } from '@/components/ErrorChecker';
 
 const OligoSearchPage = () => {
   const { user } = useUser();
@@ -18,17 +19,44 @@ const OligoSearchPage = () => {
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
   const [filePath, setFilePath] = useState('/path/to/your/file.txt');
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchEnzymes = async () => {
-      const response = await fetch('/api/getEnzymes');
-      const data = await response.json();
-      setEnzymeList(data);
+      try {
+        const response = await fetch('/api/getEnzymes');
+        if (!response.ok) {
+          throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('GET /api/getEnzymes - Invalid data format: Expected array');
+        }
+        setEnzymeList(data);
+      } catch (error) {
+        console.error('Error fetching enzymes:', error);
+        setIsError(true);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch enzymes');
+      }
     };
+
     const fetchOligosData = async () => {
-      const response = await fetch('/api/getOligos');
-      const data = await response.json();
-      setOligosData(data);
+      try {
+        const response = await fetch('/api/getOligos');
+        if (!response.ok) {
+          throw new Error(`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('GET /api/getOligos - Invalid data format: Expected array');
+        }
+        setOligosData(data);
+      } catch (error) {
+        console.error('Error fetching oligos:', error);
+        setIsError(true);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch oligos');
+      }
     };
 
     fetchEnzymes();
@@ -48,9 +76,13 @@ const OligoSearchPage = () => {
   const variants = ["flat", "bordered", "underlined", "faded"];
 
   return (
-    <>
+    <ErrorChecker 
+      isError={isError} 
+      errorMessage={errorMessage}
+      errorType="api"
+    >
       <NavBar />
-      <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white ">
+      <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
         <div className="w-full">
           <Breadcrumbs
           >
@@ -132,7 +164,7 @@ const OligoSearchPage = () => {
         </div>
       </div>
       <Footer />
-    </>
+    </ErrorChecker>
   );
 };
 

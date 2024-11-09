@@ -5,8 +5,10 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Checkbox, Select, SelectItem, Input, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Popover, PopoverTrigger, PopoverContent, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { FaFilter, FaInfoCircle } from 'react-icons/fa';
+import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { HiChevronRight } from "react-icons/hi";
+import { Tooltip } from "@nextui-org/react";
+import { ErrorChecker } from '@/components/ErrorChecker';
 
 // Add this interface near the top of the file
 interface Institution {
@@ -17,6 +19,8 @@ interface Institution {
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+
 
 function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
   const link = `/bglb?id=${id}&wt_id=${wt_id}`;
@@ -54,6 +58,11 @@ const DataPage = () => {
   const [showFullText, setShowFullText] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(true);
+  const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Define your columns
   const columns = [
@@ -76,10 +85,22 @@ const DataPage = () => {
 
   useEffect(() => {
     const fetchInstitutions = async () => {
-      const response = await fetch('/api/getInstitutions');
-      const data = await response.json();
-      const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
-      setInstitutions(sortedData);
+      try {
+        const response = await fetch('/api/getInstitutions');
+        const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+          setIsError(true);
+          setErrorMessage("Invalid data format received from server");
+          return;
+        }
+        
+        const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
+        setInstitutions(sortedData);
+      } catch (error) {
+        setIsError(true);
+        setErrorMessage("Failed to fetch institutions data");
+      }
     };
     const fetchData = async () => {
       setIsLoading(true);
@@ -90,11 +111,33 @@ const DataPage = () => {
           fetch('/api/getSequenceData')
         ]);
 
+        // Check each response individually
+        if (!institutionsRes.ok) {
+          throw new Error(`GET /api/getInstitutions ${institutionsRes.status} - Failed to fetch institutions`);
+        }
+        if (!characterizationRes.ok) {
+          throw new Error(`GET /api/getCharacterizationData ${characterizationRes.status} - Failed to fetch characterization data`);
+        }
+        if (!sequencesRes.ok) {
+          throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
+        }
+
         const [institutionsData, characterizationData, sequencesData] = await Promise.all([
           institutionsRes.json(),
           characterizationRes.json(),
           sequencesRes.json()
         ]);
+
+        // Validate data formats
+        if (!Array.isArray(institutionsData)) {
+          throw new Error('GET /api/getInstitutions - Invalid data format: Expected array');
+        }
+        if (!Array.isArray(characterizationData)) {
+          throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
+        }
+        if (!Array.isArray(sequencesData)) {
+          throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
+        }
 
         const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
           a.fullname.localeCompare(b.fullname)
@@ -117,6 +160,8 @@ const DataPage = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        setIsError(true);
+        setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -131,6 +176,47 @@ const DataPage = () => {
     fetchInstitutions();
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show scroll to bottom button only when near the top
+      setShowScrollToBottom(window.scrollY < 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToPosition = (position: 'top' | 'bottom') => {
+    setIsScrolling(true);
+    setScrollDirection(position);
+    
+    if (position === 'top') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      // Find the table element and scroll to show the last few rows
+      const tableElement = document.getElementById('characterization-table');
+      if (tableElement) {
+        const tableBottom = tableElement.getBoundingClientRect().bottom;
+        const windowHeight = window.innerHeight;
+        const scrollTarget = window.scrollY + tableBottom - windowHeight + 100;
+        
+        window.scrollTo({
+          top: scrollTarget,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    // Hide notification and reset direction after animation
+    setTimeout(() => {
+      setIsScrolling(false);
+      setScrollDirection(null);
+    }, 1000);
+  };
 
   const filteredData = characterizationData
     .filter(data => 
@@ -270,22 +356,60 @@ const DataPage = () => {
           page * rowsPerPage
         );
 
-  // Add this function at the top of your component
-  const scrollToTable = () => {
-    const tableElement = document.querySelector('#characterization-table');
-    tableElement?.scrollIntoView({ behavior: 'smooth' });
+  // Replace the scrollToTable function with scrollToTop
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // In your component where you handle page changes:
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    scrollToTable();
+  // Modify the handleTableUpdate function to use scrollToTop
+  const handleTableUpdate = (newPage?: number) => {
+    if (newPage) setPage(newPage);
+    scrollToPosition('top');
   };
 
   return (
-    <>
+    <ErrorChecker 
+      isError={isError} 
+      errorMessage={errorMessage}
+      errorType="api"
+    >
       <NavBar />
       <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+        {/* Scroll notification - D2D glassmorphism style */}
+        {isScrolling && scrollDirection && (
+          <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
+            text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
+            Scrolling to {scrollDirection}
+          </div>
+        )}
+
+        {/* Scroll buttons - D2D glassmorphism style */}
+        {showScrollToBottom && (
+          <button
+            onClick={() => scrollToPosition('bottom')}
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+              flex items-center justify-center"
+            aria-label="Scroll to bottom"
+          >
+            <FaArrowDown size={12} />
+          </button>
+        )}
+
+        {!showScrollToBottom && (
+          <button
+            onClick={() => scrollToPosition('top')}
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+              flex items-center justify-center"
+            aria-label="Scroll to top"
+          >
+            <FaArrowUp size={12} />
+          </button>
+        )}
+
         <div className="max-w-7xl mx-auto">
           <Breadcrumbs className="mb-2">
             <BreadcrumbItem>Home</BreadcrumbItem>
@@ -314,7 +438,7 @@ const DataPage = () => {
 
                   {/* Sidebar content */}
                   <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-                    <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none pr-1 mb-6">
+                    <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none pr-6 mb-6">
                       <div className="flex flex-col gap-4">
                         {/* Color Key section */}
                         <div className="mb-6">
@@ -431,12 +555,14 @@ const DataPage = () => {
               {/* Main content area */}
               <div className="w-full lg:w-4/5">
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row justify-between gap-3">
-                    <div className="flex flex-wrap gap-2 items-center w-full">
+                  {/* Search, filter, and records count row */}
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
+                    {/* Left side - Search and controls */}
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                       <Input
                         isClearable
                         classNames={{
-                          base: "w-full md:w-[300px]",
+                          base: "w-full sm:w-[200px] md:w-[300px]",
                         }}
                         placeholder="Search for residue number..."
                         size="sm"
@@ -461,13 +587,17 @@ const DataPage = () => {
                           </svg>
                         }
                       />
-                      <div className="flex gap-2 w-full md:w-auto">
-                        <Dropdown className="w-full md:w-auto">
-                          <DropdownTrigger className="w-full md:w-auto">
-                            <Button
+                      
+                      {/* Controls container - half-half layout */}
+                      <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                        {/* Columns dropdown */}
+                        <Dropdown className="w-full">
+                          <DropdownTrigger>
+                            <Button 
                               size="sm"
                               variant="flat"
-                              className="w-full md:w-[200px]"
+                              className="w-full"
+                              startContent={<FaColumns className="text-small" />}
                             >
                               Columns
                             </Button>
@@ -487,16 +617,17 @@ const DataPage = () => {
                             ))}
                           </DropdownMenu>
                         </Dropdown>
-                        
-                        <Dropdown className="w-full md:w-auto">
+
+                        {/* Filter dropdown */}
+                        <Dropdown className="w-full">
                           <DropdownTrigger>
                             <Button 
-                              isIconOnly
                               size="sm"
                               variant="flat"
-                              className="w-full md:w-auto"
+                              className="w-full"
+                              startContent={<FaFilter className="text-small" />}
                             >
-                              <FaFilter />
+                              Filters
                             </Button>
                           </DropdownTrigger>
                           <DropdownMenu 
@@ -638,33 +769,12 @@ const DataPage = () => {
                         </Dropdown>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Records count and rows selector */}
-                  <div className="flex flex-col sm:flex-row justify-between items-center">
-                    {/* Left-aligned total records */}
-                    <span className="text-small text-default-400 mb-2 sm:mb-0">
-                      Total {displayData.length} records
-                    </span>
-
-                    {/* Right-aligned rows selector - moved below table on small screens */}
-                    <div className="flex items-center gap-2 order-last sm:order-none mt-4 sm:mt-0">
-                      <span className="text-small text-default-400">Rows per page:</span>
-                      <Select
-                        size="sm"
-                        defaultSelectedKeys={["30"]}
-                        className="w-24"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setRowsPerPage(value === "all" ? displayData.length : Number(value));
-                          setPage(1);
-                        }}
-                      >
-                        <SelectItem key="20" value="20">20</SelectItem>
-                        <SelectItem key="30" value="30">30</SelectItem>
-                        <SelectItem key="50" value="50">50</SelectItem>
-                        <SelectItem key="all" value="all">All</SelectItem>
-                      </Select>
+                    {/* Right side - Total records */}
+                    <div className="flex items-center justify-end sm:justify-start text-sm">
+                      <span className="text-default-400">
+                        Total {displayData.length} records
+                      </span>
                     </div>
                   </div>
 
@@ -867,20 +977,46 @@ const DataPage = () => {
                     </div>
                   )}
 
-                  {/* Bottom pagination - remove rows selector */}
-                  <div className="py-4 px-2 flex justify-center">
+                  {/* Bottom pagination with rows selector */}
+                  <div className="py-4 px-2 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 sm:gap-2">
+                    {/* Pagination */}
                     <Pagination
                       showControls
                       classNames={{
                         cursor: "bg-foreground text-background",
-                        wrapper: "justify-center",
+                        wrapper: "justify-center gap-0 sm:gap-2",
+                        item: "w-8 h-8 sm:w-10 sm:h-10",
+                        next: "w-8 h-8 sm:w-10 sm:h-10",
+                        prev: "w-8 h-8 sm:w-10 sm:h-10",
                       }}
                       color="default"
                       page={page}
                       total={rowsPerPage === 0 ? 1 : Math.ceil(displayData.length / rowsPerPage)}
                       variant="light"
-                      onChange={handlePageChange}  // Use new handler
+                      onChange={handleTableUpdate}
                     />
+
+                    {/* Rows per page selector */}
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-default-400 hidden sm:inline">Rows per page:</span>
+                      <span className="text-default-400 sm:hidden">Per page:</span>
+                      <Select
+                        size="sm"
+                        defaultSelectedKeys={["30"]}
+                        className="w-20 sm:w-24"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setRowsPerPage(value === "all" ? displayData.length : Number(value));
+                          setPage(1);
+                          scrollToPosition('top');
+                        }}
+                      >
+                        <SelectItem key="20" value="20">20</SelectItem>
+                        <SelectItem key="30" value="30">30</SelectItem>
+                        <SelectItem key="50" value="50">50</SelectItem>
+                        <SelectItem key="all" value="all">All</SelectItem>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -888,9 +1024,8 @@ const DataPage = () => {
           </div>
         </div>
       </div>
-      <Footer></Footer>
-    </>
-
+      <Footer />
+    </ErrorChecker>
   );
 };
 
