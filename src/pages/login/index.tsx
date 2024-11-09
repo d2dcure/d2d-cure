@@ -85,25 +85,15 @@ const Login = () => {
     await handleSignIn(email, password);
   };
 
-  if(loading) {
-    return <div>Loading...</div>;
-  }
+  // Add useEffect for redirection
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
-  if (user) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p>Hello, {user.status}</p>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleLogout}
-          >
-            Log Out
-          </button> <br></br>
-          <Link href = "user-management">Manage students in your class/laboratory</Link>
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
