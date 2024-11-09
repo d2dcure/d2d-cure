@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import "../app/globals.css"; 
 import NavBar from '@/components/NavBar';
@@ -10,6 +10,27 @@ import Footer from '@/components/Footer';
 export default function Home() {
   const { user } = useUser();
   const router = useRouter();
+  const [showCookieNotice, setShowCookieNotice] = useState(false);
+
+  useEffect(() => {
+    // Only check if user is logged in
+      // Check if we've shown the notice this session
+      const hasShownNoticeThisSession = sessionStorage.getItem('cookieNoticeShown');
+      if (!hasShownNoticeThisSession) {
+        setShowCookieNotice(true);
+        // Mark that we've shown the notice this session
+        sessionStorage.setItem('cookieNoticeShown', 'true');
+      }
+    }
+  ); // Depend on user to re-run when login state changes
+
+  const handleAcceptCookies = () => {
+    setShowCookieNotice(false);
+  };
+
+  const handleManagePreferences = () => {
+    console.log('Manage preferences clicked');
+  };
 
   return (
     <div>
@@ -147,6 +168,33 @@ export default function Home() {
           </Button>
         </div>
       </div>
+
+      {showCookieNotice && user?.user_name && (
+        <section className="fixed max-w-[300px] p-3 mx-auto bg-white border border-gray-200 dark:bg-gray-800 right-6 bottom-6 dark:border-gray-700 rounded-xl shadow-xl">
+          <h2 className="font-semibold text-gray-800 dark:text-white text-sm">🍪 Cookie Notice</h2>
+
+          <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+            We use cookies to ensure that we give you the best experience on our website.{' '}
+            <a href="#" className="text-blue-500 hover:underline">Read cookies policies</a>
+          </p>
+          
+          <div className="flex items-center justify-between mt-3 gap-x-2 shrink-0">
+            <button 
+              onClick={() => console.log('Manage preferences clicked')}
+              className="text-[11px] text-gray-800 underline transition-colors duration-300 dark:text-white dark:hover:text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              Manage preferences
+            </button>
+
+            <button 
+              onClick={handleAcceptCookies}
+              className="text-[11px] bg-gray-900 font-medium rounded-lg hover:bg-gray-700 text-white px-3 py-1.5 duration-300 transition-colors focus:outline-none"
+            >
+              Accept
+            </button>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
