@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
-import { Button, Textarea, Card, Tooltip } from '@nextui-org/react';
+import { Button, Textarea, Card, Tooltip, Select, SelectItem } from '@nextui-org/react';
 
 interface SidebarProps {
   entryData: any;
@@ -77,7 +77,10 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData }) => {
   }, [user]);
 
   const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    }) + ' at ' + date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
@@ -127,13 +130,33 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData }) => {
 
         {foundOligo && (
           <div>
-            <span className="font-medium text-sm">Primer Sequence</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm">Primer Sequence</span>
+              <Button
+                size="sm"
+                variant="light"
+                isIconOnly
+                className="min-w-6 w-6 h-6 p-0 text-gray-400 hover:text-[#06B7DB]"
+                onClick={() => clipboard.copy(foundOligo.oligo)}
+              >
+                {clipboard.copied ? (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"/>
+                  </svg>
+                )}
+              </Button>
+            </div>
             <Tooltip 
               content={clipboard.copied ? "Copied!" : foundOligo.oligo} 
               placement="bottom"
             >
               <p 
-                className="break-normal whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:text-blue-500 text-sm"
+                className="break-normal whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:text-[#06B7DB] text-sm"
                 onClick={() => clipboard.copy(foundOligo.oligo)}
                 title="Click to copy"
               >
@@ -159,25 +182,52 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData }) => {
         </div>
 
         <div>
-          <span className="font-medium text-sm">Creator</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm">Creator</span>
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              className="min-w-6 w-6 h-6 p-0 text-gray-400 hover:text-[#06B7DB]"
+              onClick={() => window.location.href = `mailto:${entryData.creator}`}
+            >
+              <svg 
+                width="12" 
+                height="12" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor"
+              >
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="22,6 12,13 2,6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Button>
+          </div>
           <p className='text-gray-500 text-sm'>{entryData.creator}</p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="font-medium text-sm">Teammate 1:</label>
-        <select
-          value={teammate1}
+        <span className="font-medium text-sm">Teammate 1</span>
+        <Select
+          placeholder="Choose teammate"
+          selectedKeys={teammate1 ? new Set([teammate1]) : new Set()}
           onChange={(e) => setTeammate1(e.target.value)}
-          className="mt-1 block w-full p-2 bg-gray-50 rounded text-sm"
+          className="max-w-full"
+          size="sm"
+          variant="flat"
+          classNames={{
+            base: "max-w-full",
+            trigger: "bg-gray-50",
+            value: "text-sm",
+          }}
         >
-          <option value="">None</option>
-          {possibleTeammates.map((mate, index) => (
-            <option key={index} value={mate.user_name}>
+          {possibleTeammates.map((mate) => (
+            <SelectItem key={mate.user_name} textValue={mate.user_name}>
               {mate.given_name} ({mate.user_name})
-            </option>
+            </SelectItem>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div>
