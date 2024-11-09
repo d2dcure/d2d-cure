@@ -104,7 +104,7 @@ const ContactUs = () => {
               Contact Us
             </h1>
             <p className="mt-5 text-left text-gray-600 max-w-sm">
-              Have a question? We would love to help! Fill out this form and we'll get back to you as soon as possible.
+              Have a question? We would love to help! Fill out this form and we&apos;ll get back to you as soon as possible.
             </p>
             
             <div className="mt-8 space-y-4">
