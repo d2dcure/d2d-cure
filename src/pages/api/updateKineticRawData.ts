@@ -27,7 +27,6 @@ export default async function handler(req: any, res: any) {
     // Insert or update KineticRawData
     let kineticRawData = await prismaProteins.kineticRawData.findFirst({
       where: {
-        variant,
         parent_id,
       },
     });
@@ -38,14 +37,16 @@ export default async function handler(req: any, res: any) {
         where: { id: kineticRawData.id },
         data: {
           user_name,
+          variant,
           slope_units: mapped_slope_units,
           yield: yield_value,
           yield_units: mapped_yield_units,
           dilution: parseFloat(dilution),
           purification_date,
           assay_date,
-          csv_filename, 
+          csv_filename,
           plot_filename,
+          updated: new Date(), // Optionally update the 'updated' timestamp
         },
       });
     } else {
@@ -68,7 +69,7 @@ export default async function handler(req: any, res: any) {
     }
 
     res.status(200).json({ kineticRawDataId: kineticRawData.id });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error('Error saving KineticRawData:', error);
     res.status(500).json({ error: 'Failed to save KineticRawData', details: error.message });
   }

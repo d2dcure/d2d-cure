@@ -96,6 +96,11 @@ const SingleVariant = () => {
     }
   };
 
+  // For real-time updates 
+  const updateEntryData = (newData: any) => {
+    setEntryData((prevData:any) => ({ ...prevData, ...newData }));
+  };
+
   // for downloading the AB1 file from the checklist view, if it exists 
   const handleAB1Download = async (filename: string) => {
     try {
@@ -336,17 +341,17 @@ const SingleVariant = () => {
   const renderDetailView = () => {
     switch (selectedDetail) {
       case "Protein Modeled":
-        return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Oligonucleotide ordered":
-        return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
       case "Plasmid sequence verified":
-        return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} />; 
+        return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case 'Protein induced':
-        return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case 'Expressed':
-        return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Kinetic assay data uploaded":
-        return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} />; 
+        return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case "Wild type kinetic data uploaded":
         return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} />; 
       case "Thermostability assay data uploaded":

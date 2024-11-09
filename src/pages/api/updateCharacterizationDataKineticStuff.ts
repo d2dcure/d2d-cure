@@ -32,7 +32,7 @@ export default async function handler(req: any, res: any) {
       },
     });
 
-    res.status(200).json({ message: 'CharacterizationData updated successfully' });
+    res.status(200).json(updatedCharacterizationData);
   } catch (error) {
     console.error('Error updating CharacterizationData:', error);
     res.status(500).json({ error: 'Failed to update CharacterizationData', details: error });

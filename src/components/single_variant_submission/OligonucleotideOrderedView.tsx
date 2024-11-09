@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 interface OligonucleotideOrderedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData,
 }) => {
   const [oligoOrdered, setOligoOrdered] = useState<any>('no');
 
@@ -26,6 +28,9 @@ const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
       if (!response.ok) {
         throw new Error('Failed to update oligonucleotide ordered status');
       }
+      
+      const updatedEntry = await response.json();
+      updateEntryData(updatedEntry);
       setCurrentView('checklist'); // Navigate back to checklist
     } catch (error) {
       console.error('Error updating oligonucleotide ordered status:', error);

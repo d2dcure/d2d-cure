@@ -5,11 +5,13 @@ import s3 from '../../../s3config';
 interface PlasmidSequenceVerifiedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
   const { user } = useUser();
   const [plasmidFile, setPlasmidFile] = useState<File | null>(null);
@@ -41,6 +43,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
     const newFileName = `${user.user_name}-BglB-${entryData.resid}${entryData.resnum}${entryData.resmut}-${entryData.id}.ab1`;
 
     try {
+      // Step 1: Upload file to S3
       const params = {
         Bucket: 'd2dcurebucket',
         Key: `sequencing/${newFileName}`,
@@ -48,12 +51,29 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
         ContentType: plasmidFile.type,
       };
       await s3.upload(params).promise();
-
       alert('File uploaded successfully!');
-      setCurrentView('checklist');
+
+      // Step 2: Update the database via the API endpoint
+      const response = await fetch('/api/updateCharacterizationDataPlasmidStuff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: entryData.id,
+          ab1_filename: newFileName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update entry data in the database');
+      }
+      
+      const updatedEntry = await response.json();
+      updateEntryData(updatedEntry);
+      setCurrentView('checklist'); // Navigate back to checklist
+
     } catch (error) {
-      console.error('Error uploading file:', error);
-      setFileError('There was an error uploading the file. Please try again.');
+      console.error('Error during file upload or database update:', error);
+      setFileError('There was an error uploading the file or updating the database. Please try again.');
     }
   };
 

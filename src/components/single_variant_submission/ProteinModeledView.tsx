@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface ProteinModeledViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
-const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView }) => {
+const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
   const [WT, setWT] = useState<string>('');
   const [variant, setVariant] = useState<string>('');
   const [wtScoreWarning, setWTScoreWarning] = useState('');
@@ -68,6 +69,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
         throw new Error('Failed to update Rosetta score');
       }
 
+      const updatedEntry = await response.json();
+      updateEntryData(updatedEntry);
       setCurrentView('checklist'); // Go back to checklist after saving
     } catch (error) {
       console.error('Error updating Rosetta score:', error);

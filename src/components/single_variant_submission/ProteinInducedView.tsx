@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface ProteinInducedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
-const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({ entryData, setCurrentView }) => {
+const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
   const [induced, setInduced] = useState('no');
 
   const updateProteinInduced = async () => {
@@ -25,6 +26,9 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({ entryData, setC
       if (!response.ok) {
         throw new Error('Failed to update protein induced status');
       }
+      
+      const updatedEntry = await response.json();
+      updateEntryData(updatedEntry);
       setCurrentView('checklist');
     } catch (error) {
       console.error('Error updating protein induced status:', error);

@@ -4,9 +4,10 @@ import axios from 'axios';
 interface ExpressedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
-const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView }) => {
+const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
   const [yieldAvg, setYieldAvg] = useState<string>('');
   const [selectedUnit, setSelectedUnit] = useState<string>('mg/mL'); // Default unit
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
@@ -103,6 +104,8 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
         throw new Error('Failed to update yield average in CharacterizationData');
       }
 
+      const updatedEntry = await response2.json();
+      updateEntryData(updatedEntry);
       setCurrentView('checklist');
     } catch (error) {
       console.error('Error updating yield average:', error);

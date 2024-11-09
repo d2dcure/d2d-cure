@@ -3,16 +3,18 @@ import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
 import { useRouter } from 'next/router';
-import s3 from '../../../s3config'; // Ensure this is correctly configured
+import s3 from '../../../s3config'; 
 
 interface KineticAssayDataViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
   const { user } = useUser();
   const router = useRouter();
@@ -43,6 +45,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           const data = response.data;
           setKineticRawDataEntryData(data);
 
+          console.log(data.csv_filename)
           if (data.csv_filename) {
             // Fetch the CSV file from S3 and process it
             await fetchAndProcessCSV(data.csv_filename);
@@ -149,7 +152,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     );
 
     try {
-      const response = await axios.post('/api/plotit', formData, {
+      const response = await axios.post('http://127.0.0.1:5002/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -351,6 +354,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           // Success
           console.log('Data saved successfully');
           alert('Data saved successfully');
+          const updatedEntry = response2.data;
+          updateEntryData(updatedEntry);
         } else {
           console.error('Error updating CharacterizationData:', response2.data);
           alert('Error updating CharacterizationData');
