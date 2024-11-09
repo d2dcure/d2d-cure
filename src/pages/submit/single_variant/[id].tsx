@@ -287,15 +287,15 @@ const SingleVariant = () => {
             </Breadcrumbs>
 
             <div className="pt-3">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
                 <div>
                   <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                     {getVariantDisplay(entryData)}
                     <Link 
                       href={`/database/BglB_Characterization?search=${encodeURIComponent(
                         getVariantDisplay(entryData)
-                          .replace(' BglB', '') // Remove BglB suffix
-                          .trim() // Remove any extra whitespace
+                          .replace(' BglB', '')
+                          .trim()
                       )}`}
                       className="inline-flex items-center hover:text-[#06B7DB]"
                     >
@@ -304,18 +304,18 @@ const SingleVariant = () => {
                   </h1>
                   <StatusChip status="in_progress" />
                 </div>
-                <div className="flex justify-end gap-4 -mb-12">
+                <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   <button 
-                    className="px-3 py-1 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
-                    onClick={() => {/* Add delete logic here */}}
-                  >
-                    Delete Profile
-                  </button>
-                  <button 
-                    className="px-3 py-1 text-sm font-semibold rounded-xl mr-4 bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
+                    className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
                     onClick={handleSubmit}
                   >
                     Submit for Review
+                  </button>
+                  <button 
+                    className="px-4 py-2 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
+                    onClick={() => {/* Add delete logic here */}}
+                  >
+                    Delete Profile
                   </button>
                 </div>
               </div>
