@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      res.status(200).json({ message: 'Melting point values updated successfully', updatedEntry });
+      res.status(200).json(updatedEntry);
     } catch (error) {
       console.error('Failed to update melting point values:', error);
       res.status(500).json({ error: 'Failed to update melting point values', details: error });

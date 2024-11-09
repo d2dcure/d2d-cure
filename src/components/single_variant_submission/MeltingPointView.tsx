@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 interface MeltingPointViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const MeltingPointView: React.FC<MeltingPointViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
   const [tmMean, setTmMean] = useState<string>(entryData.Tm || '');
   const [tmStdDev, setTmStdDev] = useState<string>(entryData.Tm_SD || '');
@@ -39,8 +41,9 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
       });
 
       if (response.ok) {
-        console.log('Melting point values saved successfully');
         setIsSaved(true);
+        const updatedEntry = await response.json();
+        updateEntryData(updatedEntry);
         setCurrentView('checklist'); 
       } else {
         console.error('Failed to save melting point values');

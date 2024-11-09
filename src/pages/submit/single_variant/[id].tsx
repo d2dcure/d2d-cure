@@ -353,15 +353,15 @@ const SingleVariant = () => {
       case "Kinetic assay data uploaded":
         return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case "Wild type kinetic data uploaded":
-        return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} />; 
+        return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case "Thermostability assay data uploaded":
-        return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Wild type thermostability assay data uploaded":
-        return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Melting point values uploaded":
-        return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} />;
+        return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Gel uploaded":
-        return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} />; 
+        return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
       default:
         return <div>Detail view for {selectedDetail}</div>;

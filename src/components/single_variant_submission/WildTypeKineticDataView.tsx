@@ -7,9 +7,10 @@ import s3 from '../../../s3config';
 interface WildTypeKineticDataViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
-const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entryData, setCurrentView }) => {
+const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
   const { user } = useUser();
   const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);
   const [kineticData, setKineticData] = useState<any[]>([]);
@@ -19,7 +20,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
 
   // Hardcoded row labels and [S] (mM) values
   const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-  const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.00'];
+  const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'];
 
   useEffect(() => {
     const fetchKineticWTData = async () => {
@@ -147,7 +148,12 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: entryData.id, WT_raw_data_id }),
     });
-    if (response.ok) setCurrentView('checklist');
+    if (response.ok)
+    {
+      const updatedEntry = await response.json();
+      updateEntryData(updatedEntry);
+      setCurrentView('checklist');
+    } 
     else console.error('Failed to update data');
   };
 

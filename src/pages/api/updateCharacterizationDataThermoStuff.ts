@@ -8,7 +8,7 @@ export default async function handler(req: any, res: any) {
   const { parent_id, T50, T50_SD, T50_k, T50_k_SD } = req.body;
 
   try {
-    await prismaProteins.characterizationData.update({
+    const updatedCharacterizationData = await prismaProteins.characterizationData.update({
       where: { id: parent_id },
       data: {
         T50: T50,
@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
       },
     });
 
-    res.status(200).json({ message: 'CharacterizationData updated successfully' });
+    res.status(200).json(updatedCharacterizationData); 
   } catch (error) {
     console.error('Error updating CharacterizationData:', error);
     res.status(500).json({ error: 'Failed to update CharacterizationData', details: error });

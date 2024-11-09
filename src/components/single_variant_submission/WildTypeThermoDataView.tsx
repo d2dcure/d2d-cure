@@ -6,11 +6,13 @@ import s3 from '../../../s3config';
 interface WildTypeThermoDataViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
   const [tempData, setTempData] = useState<any[]>([]);
   const [tempRawDataEntryData, setTempRawDataEntryData] = useState<any>(null);
@@ -155,6 +157,8 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
 
       if (response.ok) {
         console.log('WT ID saved successfully:', selectedId);
+        const updatedEntry = await response.json();
+        updateEntryData(updatedEntry);
         setCurrentView('checklist');
       } else {
         console.error('Failed to save WT ID');

@@ -5,11 +5,13 @@ import { useUser } from '@/components/UserProvider';
 interface GelUploadedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const GelUploadedView: React.FC<GelUploadedViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
   const { user } = useUser();
   const [gelImages, setGelImages] = useState<any[]>([]);
@@ -104,7 +106,8 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
       });
 
       if (response.ok) {
-        console.log('Gel filename updated successfully:', filenameToSave);
+        const updatedEntry = await response.json();
+        updateEntryData(updatedEntry);
         setCurrentView('checklist');
       } else {
         console.error('Failed to update gel filename');

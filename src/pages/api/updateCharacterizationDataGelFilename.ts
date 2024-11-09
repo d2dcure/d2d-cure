@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      res.status(200).json({ message: 'Gel filename updated successfully', updatedEntry });
+      res.status(200).json(updatedEntry);
     } catch (error) {
       console.error('Failed to update gel filename:', error);
       res.status(500).json({ error: 'Failed to update gel filename', details: error });

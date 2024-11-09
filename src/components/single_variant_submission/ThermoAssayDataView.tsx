@@ -7,9 +7,10 @@ import s3 from '../../../s3config';
 interface ThermoAssayDataViewProps {
   setCurrentView: (view: string) => void;
   entryData: any;
+  updateEntryData: (newData: any) => void;
 }
 
-const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentView, entryData }) => {
+const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentView, entryData, updateEntryData }) => {
   const { user } = useUser();
 
   const [thermoRawDataEntryData, setThermoRawDataEntryData] = useState<any>(null);
@@ -34,18 +35,22 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         if (response.status === 200) {
           const data = response.data;
           setCsvFilename(data.csv_filename);
-          setThermoRawDataEntryData(data); 
-
+          setThermoRawDataEntryData(data);
+  
           // If a CSV file is already uploaded, fetch and process it
           if (data.csv_filename) {
             await fetchAndProcessCSV(data.csv_filename);
           }
+        } else if (response.status === 404) {
+          console.warn("No data found for the given parent_id.");
+          setThermoRawDataEntryData(null); // No data found, so set it to null
         }
       } catch (error) {
         console.error('Error fetching TempRawData entry:', error);
+        setThermoRawDataEntryData(null);
       }
     };
-
+  
     if (entryData.id) {
       fetchTempRawDataEntryData();
     }
@@ -67,6 +72,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
       Papa.parse(csvFile, {
         complete: (result) => {
+          console.log("Parsed CSV data:", result.data); // Log the parsed CSV data
           setOriginalData(result.data as string[][]);
 
           const extractedTemperatures = result.data.slice(4, 12).map((row: any) => parseFloat(row[0]));
@@ -115,7 +121,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
     Papa.parse(file, {
       complete: (result) => {
+        console.log("Parsed CSV data:", result.data); 
         const parsedData = result.data as string[][];
+
+        const extractedTemperatures = result.data.slice(4, 12).map((row: any) => parseFloat(row[0]));
+        setTempValues(extractedTemperatures);
 
         // Save the full original structure and also set the editable thermoData for rendering
         setOriginalData(parsedData);
@@ -229,15 +239,23 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       const { T50, T50_SD, k, k_SD } = calculatedValues;
   
       // Call updateCharacterizationDataThermoStuff endpoint
-      await axios.post('/api/updateCharacterizationDataThermoStuff', {
+      const response = await axios.post('/api/updateCharacterizationDataThermoStuff', {
         parent_id: entryData.id,
         T50,
         T50_SD,
         T50_k: k,
         T50_k_SD: k_SD,
       });
+      if (response.status == 200) {
+          console.log('Data saved successfully');
+          alert('Data saved successfully!');
+          const updatedEntry = response.data;
+          updateEntryData(updatedEntry);
+      } else {
+          console.error('Error updating CharacterizationData:', response.data);
+          alert('Error updating CharacterizationData');
+      }
   
-      alert('Data saved successfully!');
     } catch (error) {
       console.error('Error saving data:', error);
       alert('Failed to save data. Please try again.');
@@ -318,8 +336,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                 ))}
               </tbody>
             </table>
-            <p>Protein purified on {thermoRawDataEntryData.purification_date} and assayed on {thermoRawDataEntryData.assay_date}.</p>
-            <p>Data uploaded by {thermoRawDataEntryData.user_name} and last updated on {thermoRawDataEntryData.updated}</p>
+            <p>
+              Protein purified on {thermoRawDataEntryData?.purification_date || 'N/A'} and assayed on {thermoRawDataEntryData?.assay_date || 'N/A'}.
+            </p>
+            <p>
+              Data uploaded by {thermoRawDataEntryData?.user_name || 'N/A'} and last updated on {thermoRawDataEntryData?.updated || 'N/A'}.
+            </p>
           </div>
 
           <button
