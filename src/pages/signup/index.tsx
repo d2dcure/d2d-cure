@@ -140,8 +140,9 @@ const SignUpPage = () => {
                   textDecoration: "none", 
                   width: "384px", 
                   height: "48px",
-                  color: "#06B7DB", 
-                  borderColor: "#06B7DB"
+                  color: "white", 
+                  borderColor: "#06B7DB",
+                  backgroundColor: "#06B7DB"
                 }}
               >
                 A faculty member
@@ -154,7 +155,8 @@ const SignUpPage = () => {
                 style={{
                   textDecoration: "none", 
                   width: "384px", 
-                  color: "#06B7DB", 
+                  color: "white", 
+                  backgroundColor: "#06B7DB",
                   borderColor: "#06B7DB", 
                   marginBottom: "16px"
                 }}
@@ -271,7 +273,8 @@ const SignUpPage = () => {
               }}
             >
               <form onSubmit={handleSubmit} style={{ gap: "36px", width: "100%" }}>
-                <p className="block text-gray-700 text-sm mb-2">All fields required.</p>
+                <h1 style = {{fontSize: "30px", lineHeight: "40px", marginLeft: "10px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}}>Create an Account</h1>
+                <p style = {{textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}} className="block text-gray-700 text-sm mb-2">All fields required.</p>
 
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
@@ -424,7 +427,8 @@ const SignUpPage = () => {
               <form
                 onSubmit={handleSubmit} style = {{width: "100%"}}
               >
-                <p className="block text-gray-700 text-sm mb-2">All fields required.</p>
+                <h1 style = {{fontSize: "30px", lineHeight: "40px", marginLeft: "10px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}}>Create an Account</h1>
+                <p style = {{textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}} className="block text-gray-700 text-sm mb-2">All fields required.</p>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
                     Username
