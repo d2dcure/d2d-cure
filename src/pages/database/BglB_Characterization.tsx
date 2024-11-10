@@ -591,7 +591,11 @@ const DataPage = () => {
                       {/* Controls container - half-half layout */}
                       <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                         {/* Columns dropdown */}
-                        <Dropdown className="w-full">
+                        <Dropdown 
+                          className="w-full" 
+                          shouldBlockScroll={false} 
+                          shouldCloseOnInteractOutside={() => false}
+                        >
                           <DropdownTrigger>
                             <Button 
                               size="sm"
@@ -619,7 +623,11 @@ const DataPage = () => {
                         </Dropdown>
 
                         {/* Filter dropdown */}
-                        <Dropdown className="w-full">
+                        <Dropdown 
+                          className="w-full" 
+                          shouldBlockScroll={false} 
+                          shouldCloseOnInteractOutside={() => false}
+                        >
                           <DropdownTrigger>
                             <Button 
                               size="sm"
@@ -931,7 +939,7 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 2)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 2) : '—'}` : '—'}
+                                          {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 2)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 2) : ''}` : '—'}
                                         </div>
                                       </TableCell>
                                     );

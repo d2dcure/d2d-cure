@@ -22,21 +22,26 @@ interface CharacterizationData {
 }
 
 const Dashboard = () => {
-  const { user, loading } = useUser(); // Assume useUser now returns a loading state
+  const { user, loading: userLoading } = useUser();
   const [activeIndex, setActiveIndex] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [characterizationData, setCharacterizationData] = useState<CharacterizationData[]>([]);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      fetchCharacterizationData(user.user_name);
-    } else if (!loading && !user) {
-      onOpen(); // Trigger the modal if the user isn't logged in.
+    if (userLoading) return;
+    
+    if (!user) {
+      onOpen();
+      return;
     }
-  }, [user, loading]);
+
+    if (user.user_name) {
+      fetchCharacterizationData(user.user_name);
+    }
+  }, [user, userLoading]);
 
   const fetchCharacterizationData = async (userName: string) => {
     try {
@@ -165,7 +170,7 @@ const Dashboard = () => {
           errorMessage={errorMessage}
           errorType="api"
         >
-          {isLoading ? (
+          {userLoading || isLoading ? (
             <div className="flex justify-center items-center min-h-screen">
               <Spinner size="lg" />
             </div>
@@ -336,6 +341,45 @@ const Dashboard = () => {
         </ErrorChecker>
       </AuthChecker>
       <Footer />
+      {/* Floating star icon with insights */}
+      <Popover placement="top-end">
+        <PopoverTrigger>
+          <div className="fixed bottom-6 right-6 z-50 cursor-pointer">
+            <div className="bg-white/30 backdrop-blur-md rounded-full p-2 shadow-lg border border-white/50 hover:bg-white/40 transition-all duration-200">
+              <RiSparklingFill className="text-gray-600 text-xl" />
+            </div>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="max-w-[300px]">
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-2 mb-3">
+              <RiSparklingFill className="text-gray-600" />
+              <h4 className="text-sm font-medium text-gray-700">Quick Insights</h4>
+            </div>
+            <div className="text-sm text-gray-600">
+              You have successfully contributed {characterizationData.length} variants to the research database.
+              
+              {characterizationData.filter(d => d.curated).length > 0 && (
+                <div className="mt-2">
+                  ✓ {characterizationData.filter(d => d.curated).length} submissions have completed the curation process
+                </div>
+              )}
+              
+              {characterizationData.filter(d => !d.curated && d.submitted_for_curation).length > 0 && (
+                <div className="mt-2">
+                  🔍 {characterizationData.filter(d => !d.curated && d.submitted_for_curation).length} submissions are pending review
+                </div>
+              )}
+              
+              {characterizationData.filter(d => !d.submitted_for_curation).length > 0 && (
+                <div className="mt-2">
+                  💡 {characterizationData.filter(d => !d.submitted_for_curation).length} variants are prepared for submission
+                </div>
+              )}
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </>
   );
 };
