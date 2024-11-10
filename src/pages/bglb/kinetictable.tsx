@@ -57,76 +57,87 @@ interface TableProps {
 
 interface KineticTableProps {
   id: string | null;
-  wt_id: string | null;
+
 }
 
-function prepData(data:string[]) : string[][]{
+function parseData(data:any) : string [][] {
+  const buffer64 = Buffer.from(data.cell_data, 'binary').toString('utf8').slice(4, -3).split(';');
+  const parsedData = buffer64.map(dataParse);
   const finalData = new Array();
   finalData.push(["Row", "1", "2", "3"]);
-  for (let i = 0; i < data.length; i = i + 7) {
+  for (let i = 0; i < parsedData.length; i = i + 7) {
     const temp = new Array();
     for (let j = i; j < i + 7; j = j + 2) {
-      temp.push(data[j]);
+      temp.push(parsedData[j]);
     }
     finalData.push(temp);
   }
+  console.log(finalData);
   return finalData;
 }
 
 function KineticTable(props:KineticTableProps) {
   const default2d = [[]];
-  const [WT, setWT] = useState<string[][]>(default2d);
-  const [WTdata, setWTdata] = useState<string[][]>(default2d);
-  const [data, setData] = useState<any>();
-  const [ddata, set2ddata] = useState<string[][]>(default2d);
-  const [renderStatus, setRenderStatus] = useState<boolean>(false);
+  const [wtKineticData, setWTKineticData] = useState<any>();
+  const [wtKineticTable, setWTKineticTable] = useState<string[][]>(default2d);
+  const [kineticData, setKineticData] = useState<any>();
+  const [kineticTable, setKineticTable] = useState<string[][]>(default2d);
+  const [wtTempData, setWTTempData] =  useState<any>();
+  const [wtTempTable, setWTTempTable] = useState<string[][]>(default2d);
+  const [tempData, setTempData] = useState<any>();
+  const [tempTable, setTempTable] = useState<string[][]>(default2d);
+
   
   const displayKineticData = async () => {
     try {
       console.log(props);
+      const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${props.id}`);
+      const data = await response.json();
+
         // const response = await fetch('/api/getKineticData');
-        const response = await axios.get('/api/getKineticData', 
-          {params: {
-            id: props.id
-          }}
-        )
+      const kineticRawId = data.raw_data_id;
+      const wtKineticRawId = data.WT_raw_data_id;
+      const kineticIds = [kineticRawId, wtKineticRawId]
 
-        const wt = await axios.get('/api/getKineticData', 
-          {params: {
-            id: props.wt_id
-          }}
-        )
+      const kineticDataResponse = await fetch('/api/getKineticRawDataFromIDs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: kineticIds }),
+      });
+      const kineticDataList = await kineticDataResponse.json();
+      // console.log(kineticData)
+      for (let i = 0; i < kineticDataList.length; i++) {
+        const kineticData = kineticDataList[i];
+        if (kineticData.variant === "WT") {
+          setWTKineticData(kineticData);
+          setWTKineticTable(parseData(kineticData));
+        } else {
+          setKineticData(kineticData);
+          setKineticTable(parseData(kineticData));
+        }
+      }
+      
 
-        
-        console.log(JSON.stringify(response));
+      const tempRawId = data.temp_raw_data_id;
+      const wtTempRawId = data.WT_temp_raw_data_id;
+      const tempIds = [tempRawId, wtTempRawId]
+      const tempDataResponse = await fetch('/api/getTempRawDataFromIDs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: tempIds }),
+      });
 
-        const data = response.data
-        setData(data);
-
-        const buffer64 = Buffer.from(data.cell_data.data, 'binary').toString('utf8').slice(4, -3).split(';');
-
-        const parsedData = buffer64.map(dataParse);
-        console.log(parsedData);
-        const finalData = prepData(parsedData);
-
-        console.log(buffer64);
-        console.log(parsedData);
-        set2ddata(finalData);
-
-        const data_wt = wt.data
-        setWT(data_wt);
-
-        const buffer64wt = Buffer.from(data_wt.cell_data.data, 'binary').toString('utf8').slice(4, -3).split(';');
-
-        const parsedDatawt = buffer64wt.map(dataParse);
-        console.log(parsedData);
-        const finalDataWt = prepData(parsedDatawt);
-
-        console.log(buffer64);
-        console.log(parsedData);
-        set2ddata(finalData);
-        setWTdata(finalDataWt);
-
+      const tempDataList = await tempDataResponse.json();
+      for (let i = 0; i < tempDataList.length; i++) {
+        const tempData = tempDataList[i];
+        if (tempData.id === tempRawId) {
+          setWTTempData(tempData);
+          setWTTempTable(parseData(tempData));
+        } else {
+          setTempData(tempData);
+          setTempTable(parseData(tempData));
+        }
+      }
 
     } catch (error) {
         console.error('Error uploading file:', error);
@@ -139,10 +150,15 @@ function KineticTable(props:KineticTableProps) {
 
   return (
     <div className="table-container">
-      <Table data={ddata} />
-      <MetaData data={data} />
-      <Table data={WTdata} />
-      <MetaData data={WT} />
+      <Table data={kineticTable} />
+      <MetaData data={kineticData} />
+      <Table data={wtKineticTable} />
+      <MetaData data={wtKineticData} />
+      <div> TEMPERATURE DATA</div>
+      <Table data={tempTable} />
+      <MetaData data={tempData} />
+      <Table data={wtTempTable} />
+      <MetaData data={wtTempData} />
     </div>
   );
 }
