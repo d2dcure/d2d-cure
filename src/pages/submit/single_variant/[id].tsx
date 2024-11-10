@@ -451,7 +451,7 @@ const SingleVariant = () => {
               <div className="flex w-full gap-4 flex-col lg:flex-row">
                 <div className="w-full lg:w-1/5">
                   <div className="lg:sticky lg:top-4">
-                    <SingleVarSidebar entryData={entryData} />
+                    <SingleVarSidebar entryData={entryData} updateEntryData={updateEntryData} />
                   </div>
                 </div>
 
