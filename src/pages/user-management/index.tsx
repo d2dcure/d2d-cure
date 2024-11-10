@@ -5,8 +5,18 @@ import NavBar from '@/components/NavBar';
 import firebaseAdmin from "../../../firebaseAdmin"; 
 import { getAuth, deleteUser } from "firebase/auth";
 import { auth } from "firebase-admin";
-import { Button } from "@nextui-org/react";
-import Link from "next/link";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell
+} from "@nextui-org/table";
+import { Button, Link, Checkbox} from "@nextui-org/react";
+import {useAsyncList} from "@react-stately/data";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faCheck } from '@fortawesome/free-solid-svg-icons'; // Use a left chevron icon
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -41,39 +51,17 @@ function UserManagement() {
   //protect pages if status is not admin or professor
   if (!user?.status) {
       return (
-          <>
-              <NavBar />
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-                  <h1 className="text-6xl font-bold text-[#06B7DB]">🔬 Access Denied!</h1>
-                  <p className="text-2xl text-gray-600 mb-8">
-                      Hold on, science enthusiast! You need to log in to manage our research team.
-                  </p>
-                  <Link href="/login" passHref>
-                      <Button color="primary" className="bg-[#06B7DB]">
-                          Enter the Lab 🧪
-                      </Button>
-                  </Link>
-              </div>
-          </>
+          <div>
+              <h1>Please login to gain access to this page.</h1>
+          </div>
       )
   }
 
   if (user?.status !== "professor" && user?.status !== "ADMIN") {
       return (
-          <>
-              <NavBar />
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-                  <h1 className="text-6xl font-bold text-[#06B7DB]">🚫 Restricted Area</h1>
-                  <p className="text-2xl text-gray-600 mb-8">
-                      Sorry! This area is reserved for our lab leaders and administrators only.
-                  </p>
-                  <Link href="/dashboard" passHref>
-                      <Button color="primary" className="bg-[#06B7DB]">
-                          Back to Safety 🔬
-                      </Button>
-                  </Link>
-              </div>
-          </>
+          <div>
+              <h1>You do not have permission to access this page.</h1>
+          </div>
       )
   }
 
@@ -209,118 +197,107 @@ const handleDeleteFirebase = async () => {
     }
   };
   
-
   return (
-    <div>
+    <>
       <NavBar />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ marginTop: '10px', marginBottom: '10px' }}>Welcome, {user.status}!</h1>
-        <h2 style={{ marginBottom: '10px' }}>Members of labs at {user.institution}</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            style={{ marginRight: '10px', marginBottom: '10px' }}
-            onClick={handleApprove}
-          >
-            Approve
-          </button>
-          <button style={{ marginBottom: '10px' }}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            onClick={() => {
-              handleDeleteFirebase();
-              handleDelete();
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "48px", gap: "10px"}}>
+        <h1 style={{ fontSize: "40px", marginBottom: "48px", textAlign: "left", alignSelf: "flex-start" }}>Manage Students</h1>
+
+        <Table
+          aria-label="Members Table"
+          style={{
+            height: "auto",
+            borderRadius: "12px", 
+            width: "100%",
+            maxWidth: "1280px",
+            padding: "0 32px",
           }}
-          >
-            Delete
-          </button>
-        </div>
-        <table>
-        <thead>
-              <tr>
-                <th style={{ color: '#40E0D0', textDecoration: 'underline' }}>Check</th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('user_name')}
+          topContent={
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 0',
+              width: '100%',
+              gap: '10px',
+              flexWrap: 'wrap',  // Allows wrapping on smaller screens
+            }}>
+              <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Members of labs at {user.institution}</h2>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <Button
+                  color="danger"
+                  variant="bordered"
+                  onClick={() => {
+                    handleDeleteFirebase();
+                    handleDelete();
+                  }}
+                  style={{
+                    borderRadius: '12px',
+                    padding: '8px 16px',
+                    fontSize: "0.875rem",
+                    minWidth: "90px"
+                  }}
                 >
-                  User Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('given_name')}
+                  Remove User
+                </Button>
+
+                <Button
+                  variant="solid"
+                  onClick={handleApprove}
+                  style={{
+                    borderRadius: '12px',
+                    padding: '8px 16px',
+                    fontSize: "0.875rem",
+                    color: 'white',
+                    backgroundColor: 'var(--colors-base-primary, rgba(6, 183, 219, 1))',
+                    minWidth: "90px"
+                  }}
                 >
-                  Given Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('title')}
-                >
-                  Title
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('institution')}
-                >
-                  Institution
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('status')}
-                >
-                  Status/Role
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('pi')}
-                >
-                  PI
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('email')}
-                >
-                  Email
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('reg_date')}
-                >
-                  RegDate
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('approved')}
-                >
-                  Approved
-                </th>
-              </tr>
-            </thead>
-          <tbody>
+                  Approve
+                </Button>
+              </div>
+            </div>
+          }
+        >
+
+          <TableHeader>
+            <TableColumn width="40">Check</TableColumn>
+            <TableColumn width="40" onClick={() => setSortConfig({ key: 'user_name', direction: 'ascending' })}>Username</TableColumn>
+            <TableColumn width="40">Given Name</TableColumn>
+            <TableColumn width="40">Title</TableColumn>
+            <TableColumn width="40">Institution</TableColumn>
+            <TableColumn width="40">Status/Role</TableColumn>
+            <TableColumn width="40">PI</TableColumn>
+            <TableColumn width="40">Email</TableColumn>
+            <TableColumn width="40">Registered Date</TableColumn>
+            <TableColumn width="40">Approved</TableColumn>
+          </TableHeader>
+
+          <TableBody>
             {sortedUsers.map((user) => (
-              <tr key={user.id}>
-                <td style={{ marginLeft: '10px' }}>
-                  <input
-                    type="checkbox"
-                    checked={checkedUsers[user.id] || false}
-                    onChange={() => handleCheckboxChange(user.id)}
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Checkbox
+                    isSelected={checkedUsers[user.id] || false}
+                    onChange={() => setCheckedUsers(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
                   />
-                </td>
-                <td>{user.user_name}</td>
-                <td>{user.given_name}</td>
-                <td>{user.title}</td>
-                <td>{user.institution}</td>
-                <td>{user.status}</td>
-                <td>{user.pi}</td>
-                <td>{user.email}</td>
-                <td>{user.reg_date}</td>
-                <td>{user.approved ? '1' : '0'}</td>
-              </tr>
+                </TableCell>
+                <TableCell>{user.user_name}</TableCell>
+                <TableCell>{user.given_name}</TableCell>
+                <TableCell>{user.title}</TableCell>
+                <TableCell>{user.institution}</TableCell>
+                <TableCell>{user.status}</TableCell>
+                <TableCell>{user.pi}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.reg_date}</TableCell>
+                <TableCell>{user.approved ? <FontAwesomeIcon icon={faCheck} /> : ''}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </div>
+    </>
   );
 }
 
