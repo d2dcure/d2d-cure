@@ -10,7 +10,7 @@ import { FaLinkedin } from "react-icons/fa";
 import { Tabs, Tab } from "@nextui-org/react";
 
 const AboutD2D = () => {
-  const [selected, setSelected] = React.useState<"operations" | "consultants" | "development">("operations");
+  const [selected, setSelected] = React.useState<"operations" | "consultants">("operations");
 
   return (
     <>
@@ -132,19 +132,21 @@ const AboutD2D = () => {
             </span>
           </Card>
           <Card 
-            className="p-6 cursor-not-allowed opacity-70 w-full"
+            className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
+            as={Link}
+            href="/enzymes/beta-glucosidase-b"
           >
             <img 
               src="/resources/images/FutureData-QuesitonMark.png" 
-              alt="Future Data" 
+              alt="β-glucosidase B" 
               className="w-16 h-16 mx-4 mb-4"
             />
+
             <h3 className="text-3xl font-light mx-4 mb-2">Future Data</h3>
-            <p className="text-gray-600 pt-4 pb-10 mx-4">
-              We are actively seeking to identify more enzymes to expand our database.
-            </p>
-            <span className="text-gray-500 mx-4 mb-2">
-              Coming Soon
+            <p className="text-gray-600 pt-4 pb-10 mx-4 ">
+            We are actively seeking to identify more enzymes to expand our database.            </p>
+            <span className="text-[#06B7DB] mx-4 mb-2 hover:font-semibold">
+              Learn More {'>'}
             </span>
           </Card>
         </div>
@@ -160,7 +162,7 @@ const AboutD2D = () => {
           <Tabs 
             aria-label="Faculty categories"
             selectedKey={selected}
-            onSelectionChange={(key) => setSelected(key as "operations" | "consultants" | "development")}
+            onSelectionChange={(key) => setSelected(key as "operations" | "consultants")}
           >
             <Tab key="operations" title="D2D Operations">
               <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -243,51 +245,6 @@ const AboutD2D = () => {
                           rel="noopener noreferrer" 
                           className="text-gray-600 hover:text-[#0077B5] transition-colors"
                           aria-label={`LinkedIn profile of ${faculty.name}`}
-                        >
-                          <FaLinkedin size={24} />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Tab>
-            <Tab key="development" title="Development Team">
-              <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {developmentTeam.map((member) => (
-                  <div key={member.name} className="h-auto">
-                    <div className="text-center">
-                      <div className="max-w-[250px] mx-auto">
-                        {member.image === "/resources/images/sample.jpg" ? (
-                          <div className="w-full aspect-square rounded-lg mb-4 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-4xl">No Image</span>
-                          </div>
-                        ) : (
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-full aspect-square object-cover rounded-lg mb-4"
-                          />
-                        )}
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {member.name}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300">{member.title}</p>
-                      <div className="flex justify-center gap-4 mt-2">
-                        <a 
-                          href={`mailto:${member.email}`} 
-                          className="text-gray-600 hover:text-[#06B7DB] transition-colors"
-                          aria-label={`Email ${member.name}`}
-                        >
-                          <MdEmail size={24} />
-                        </a>
-                        <a 
-                          href={member.linkedin} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-gray-600 hover:text-[#0077B5] transition-colors"
-                          aria-label={`LinkedIn profile of ${member.name}`}
                         >
                           <FaLinkedin size={24} />
                         </a>
@@ -454,72 +411,6 @@ const facultyData = [
     email: "example@email.com",
     linkedin: "https://www.linkedin.com/in/username",
   },
-];
-
-const developmentTeam = [
-  {
-    name: "Mohnish Gopi",
-    title: "Project Manager",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Jess Fong",
-    title: "Project Manager",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Vishal Koppuru",
-    title: "Developer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Ryan Uyeki",
-    title: "Developer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Hussain Ali",
-    title: "Developer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Kevin Bao",
-    title: "Developer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Vikram Karmarkar",
-    title: "Developer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Edyn Stepler",
-    title: "Designer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  },
-  {
-    name: "Samantha Tran",
-    title: "Designer",
-    image: "/resources/images/sample.jpg",
-    email: "example@email.com",
-    linkedin: "https://www.linkedin.com/in/username",
-  }
 ];
 
 const networkLogos = [

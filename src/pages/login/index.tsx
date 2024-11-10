@@ -26,13 +26,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const [showSuccessNotif, setShowSuccessNotif] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Add mount effect
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   //Google sign in button logic 
   useEffect(() => {
@@ -70,13 +63,8 @@ const Login = () => {
     try {
       await setPersistence(auth, browserLocalPersistence); // ensures that the user remains logged in across page refreshes and browser sessions
       await signInWithEmailAndPassword(auth, email, password);
-      
-      // Add the justLoggedIn parameter to wherever you're redirecting
-      const redirectPath = '/dashboard'; // or any other page
-      router.push({
-        pathname: redirectPath,
-        query: { justLoggedIn: 'true' }
-      });
+
+      router.push('/');
     } catch (error) {
       setError('Failed to sign in');
     }
@@ -104,53 +92,6 @@ const Login = () => {
     }
   }, [user, router]);
 
-  const SuccessNotification = () => (
-    <div 
-      className={`
-        fixed top-4 right-4 z-50 transform transition-all duration-700 ease-out
-        ${mounted ? 'translate-y-0' : '-translate-y-full'}
-        ${showSuccessNotif ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-      `}
-    >
-      <div className="backdrop-blur-md bg-white/30 dark:bg-gray-800/30 rounded-lg shadow-lg border border-[#06B7DB]/20 p-6 min-w-[320px]">
-        <div className="flex flex-col items-center gap-4">
-          {/* Success Icon */}
-          <div className="h-12 w-12 rounded-full bg-[#06B7DB]/10 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          
-          {/* Text Content */}
-          <div className="text-center">
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              Successfully logged in
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Logged in as {email}
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col w-full gap-2 mt-2">
-            <Link 
-              href="/dashboard"
-              className="w-full px-4 py-2 text-sm text-white bg-[#06B7DB] rounded-lg hover:bg-[#05a6c7] transition-colors text-center font-medium"
-            >
-              View Dashboard
-            </Link>
-            <Link 
-              href="/settings"
-              className="w-full px-4 py-2 text-sm text-[#06B7DB] bg-[#06B7DB]/10 rounded-lg hover:bg-[#06B7DB]/20 transition-colors text-center font-medium"
-            >
-              Settings
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -158,8 +99,7 @@ const Login = () => {
   return (
     <>
       <NavBar />
-      <SuccessNotification />
-      <div className="flex justify-center items-center h-screen" style={{marginTop: "36px"}}>
+      <div className="flex justify-center items-center h-screen" style = {{marginTop: "36px"}}>
       <div
         style={{
           position: "absolute", 
