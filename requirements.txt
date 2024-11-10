@@ -1,0 +1,6 @@
+Flask==2.1.1
+Flask-Cors==3.0.10
+matplotlib==3.5.1
+numpy==1.22.3
+pandas==1.4.2
+scipy==1.8.0

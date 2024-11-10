@@ -1,19 +1,32 @@
-// components/single_variant_submission/MeltingPointView.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface MeltingPointViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
+  updateEntryData: (newData: any) => void; 
 }
 
 const MeltingPointView: React.FC<MeltingPointViewProps> = ({
   entryData,
   setCurrentView,
+  updateEntryData
 }) => {
-  const [tmMean, setTmMean] = useState<string>('');
-  const [tmStdDev, setTmStdDev] = useState<string>('');
+  const [tmMean, setTmMean] = useState<string>(entryData.Tm || '');
+  const [tmStdDev, setTmStdDev] = useState<string>(entryData.Tm_SD || '');
   const [isSaved, setIsSaved] = useState<boolean>(false);
+
+  // Function to validate and set floating-point values only
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setValue: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const value = e.target.value;
+    // Allow only floating-point numbers (e.g., "123.45", ".5", "-.5")
+    const regex = /^-?\d*\.?\d*$/;
+    if (regex.test(value)) {
+      setValue(value);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -28,9 +41,10 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
       });
 
       if (response.ok) {
-        console.log('Melting point values saved successfully');
         setIsSaved(true);
-        setTimeout(() => setCurrentView('checklist'), 2000); // Redirect after a short delay
+        const updatedEntry = await response.json();
+        updateEntryData(updatedEntry);
+        setCurrentView('checklist'); 
       } else {
         console.error('Failed to save melting point values');
       }
@@ -55,14 +69,14 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
           type="text"
           placeholder="Tm Mean (°C)"
           value={tmMean}
-          onChange={(e) => setTmMean(e.target.value)}
+          onChange={(e) => handleInputChange(e, setTmMean)}
           className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
         />
         <input
           type="text"
           placeholder="Tm Standard Deviation (°C)"
           value={tmStdDev}
-          onChange={(e) => setTmStdDev(e.target.value)}
+          onChange={(e) => handleInputChange(e, setTmStdDev)}
           className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
         />
       </div>

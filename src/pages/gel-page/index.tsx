@@ -3,6 +3,8 @@
 import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
+import { AuthChecker } from '@/components/AuthChecker';
+import NavBar from '@/components/NavBar';
 
 function GelImage() {
   const { user } = useUser();
@@ -73,15 +75,20 @@ function GelImage() {
   
 
   return (
-    <div>
-      <h2 style={headingStyle}>Gel Upload</h2>
-      <input type="file" onChange={handleFileChange} />
-      <div style={textBlockStyle}>Enter GEL ID:</div>
-      <input type="text" onChange={handlegelIDChange} />
-      <div style={{position: 'relative', top: '20px'}}>
-        <button onClick={handleSubmit}>Upload</button>
-      </div>
-    </div>
+    <>
+      <NavBar />
+      <AuthChecker minimumStatus="student">
+        <div>
+          <h2 style={headingStyle}>Gel Upload</h2>
+          <input type="file" onChange={handleFileChange} />
+          <div style={textBlockStyle}>Enter GEL ID:</div>
+          <input type="text" onChange={handlegelIDChange} />
+          <div style={{position: 'relative', top: '20px'}}>
+            <button onClick={handleSubmit}>Upload</button>
+          </div>
+        </div>
+      </AuthChecker>
+    </>
   );
 }
 

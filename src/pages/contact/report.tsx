@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, useDisclosure, Select, SelectItem } from "@nextui-org/react";
@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { DatePicker } from "@nextui-org/date-picker";
 import { Card, CardBody } from '@nextui-org/react';
 import { DateValue, today } from '@internationalized/date';
+import { FaBug, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 
 const ReportBug = () => {
   const [formData, setFormData] = useState({
@@ -25,7 +26,8 @@ const ReportBug = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modalContent, setModalContent] = useState({
     title: "",
-    message: ""
+    message: "",
+    type: ""
   });
 
   const handleChange = (e: { target: { name: string; value: any; files?: FileList | null; }; }) => {
@@ -41,10 +43,11 @@ const ReportBug = () => {
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.comment) {
+    if (!formData.fullName || !formData.email || !formData.comment || !formData.category) {
       setModalContent({
-        title: "Validation Error",
-        message: "Please fill in all required fields."
+        title: "Required Fields Missing",
+        message: "Please fill in all required fields to proceed.",
+        type: "error"
       });
       onOpen();
       return;
@@ -53,8 +56,9 @@ const ReportBug = () => {
     setIsLoading(true);
     onOpen();
     setModalContent({
-      title: "Sending your bug report",
-      message: "Please hold on while we process your request..."
+      title: "Processing Report",
+      message: "Analyzing bug details...",
+      type: "loading"
     });
 
     try {
@@ -78,8 +82,9 @@ const ReportBug = () => {
       
       if (response.ok) {
         setModalContent({
-          title: "Bug Report Sent Successfully!",
-          message: "Thank you for reporting this issue. Our team will investigate and respond within 24-48 business hours."
+          title: "Report Submitted Successfully",
+          message: "Thank you for your report. Our team will review it within 24-48 hours.",
+          type: "success"
         });
         setFormData({
           fullName: "",
@@ -93,14 +98,16 @@ const ReportBug = () => {
         setPreview(null);
       } else {
         setModalContent({
-          title: "Error",
-          message: `Error: ${result.message}`
+          title: "Submission Error",
+          message: `Unable to process request: ${result.message}`,
+          type: "error"
         });
       }
     } catch (error) {
       setModalContent({
-        title: "Error",
-        message: "There was an error sending your bug report. Please try again later."
+        title: "System Error",
+        message: "An unexpected error occurred. Please try again later.",
+        type: "error"
       });
     } finally {
       setIsLoading(false);
@@ -212,7 +219,7 @@ const ReportBug = () => {
                   <Textarea
                     name="comment"
                     radius="sm"
-                    placeholder="Please describe the bug in detail. Include what you were doing when it occurred and any error messages you saw."
+                    placeholder="Describe the bug, what you were doing, and any error messages"
                     value={formData.comment}
                     isRequired
                     className="w-full"
@@ -220,38 +227,57 @@ const ReportBug = () => {
                   />
                 </div>
                 <div className="mb-6">
-                  <label className="block text-gray-700 dark:text-white mb-2">Attach Screenshot</label>
-                  <Input
-                    name="file"
-                    type="file"
-                    radius="sm"
-                    accept="image/*"
-                    className="w-full"
-                    onChange={handleChange}
-                  />
-                  {preview && (
-                    <div className="mt-4 relative">
-                      <button
-                        onClick={handleDeleteFile}
-                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors duration-200"
-                        aria-label="Delete attachment"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 text-gray-600"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
+                  <label className="block text-gray-700 dark:text-white mb-2">Upload file</label>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 relative">
+                      {preview ? (
+                        <div className="relative w-full h-full">
+                          <button
+                            onClick={handleDeleteFile}
+                            className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors duration-200"
+                            aria-label="Delete attachment"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-gray-600"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                          <img 
+                            src={preview} 
+                            alt="Preview" 
+                            className="w-full h-full object-contain rounded-lg"
                           />
-                        </svg>
-                      </button>
-                      <img src={preview} alt="Preview" className="w-full h-auto rounded-lg shadow-md" />
-                    </div>
-                  )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                          </svg>
+                          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            SVG, PNG, JPG or GIF (Up to 50 MB)
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        name="file"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleChange}
+                      />
+                    </label>
+                  </div>
                 </div>
                 <Button 
                   type="submit"
@@ -272,9 +298,21 @@ const ReportBug = () => {
       </div>
       <Footer />
       
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose}
+        backdrop="blur" 
+        classNames={{
+          base: "border border-gray-200 dark:border-gray-700"
+        }}
+      >
         <ModalContent>
-          <ModalHeader>{modalContent.title}</ModalHeader>
+          <ModalHeader className="flex items-center gap-2">
+            {modalContent.type === "success" && <FaCheckCircle className="text-green-500 text-xl" />}
+            {modalContent.type === "error" && <FaExclamationTriangle className="text-red-500 text-xl" />}
+            {modalContent.type === "loading" && <FaBug className="text-[#06B7DB] text-xl" />}
+            {modalContent.title}
+          </ModalHeader>
           <ModalBody className="py-6">
             {isLoading ? (
               <div className="flex flex-col items-center gap-4">
@@ -282,7 +320,9 @@ const ReportBug = () => {
                 <p>{modalContent.message}</p>
               </div>
             ) : (
-              <p>{modalContent.message}</p>
+              <div className="flex items-center gap-4">
+                <p>{modalContent.message}</p>
+              </div>
             )}
           </ModalBody>
         </ModalContent>

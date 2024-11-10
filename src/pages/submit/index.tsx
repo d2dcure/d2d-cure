@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
 import { useRouter } from 'next/router';
+import { AuthChecker } from '@/components/AuthChecker';
+import NavBar from '@/components/NavBar';
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, CardBody } from "@nextui-org/react";
+import StatusChip from '@/components/StatusChip';
 
 const SubmitPage = () => {
   const { user } = useUser();
@@ -134,85 +139,197 @@ const SubmitPage = () => {
   }, []);
 
   return (
-    <div className="mt-8 text-center">
-      <h1 className="text-2xl font-bold">Data Analysis and Submission</h1>
-      <div className="space-x-4">
-        {/* Initial options */}
-        {!selection && (
-          <div>
-          <h2>What type of data would you like to submit?</h2>
-          <div className="space-x-4">
-              <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-              <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
-          </div>
-        </div>
-        )}
+    <div>
+      <NavBar />
+      <AuthChecker minimumStatus="student">
+        <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <Breadcrumbs className="mb-2">
+              <BreadcrumbItem>Home</BreadcrumbItem>
+              <BreadcrumbItem>Data Analysis & Submission</BreadcrumbItem>
+            </Breadcrumbs>
 
-        {/* Single Variant form */}
-        {selection === 'single_variant' && (
-          <div>
-                <h2>Single Variant Form</h2>
-                <div className="space-x-4">
-                    <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-                    <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
+            <div className="pt-8">
+              <h1 className="text-2xl md:text-2xl lg:text-4xl font-inter dark:text-white mb-2">
+                {selection ? (
+                  selection === 'single_variant' ? 'Single Variant Submission' :
+                  selection === 'wild_type' ? 'Wild Type Submission' :
+                  'Data Analysis & Submission'
+                ) : 'Data Analysis & Submission'}
+              </h1>
+              <p className="text-gray-500 mb-14">
+                {selection === 'single_variant' ? 
+                  'Select the enzyme and enter an enzyme variant code (e.g., A123C) corresponding to your mutation.' :
+                selection === 'wild_type' ? 
+                  'Submit characterization data for wild type enzyme variants.' :
+                'Please select one of the options to submit data or upload a gel image.'}
+              </p>
+
+              {/* Initial Selection Cards */}
+              {!selection && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                  <Card 
+                    isPressable
+                    onPress={() => setSelection('single_variant')}
+                    className="h-[170px] hover:scale-105 transition-transform"
+                  >
+                    <CardBody className="flex flex-col justify-between h-full">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                        Single Variant
+                      </h3>
+                      <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
+                        Submit Data {'>'}
+                      </span>
+                    </CardBody>
+                  </Card>
+
+                  <Card 
+                    isPressable
+                    onPress={() => setSelection('wild_type')}
+                    className="h-[170px] hover:scale-105 transition-transform"
+                  >
+                    <CardBody className="flex flex-col justify-between h-full">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                        Wild Type
+                      </h3>
+                      <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
+                        Submit Data {'>'}
+                      </span>
+                    </CardBody>
+                  </Card>
                 </div>
-                <p>Select the enzyme from the list and enter the enzyme variant code (e.g., A123C) corresponding to your mutation.</p>
-                <div className="flex justify-center items-center gap-2 mb-4">
-                    <span className="font-bold">Enzyme:</span>
-                    <select className="border border-gray-300 rounded p-1"
+              )}
+
+              {/* Form Sections */}
+              {selection && (
+                <div className="mt-8">
+                  {/* Single Variant Form */}
+                  {selection === 'single_variant' && (
+                    <div>
+                      <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+                        <div className="w-full md:w-auto min-w-[200px]">
+                          <label htmlFor="enzyme" className="block mb-2">
+                            Enzyme
+                          </label>
+                          <Select
+                            size="sm"
+                            id="enzyme"
                             value={enzyme}
-                            onChange={(e) => setEnzyme(e.target.value)}>
-                    <option value="">Select an enzyme</option>
-                    {enzymeList.map((enzyme) => (
-                        <option key={enzyme.id} value={enzyme.abbr}>{enzyme.abbr}</option>
-                    ))}
-                    </select>
-                    <span className="font-bold">Enzyme Variant:</span>
-                    <input type="text" 
-                        className="border border-gray-300 rounded p-1"
-                        value={enzymeVariant}
-                        onChange={(e) => setEnzymeVariant(e.target.value)}
-                        placeholder="A123C" 
-                    />
-                    <button onClick={handleSubmit} className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Submit
-                    </button>
-                    {error && <p className="text-red-500">{error}</p>}
-                </div>
-                {entered !== 'null' && (
-                  <>
-                  <div className="text-center mb-10">
-                    <p className="mb-2">Previous datasets:</p>
-                    {matchedData.length > 0 ? (
-                      <ul>
-                        {matchedData.map((item) => (
-                          <li key={item.id}>
-                            <button onClick={() => handleSelectDataset(item.id)} className="mr-3">Select</button>
-                            Dataset created by {item.creator}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>There are no records that match from your school.</p>
-                    )}
-                  </div>
-                  <button onClick={handleCreateNewDataset} className="mt-5 text-blue font-bold py-2 px-4 rounded">Create New Dataset</button>
-                  </>
-                )}
-          </div>
-        )}
+                            onChange={(e) => setEnzyme(e.target.value)}
+                            label="Select Enzyme"
+                            className="w-full"
+                          >
+                            {enzymeList.map((enzyme) => (
+                              <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                                {enzyme.abbr}
+                              </SelectItem>
+                            ))}
+                          </Select>
+                        </div>
 
-        {/* Wild Type form */}
-        {selection === 'wild_type' && (
-          <div>
-            <h2>Wild Type Form</h2>
-            <div className="space-x-4">
-                <button onClick={() => setSelection('single_variant')} className="text-blue-500 hover:text-blue-700">Single Variant Data</button>
-                <button onClick={() => setSelection('wild_type')} className="text-blue-500 hover:text-blue-700">Wild Type Data</button>
+                        <div className="w-full md:w-auto">
+                          <label htmlFor="enzymeVariant" className="block mb-2">
+                            Enzyme Variant
+                          </label>
+                          <Input
+                            type="text"
+                            id="enzymeVariant"
+                            value={enzymeVariant}
+                            onChange={(e) => setEnzymeVariant(e.target.value)}
+                            placeholder="A123C"
+                            size="lg"
+                            variant="bordered"
+                            className="w-full md:w-[200px]"
+                            radius="sm"
+                          />
+                        </div>
+
+                        <Button
+                          onClick={handleSubmit}
+                          className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
+                          radius="sm"
+                        >
+                          Search
+                        </Button>
+                      </div>
+
+                      {error && (
+                        <div className="text-red-500 mt-4">{error}</div>
+                      )}
+
+                      {entered !== 'null' && (
+                        <div className="mt-8">
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-small text-default-400">
+                              {matchedData.length} records found
+                            </span>
+                          </div>
+
+                          <Table 
+                            aria-label="Variant records"
+                            classNames={{
+                              base: "max-h-[400px]",
+                              table: "min-h-[100px]",
+                              wrapper: "max-h-[400px]"
+                            }}
+                          >
+                            <TableHeader>
+                              <TableColumn>STATUS</TableColumn>
+                              <TableColumn>ENZYME</TableColumn>
+                              <TableColumn>VARIANT</TableColumn>
+                              <TableColumn>CREATOR</TableColumn>
+                              <TableColumn>ID</TableColumn>
+                              <TableColumn>COMMENTS</TableColumn>
+                              <TableColumn>ACTIONS</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                              {matchedData.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell>
+                                    <StatusChip status="in_progress" />
+                                  </TableCell>
+                                  <TableCell>BglB</TableCell>
+                                  <TableCell>{`${item.resid}${item.resnum}${item.resmut}`}</TableCell>
+                                  <TableCell>{item.creator || 'Unknown'}</TableCell>
+                                  <TableCell>{item.id}</TableCell>
+                                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                                    {item.comments || 'No comments'}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Link href={`/submit/single_variant/${item.id}`} className="text-[#06B7DB]">
+                                      View
+                                    </Link>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+
+                          <Button
+                            className="mt-6 border border-[#06B7DB] text-[#06B7DB] hover:bg-[#06B7DB] hover:text-white"
+                            variant="bordered"
+                            onClick={handleCreateNewDataset}
+                          >
+                            Create New Dataset
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Wild Type Form */}
+                  {selection === 'wild_type' && (
+                    <div className="bg-white rounded-lg p-6 border">
+                      <h2 className="text-2xl font-light mb-6">Wild Type Submission</h2>
+                      {/* Add your wild type form content here */}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </AuthChecker>
     </div>
   );
 };

@@ -1,19 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Card, CardBody, Chip, Avatar, Tooltip, Input, Modal, ModalContent, ModalBody, Spinner } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Card, CardBody, Chip, Avatar, Tooltip, Input, Modal, ModalContent, ModalBody, Spinner, Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { CardFooter } from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { AuthChecker } from '@/components/AuthChecker';
+import { RiSparklingFill } from "react-icons/ri";
+import StatusChip from '@/components/StatusChip';
+import { ErrorChecker } from '@/components/ErrorChecker';
+
+interface CharacterizationData {
+  curated: boolean;
+  submitted_for_curation: boolean;
+  id: string;
+  comments?: string;
+  resid?: string;
+  resnum?: string;
+  resmut?: string;
+}
 
 const Dashboard = () => {
   const { user, loading } = useUser(); // Assume useUser now returns a loading state
   const [activeIndex, setActiveIndex] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
-  const [characterizationData, setCharacterizationData] = useState([]);
-  
+  const [characterizationData, setCharacterizationData] = useState<CharacterizationData[]>([]);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     if (!loading && user) {
       fetchCharacterizationData(user.user_name);
@@ -22,13 +38,28 @@ const Dashboard = () => {
     }
   }, [user, loading]);
 
-  const fetchCharacterizationData = async (userName:any) => {
+  const fetchCharacterizationData = async (userName: string) => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/getCharacterizationDataForUser?userName=${userName}`);
+      
+      if (!response.ok) {
+        throw new Error(`GET /api/getCharacterizationDataForUser ${response.status} - Failed to fetch characterization data`);
+      }
+
       const data = await response.json();
+      
+      if (!Array.isArray(data)) {
+        throw new Error('GET /api/getCharacterizationDataForUser - Invalid data format: Expected array');
+      }
+
       setCharacterizationData(data);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Error fetching characterization data:', error);
+      setIsError(true);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch characterization data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -38,9 +69,36 @@ const Dashboard = () => {
 
 
   const renderStatus = (data:any) => {
-    if (data.curated) return 'Curated';
-    if (data.submitted_for_curation) return 'Submitted';
-    return 'Not Submitted';
+    const statusConfig = {
+      Curated: {
+        color: "success",
+        bgColor: "bg-success-50",
+        textColor: "text-success-600",
+      },
+      Submitted: {
+        color: "warning",
+        bgColor: "bg-warning-50",
+        textColor: "text-warning-600",
+      },
+      "Not Submitted": {
+        color: "danger",
+        bgColor: "bg-danger-50",
+        textColor: "text-danger-600",
+      }
+    };
+
+    const status = data.curated ? 'Curated' : data.submitted_for_curation ? 'Submitted' : 'Not Submitted';
+    const config = statusConfig[status];
+
+    return (
+      <Chip
+        className={`${config.bgColor} ${config.textColor}`}
+        variant="flat"
+        size="sm"
+      >
+        {status}
+      </Chip>
+    );
   };
 
   const renderVariant = (data:any) => `${data.resid}${data.resnum}${data.resmut}`;
@@ -68,248 +126,215 @@ const Dashboard = () => {
     },
   ];
 
-  if (loading) {
+  const ResearchInsight = () => {
+    const curatedCount = characterizationData.filter(d => d.curated).length;
+    const reviewCount = characterizationData.filter(d => !d.curated && d.submitted_for_curation).length;
+    const readyCount = characterizationData.filter(d => !d.submitted_for_curation).length;
+
+    let message ="";
+    
+    if (characterizationData.length === 0) {
+      message += "No variants have been submitted. Would you like to begin your research submission?";
+    } else {
+      message += `You have successfully contributed ${characterizationData.length} variants to the research database. `;
+      
+      if (curatedCount > 0) {
+        message += `\n\n✅ ${curatedCount} submissions have completed the curation process`;
+      }
+      if (reviewCount > 0) {
+        message += `\n\n🔍 ${reviewCount} submissions are pending review`;
+      }
+      if (readyCount > 0) {
+        message += `\n\n💡 ${readyCount} variants are prepared for submission`;
+      }
+    }
+
     return (
-      <div className="min-h-screen flex flex-col">
-        <NavBar />
-        <div className="flex-grow flex rounded-full items-center justify-center">
-          <LoadingSpinner isOpen={true} />
-        </div>
-        <Footer />
+      <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+        {message}
       </div>
     );
-  }
-
-  if (!user) {
-    return (
-      <>
-        <NavBar />
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-          <h1 className="text-6xl font-bold text-[#06B7DB]">404</h1>
-          <p className="text-2xl text-gray-600 mb-8">Oops! The page you are looking for doesn&apos;t exist.</p>
-          <Link href="/login" passHref>
-            <Button color="primary" className="bg-[#06B7DB]">
-              Go to Login
-            </Button>
-          </Link>
-        </div>
-        <Footer />
-
-        <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
-          <ModalContent>
-            <ModalBody className="py-12 text-center">
-              <h1 className="text-4xl font-bold mb-4">Whoa there, enzyme explorer! 🧬</h1>
-              <p className="text-xl mb-8">
-                We can&apos;t let you into our top-secret enzyme research lab until you log in. 
-                Your enzyme predictions will have to wait… for now! 🔐
-              </p>
-              <Link href="/login" passHref>
-                <Button color="primary" className="bg-[#06B7DB]">
-                  Go to Login
-                </Button>
-              </Link>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      </>
-    );
-  }
+  };
 
   return (
     <>
       <NavBar />
-      <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
-        {/* Welcome Section */}
-        <div className="flex items-center space-x-4 mb-16">
-          {user?.user_name && (
-            <>
-              <div>
-                <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
-                <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
+      <AuthChecker minimumStatus="student">
+        <ErrorChecker 
+          isError={isError} 
+          errorMessage={errorMessage}
+          errorType="api"
+        >
+          {isLoading ? (
+            <div className="flex justify-center items-center min-h-screen">
+              <Spinner size="lg" />
+            </div>
+          ) : (
+            <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
+              {/* Welcome Section */}
+              <div className="flex items-center space-x-4 mb-16">
+                {user?.user_name && (
+                  <>
+                    <div>
+                      <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
+                      <div className="flex items-center gap-2">
+                        <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-            </>
+
+              {/* Action Cards Section */}
+              <div className={`grid gap-6 mb-20 ${user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+                {[
+                  {
+                    title: "Single Variant",
+                    link: "/submit",
+                    linkText: "Submit Data",
+                  },
+                  {
+                    title: "Wild Type",
+                    link: "/submit",
+                    linkText: "Submit Data",
+                  },
+                  {
+                    title: "Gel Image",
+                    link: "#",
+                    linkText: "Upload Image",
+                  },
+                  ...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? [{
+                    title: "Curate",
+                    link: "/curate",
+                    linkText: "Curate Data",
+                  }] : [])
+                ].map((item, index) => (
+                  <Card 
+                    key={index} 
+                    className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
+                  >
+                    <CardBody className="text-3xl pt-2 font-light">
+                      <h3 className="pl-4 pt-2 pb-5 text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
+                        {item.title}
+                      </h3>
+                    </CardBody>
+                    <CardFooter>
+                      <Link href={item.link} className="text-sm px-4 pb-3 text-[#06B7DB]">
+                        {item.linkText} {'>'}
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+
+
+
+              {/* Submissions Section */}
+              <div className="mb-12">
+                <h2 className="text-4xl mb-8">My Submissions</h2>
+
+                {/* Variant Profiles Table */}
+                <div className="mb-12">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl text-gray-500">Variant Profiles</h3>
+                    <Link href="/submit" passHref>
+                      <Button color="primary" className="bg-[#06B7DB]">
+                        Submit New Data
+                      </Button>
+                    </Link>
+                  </div>
+                  <Table 
+                    aria-label="Variant Profiles"
+                    classNames={{
+                      base: "max-h-[400px]", // Fixed height
+                      table: "min-h-[100px]",
+                      wrapper: "max-h-[400px]" // Makes table scrollable
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>STATUS</TableColumn>
+                      <TableColumn>Enzyme</TableColumn>
+                      <TableColumn>Variant</TableColumn>
+                      <TableColumn>ID</TableColumn>
+                      <TableColumn>Comments</TableColumn>
+                      <TableColumn>Actions</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {characterizationData.map((data: any, index: any) => {
+                        const variant = renderVariant(data);
+                        const viewUrl = 
+                          variant === "XOX" 
+                            ? `/submit/wild_type/${data.id}` 
+                            : `/submit/single_variant/${data.id}`;
+
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <StatusChip 
+                                status={
+                                  data.curated 
+                                    ? 'approved'
+                                    : data.submitted_for_curation 
+                                      ? 'pending_approval'
+                                      : 'in_progress'
+                                } 
+                              />
+                            </TableCell>
+                            <TableCell>BglB</TableCell>
+                            <TableCell>{variant}</TableCell>
+                            <TableCell>{data.id}</TableCell> 
+                            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                              {data.comments || 'No comments'}
+                            </TableCell>
+                            <TableCell>
+                              <Link href={viewUrl} className="text-[#06B7DB]">
+                                View
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Gel Image Uploads Table */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
+                    <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
+                  </div>
+                  <Table 
+                    aria-label="Gel Image Uploads"
+                    classNames={{
+                      base: "max-h-[400px]", // Fixed height
+                      table: "min-h-[100px]",
+                      wrapper: "max-h-[400px]" // Makes table scrollable
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>Gel ID</TableColumn>
+                      <TableColumn>Upload Date</TableColumn>
+                      <TableColumn>Associated Profile</TableColumn>
+                      <TableColumn>Comments</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow key="1">
+                        <TableCell><img src="/resources/images/gel_image.png" alt="Gel" style={{ width: '50px' }} /></TableCell>
+                        <TableCell>04-13-2022</TableCell>
+                        <TableCell>Q124W</TableCell>
+                        <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                          Need to be revised
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-
-        {/* Action Cards Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
-          {[
-            {
-              title: "Single Variant",
-              link: "/submit",
-              linkText: "Submit Data",
-            },
-            {
-              title: "Wild Type",
-              link: "/submit",
-              linkText: "Submit Data",
-            },
-            {
-              title: "SDS-PAGE Gel Image Upload",
-              link: "#",
-              linkText: "Upload Image",
-            },
-          ].map((item, index) => (
-            <Card key={index} className="h-[150px] w-full">
-              <CardBody className="text-3xl pt-2 font-light">
-                <h3 className="pl-4 pt-2 pb-5 text-3xl  whitespace-nowrap overflow-hidden text-ellipsis">
-                  {item.title}
-                </h3>
-              </CardBody>
-              <CardFooter>
-                <Link href={item.link} className="text-sm px-4 pb-3 text-[#06B7DB]">
-                  {item.linkText} {'>'}
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-
-    
-
-        {/* Submissions Section */}
-        <div className="mb-12">
-          <h2 className="text-4xl mb-8">My Submissions</h2>
-
-          {/* Variant Profiles Table */}
-          <div className="mb-12">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl text-gray-500">Variant Profiles</h3>
-              <Link href="/submit" passHref>
-                <Button color="primary" className="bg-[#06B7DB]">
-                  Submit New Data
-                </Button>
-              </Link>
-            </div>
-            <Table aria-label="Variant Profiles">
-              <TableHeader>
-                <TableColumn>STATUS</TableColumn>
-                <TableColumn>Enzyme</TableColumn>
-                <TableColumn>Variant</TableColumn>
-                <TableColumn>ID</TableColumn>
-                <TableColumn>Comments</TableColumn>
-                <TableColumn>Actions</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {characterizationData.map((data: any, index: any) => {
-                  const variant = renderVariant(data);
-                  const viewUrl = 
-                    variant === "XOX" 
-                      ? `/submit/wild_type/${data.id}` 
-                      : `/submit/single_variant/${data.id}`;
-
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
-                          {renderStatus(data)}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>BglB</TableCell>
-                      <TableCell>{variant}</TableCell>
-                      <TableCell>{data.id}</TableCell> 
-                      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                        {data.comments || 'No comments'}
-                      </TableCell>
-                      <TableCell>
-                        <Link href={viewUrl} passHref>
-                          <Button as="a" color="primary" className="bg-[#06B7DB]">
-                            View
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Gel Image Uploads Table */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
-              <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
-            </div>
-            <Table aria-label="Gel Image Uploads">
-              <TableHeader>
-                <TableColumn>Gel ID</TableColumn>
-                <TableColumn>Upload Date</TableColumn>
-                <TableColumn>Associated Profile</TableColumn>
-                <TableColumn>Comments</TableColumn>
-              </TableHeader>
-              <TableBody>
-                <TableRow key="1">
-                  <TableCell><img src="/resources/images/gel_image.png" alt="Gel" style={{ width: '50px' }} /></TableCell>
-                  <TableCell>04-13-2022</TableCell>
-                  <TableCell>Q124W</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                    Need to be revised
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      </div>
-
-      <section className="py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">FAQs</Chip> {/* Role Tag */}
-          <h2 className="text-4xl text-gray-900 leading-[3.25rem]">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className={`accordion py-6 px-6 border border-solid border-gray-200 rounded-2xl transition-all duration-500 ${
-                activeIndex === index ? '' : ''
-              }`}
-            >
-              <button
-                className="accordion-toggle flex items-center justify-between leading-8 text-gray-900 w-full text-left font-medium"
-                onClick={() => toggleAccordion(index)}
-              >
-                <h5 className="text-lg hover:text-[#06B7DB]">{faq.question}</h5>
-                <svg
-                  className={`transition-transform duration-500 ${
-                    activeIndex === index ? 'rotate-180' : ''
-                  }`}
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.5 8.25L12.4142 12.3358C11.7475 13.0025 11.4142 13.3358 11 13.3358C10.5858 13.3358 10.2525 13.0025 9.58579 12.3358L5.5 8.25"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              </button>
-
-              <div
-                className={`accordion-content transition-all duration-500 overflow-hidden ${
-                  activeIndex === index ? 'max-h-64' : 'max-h-0'
-                }`}
-              >
-                <p className="text-base text-gray-600 leading-6 mt-4">
-                  {faq.answer}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
+        </ErrorChecker>
+      </AuthChecker>
       <Footer />
     </>
   );

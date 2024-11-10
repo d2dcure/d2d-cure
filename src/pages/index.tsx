@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import "../app/globals.css"; 
 import NavBar from '@/components/NavBar';
@@ -10,12 +10,27 @@ import Footer from '@/components/Footer';
 export default function Home() {
   const { user } = useUser();
   const router = useRouter();
+  const [showCookieNotice, setShowCookieNotice] = useState(false);
 
   useEffect(() => {
-    if (user?.user_name) {
-      router.push('/dashboard');
+    // Only check if user is logged in
+      // Check if we've shown the notice this session
+      const hasShownNoticeThisSession = sessionStorage.getItem('cookieNoticeShown');
+      if (!hasShownNoticeThisSession) {
+        setShowCookieNotice(true);
+        // Mark that we've shown the notice this session
+        sessionStorage.setItem('cookieNoticeShown', 'true');
+      }
     }
-  }, [user, router]);
+  ); // Depend on user to re-run when login state changes
+
+  const handleAcceptCookies = () => {
+    setShowCookieNotice(false);
+  };
+
+  const handleManagePreferences = () => {
+    console.log('Manage preferences clicked');
+  };
 
   return (
     <div>
@@ -37,15 +52,17 @@ export default function Home() {
     </p>
     <div className="flex space-x-4 pt-2 pb-10 justify-center">
       <Button
-        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
+        onClick={() => router.push(user?.user_name ? '/dashboard' : '/login')}
       >
-        Get Started
+        {user?.user_name ? "Dashboard" : "Get Started"}
       </Button>
       <Button
-        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
+        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
         size="md"
         color="primary"
+        onClick={() => router.push('/about')}
       >
         Learn More
       </Button>
@@ -57,7 +74,8 @@ export default function Home() {
       <img
         src="/resources/images/thumb.png"
         alt="Dashboard image" 
-        className="rounded-t-3xl w-full max-w-[1000px] h-auto object-cover" // Updated classes
+        className="rounded-t-3xl w-full max-w-[1000px] select-none h-auto object-cover" 
+        draggable="false"
       />
     </div>
   </div>
@@ -72,8 +90,8 @@ export default function Home() {
         {/* Mission Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10">
           <div className="lg:pt-1">
-            <p className="text-lg font-semibold text-gray-500" style={{ color: '#06B7DB' }}>
-              Our mission
+            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
+              OUR MISSION
             </p>
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Innovative Protein Engineering</h1>
             <p className="mb-6 pb-6 text-gray-500 text-lg dark:text-gray-200">
@@ -100,12 +118,12 @@ export default function Home() {
         {/* Analyze and Submit Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-20 items-center">
           <div className="lg:pt-1">
-            <p className="text-lg font-semibold text-gray-500" style={{ color: '#06B7DB' }}>
+            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
               HOW IT WORKS
             </p>
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze and Submit</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              After conducting research on their enzyme, students will upload and submit their data for approval...
+              D2D students upload their colorimetric kinetic and thermal assay data for enzyme va that they studied.
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
@@ -122,7 +140,7 @@ export default function Home() {
           <div className="order-1 lg:order-2 lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              Instructors and faculty members can approve or reject submitted data...
+              D2D faculty and admin in a two-step process review and approve data with appropriate controls; data that fails to meet network standards is flagged for replication.
             </p>
           </div>
         </div>
@@ -132,7 +150,7 @@ export default function Home() {
           <div className="lg:pt-1">
             <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Characterize</h1>
             <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              Once the data is approved it will be available for the public to view...
+              The D2D system facilitates characterization contributions of thousands of students to solve the next generation challenge in protein design: function prediction.
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
@@ -150,6 +168,33 @@ export default function Home() {
           </Button>
         </div>
       </div>
+
+      {showCookieNotice && user?.user_name && (
+        <section className="fixed max-w-[300px] p-3 mx-auto bg-white border border-gray-200 dark:bg-gray-800 right-6 bottom-6 dark:border-gray-700 rounded-xl shadow-xl">
+          <h2 className="font-semibold text-gray-800 dark:text-white text-sm">🍪 Cookie Notice</h2>
+
+          <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+            We use cookies to ensure that we give you the best experience on our website.{' '}
+            <a href="#" className="text-blue-500 hover:underline">Read cookies policies</a>
+          </p>
+          
+          <div className="flex items-center justify-between mt-3 gap-x-2 shrink-0">
+            <button 
+              onClick={() => console.log('Manage preferences clicked')}
+              className="text-[11px] text-gray-800 underline transition-colors duration-300 dark:text-white dark:hover:text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              Manage preferences
+            </button>
+
+            <button 
+              onClick={handleAcceptCookies}
+              className="text-[11px] bg-gray-900 font-medium rounded-lg hover:bg-gray-700 text-white px-3 py-1.5 duration-300 transition-colors focus:outline-none"
+            >
+              Accept
+            </button>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
