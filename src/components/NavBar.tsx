@@ -46,7 +46,11 @@ const NavBar = () => {
     try {
       await signOut(auth);
       setUser(null);
-      router.push('/');
+      // Navigate directly to home page with the logout parameter
+      router.push({
+        pathname: '/',
+        query: { justLoggedOut: 'true' }
+      });
     } catch (error) {
       console.error('Logout failed', error);
     }
