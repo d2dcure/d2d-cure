@@ -197,6 +197,21 @@ const SubmitPage = () => {
                       </span>
                     </CardBody>
                   </Card>
+
+                  <Card 
+                    isPressable
+                    onPress={() => router.push('/submit/gel_image_upload')}
+                    className="h-[170px] hover:scale-105 transition-transform"
+                  >
+                    <CardBody className="flex flex-col justify-between h-full">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
+                        Gel Image
+                      </h3>
+                      <span className="text-sm pl-4 pb-4 text-[#06B7DB] hover:font-semibold">
+                        Upload Image {'>'}
+                      </span>
+                    </CardBody>
+                  </Card>
                 </div>
               )}
 

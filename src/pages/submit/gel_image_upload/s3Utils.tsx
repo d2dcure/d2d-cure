@@ -3,17 +3,14 @@ import { useUser } from '@/components/UserProvider';
 
 const BUCKET_NAME = "d2dcurebucket"; // Replace with your S3 bucket name
 
-export const uploadFileToS3 = (file: File) => {
-//   const newFileName = `${user.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${user.user_name}.${file.type.split('/')[1]}`;
-    
-const params = {
+export const uploadFileToS3 = (file: File, gelId: string) => {
+  const params = {
     Bucket: BUCKET_NAME,
-    Key: `gel-images/${file.name}`,
+    Key: `gel-images/${gelId}/${file.name}`,
     Body: file,
   };
 
-
-  s3.upload(params, (err :any, data:any) => {
+  s3.upload(params, (err: any, data: any) => {
     if (err) {
       console.error("Error uploading file:", err);
       alert("Error uploading file.");

@@ -177,42 +177,12 @@ export const AuthChecker = (
         </Modal>
     );
 
-    const SuccessNotification = () => (
-        <div className={`fixed top-4 right-4 z-50 transform transition-all duration-500 ${showSuccessNotif ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
-            <div className="backdrop-blur-md bg-white/30 dark:bg-gray-800/30 rounded-lg shadow-lg border border-[#06B7DB]/20 p-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-[#06B7DB]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            Successfully logged in
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Logged in as {user?.name || user?.email}
-                        </p>
-                    </div>
-                    <Link 
-                        href="/dashboard"
-                        className="ml-4 px-3 py-1 text-xs text-white bg-[#06B7DB] rounded hover:bg-[#05a6c7] transition-colors"
-                    >
-                        Dashboard
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
 
     if (loading || showLoading) {
         const message = loadingMessages[messageIndex];
         return (
             <>
                 {props.children}
-                <SuccessNotification />
                 <Modal backdrop="blur" isOpen={isModalOpen} hideCloseButton>
                     <ModalContent>
                         <ModalBody className="py-12 text-center">
@@ -244,7 +214,6 @@ export const AuthChecker = (
         return (
             <>
                 {props.children}
-                <SuccessNotification />
                 <MessageDisplay 
                     message={messages.login} 
                     isOpen={isModalOpen}
@@ -256,7 +225,6 @@ export const AuthChecker = (
         return (
             <>
                 {props.children}
-                <SuccessNotification />
                 <MessageDisplay 
                     message={messages.accessDenied} 
                     isOpen={isModalOpen}
@@ -268,7 +236,6 @@ export const AuthChecker = (
         return (
             <>
                 {props.children}
-                <SuccessNotification />
                 <MessageDisplay 
                     message={messages.pending} 
                     isOpen={isModalOpen}

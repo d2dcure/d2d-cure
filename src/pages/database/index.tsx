@@ -130,7 +130,7 @@ const DatabasePage = () => {
                   <Card 
                     className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                     as={Link}
-                    href="/submit/gel_image"
+                    href="/submit/gel_image_upload"
                   >
                     <CardBody className="flex flex-col justify-between h-full">
                       <h3 className="text-2xl md:text-3xl lg:text-4xl font-light pl-4 pt-2">
