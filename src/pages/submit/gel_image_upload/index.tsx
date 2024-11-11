@@ -159,7 +159,7 @@ const DragAndDropUpload: React.FC = () => {
 
                   <Button
                     className="bg-gray-100 text-gray-700 flex-1 hover:bg-gray-200"
-                    onClick={() => router.push('/gel-page/all')}
+                    onClick={() => router.push('/gel_images/all')}
                   >
                     View All Gel Images
                   </Button>

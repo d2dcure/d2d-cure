@@ -3,7 +3,7 @@ import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
-import s3 from '../../../../../s3config';
+import s3 from '../../../../s3config';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
 import { EyeIcon } from "@heroicons/react/24/outline";
 
