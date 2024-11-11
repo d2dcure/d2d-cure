@@ -5,8 +5,22 @@ import NavBar from '@/components/NavBar';
 import firebaseAdmin from "../../../firebaseAdmin"; 
 import { getAuth, deleteUser } from "firebase/auth";
 import { auth } from "firebase-admin";
-import { Button } from "@nextui-org/react";
-import Link from "next/link";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell
+} from "@nextui-org/table";
+import { Button, Link, Checkbox} from "@nextui-org/react";
+import {useAsyncList} from "@react-stately/data";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faCheck } from '@fortawesome/free-solid-svg-icons'; // Use a left chevron icon
+import StatusChip from '@/components/StatusChip';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { AuthChecker } from '@/components/AuthChecker';
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -14,67 +28,84 @@ function UserManagement() {
   const [checkedUsers, setCheckedUsers] = useState<{ [key: number]: boolean }>({});
   const { user, loading } = useUser();
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: string }>({ key: '', direction: '' });
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(true);
+  const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchInstitutions = async () => {
-      const response = await fetch('/api/getInstitutions');
-      const data = await response.json();
-      //console.log(data); 
-      setInstitutionsList(data);
+      try {
+        const response = await fetch('/api/getInstitutions');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch institutions: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setInstitutionsList(data);
+      } catch (err) {
+        console.error('Error fetching institutions:', err);
+        setError('Failed to load institutions. Please try again later.');
+      }
     };
 
     const fetchAllUsers = async () => {
-      const response = await fetch('/api/getAllUsers');
-      const data = await response.json();
-      setAllUsers(data);
-      //console.log(data);
+      try {
+        const response = await fetch('/api/getAllUsers');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setAllUsers(data);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError('Failed to load users. Please try again later.');
+      }
     };
 
     fetchInstitutions();
     fetchAllUsers();
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollToBottom(window.scrollY < 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToPosition = (position: 'top' | 'bottom') => {
+    setIsScrolling(true);
+    setScrollDirection(position);
+    
+    if (position === 'top') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      const tableElement = document.getElementById('user-management-table');
+      if (tableElement) {
+        const tableBottom = tableElement.getBoundingClientRect().bottom;
+        const windowHeight = window.innerHeight;
+        const scrollTarget = window.pageYOffset + tableBottom - windowHeight + 100;
+        
+        window.scrollTo({
+          top: scrollTarget,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    setTimeout(() => {
+      setIsScrolling(false);
+      setScrollDirection(null);
+    }, 1000);
+  };
+
   if (loading) {
       return <p>Loading</p>
-  }
-
-  //protect pages if status is not admin or professor
-  if (!user?.status) {
-      return (
-          <>
-              <NavBar />
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-                  <h1 className="text-6xl font-bold text-[#06B7DB]">🔬 Access Denied!</h1>
-                  <p className="text-2xl text-gray-600 mb-8">
-                      Hold on, science enthusiast! You need to log in to manage our research team.
-                  </p>
-                  <Link href="/login" passHref>
-                      <Button color="primary" className="bg-[#06B7DB]">
-                          Enter the Lab 🧪
-                      </Button>
-                  </Link>
-              </div>
-          </>
-      )
-  }
-
-  if (user?.status !== "professor" && user?.status !== "ADMIN") {
-      return (
-          <>
-              <NavBar />
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-                  <h1 className="text-6xl font-bold text-[#06B7DB]">🚫 Restricted Area</h1>
-                  <p className="text-2xl text-gray-600 mb-8">
-                      Sorry! This area is reserved for our lab leaders and administrators only.
-                  </p>
-                  <Link href="/dashboard" passHref>
-                      <Button color="primary" className="bg-[#06B7DB]">
-                          Back to Safety 🔬
-                      </Button>
-                  </Link>
-              </div>
-          </>
-      )
   }
 
   //filter users based on university name
@@ -209,118 +240,134 @@ const handleDeleteFirebase = async () => {
     }
   };
   
-
   return (
-    <div>
+    <AuthChecker minimumStatus="professor">
       <NavBar />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ marginTop: '10px', marginBottom: '10px' }}>Welcome, {user.status}!</h1>
-        <h2 style={{ marginBottom: '10px' }}>Members of labs at {user.institution}</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+        {/* Scroll notification */}
+        {isScrolling && scrollDirection && (
+          <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
+            text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
+            Scrolling to {scrollDirection}
+          </div>
+        )}
+
+        {/* Scroll buttons */}
+        {showScrollToBottom && (
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            style={{ marginRight: '10px', marginBottom: '10px' }}
-            onClick={handleApprove}
+            onClick={() => scrollToPosition('bottom')}
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+              flex items-center justify-center"
+            aria-label="Scroll to bottom"
           >
-            Approve
+            <FaArrowDown size={12} />
           </button>
-          <button style={{ marginBottom: '10px' }}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            onClick={() => {
-              handleDeleteFirebase();
-              handleDelete();
-          }}
+        )}
+
+        {!showScrollToBottom && (
+          <button
+            onClick={() => scrollToPosition('top')}
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+              flex items-center justify-center"
+            aria-label="Scroll to top"
           >
-            Delete
+            <FaArrowUp size={12} />
           </button>
+        )}
+
+        <div className="max-w-7xl mx-auto">
+          <Breadcrumbs className="mb-2">
+            <BreadcrumbItem>Home</BreadcrumbItem>
+            <BreadcrumbItem>Management</BreadcrumbItem>
+            <BreadcrumbItem>Users</BreadcrumbItem>
+          </Breadcrumbs>
+
+          <div className="pt-3">
+            <h1 className="mb-4 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
+              User Management
+            </h1>
+            <p className="text-gray-500 mb-8">Members of labs at {user.institution}</p>
+
+            <div className="flex justify-end gap-2 mb-4">
+              <Button
+                color="danger"
+                variant="bordered"
+                onClick={() => {
+                  handleDeleteFirebase();
+                  handleDelete();
+                }}
+                className="rounded-lg text-sm"
+              >
+                Remove User
+              </Button>
+              <Button
+                className="bg-[#06B7DB] text-white rounded-lg text-sm"
+                onClick={handleApprove}
+              >
+                Approve
+              </Button>
+            </div>
+
+            <div id="user-management-table">
+              <Table
+                aria-label="Members Table"
+                classNames={{
+                  wrapper: "min-h-[400px]",
+                }}
+              >
+                <TableHeader>
+                  <TableColumn width="40">Check</TableColumn>
+                  <TableColumn width="40" onClick={() => setSortConfig({ key: 'user_name', direction: 'ascending' })}>Username</TableColumn>
+                  <TableColumn width="40">Given Name</TableColumn>
+                  <TableColumn width="40">Title</TableColumn>
+                  <TableColumn width="40">Institution</TableColumn>
+                  <TableColumn width="40">Status/Role</TableColumn>
+                  <TableColumn width="40">PI</TableColumn>
+                  <TableColumn width="40">Email</TableColumn>
+                  <TableColumn width="40">Registered Date</TableColumn>
+                  <TableColumn width="40">Approved</TableColumn>
+                </TableHeader>
+
+                <TableBody>
+                  {sortedUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <Checkbox
+                          isSelected={checkedUsers[user.id] || false}
+                          onChange={() => setCheckedUsers(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
+                        />
+                      </TableCell>
+                      <TableCell>{user.user_name}</TableCell>
+                      <TableCell>{user.given_name}</TableCell>
+                      <TableCell>{user.title}</TableCell>
+                      <TableCell>{user.institution}</TableCell>
+                      <TableCell>{user.status}</TableCell>
+                      <TableCell>{user.pi}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.reg_date}</TableCell>
+                      <TableCell>
+                        <StatusChip 
+                          status={user.approved ? 'approved' : 'pending_approval'} 
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </div>
-        <table>
-        <thead>
-              <tr>
-                <th style={{ color: '#40E0D0', textDecoration: 'underline' }}>Check</th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('user_name')}
-                >
-                  User Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('given_name')}
-                >
-                  Given Name
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('title')}
-                >
-                  Title
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('institution')}
-                >
-                  Institution
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('status')}
-                >
-                  Status/Role
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('pi')}
-                >
-                  PI
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('email')}
-                >
-                  Email
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('reg_date')}
-                >
-                  RegDate
-                </th>
-                <th
-                  style={{ color: '#40E0D0', textDecoration: 'underline', cursor: 'pointer' }}
-                  onClick={() => sortTable('approved')}
-                >
-                  Approved
-                </th>
-              </tr>
-            </thead>
-          <tbody>
-            {sortedUsers.map((user) => (
-              <tr key={user.id}>
-                <td style={{ marginLeft: '10px' }}>
-                  <input
-                    type="checkbox"
-                    checked={checkedUsers[user.id] || false}
-                    onChange={() => handleCheckboxChange(user.id)}
-                  />
-                </td>
-                <td>{user.user_name}</td>
-                <td>{user.given_name}</td>
-                <td>{user.title}</td>
-                <td>{user.institution}</td>
-                <td>{user.status}</td>
-                <td>{user.pi}</td>
-                <td>{user.email}</td>
-                <td>{user.reg_date}</td>
-                <td>{user.approved ? '1' : '0'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
-    </div>
+    </AuthChecker>
   );
 }
 

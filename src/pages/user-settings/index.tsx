@@ -7,22 +7,47 @@ import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from "@nextui-org/react";
 import { AuthChecker } from '@/components/AuthChecker';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../../firebaseConfig.js"; // Make sure this path matches your Firebase config
+import NotificationPopup from '@/components/NotificationPopup';
 
 const ProfileSettings = () => {
   const { user, loading } = useUser();
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
   const [editableName, setEditableName] = useState(user?.user_name || '');
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
 
-
+  const handlePasswordReset = async () => {
+    try {
+      if (!user?.email) {
+        setNotificationMessage("No email address found");
+        setShowNotification(true);
+        return;
+      }
+      await sendPasswordResetEmail(auth, user.email);
+      setNotificationMessage("Password reset email sent! Please check your inbox.");
+      setShowNotification(true);
+    } catch (error: any) {
+      setNotificationMessage(error.message || "Failed to send reset email");
+      setShowNotification(true);
+    }
+  };
 
   // Rest of your existing component code here
   return (
     <>
+      <NotificationPopup
+        show={showNotification}
+        onClose={() => setShowNotification(false)}
+        title="Notification"
+        message={notificationMessage}
+      />
       <NavBar />
       <AuthChecker minimumStatus="student">
         <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
@@ -78,9 +103,11 @@ const ProfileSettings = () => {
 
                           {/* Only show Manage button if user is a professor/admin */}
                           {(user?.status === "professor" || user?.status === "ADMIN") && (
-                            <Button className="mt-4 w-full text-white bg-[#06B7DB]">
-                              Manage students
-                            </Button>
+                            <Link href="/user-management">
+                              <Button className="mt-4 w-full text-white bg-[#06B7DB]">
+                                Manage students
+                              </Button>
+                            </Link>
                           )}
                         </div>
                       </div>
@@ -179,7 +206,7 @@ const ProfileSettings = () => {
                         <Button 
                           className="bg-[#06B7DB] text-white px-6"
                           size="md"
-                          onClick={() => {/* Add password reset handler */}}
+                          onClick={handlePasswordReset}
                         >
                           Reset Password
                         </Button>
