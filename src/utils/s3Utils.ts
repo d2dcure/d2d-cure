@@ -1,4 +1,4 @@
-import s3 from "../../s3config";
+import s3 from "../../s3config.js";
 import { useUser } from '@/components/UserProvider';
 
 const BUCKET_NAME = "d2dcurebucket"; // Replace with your S3 bucket name

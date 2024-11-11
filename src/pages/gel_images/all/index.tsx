@@ -7,9 +7,16 @@ import s3 from '../../../../s3config';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
 import { EyeIcon } from "@heroicons/react/24/outline";
 
+interface GelImage {
+  key: string;
+  url: string;
+  filename: string;
+  uploadedBy: string;
+}
+
 const ViewAllGelImages: React.FC = () => {
   const router = useRouter();
-  const [gelImages, setGelImages] = useState<any[]>([]);
+  const [gelImages, setGelImages] = useState<GelImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -22,14 +29,34 @@ const ViewAllGelImages: React.FC = () => {
       try {
         const data = await s3.listObjectsV2(params).promise();
         if (data && data.Contents) {
-          setGelImages(
-            data.Contents.filter((file): file is Required<typeof file> => file.Key !== undefined)
-              .map((file) => ({
-                key: file.Key,
-                url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                filename: file.Key.split('/').pop() ?? ''
-              }))
+          const imagesWithMetadata = await Promise.all(
+            data.Contents
+              .filter((file): file is Required<typeof file> => file.Key !== undefined)
+              .map(async (file) => {
+                try {
+                  const metadata = await s3.headObject({
+                    Bucket: params.Bucket,
+                    Key: file.Key
+                  }).promise();
+                  
+                  return {
+                    key: file.Key,
+                    url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
+                    filename: file.Key.split('/').pop() ?? '',
+                    uploadedBy: metadata.Metadata?.username ?? 'Unknown'
+                  };
+                } catch (err) {
+                  console.error(`Error fetching metadata for ${file.Key}:`, err);
+                  return {
+                    key: file.Key,
+                    url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
+                    filename: file.Key.split('/').pop() ?? '',
+                    uploadedBy: 'Unknown'
+                  };
+                }
+              })
           );
+          setGelImages(imagesWithMetadata);
         }
       } catch (err) {
         console.error('Error fetching gel images:', err);
@@ -75,6 +102,7 @@ const ViewAllGelImages: React.FC = () => {
                 <TableHeader>
                   <TableColumn>PREVIEW</TableColumn>
                   <TableColumn>FILENAME</TableColumn>
+                  <TableColumn>UPLOADED BY</TableColumn>
                   <TableColumn>ACTIONS</TableColumn>
                 </TableHeader>
                 <TableBody>
@@ -88,6 +116,7 @@ const ViewAllGelImages: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>{image.filename}</TableCell>
+                      <TableCell>{image.uploadedBy}</TableCell>
                       <TableCell>
                         <Button
                           isIconOnly
