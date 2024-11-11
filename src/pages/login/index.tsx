@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut  } from "firebase/auth";
-import { auth } from "../../../firebaseConfig"
+import React, { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "firebase/auth";
+import { auth } from "../../../firebaseConfig";
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
-import { NextUIProvider } from "@nextui-org/react";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import Link from 'next/link';
-import NavBar from '@/components/NavBar';
-import {Input} from "@nextui-org/react";
+import { Input } from "@nextui-org/react";
 
 export {};
 
@@ -17,10 +14,7 @@ declare global {
   }
 }
 
-
 const Login = () => {
-
-
   const { user, setUser, loading } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,13 +22,26 @@ const Login = () => {
   const router = useRouter();
   const [showSuccessNotif, setShowSuccessNotif] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  // Add mount effect
+  const images = [
+    '/resources/images/d2d-aboutus.png',
+    '/resources/slideshow/D2D2022a.jpg',
+    '/resources/slideshow/D2D20217d.jpg',
+    '/resources/slideshow/Design-Data-class-UC-Davis 2.webp',
+    '/resources/slideshow/Design-Data-pipette-UC-Davisc.avif',
+    '/resources/slideshow/Design-Data-protein-UC-Davisd.avif',
+    '/resources/slideshow/Design-Data-UC-Davis2.avif',
+    '/resources/slideshow/IMG_1369.jpeg',
+    '/resources/slideshow/IMG_1602.jpeg',
+    '/resources/slideshow/IMG_5581.jpeg'
+  ];
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  //Google sign in button logic 
   useEffect(() => {
     const loadGoogleScript = () => {
       const script = document.createElement('script');
@@ -63,16 +70,29 @@ const Login = () => {
     loadGoogleScript();
   }, []);
 
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => (prev + 1) % 100);
+    }, 80); // 8000ms / 100 steps = 80ms per step
 
-  const variants = ["flat", "bordered", "underlined", "faded"]; //for login input box
+    const imageInterval = setInterval(() => {
+      setProgress(0);
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 8000);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(imageInterval);
+    };
+  }, []);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
-      await setPersistence(auth, browserLocalPersistence); // ensures that the user remains logged in across page refreshes and browser sessions
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
-      
-      // Add the justLoggedIn parameter to wherever you're redirecting
-      const redirectPath = '/dashboard'; // or any other page
+      const redirectPath = '/dashboard';
       router.push({
         pathname: redirectPath,
         query: { justLoggedIn: 'true' }
@@ -97,177 +117,120 @@ const Login = () => {
     await handleSignIn(email, password);
   };
 
-  // Add useEffect for redirection
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
   }, [user, router]);
 
-  const SuccessNotification = () => (
-    <div 
-      className={`
-        fixed top-4 right-4 z-50 transform transition-all duration-700 ease-out
-        ${mounted ? 'translate-y-0' : '-translate-y-full'}
-        ${showSuccessNotif ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-      `}
-    >
-      <div className="backdrop-blur-md bg-white/30 dark:bg-gray-800/30 rounded-lg shadow-lg border border-[#06B7DB]/20 p-6 min-w-[320px]">
-        <div className="flex flex-col items-center gap-4">
-          {/* Success Icon */}
-          <div className="h-12 w-12 rounded-full bg-[#06B7DB]/10 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          
-          {/* Text Content */}
-          <div className="text-center">
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              Successfully logged in
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Logged in as {email}
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col w-full gap-2 mt-2">
-            <Link 
-              href="/dashboard"
-              className="w-full px-4 py-2 text-sm text-white bg-[#06B7DB] rounded-lg hover:bg-[#05a6c7] transition-colors text-center font-medium"
-            >
-              View Dashboard
-            </Link>
-            <Link 
-              href="/settings"
-              className="w-full px-4 py-2 text-sm text-[#06B7DB] bg-[#06B7DB]/10 rounded-lg hover:bg-[#06B7DB]/20 transition-colors text-center font-medium"
-            >
-              Settings
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <>
-      <NavBar />
-      <SuccessNotification />
-      <div className="flex justify-center items-center h-screen" style={{marginTop: "36px"}}>
-      <div
-        style={{
-          position: "absolute", 
-          width: "100%", 
-          height: "100%", 
-          background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
-          zIndex: -1, 
-        }}
-      ></div>
-          <Card style={{
-            width: "448px",
-            height: "580px",
-            borderRadius: "14px",
-            padding: "32px",
-            gap: "36px", 
-            display: "flex", // Make the Card a flex container
-            justifyContent: "center", // Center content horizontally
-            alignItems: "center", // Center content vertically
-          }}>
-            <CardHeader style = {{    height: "40px",
-                width: "300px",
-                fontSize: "30px",
-                fontFamily: "Inter, sans-serif",
-                fontWeight: "400",
-                textAlign: "center", 
-                display: "flex", // Make the Card a flex container
-                justifyContent: "center", // Center content horizontally
-                alignItems: "center", // Center content vertically
-              }}>Welcome back!</CardHeader>
-              <CardBody style={{ 
-                overflowY: 'hidden' // Add this to disable vertical scrolling
-              }}>
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-4" style = {{fontSize: "14px"}}>
-                    <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
-                      Username or Email
-                    </label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your username"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      variant = "bordered"
-                      size = "lg"
-                      style={{width: "365px", height: "48px", borderRadius: "8px", border: "2px"}}
-                    />
-                  </div>
-                  <div className="mb-6">
-                    <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
-                      Password
-                    </label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      variant = "bordered"
-                      size = "lg"
-                      style={{width: "365px", height: "48px", borderRadius: "8px", border: "2px"}}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      type="submit"
-                      style = {{fontSize: "16px", background: "#06B7DB", width: "384px", height: "48px", borderRadius: "12px", borderColor: "#E4E4E7",  border: "2px solid", paddingRight: "16px", paddingLeft: "16px", gap: "12px"}}
-                    >
-                      Login
-                    </button>
-                  </div>
-                  {error && <p className="text-red-500 text-xs italic">{error}</p>}
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    width: "100%",
-                    margin: "16px 0", // Adjust margin as needed
-                    marginTop: "36px"
-                  }}>
-                    <hr style={{ flex: 1, border: "1px", height: "1px", backgroundColor: "#71717A", width: "146px"}} />
-                    <span style={{ padding: "0 36px", color: "#71717A", fontSize: "14px", fontWeight: "400", lineHeight: "20px" }}>OR</span>
-                    <hr style={{ flex: 1, border: "1px", height: "1px", backgroundColor: "#71717A", width: "146px"}} />
-                  </div>
-                </form>
+    <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+      <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl" 
+           style={{ maxWidth: '100%' }}>
+        <div className="w-full max-w-[380px] mx-auto">
+          <div className="mb-8">
+            <img 
+              src="/resources/images/D2D_Logo.svg" 
+              alt="D2D Logo" 
+              className="h-7 mb-6"
+            />
+            <h1 className="text-2xl font-semibold mb-2">Sign in to your account</h1>
+            <p className="text-sm text-gray-600">
+              Not a member?{' '}
+              <Link href="/signup" className="text-[#06B7DB] hover:underline">
+                Create an account
+              </Link>
+            </p>
+          </div>
 
-                <div>
-                  {/*google sign in button*/}
-                  <div id="my-signin2" style = {{marginTop: "20px"}}></div> 
-                </div>
-                
-                  <div style={{ marginTop: "36px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "400px", lineHeight: "20px" }}>
-                    <p style={{ display: "inline-block" }}>Don&apos;t have an account?</p>
-                    <Link
-                      href="/signup"
-                      className="text-blue-600 underline hover:text-blue-800"
-                      style={{ display: "inline-block", textDecoration: "none"}}
-                    >
-                      Create an account
-                    </Link>
-                </div>
-              </CardBody>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                variant="bordered"
+                size="md"
+                className="w-full text-base"
+                placeholder="Enter your email"
+              />
+            </div>
 
-            </Card>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-sm text-[#06B7DB] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                variant="bordered"
+                size="md"
+                className="w-full text-base"
+                placeholder="Enter your password"
+              />
+            </div>
 
+            <button
+              type="submit"
+              className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium"
+            >
+              Sign in
+            </button>
+
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            <div id="my-signin2" className="flex justify-center"></div>
+          </form>
         </div>
-
-      </>
+      </div>
+      
+      <div 
+        className="hidden md:block flex-1 bg-cover bg-center transition-all duration-2000 ease-in-out relative rounded-2xl overflow-hidden"
+        style={{ 
+          backgroundImage: `url(${images[currentImageIndex]})`,
+          position: 'relative',
+          transition: 'background-image 1.5s ease-in-out'
+        }}>
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {images.map((_, index) => (
+            <div key={index} className="h-1 w-16 bg-white/10 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white transition-all duration-100 ease-linear rounded-full"
+                style={{ 
+                  width: `${currentImageIndex === index ? progress : 
+                          currentImageIndex > index ? '100' : '0'}%`,
+                  opacity: currentImageIndex >= index ? 0.5 : 0.2
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 

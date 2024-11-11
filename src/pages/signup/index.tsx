@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import "../../app/globals.css";
-import NavBar from '@/components/NavBar';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../../firebaseConfig';
@@ -82,223 +81,184 @@ const SignUpPage = () => {
 
   if (userType === "") {
     return (
-      <>
-        <NavBar />
-          <div style = {{ display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center",     height: "100vh", 
-                  width: "100vw"}}>
-                  <div
-                    style={{
-                      position: "absolute", 
-                      width: "100%", 
-                      height: "100%", 
-                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
-                      zIndex: -1, 
-                    }}
-                  ></div>
-            <Card 
-              style={{
-                width: "448px", 
-                height: "380px", 
-                borderRadius: "14px", 
-                padding: "32px", 
-                gap: "24px", 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center"
-              }}
-            >
-              <h1 
-                className="text-2xl text-center" 
-                style={{
-                  fontSize: "30px", 
-                  fontWeight: "400", 
-                  lineHeight: "40px", 
-                  marginBottom: "16px"
-                }}
-              >
-                New User Registration
-              </h1>
-              <h2 
-                style={{
-                  fontSize: "16px", 
-                  lineHeight: "24px", 
-                  color: "#525252"
-                }}
-              >
-                Register as...
-              </h2>
+      <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+        <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
+          <div className="w-full max-w-[380px] mx-auto">
+            <div className="mb-8">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-6"
+              />
+              <h1 className="text-2xl font-semibold mb-2">Create an account</h1>
+              <p className="text-sm text-gray-600">
+                Already a member?{' '}
+                <Link href="/login" className="text-[#06B7DB] hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+
+            <div className="space-y-4">
               <Button 
                 onClick={() => setUserType("professor")} 
-                variant="bordered" 
-                size="lg"
-                className="text-blue-600 hover:text-blue-800" 
-                style={{
-                  textDecoration: "none", 
-                  width: "384px", 
-                  height: "48px",
-                  color: "white", 
-                  borderColor: "#06B7DB",
-                  backgroundColor: "#06B7DB"
-                }}
+                className="w-full bg-[#06B7DB] text-white hover:bg-[#05a6c7] transition-colors"
+                size="md"
               >
-                A faculty member
+                I am a faculty member
               </Button>
               <Button 
                 onClick={() => setUserType("student")} 
-                variant="bordered" 
-                className="text-blue-600 hover:text-blue-800" 
-                size = "lg"
-                style={{
-                  textDecoration: "none", 
-                  width: "384px", 
-                  color: "white", 
-                  backgroundColor: "#06B7DB",
-                  borderColor: "#06B7DB", 
-                  marginBottom: "16px"
-                }}
+                className="w-full bg-[#06B7DB] text-white hover:bg-[#05a6c7] transition-colors"
+                size="md"
               >
-                A student
+                I am a student
               </Button>
               <Button 
                 onClick={() => setUserType("neither")} 
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: "0",
-                  color: "#06B7DB",
-                  cursor: "pointer",
-                  width: "384px",
-                  textAlign: "center"
-                }}
+                className="w-full text-[#06B7DB] bg-transparent hover:bg-gray-50"
               >
                 I am neither a student nor faculty
               </Button>
-            </Card>
+            </div>
           </div>
-        </>
-
+        </div>
+        
+        <div 
+          className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundImage: `url('/resources/images/d2d-aboutus.png')`
+          }}
+        />
+      </div>
     );
-  } else if(userType === "neither"){
-    return(
-     <>
-        <NavBar />
-          <div style = {{ display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center",     height: "100vh", 
-                  width: "100vw"}}>
-              <div
-                    style={{
-                      position: "absolute", 
-                      width: "100%", 
-                      height: "100%", 
-                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
-                      zIndex: -1, 
-                    }}
-                  ></div>
-            <Card 
-              style={{
-                width: "448px", 
-                height: "524px", 
-                borderRadius: "14px", 
-                padding: "32px", 
-                gap: "24px", 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center"
-              }}
-            >
-              <h1 
-                style={{
-                  fontSize: "30px", 
-                  fontWeight: "400", 
-                  lineHeight: "40px", 
-                  marginBottom: "16px"
-                }}
-              >
-                New User Registration
-              </h1>
-                <p style = {{width: "384px", gap: "24px", height: "144px", fontSize: "16px", color: "#525252"}}>
-                  User accounts for this website are intended for individuals affiliated with undergraduate laboratories from institutions that have been selected to participate in the CURE network. 
-                  The majority of such users will be either the faculty primary investigator (PI) or the PI&apos;s students. 
-                </p>
-
-                <p style={{color: "#525252"}}>If you do not fall into one of these two categories yet still feel that you need access to the secure pages of this website for such things as data submission, <a href="mailto:webmaster@d2dcure.com" style={{color: "#06B7DB"}}>please email the webmaster to request access.</a> </p>
-              <div style={{display: "flex", flexDirection: "column", gap: "0px"}}>
-                <Link href="/login" style={{color: "#06B7DB", margin: "0", padding: "0"}}>Already a member of the D2D Cure Network?</Link>
-                <Link href="/login" style={{color:"#06B7DB",margin: "0", padding: "0",                 display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center"}}>Click here to login.</Link>
-              </div>
-              </Card>
-          </div>
-        </>
-    );
-  }
-  
-  else if (userType === "professor") {
+  } else if(userType === "neither") {
     return (
-      <>
-        <NavBar />
-        <div className="flex flex-col justify-center items-center min-h-screen">
-        <div
-                    style={{
-                      position: "absolute", 
-                      top: "300px",
-                      width: "100%", 
-                      height: "100%", 
-                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
-                      zIndex: -1, 
-                    }}
-                  ></div>
-          <div className="w-full max-w-lg p-4">
-            
-            <Card
-              style={{
-                width: "100%",
-                borderRadius: "14px",
-                padding: "32px",
-                gap: "36px",
-                display: "flex", // Make the Card a flex container
-                justifyContent: "center", // Center content horizontally
-                alignItems: "center", // Center content vertically
-                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Add subtle shadow for better visual
-                marginTop: "72px"
-              }}
-            >
-              <form onSubmit={handleSubmit} style={{ gap: "36px", width: "100%" }}>
-                <h1 style = {{fontSize: "30px", lineHeight: "40px", marginLeft: "10px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}}>Create an Account</h1>
-                <p style = {{textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}} className="block text-gray-700 text-sm mb-2">All fields required.</p>
+      <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+        <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
+          <div className="w-full max-w-[380px] mx-auto">
+            <div className="mb-6">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-4"
+              />
+              <h1 className="text-2xl font-semibold mb-2">CURE Network Access</h1>
+            </div>
 
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <div className="mb-3">
+                  <h2 className="text-sm font-medium text-gray-900 mb-2">Who can register?</h2>
+                  <p className="text-sm text-gray-600">
+                    Access is limited to members of participating undergraduate research laboratories:
+                  </p>
+                </div>
+                
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-1.5 h-1.5 bg-[#06B7DB] rounded-full"></div>
+                    <p className="text-sm text-gray-700">Faculty Primary Investigators (PIs)</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-[#06B7DB] rounded-full"></div>
+                    <p className="text-sm text-gray-700">Students in PI-led laboratories</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-blue-100 pt-3">
+                  <p className="text-sm text-gray-600">
+                    Need access for data submission or research collaboration? {' '}
+                    <a href="mailto:webmaster@d2dcure.com" className="text-[#06B7DB] hover:underline font-medium">
+                      Request access here
+                    </a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center pt-2">
+                <Link 
+                  href="/login" 
+                  className="text-sm text-[#06B7DB] hover:underline"
+                >
+                  Already have an account? Sign in
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div 
+          className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundImage: `url('https://gbsf.ucdavis.edu/wp-content/uploads/2014/06/GBSF_building-1024x683.jpg')`
+          }}
+        />
+      </div>
+    );
+  } else if (userType === "professor") {
+    return (
+      <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+        <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
+          <div className="w-full max-w-[380px] mx-auto">
+            <div className="mb-8">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-6"
+              />
+              <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
+              <p className="text-sm text-gray-600">All fields required</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Username
                   </label>
                   <Input
                     id="username"
                     type="username"
-                    placeholder="Enter your new username"
+                    placeholder="Enter username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="pi">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Given Name
+                  </label>
+                  <Input
+                    id="given_name"
+                    type="text"
+                    placeholder="Enter given name"
+                    value={givenName}
+                    onChange={(e) => setGivenName(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Institution
                   </label>
                   <Select
-                    placeholder="Select your institution"
-                    variant = "bordered"
+                    placeholder="Select institution"
+                    variant="bordered"
                     selectedKeys={new Set([institution])}
                     onSelectionChange={(value) => setInstitution(Array.from(value).join(''))}
+                    className="w-full"
                   >
                     {institutions.map((institution) => (
                       <SelectItem key={institution.abbr} textValue={institution.fullname}>
@@ -307,244 +267,213 @@ const SignUpPage = () => {
                     ))}
                   </Select>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="given_name">
-                    Given Name
-                  </label>
-                  <Input
-                    id="given_name"
-                    type="text"
-                    placeholder="Enter your given name"
-                    value={givenName}
-                    onChange={(e) => setGivenName(e.target.value)}
-                    variant="bordered"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="title">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Title
                   </label>
                   <Input
                     id="title"
                     type="text"
-                    placeholder="Enter your title"
+                    placeholder="Enter title"
                     value={title}
-                    variant="bordered"
                     onChange={(e) => setTitle(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Enter email"
                     value={email}
-                    variant="bordered"
                     onChange={(e) => setEmail(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Password
                   </label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your new password"
+                    placeholder="Enter password"
                     value={password}
-                    variant="bordered"
                     onChange={(e) => setPassword(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    type="submit"
-                    style={{
-                      fontSize: "16px",
-                      background: "#06B7DB",
-                      width: "100%",
-                      height: "48px",
-                      borderRadius: "12px",
-                      borderColor: "#E4E4E7",
-                      border: "2px solid",
-                      paddingRight: "16px",
-                      paddingLeft: "16px",
-                      gap: "12px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: "36px",
-                    }}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-                {error && <p className="text-red-500 text-xs italic">{error}</p>}
-              </form>
-            </Card>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6"
+              >
+                Create account
+              </button>
+
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            </form>
           </div>
         </div>
-      </>
-
-);
+        
+        <div 
+          className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundImage: `url('/resources/slideshow/Design-Data-protein-UC-Davisd.avif')`
+          }}
+        />
+      </div>
+    );
   } else if (userType === "student") {
     return (
-        <>
-          <NavBar />
-          <div className="flex flex-col justify-center items-center min-h-screen">
-              <div
-                    style={{
-                      position: "absolute", 
-                      top: "300px",
-                      width: "100%", 
-                      height: "100%", 
-                      background: "linear-gradient(180deg, #FFFFFF 16.13%, #E3F3F5 58.36%)",
-                      zIndex: -1, 
-                    }}
-                  ></div>
-            <div className="w-full max-w-lg p-4">
-            <Card
-                style={{
-                  width: "100%",
-                  borderRadius: "14px",
-                  padding: "32px",
-                  gap: "36px",
-                  display: "flex", // Make the Card a flex container
-                  justifyContent: "center", // Center content horizontally
-                  alignItems: "center", // Center content vertically
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Add subtle shadow for better visual
-                  marginTop: "72px"
-                }}
-              >
-              <form
-                onSubmit={handleSubmit} style = {{width: "100%"}}
-              >
-                <h1 style = {{fontSize: "30px", lineHeight: "40px", marginLeft: "10px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}}>Create an Account</h1>
-                <p style = {{textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center"}} className="block text-gray-700 text-sm mb-2">All fields required.</p>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="username">
+      <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+        <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
+          <div className="w-full max-w-[380px] mx-auto">
+            <div className="mb-8">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-6"
+              />
+              <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
+              <p className="text-sm text-gray-600">All fields required</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Username
                   </label>
                   <Input
                     id="username"
                     type="username"
-                    placeholder="Enter your new username"
+                    placeholder="Enter username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    variant = "bordered"
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="given_name">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Given Name
                   </label>
                   <Input
                     id="given_name"
                     type="text"
-                    placeholder="Enter your given name"
+                    placeholder="Enter given name"
                     value={givenName}
-                    variant = "bordered"
                     onChange={(e) => setGivenName(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
+              </div>
 
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="pi">
-                    Primary Investigator (your professor)
-                  </label>
-                      <Select
-                        variant = "bordered"
-                        placeholder="Select your PI"
-                        selectedKeys={new Set([pi])}
-                        onSelectionChange={(value) => {
-                          const selectedPI = Array.from(value).join('');
-                          setpi(selectedPI);
-                          setInstitution(
-                            professors.find((professor) => professor.given_name === selectedPI)?.institution || ''
-                          );
-                        }}
-                      >
-                        {professors.map((professor) => (
-                          <SelectItem key={professor.given_name} textValue={professor.given_name}>
-                            {professor.given_name} ({professor.institution})
-                          </SelectItem>
-                        ))}
-                      </Select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Primary Investigator (your professor)
+                </label>
+                <Select
+                  placeholder="Select your PI"
+                  variant="bordered"
+                  selectedKeys={new Set([pi])}
+                  onSelectionChange={(value) => {
+                    const selectedPI = Array.from(value).join('');
+                    setpi(selectedPI);
+                    setInstitution(
+                      professors.find((professor) => professor.given_name === selectedPI)?.institution || ''
+                    );
+                  }}
+                  className="w-full"
+                >
+                  {professors.map((professor) => (
+                    <SelectItem key={professor.given_name} textValue={professor.given_name}>
+                      {professor.given_name} ({professor.institution})
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
 
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Enter email"
                     value={email}
-                    variant = "bordered"
                     onChange={(e) => setEmail(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Password
                   </label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your new password"
+                    placeholder="Enter password"
                     value={password}
-                    variant = "bordered"
                     onChange={(e) => setPassword(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
                     required
                   />
                 </div>
+              </div>
 
-                <div className="flex items-center justify-between">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      type="submit"
-                      style={{
-                        fontSize: "16px",
-                        background: "#06B7DB",
-                        width: "100%",
-                        height: "48px",
-                        borderRadius: "12px",
-                        borderColor: "#E4E4E7",
-                        border: "2px solid",
-                        paddingRight: "16px",
-                        paddingLeft: "16px",
-                        gap: "12px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: "36px",
-                      }}
-                    >
-                      Sign Up
-                    </button>
-                  </div>
+              <button
+                type="submit"
+                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6"
+              >
+                Create account
+              </button>
 
-                {error && <p className="text-red-500 text-xs italic">{error}</p>}
-              </form>
-              </Card>
-            </div>
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            </form>
           </div>
-        </>
-
+        </div>
+        
+        <div 
+          className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundImage: `url('/resources/slideshow/Design-Data-class-UC-Davis 2.webp')`
+          }}
+        />
+      </div>
     );
   }
 }
