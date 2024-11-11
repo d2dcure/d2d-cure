@@ -1,10 +1,9 @@
 import React, { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
 import { uploadFileToS3 } from "./s3Utils"; // We will create this function next
 
 const DragAndDropUpload: React.FC = () => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
+  const onFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
 
     if (file) {
       // Check if file is a JPEG or PNG
@@ -17,14 +16,10 @@ const DragAndDropUpload: React.FC = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-  });
-
   return (
-    <div {...getRootProps({ className: "dropzone" })}>
-      <input {...getInputProps()} />
-      <p>Drag & drop a JPEG or PNG file here, or click to select a file</p>
+    <div>
+      <input type="file" accept=".jpeg,.jpg,.png" onChange={onFileChange} />
+      <p>Click to select a JPEG or PNG file</p>
     </div>
   );
 };
