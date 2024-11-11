@@ -18,6 +18,7 @@ const config: Config = {
       animation: {
         'infinite-scroll': 'infinite-scroll 60s linear infinite',
         'infinite-scroll-reverse': 'infinite-scroll-reverse 60s linear infinite',
+        'fadeIn': 'fadeIn 0.3s ease-in-out',
       },
       keyframes: {
         'infinite-scroll': {
@@ -27,6 +28,10 @@ const config: Config = {
         'infinite-scroll-reverse': {
           from: { transform: 'translateX(-100%)' },
           to: { transform: 'translateX(0)' },
+        },
+        'fadeIn': {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
         }
       }
     },

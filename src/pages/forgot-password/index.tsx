@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../../firebaseConfig";
 import { useRouter } from 'next/router';
@@ -10,91 +10,53 @@ const ForgotPassword = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const images = [
-    '/resources/images/d2d-aboutus.png',
-    '/resources/slideshow/Design-Data-class-UC-Davis 2.webp',
-    '/resources/slideshow/Design-Data-pipette-UC-Davisc.avif',
-    '/resources/slideshow/Design-Data-protein-UC-Davisd.avif',
-    '/resources/slideshow/Design-Data-UC-Davis2.avif',
-  ];
-
-  const facts = [
-    "Reset your password securely",
-    "Check your email for instructions",
-    "Create a strong new password",
-    "Keep your account secure",
-    "Access your research data safely",
-  ];
-
-  useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => (prev + 1) % 100);
-    }, 80);
-
-    const imageInterval = setInterval(() => {
-      setProgress(0);
-      setCurrentImageIndex((prevIndex) => 
-        prevIndex === images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 8000);
-
-    return () => {
-      clearInterval(progressInterval);
-      clearInterval(imageInterval);
-    };
-  }, []);
-
-  useEffect(() => {
-    setImageLoaded(false);
-    const img = new Image();
-    img.src = images[currentImageIndex];
-    img.onload = () => setImageLoaded(true);
-  }, [currentImageIndex]);
+  const image = '/resources/images/AboustUs-LinkedinGroup.jpeg';
+  const fact = "Reset your password securely";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setSuccess('');
 
+    // More strict email validation
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!email.trim()) {
+      setError('Please enter an email address.');
+      console.log('Error:', 'Please enter an email address.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      console.log('Error:', 'Please enter a valid email address.');
+      return;
+    }
+
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccess('Password reset email sent! Please check your inbox.');
+      setSuccess('If an account exists with this email, you will receive password reset instructions.');
       setTimeout(() => {
         router.push('/login');
       }, 3000);
     } catch (error: any) {
-      setError('Failed to send reset email. Please verify your email address.');
+      if (error.code === 'auth/invalid-email') {
+        setError('Invalid email format. Please enter a valid email address.');
+      } else {
+        setError('An error occurred. Please try again later.');
+      }
     }
   };
 
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
       <div 
-        className="md:hidden h-32 bg-cover bg-center relative rounded-2xl overflow-hidden"
-        style={{ 
-          backgroundImage: imageLoaded ? `url(${images[currentImageIndex]})` : 'none',
-          transition: 'background-image 1.5s ease-in-out'
-        }}>
-        {!imageLoaded && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-        )}
+        className="block h-32 md:h-full md:w-1/2 bg-cover bg-center relative rounded-2xl overflow-hidden"
+        style={{ backgroundImage: `url(${image})` }}>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
         <div className="absolute bottom-2 right-2">
           <p className="text-white/80 text-xs">
-            {facts[currentImageIndex]}
+            {fact}
           </p>
-        </div>
-        <div className="absolute bottom-2 left-2">
-          <div className="h-0.5 w-8 bg-white/10 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-white/60 transition-all duration-100 ease-linear rounded-full"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
         </div>
       </div>
 
@@ -137,8 +99,29 @@ const ForgotPassword = () => {
               Send reset instructions
             </button>
 
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-            {success && <p className="text-green-500 text-sm text-center">{success}</p>}
+            {error && (
+              <div className="animate-fadeIn p-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-red-600 text-sm font-medium text-center">
+                  {error}
+                </p>
+              </div>
+            )}
+            {success && (
+              <div className="animate-fadeIn p-3 rounded-lg bg-green-50 border border-green-200">
+                <p className="text-green-600 text-sm font-medium text-center">
+                  {success}
+                </p>
+              </div>
+            )}
+
+            <div className="text-center">
+              <Link 
+                href="/login" 
+                className="text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
+              >
+                ← Back to Login
+              </Link>
+            </div>
           </form>
         </div>
       </div>
