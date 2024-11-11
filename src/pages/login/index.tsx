@@ -24,18 +24,36 @@ const Login = () => {
   const [mounted, setMounted] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const images = [
     '/resources/images/d2d-aboutus.png',
-    '/resources/slideshow/D2D2022a.jpg',
-    '/resources/slideshow/D2D20217d.jpg',
     '/resources/slideshow/Design-Data-class-UC-Davis 2.webp',
     '/resources/slideshow/Design-Data-pipette-UC-Davisc.avif',
     '/resources/slideshow/Design-Data-protein-UC-Davisd.avif',
     '/resources/slideshow/Design-Data-UC-Davis2.avif',
+    '/resources/slideshow/D2D2022a.jpg',
+    '/resources/slideshow/D2D20217d.jpg',
     '/resources/slideshow/IMG_1369.jpeg',
     '/resources/slideshow/IMG_1602.jpeg',
     '/resources/slideshow/IMG_5581.jpeg'
+  ];
+
+  const facts = [
+    "Built by UC Davis students at CodeLab",
+    '"D2D helped me discover my passion for bioinformatics" - Student, 2022',
+    '"The perfect bridge between biology and coding" - Mentor',
+    '"I never thought I could code until D2D" - Student, 2023',
+    '"Amazing to see students grow in just 8 weeks" - Instructor',
+    '"D2D opened doors to my biotech career" - Alumni',
+    "Students analyze real cancer data",
+    "8-week hands-on lab experience",
+    "First D2D cohort launched Summer 2021",
+    "Partnership with UC Davis Genome Center",
+    "Students learn Python and wet lab skills",
+    "Weekly sessions in teaching lab",
+    "Mentored by UC Davis researchers",
+    "Projects presented at UC Davis symposium",
   ];
 
   useEffect(() => {
@@ -56,7 +74,14 @@ const Login = () => {
         });
         window.google.accounts.id.renderButton(
           document.getElementById('my-signin2'),
-          { theme: 'outline', size: 'large' }
+          { 
+            type: "standard",
+            size: "large",
+            theme: "nuetral",
+            shape: "pill",
+            width: 380,
+            logo_alignment: "left"
+          }
         );
         window.google.accounts.id.prompt(); 
       };
@@ -87,6 +112,13 @@ const Login = () => {
       clearInterval(imageInterval);
     };
   }, []);
+
+  useEffect(() => {
+    setImageLoaded(false);
+    const img = new Image();
+    img.src = images[currentImageIndex];
+    img.onload = () => setImageLoaded(true);
+  }, [currentImageIndex]);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
@@ -129,6 +161,31 @@ const Login = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+      <div 
+        className="md:hidden h-32 bg-cover bg-center relative rounded-2xl overflow-hidden"
+        style={{ 
+          backgroundImage: imageLoaded ? `url(${images[currentImageIndex]})` : 'none',
+          transition: 'background-image 1.5s ease-in-out'
+        }}>
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+        <div className="absolute bottom-2 right-2">
+          <p className="text-white/80 text-xs">
+            {facts[currentImageIndex]}
+          </p>
+        </div>
+        <div className="absolute bottom-2 left-2">
+          <div className="h-0.5 w-8 bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-white/60 transition-all duration-100 ease-linear rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl" 
            style={{ maxWidth: '100%' }}>
         <div className="w-full max-w-[380px] mx-auto">
@@ -211,23 +268,26 @@ const Login = () => {
       <div 
         className="hidden md:block flex-1 bg-cover bg-center transition-all duration-2000 ease-in-out relative rounded-2xl overflow-hidden"
         style={{ 
-          backgroundImage: `url(${images[currentImageIndex]})`,
+          backgroundImage: imageLoaded ? `url(${images[currentImageIndex]})` : 'none',
           position: 'relative',
           transition: 'background-image 1.5s ease-in-out'
         }}>
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2">
-          {images.map((_, index) => (
-            <div key={index} className="h-1 w-16 bg-white/10 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-white transition-all duration-100 ease-linear rounded-full"
-                style={{ 
-                  width: `${currentImageIndex === index ? progress : 
-                          currentImageIndex > index ? '100' : '0'}%`,
-                  opacity: currentImageIndex >= index ? 0.5 : 0.2
-                }}
-              />
-            </div>
-          ))}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+        <div className="absolute bottom-8 right-8">
+          <p className="text-white/90 text-sm tracking-wide">
+            {facts[currentImageIndex]}
+          </p>
+        </div>
+        <div className="absolute bottom-8 left-8">
+          <div className="h-0.5 w-12 bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-white/60 transition-all duration-100 ease-linear rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>

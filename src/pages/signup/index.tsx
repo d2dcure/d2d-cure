@@ -82,6 +82,13 @@ const SignUpPage = () => {
   if (userType === "") {
     return (
       <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
+        <div 
+          className="md:hidden h-32 bg-cover bg-center relative rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundImage: `url('/resources/slideshow/Design-Data-class-UC-Davis 2.webp')`,
+          }}>
+        </div>
+
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
             <div className="mb-8">
@@ -127,7 +134,7 @@ const SignUpPage = () => {
         <div 
           className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
           style={{ 
-            backgroundImage: `url('/resources/images/d2d-aboutus.png')`
+            backgroundImage: `url('/resources/slideshow/Design-Data-class-UC-Davis 2.webp')`
           }}
         />
       </div>
@@ -137,12 +144,13 @@ const SignUpPage = () => {
       <div className="flex flex-col md:flex-row h-screen p-4 gap-4">
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
-            <div className="mb-6">
+            <div className="mb-8">
               <img 
                 src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
                 className="h-7 mb-4"
               />
+
               <h1 className="text-2xl font-semibold mb-2">CURE Network Access</h1>
             </div>
 
@@ -205,10 +213,9 @@ const SignUpPage = () => {
               <img 
                 src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
-                className="h-7 mb-6"
+                className="h-7 mb-4"
               />
-              <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
-              <p className="text-sm text-gray-600">All fields required</p>
+              <h1 className="text-2xl font-semibold mb-2">Create faculty account</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -322,6 +329,13 @@ const SignUpPage = () => {
                 </div>
               </div>
 
+              <div className="flex items-center gap-2 mb-4 bg-[#06B7DB]/5 px-3 py-2 rounded-lg">
+                <div className="h-12 w-2 bg-[#06B7DB] rounded-full"></div>
+                <span className="text-xs text-gray-600">
+                  Please use your institutional email address and create a strong password. Your account will be verified by an administrator.
+                </span>
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6"
@@ -351,10 +365,35 @@ const SignUpPage = () => {
               <img 
                 src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
-                className="h-7 mb-6"
+                className="h-7 mb-4"
               />
-              <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
-              <p className="text-sm text-gray-600">All fields required</p>
+              {/* <div className="flex items-center gap-2 mb-4 bg-[#06B7DB]/5 px-3 py-2 rounded-lg">
+                <div className="h-4 w-1 bg-[#06B7DB] rounded-full"></div>
+                <span className="text-sm font-medium text-gray-600">
+                  Student Account
+                </span>
+              </div> */}
+              
+              
+              <h1 className="text-2xl font-semibold mb-2">Create student account</h1>
+              
+              {/* // Option 1 
+              
+              
+
+{/* // Option 4 - Underlined style (minimalist) */}
+{/* <div className=" inline-block">
+  <span className="text-sm font-medium text-gray-600 border-b-2 border-[#06B7DB] pb-1">
+    Student Account
+  </span>
+</div> */}
+
+{/* // Option 5 - Card style (more prominent) */}
+{/* <div className="mb-4 p-3 bg-gradient-to-r from-[#06B7DB]/10 to-transparent rounded-lg border-l-4 border-[#06B7DB]">
+  <span className="text-sm font-medium text-gray-600">
+    Student Account
+  </span>
+</div> */}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -453,6 +492,13 @@ const SignUpPage = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2 mb-4 bg-[#06B7DB]/5 px-3 py-2 rounded-lg">
+                <div className="h-12 w-2 bg-[#06B7DB] rounded-full"></div>
+                <span className="text-xs text-gray-600">
+                  Please use your institutional email address and create a strong password. Ensure you select your correct Primary Investigator (PI).
+                </span>
               </div>
 
               <button
