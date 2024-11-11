@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { uploadFileToS3 } from "./s3Utils";
+import { uploadFileToS3 } from "../../../utils/s3Utils";
 import { Spinner } from "@nextui-org/react";
 import { BiCheck, BiError } from "react-icons/bi";
 import NotificationPopup from "@/components/NotificationPopup";
