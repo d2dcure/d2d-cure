@@ -14,9 +14,6 @@ import {
   TableCell
 } from "@nextui-org/table";
 import { Button, Link, Checkbox} from "@nextui-org/react";
-import {useAsyncList} from "@react-stately/data";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faCheck } from '@fortawesome/free-solid-svg-icons'; // Use a left chevron icon
 import StatusChip from '@/components/StatusChip';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
