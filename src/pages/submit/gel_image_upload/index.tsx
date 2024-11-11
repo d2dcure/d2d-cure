@@ -7,12 +7,12 @@ const DragAndDropUpload: React.FC = () => {
     const file = acceptedFiles[0];
 
     if (file) {
-      // Check if file is a JPEG
-      if (file.type === "image/jpeg") {
-        console.log("File is a JPEG. Proceeding with upload...");
+      // Check if file is a JPEG or PNG
+      if (file.type === "image/jpeg" || file.type === "image/png") {
+        console.log("File is a JPEG or PNG. Proceeding with upload...");
         uploadFileToS3(file);
       } else {
-        alert("Only JPEG files are allowed!");
+        alert("Only JPEG and PNG files are allowed!");
       }
     }
   }, []);
@@ -24,7 +24,7 @@ const DragAndDropUpload: React.FC = () => {
   return (
     <div {...getRootProps({ className: "dropzone" })}>
       <input {...getInputProps()} />
-      <p>Drag & drop a JPEG file here, or click to select a file</p>
+      <p>Drag & drop a JPEG or PNG file here, or click to select a file</p>
     </div>
   );
 };
