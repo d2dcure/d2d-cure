@@ -59,7 +59,7 @@ const LoginSuccessNotification = () => {
       ${mounted ? 'translate-y-0' : '-translate-y-[200%]'}
       ${showSuccessNotif ? 'opacity-100' : 'opacity-0 pointer-events-none'}
     `}>
-      <div className="backdrop-blur-md bg-white/30 dark:bg-gray-800/30 rounded-lg shadow-lg p-4 relative flex items-center gap-4">
+      <div className="backdrop-blur-md bg-white dark:bg-gray-800/30 rounded-lg shadow-lg p-4 relative flex items-center gap-4">
         <button 
           onClick={handleClose}
           className="absolute -top-2 -right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm"

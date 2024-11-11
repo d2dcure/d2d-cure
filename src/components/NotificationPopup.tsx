@@ -6,6 +6,7 @@ interface NotificationProps {
   onClose: () => void;
   title: string;
   message?: string;
+  icon?: React.ReactNode;
   buttons?: {
     text: string;
     href?: string;
@@ -14,7 +15,7 @@ interface NotificationProps {
   }[];
 }
 
-const NotificationPopup = ({ show, onClose, title, message, buttons }: NotificationProps) => {
+const NotificationPopup = ({ show, onClose, title, message, icon, buttons }: NotificationProps) => {
   const [mounted, setMounted] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
 
@@ -45,7 +46,7 @@ const NotificationPopup = ({ show, onClose, title, message, buttons }: Notificat
       ${mounted ? 'translate-y-0' : '-translate-y-[200%]'}
       ${showNotif ? 'opacity-100' : 'opacity-0 pointer-events-none'}
     `}>
-      <div className="backdrop-blur-md bg-white/30 dark:bg-gray-800/30 rounded-lg shadow-lg p-4 relative flex items-center gap-4">
+      <div className="backdrop-blur-md bg-white dark:bg-gray-800/30 rounded-lg shadow-lg p-4 relative flex items-center gap-4">
         <button 
           onClick={onClose}
           className="absolute -top-2 -right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm"
@@ -55,11 +56,7 @@ const NotificationPopup = ({ show, onClose, title, message, buttons }: Notificat
           </svg>
         </button>
 
-        <div className="h-10 w-10 rounded-full bg-[#06B7DB]/10 flex-shrink-0 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
+        {icon && <div className="h-10 w-10 rounded-full bg-[#06B7DB]/10 flex-shrink-0 flex items-center justify-center">{icon}</div>}
         
         <div className="flex-grow">
           <p className="text-sm font-semibold text-gray-900 dark:text-white">

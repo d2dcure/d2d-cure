@@ -205,7 +205,7 @@ const Dashboard = () => {
                   },
                   {
                     title: "Gel Image",
-                    link: "#",
+                    link: "/submit/gel_image_upload",
                     linkText: "Upload Image",
                   },
                   ...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? [{
@@ -307,7 +307,7 @@ const Dashboard = () => {
                 <div>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
-                    <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
+                    <Button color="primary" href="/submit/gel_image_upload" className="bg-[#06B7DB]">Upload New Image</Button>
                   </div>
                   <Table 
                     aria-label="Gel Image Uploads"
