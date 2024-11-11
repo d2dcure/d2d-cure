@@ -4,7 +4,7 @@ import { Button, Textarea, Tooltip } from '@nextui-org/react';
 
 interface SidebarProps {
   entryData: any;
-  updateEntryData: (newData: any) => void; 
+  updateEntryData: (newData: any) => void;
 }
 
 const useClipboard = () => {
@@ -31,8 +31,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   const [newComment, setNewComment] = useState<string>('');
 
   const foundOligo = oligosData.find(
-    (oligo) =>
-      oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`
+    (oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`
   );
 
   const clipboard = useClipboard();
@@ -143,6 +142,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
 
   return (
     <div className="flex flex-col pt-5 gap-6">
+      {/* Section 1: Database ID, Primer Sequence, Date Created, Plate ID, Institution, Creator */}
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
           <span className="font-medium text-sm">Database ID</span>
@@ -172,10 +172,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
                 )}
               </Button>
             </div>
-            <Tooltip 
-              content={clipboard.copied ? "Copied!" : foundOligo.oligo} 
-              placement="bottom"
-            >
+            <Tooltip content={clipboard.copied ? "Copied!" : foundOligo.oligo} placement="bottom">
               <p 
                 className="break-normal whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:text-[#06B7DB] text-sm"
                 onClick={() => clipboard.copy(foundOligo.oligo)}
@@ -186,104 +183,121 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
             </Tooltip>
           </div>
         )}
-        
-        {/* Teammates Select Dropdowns */}
-        <div className="space-y-2">
-          <span className="font-medium text-sm">Teammate 1</span>
-          <select
-            value={teammate1 || 'None'}
-            onChange={(e) => setTeammate1(e.target.value === 'None' ? null : e.target.value)}
-            className="max-w-full bg-gray-50 text-sm"
-          >
-            <option value="None">None</option>
-            {possibleTeammates.map((mate) => (
-              <option key={mate.user_name} value={mate.user_name}>
-                {mate.given_name} ({mate.user_name})
-              </option>
-            ))}
-          </select>
 
-          <span className="font-medium text-sm">Teammate 2</span>
-          <select
-            value={teammate2 || 'None'}
-            onChange={(e) => setTeammate2(e.target.value === 'None' ? null : e.target.value)}
-            className="max-w-full bg-gray-50 text-sm"
-          >
-            <option value="None">None</option>
-            {possibleTeammates.map((mate) => (
-              <option key={mate.user_name} value={mate.user_name}>
-                {mate.given_name} ({mate.user_name})
-              </option>
-            ))}
-          </select>
-
-          <span className="font-medium text-sm">Teammate 3</span>
-          <select
-            value={teammate3 || 'None'}
-            onChange={(e) => setTeammate3(e.target.value === 'None' ? null : e.target.value)}
-            className="max-w-full bg-gray-50 text-sm"
-          >
-            <option value="None">None</option>
-            {possibleTeammates.map((mate) => (
-              <option key={mate.user_name} value={mate.user_name}>
-                {mate.given_name} ({mate.user_name})
-              </option>
-            ))}
-          </select>
-          
-          <Button
-            color="primary"
-            size="sm"
-            className="mt-2 bg-[#06B7DB]"
-            onClick={handleSaveTeammates}
-          >
-            Save Teammates
-          </Button>
+        <div>
+          <span className="font-medium text-sm">Date Created</span>
+          <p className='text-gray-500 text-sm'>{new Date().toLocaleDateString()}</p>
         </div>
 
         <div>
-          <label className="font-medium text-sm">Comment:</label>
-          {comment ? (
-            <div className="mt-2">
-              <div className="bg-gray-50 rounded-lg p-3 relative">
-                <p className="text-sm">{comment}</p>
-                <div className="text-[11px] text-gray-400 mt-2">
-                  Last updated by {entryData.creator} • {formatTimestamp(new Date())}
-                </div>
+          <span className="font-medium text-sm">Plate ID</span>
+          <p className='text-gray-500 text-sm'>{entryData.plateId || '0000000000'}</p>
+        </div>
+
+        <div>
+          <span className="font-medium text-sm">Institution</span>
+          <p className='text-gray-500 text-sm'>{entryData.institution}</p>
+        </div>
+
+        <div>
+          <span className="font-medium text-sm">Creator</span>
+          <p className='text-gray-500 text-sm'>{entryData.creator}</p>
+        </div>
+      </div>
+
+      {/* Section 2: Teammates */}
+      <div className="space-y-2">
+        <span className="font-medium text-sm">Teammate 1</span>
+        <select
+          value={teammate1 || 'None'}
+          onChange={(e) => setTeammate1(e.target.value === 'None' ? null : e.target.value)}
+          className="max-w-full bg-gray-50 text-sm"
+        >
+          <option value="None">None</option>
+          {possibleTeammates.map((mate) => (
+            <option key={mate.user_name} value={mate.user_name}>
+              {mate.given_name} ({mate.user_name})
+            </option>
+          ))}
+        </select>
+
+        <span className="font-medium text-sm">Teammate 2</span>
+        <select
+          value={teammate2 || 'None'}
+          onChange={(e) => setTeammate2(e.target.value === 'None' ? null : e.target.value)}
+          className="max-w-full bg-gray-50 text-sm"
+        >
+          <option value="None">None</option>
+          {possibleTeammates.map((mate) => (
+            <option key={mate.user_name} value={mate.user_name}>
+              {mate.given_name} ({mate.user_name})
+            </option>
+          ))}
+        </select>
+
+        <span className="font-medium text-sm">Teammate 3</span>
+        <select
+          value={teammate3 || 'None'}
+          onChange={(e) => setTeammate3(e.target.value === 'None' ? null : e.target.value)}
+          className="max-w-full bg-gray-50 text-sm"
+        >
+          <option value="None">None</option>
+          {possibleTeammates.map((mate) => (
+            <option key={mate.user_name} value={mate.user_name}>
+              {mate.given_name} ({mate.user_name})
+            </option>
+          ))}
+        </select>
+
+        <Button color="primary" size="sm" className="mt-2 bg-[#06B7DB]" onClick={handleSaveTeammates}>
+          Save Teammates
+        </Button>
+      </div>
+
+      {/* Section 3: Comment */}
+      <div>
+        <label className="font-medium text-sm">Comment:</label>
+        {comment ? (
+          <div className="mt-2">
+            <div className="bg-gray-50 rounded-lg p-3 relative">
+              <p className="text-sm">{comment}</p>
+              <div className="text-[11px] text-gray-400 mt-2">
+                Last updated by {entryData.creator} • {formatTimestamp(new Date())}
               </div>
             </div>
-          ) : (
-            <p className="text-sm text-gray-400 italic mt-1">No comment added yet</p>
-          )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 italic mt-1">No comment added yet</p>
+        )}
 
-          <div className="mt-2 flex gap-1">
-            <div className="flex-1 relative">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Update comment..."
-                maxLength={100}
-                minRows={1}
-                maxRows={3}
-                classNames={{
-                  input: "resize-none py-1 text-sm min-h-0",
-                  base: "w-full min-h-0",
-                  inputWrapper: "min-h-0 bg-gray-50"
-                }}
-              />
-              <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
-                {newComment.length}/100
-              </span>
-            </div>
-            <Button
-              color="primary"
-              size="sm"
-              className="bg-[#06B7DB] h-[42px] -pl-1 min-w-[40px] px-1"
-              onClick={handleSaveComment}
-              isLoading={saving}
-              isDisabled={!newComment.trim()}
-            >
-               {saving ? '...' : (
+        <div className="mt-2 flex gap-1">
+          <div className="flex-1 relative">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Update comment..."
+              maxLength={100}
+              minRows={1}
+              maxRows={3}
+              classNames={{
+                input: "resize-none py-1 text-sm min-h-0",
+                base: "w-full min-h-0",
+                inputWrapper: "min-h-0 bg-gray-50"
+              }}
+            />
+            <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
+              {newComment.length}/100
+            </span>
+          </div>
+          <Button
+            color="primary"
+            size="sm"
+            className="bg-[#06B7DB] h-[42px] -pl-1 min-w-[40px] px-1"
+            onClick={handleSaveComment}
+            isLoading={saving}
+            isDisabled={!newComment.trim()}
+          >
+            {saving ? '...' : (
               <svg 
                 width="16" 
                 height="16" 
@@ -300,8 +314,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
                 />
               </svg>
             )}
-            </Button>
-          </div>
+          </Button>
         </div>
       </div>
     </div>
