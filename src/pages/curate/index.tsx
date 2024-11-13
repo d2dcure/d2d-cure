@@ -116,17 +116,6 @@ const CuratePage = () => {
     }
 
     const handleColumnClick = (sortDescriptor: SortDescriptor) => {
-        // const sortColumn = sortDescriptor.column;
-        // const sortDirection = sortDescriptor.direction;
-        // if (sortColumn === columnName) {
-        //     newSortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
-        //     setSortDirection(newSortDirection);
-        // } else {
-        //     newSortDirection = 'asc'
-        //     setSortColumn(columnName);
-        //     setSortDirection('asc');
-        // }
-        // console.log("sort", sortDescriptor)
         setSortDescriptor(sortDescriptor)
         // console.log("Before:", viewableData)
         // console.log("sort", sortDescriptor)
@@ -366,18 +355,6 @@ const CuratePage = () => {
                                         {column.name}
                                     </TableColumn>
                                 )}
-                                {/* <TableColumn>{""}</TableColumn> */}
-                                {/* <TableColumn>STATUS</TableColumn>
-                                <TableColumn allowsSorting>ID</TableColumn>
-                                <TableColumn allowsSorting>Variant</TableColumn>
-                                <TableColumn allowsSorting>Creator</TableColumn>
-                                {/* <TableColumn>Uploaded By</TableColumn> */}
-                                {/* <TableColumn>Assay Date</TableColumn>
-                                <TableColumn>Km</TableColumn>
-                                <TableColumn>Kcat</TableColumn>
-                                <TableColumn>T50</TableColumn>
-                                <TableColumn>Comments</TableColumn>
-                                <TableColumn>ACTIONS</TableColumn> */}
                             </TableHeader>
                             <TableBody
                                 items={viewableData}
@@ -390,136 +367,7 @@ const CuratePage = () => {
                                     </TableRow>
                                 )}
                             </TableBody>
-                                {/* {viewableData.map((data) => (
-                                    <TableRow key={data.id}>
-                                        {/* <TableCell>
-                                            hi
-                                        </TableCell>
-                                        <TableCell>
-                                            {/* TODO: Hard coded rn!!
-                                            <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
-                                                In Progress
-                                            </Chip>
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.id}
-                                        </TableCell>
-                                        <TableCell>
-                                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.creator}
-                                        </TableCell>
-                                        {/* <TableCell>
-                                            hi
-                                        </TableCell>
-                                        <TableCell>
-                                            hi
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {data.comments}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} passHref>
-                                                <Button variant="light" color="primary">
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody> */}
                         </Table>
-
-                        {/* <table className="table-auto min-w-full border-collapse border border-gray-400">
-                            <thead className="bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th className="border border-gray-300"/>
-                                    <th className={`border border-gray-300 cursor-pointer ${sortColumn === "ID" ? "text-orange-500" : "text-blue-500"}`}
-                                        onClick={() => handleColumnClick("ID")}>ID {sortColumn === "ID" ? (sortDirection === "asc" ? "▲" : "▼") : ""}</th>
-                                    <th className={`border border-gray-300 cursor-pointer ${sortColumn === "Variant" ? "text-orange-500" : "text-blue-500"}`}
-                                        onClick={() => handleColumnClick("Variant")}>Variant {sortColumn === "Variant" ? (sortDirection === "asc" ? "▲" : "▼") : ""}</th>
-                                    <th className={`border border-gray-300 cursor-pointer ${sortColumn === "Creator" ? "text-orange-500" : "text-blue-500"}`}
-                                        onClick={() => handleColumnClick("Creator")}>Creator {sortColumn === "Creator" ? (sortDirection === "asc" ? "▲" : "▼") : ""}</th>
-                                    <th className="border border-gray-300">Km</th>
-                                    <th className="border border-gray-300">Kcat</th>
-                                    <th className="border border-gray-300">T50</th>
-                                    <th>Dataset</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {viewableData.map((data, index) => (
-                                    <>
-                                        <tr>
-                                            <td className={`border border-gray-300 ${data.approved_by_pi ? 'bg-green-400' : ''}`}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={checkedItems[data.id] || false}
-                                                    onChange={() => handleCheckboxChange(data.id)}
-                                                />
-
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {data.id}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {getVariantDisplay(data.resid, data.resnum, data.resmut)}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {data.creator}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'}
-                                            </td>
-                                            <td className="border border-gray-300">
-                                                <Link
-                                                    className="underline text-blue-500 cursor-pointer"
-                                                    href={`/submit/single_variant/${encodeURIComponent(data.id)}`}
-                                                >
-                                                    View Dataset
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                        {data.kineticRawData && (
-                                            <tr>
-                                                <td />
-                                                <td>Kin. Data: </td>
-                                                <td>Plate ID: {data.kineticRawData.plate_num ?? "N/A"}</td>
-                                                <td colSpan={2}>Uploaded by: {data.kineticRawData.user_name ?? "N/A"}</td>
-                                                <td>Purif. Date: {data.kineticRawData.purification_date ?? "N/A"}</td>
-                                                <td>Assay Date: {data.kineticRawData.assay_date ?? "N/A"}</td>
-                                            </tr>
-                                        )}
-                                        {data.tempRawData && (
-                                            <tr>
-                                                <td />
-                                                <td>Temp. Data: </td>
-                                                <td>Plate ID: {data.tempRawData.plate_num ?? "N/A"}</td>
-                                                <td colSpan={2}>Uploaded by: {data.tempRawData.user_name ?? "N/A"}</td>
-                                                <td>Purif. Date: {data.tempRawData.purification_date ?? "N/A"}</td>
-                                                <td>Assay Date: {data.tempRawData.assay_date ?? "N/A"}</td>
-                                            </tr>
-                                        )}
-                                    </>
-
-                                ))}
-                            </tbody>
-                        </table> */}
                     </div>
                 </div>
             </AuthChecker>
