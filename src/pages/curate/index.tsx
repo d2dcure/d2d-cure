@@ -1,20 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
+import { Breadcrumbs, BreadcrumbItem, Button, Chip, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Key, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
-
 
 const CuratePage = () => {
     const { user, loading } = useUser();
 
     const [data, setData] = useState<any[]>([]);
     const [viewableData, setViewableData] = useState<any[]>([]);
-    const [sortColumn, setSortColumn] = useState<string>('ID');
-    const [sortDirection, setSortDirection] = useState<string>('asc');
+    // const [sortColumn, setSortColumn] = useState<string>('ID');
+    // const [sortDirection, setSortDirection] = useState<string>('asc');
+    const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+        column: "ID",
+        direction: "ascending"
+    });
+    type Selection = "all" | Set<Key>;
+    // const [checkedItems, setCheckedItems] = useState<Selection>(new Set<Key>([]));
     const [viewAs, setViewAs] = useState<string>("")
-    const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
+    const [isLoading, setIsLoading] = useState(true);
+    // const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,14 +35,67 @@ const CuratePage = () => {
             filterAndSortData(data);
         };
         fetchData();
+        setIsLoading(false);
     }, [user])
 
     useEffect(() => {
         if (!user) return;
 
         console.log("yooo");
+        setIsLoading(true);
         filterAndSortData(data);
+        console.log(data)
+        setIsLoading(false);
     }, [viewAs])
+
+    const columns = [
+        { name: "STATUS", uid: "status", sortable: false},
+        { name: "ID", uid: "id", sortable: true },
+        { name: "Variant", uid: "variant", sortable: true },
+        { name: "Creator", uid: "creator", sortable: true },
+        { name: "Assay Date", uid: "assay_date", sortable: false},
+        { name: "Km", uid: "km", sortable: false },
+        { name: "Kcat", uid: "kcat", sortable: false },
+        { name: "T50", uid: "t50", sortable: false },
+        { name: "Comments", uid: "comments", sortable: false },
+        { name: "ACTIONS", uid: "actions", sortable: false }
+      ];
+
+    const renderCell = useCallback((data:any, columnKey:Key) => {
+        switch (columnKey) {
+            case "status":
+                {/* TODO: Hard coded rn!! */}
+                return (
+                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
+                        In Progress
+                    </Chip>
+                );
+            case "id":
+                return data.id
+            case "variant":
+                return getVariantDisplay(data.resid, data.resnum, data.resmut)
+            case "creator":
+                return data.creator
+            case "assay_date":
+                return "hi"
+            case "km":
+                return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
+            case "kcat":
+                data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'
+            case "t50":
+                data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
+            case "comments":
+                return data.comments
+            case "actions":
+                return (
+                    <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} passHref>
+                        <Button variant="light" color="primary">
+                            View
+                        </Button>
+                    </Link>
+                )
+        }
+    }, []);
 
     const filterAndSortData = (data:any) => {
         let filteredData = data;
@@ -43,31 +104,42 @@ const CuratePage = () => {
                 .filter((item:any) => item.institution === user.institution)
                 .filter((item:any) => item.approved_by_pi === false);
         }
-
-        const sortedData = sortData(filteredData, sortColumn, sortDirection)
+        console.log("b4", viewableData, filteredData, sortDescriptor);
+        const sortedData = sortData(filteredData, sortDescriptor)
+        console.log("after", sortedData);
         setViewableData(sortedData);
-        const initialCheckedItems = data.reduce((state:any, item:any) => ({
-            ...state,
-            [item.id]: false  // Initialize all checkboxes as unchecked
-        }), {} as Record<number, boolean>);
-        setCheckedItems(initialCheckedItems);
+        // const initialCheckedItems = data.reduce((state:any, item:any) => ({
+        //     ...state,
+        //     [item.id]: false  // Initialize all checkboxes as unchecked
+        // }), {} as Record<number, boolean>);
+        // setCheckedItems(initialCheckedItems);
     }
 
-    const handleColumnClick = (columnName: string) => {
-        let newSortDirection;
-        if (sortColumn === columnName) {
-            newSortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
-            setSortDirection(newSortDirection);
-        } else {
-            newSortDirection = 'asc'
-            setSortColumn(columnName);
-            setSortDirection('asc');
-        }
-        const sortedData = sortData(viewableData, columnName, newSortDirection)
+    const handleColumnClick = (sortDescriptor: SortDescriptor) => {
+        // const sortColumn = sortDescriptor.column;
+        // const sortDirection = sortDescriptor.direction;
+        // if (sortColumn === columnName) {
+        //     newSortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+        //     setSortDirection(newSortDirection);
+        // } else {
+        //     newSortDirection = 'asc'
+        //     setSortColumn(columnName);
+        //     setSortDirection('asc');
+        // }
+        // console.log("sort", sortDescriptor)
+        setSortDescriptor(sortDescriptor)
+        // console.log("Before:", viewableData)
+        // console.log("sort", sortDescriptor)
+        const sortedData = sortData(viewableData, sortDescriptor)
+        // console.log("After:", viewableData)
+
         setViewableData(sortedData);
     };
 
-    function sortData(data: any, sortColumn: string, sortDirection: string) {
+    function sortData(data: any, sortDescriptor: SortDescriptor) {
+        const sortColumn = sortDescriptor.column;
+        const sortDirection = sortDescriptor.direction;
+
         const sortedData = data.sort((a: any, b: any) => {
             // If user is admin, sort to show data approved by pi first
             let valA, valB;
@@ -83,25 +155,25 @@ const CuratePage = () => {
                 } // Otherwise continue with rest of sorting
             }
 
-            if (sortColumn === 'ID') {
+            if (sortColumn === 'id') {
                 valA = a.id;
                 valB = b.id;
                 compareVal = valA - valB;
-            } else if (sortColumn === 'Variant') {
+            } else if (sortColumn === 'variant') {
                 valA = a.resnum;
                 valB = b.resnum;
                 compareVal = valA - valB;
                 if (compareVal === 0) {
                     compareVal = a.resmut.localeCompare(b.resmut);
                 }
-            } else if (sortColumn === 'Creator') {
+            } else if (sortColumn === 'creator') {
                 valA = a.creator;
                 valB = b.creator;
                 compareVal = valA.localeCompare(valB);
             }
 
             if (compareVal !== 0) {
-                if (sortDirection === 'asc') {
+                if (sortDirection === 'ascending') {
                     return compareVal;
                 } else {
                     return -compareVal;
@@ -124,12 +196,12 @@ const CuratePage = () => {
         return `${resid}${resnum}${resmut}`;
     };
 
-    const handleCheckboxChange = (id: number) => {
-        setCheckedItems(prevState => ({
-            ...prevState,
-            [id]: !prevState[id]
-        }));
-    };
+    // const handleCheckboxChange = (id: number) => {
+    //     setCheckedItems(prevState => ({
+    //         ...prevState,
+    //         [id]: !prevState[id]
+    //     }));
+    // };
 
     const roundTo = (number:number, decPlaces:number) => {
         if (number === null) {
@@ -218,51 +290,157 @@ const CuratePage = () => {
         });
     };
 
-
-
     return (
         <div>
-            <NavBar />
+            <NavBar/>
             <AuthChecker minimumStatus={"professor"}>
-                <div>
-                    <div className="flex flex-col items-center p-4">
-                        { (user?.status === "ADMIN") &&
-                            <div className="flex flex-col items-center p-4">
-                                <p>You are curating as a {viewAs === "ADMIN" ? "D2D Network Administrator." : "professor."}</p>
-                                <p
-                                    className='underline text-blue-500 cursor-pointer'
-                                    onClick={() => setViewAs((currentView) => currentView === "ADMIN" ? "professor" : "ADMIN")}
-                                >
-                                    Click here to curate data as {viewAs === "ADMIN" ? "the instructor of a laboratory." : "a D2D Network Administrator"}
-                                </p>
-                            </div>
-                        }
+                <div className="m-24 bg-white">
+                    <div className="col-span-1 items-center">
+                        <Breadcrumbs
+                            itemClasses={{
+                            item: "text-black data-[current=true]:text-gray-300", // White text for breadcrumb items, lighter for current item
+                            separator: "text-black/40", // Lighter white for separators
+                            }}
+                        >
+                            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+                            <BreadcrumbItem>Database</BreadcrumbItem>
+                            <BreadcrumbItem>Bulk Curation of Data</BreadcrumbItem>
+                        </Breadcrumbs>
+                        <div className="pt-8">
+                            <h1 className="mb-4 text-4xl font-inter md:text-3xl xl:text-4xl dark:text-white">Bulk Curation of Data</h1>
+                            { viewAs === "professor" &&
+                                <h2 className="text-xl">Data from the {user?.user_name} Lab or other labs at {user?.institution}</h2>
+                            }
+                            { viewAs === "ADMIN" &&
+                                <h2 className="text-xl">Data from the D2D Network</h2>
+                            }
+                            <p className='text'>Please approve or reject the data below.</p>
+                            {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
-                        <h1 className="text-2xl font-bold">Bulk Curation of Data</h1>
-                        { viewAs === "professor" &&
-                            <h2 className="text-xl">Data from the {user?.user_name} Lab or other labs at {user?.institution}</h2>
-                        }
-                        { viewAs === "ADMIN" &&
-                            <h2 className="text-xl">Data from the D2D Network</h2>
-                        }
-                        <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p>
-                        <div className="flex flex-row items-center my-2">
-                            <button
-                                className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-green-500"} mx-2 p-2 rounded`}
-                                onClick={approveData}
-                                disabled={!Object.values(checkedItems).some(value => value === true)}
-                            >
-                                Approve
-                            </button>
-                            <button
-                                className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-red-500"} mx-2 p-2 rounded`}
-                                onClick={rejectData}
-                                disabled={!Object.values(checkedItems).some(value => value === true)}
-                            >
-                                Reject
-                            </button>
+                            { (user?.status === "ADMIN") &&
+                                <div className="flex">
+                                    <p>You are curating as a {viewAs === "ADMIN" ? "D2D Network Administrator." : "professor."} </p>
+                                    <p
+                                        className='ml-1 underline text-blue-500 cursor-pointer'
+                                        onClick={() => setViewAs((currentView) => currentView === "ADMIN" ? "professor" : "ADMIN")}
+                                    >
+                                        Click here to curate data as {viewAs === "ADMIN" ? "the instructor of a laboratory." : "a D2D Network Administrator"}
+                                    </p>
+                                </div>
+                            }
+
+                            {/* <div className="flex flex-row items-center my-2">
+                                <button
+                                    className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-green-500"} mx-2 p-2 rounded`}
+                                    onClick={approveData}
+                                    disabled={!Object.values(checkedItems).some(value => value === true)}
+                                >
+                                    Approve
+                                </button>
+                                <button
+                                    className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-red-500"} mx-2 p-2 rounded`}
+                                    onClick={rejectData}
+                                    disabled={!Object.values(checkedItems).some(value => value === true)}
+                                >
+                                    Reject
+                                </button>
+                            </div> */}
                         </div>
-                        <table className="table-auto min-w-full border-collapse border border-gray-400">
+
+                        <Table
+                            aria-label="Data to Curate"
+                            isHeaderSticky
+                            selectionMode="multiple"
+                            // selectedKeys={checkedItems}
+                            // onSelectionChange={setCheckedItems}
+                            sortDescriptor={sortDescriptor}
+                            onSortChange={handleColumnClick}
+                            className="mb-8 sm:mb-12"
+                        >
+                            <TableHeader columns={columns}>
+                                {(column) => (
+                                    <TableColumn
+                                        key={column.uid}
+                                        allowsSorting={column.sortable}
+                                    >
+                                        {column.name}
+                                    </TableColumn>
+                                )}
+                                {/* <TableColumn>{""}</TableColumn> */}
+                                {/* <TableColumn>STATUS</TableColumn>
+                                <TableColumn allowsSorting>ID</TableColumn>
+                                <TableColumn allowsSorting>Variant</TableColumn>
+                                <TableColumn allowsSorting>Creator</TableColumn>
+                                {/* <TableColumn>Uploaded By</TableColumn> */}
+                                {/* <TableColumn>Assay Date</TableColumn>
+                                <TableColumn>Km</TableColumn>
+                                <TableColumn>Kcat</TableColumn>
+                                <TableColumn>T50</TableColumn>
+                                <TableColumn>Comments</TableColumn>
+                                <TableColumn>ACTIONS</TableColumn> */}
+                            </TableHeader>
+                            <TableBody
+                                items={viewableData}
+                                isLoading={isLoading}
+                                loadingContent={<Spinner label="Loading..." />}
+                            >
+                                {(item) => (
+                                    <TableRow key={item.id}>
+                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                                {/* {viewableData.map((data) => (
+                                    <TableRow key={data.id}>
+                                        {/* <TableCell>
+                                            hi
+                                        </TableCell>
+                                        <TableCell>
+                                            {/* TODO: Hard coded rn!!
+                                            <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
+                                                In Progress
+                                            </Chip>
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.id}
+                                        </TableCell>
+                                        <TableCell>
+                                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.creator}
+                                        </TableCell>
+                                        {/* <TableCell>
+                                            hi
+                                        </TableCell>
+                                        <TableCell>
+                                            hi
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {data.comments}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} passHref>
+                                                <Button variant="light" color="primary">
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody> */}
+                        </Table>
+
+                        {/* <table className="table-auto min-w-full border-collapse border border-gray-400">
                             <thead className="bg-gray-100 sticky top-0 z-10">
                                 <tr>
                                     <th className="border border-gray-300"/>
@@ -341,7 +519,7 @@ const CuratePage = () => {
 
                                 ))}
                             </tbody>
-                        </table>
+                        </table> */}
                     </div>
                 </div>
             </AuthChecker>
