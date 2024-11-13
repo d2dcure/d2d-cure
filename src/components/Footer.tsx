@@ -2,6 +2,8 @@ import React from "react";
 import Link from 'next/link'; // Import Link from Next.js
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Button, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu } from "@nextui-org/react";
 
+
+// im putting a random comment here for a test commit
 export default function App() {
   return (
 <footer className="bg-white dark:bg-gray-900 border-t-1" style={{ maxWidth: 'full' }}>
