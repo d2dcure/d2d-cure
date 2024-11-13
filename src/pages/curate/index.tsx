@@ -12,10 +12,8 @@ const CuratePage = () => {
 
     const [data, setData] = useState<any[]>([]);
     const [viewableData, setViewableData] = useState<any[]>([]);
-    // const [sortColumn, setSortColumn] = useState<string>('ID');
-    // const [sortDirection, setSortDirection] = useState<string>('asc');
     const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-        column: "ID",
+        column: "id",
         direction: "ascending"
     });
     type Selection = "all" | Set<Key>;
@@ -41,7 +39,6 @@ const CuratePage = () => {
     useEffect(() => {
         if (!user) return;
 
-        console.log("yooo");
         setIsLoading(true);
         filterAndSortData(data);
         console.log(data)
@@ -59,7 +56,7 @@ const CuratePage = () => {
         { name: "T50", uid: "t50", sortable: false },
         { name: "Comments", uid: "comments", sortable: false },
         { name: "ACTIONS", uid: "actions", sortable: false }
-      ];
+    ];
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
@@ -81,17 +78,15 @@ const CuratePage = () => {
             case "km":
                 return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
             case "kcat":
-                data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'
+                return data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'
             case "t50":
-                data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
+                return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
             case "comments":
                 return data.comments
             case "actions":
                 return (
-                    <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} passHref>
-                        <Button variant="light" color="primary">
-                            View
-                        </Button>
+                    <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} className="text-[#06B7DB]">
+                        View
                     </Link>
                 )
         }
@@ -104,9 +99,9 @@ const CuratePage = () => {
                 .filter((item:any) => item.institution === user.institution)
                 .filter((item:any) => item.approved_by_pi === false);
         }
-        console.log("b4", viewableData, filteredData, sortDescriptor);
+        // console.log("b4", viewableData, filteredData, sortDescriptor);
         const sortedData = sortData(filteredData, sortDescriptor)
-        console.log("after", sortedData);
+        // console.log("after", sortedData);
         setViewableData(sortedData);
         // const initialCheckedItems = data.reduce((state:any, item:any) => ({
         //     ...state,
