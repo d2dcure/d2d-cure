@@ -7,6 +7,8 @@ import { auth } from '../../firebaseConfig';
 
 const Migration = () => {
     const [users, setUsers] = useState<any[]>([]);
+    const [usbluers, setUsblsers] = useState<any[]>([]);
+
   
     useEffect(() => {
       const fetchData = async () => {
