@@ -28,7 +28,7 @@ const Login = () => {
 
   const images = [
     '/resources/images/d2d-aboutus.png',
-    '/resources/slideshow/Design-Data-class-UC-Davis 2.webp',
+    '/resources/slideshow/Design-Data-class-UC-Davis_2.webp',
     '/resources/slideshow/Design-Data-pipette-UC-Davisc.avif',
     '/resources/slideshow/Design-Data-protein-UC-Davisd.avif',
     '/resources/slideshow/Design-Data-UC-Davis2.avif',

@@ -134,7 +134,7 @@ const SignUpPage = () => {
         <div 
           className="hidden md:block flex-1 bg-cover bg-center relative rounded-2xl overflow-hidden"
           style={{ 
-            backgroundImage: `url('/resources/slideshow/Design-Data-class-UC-Davis 2.webp')`
+            backgroundImage: `url('/resources/slideshow/Design-Data-class-UC-Davis_2.webp')`
           }}
         />
       </div>
