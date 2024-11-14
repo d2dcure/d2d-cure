@@ -4,7 +4,7 @@ import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem, Button, Chip, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
-import { Key, SortDescriptor } from '@react-types/shared';
+import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 
 const CuratePage = () => {
@@ -16,8 +16,7 @@ const CuratePage = () => {
         column: "id",
         direction: "ascending"
     });
-    type Selection = "all" | Set<Key>;
-    // const [checkedItems, setCheckedItems] = useState<Selection>(new Set<Key>([]));
+    const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
     const [viewAs, setViewAs] = useState<string>("")
     const [isLoading, setIsLoading] = useState(true);
     // const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
@@ -40,13 +39,14 @@ const CuratePage = () => {
         if (!user) return;
 
         setIsLoading(true);
+        setCheckedItems(new Set([]))    // Reset to avoid confusion when switching
         filterAndSortData(data);
-        console.log(data)
         setIsLoading(false);
     }, [viewAs])
 
     const columns = [
         { name: "STATUS", uid: "status", sortable: false},
+        { name: "", uid: "approved_by_pi", sortable: false},
         { name: "ID", uid: "id", sortable: true },
         { name: "Variant", uid: "variant", sortable: true },
         { name: "Creator", uid: "creator", sortable: true },
@@ -67,6 +67,15 @@ const CuratePage = () => {
                         In Progress
                     </Chip>
                 );
+            case "approved_by_pi":
+                if (viewAs === "ADMIN" && data.approved_by_pi) {
+                    return (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.90186C4.1 1.90186 1 5.00186 1 8.90186C1 12.8019 4.1 15.9019 8 15.9019C11.9 15.9019 15 12.8019 15 8.90186C15 5.00186 11.9 1.90186 8 1.90186ZM7 11.6022L4.5 9.10225L5.3 8.30225L7 10.0022L10.7 6.30225L11.5 7.10225L7 11.6022ZM2 8.90186C2 12.2019 4.7 14.9019 8 14.9019C11.3 14.9019 14 12.2019 14 8.90186C14 5.60186 11.3 2.90186 8 2.90186C4.7 2.90186 2 5.60186 2 8.90186Z" fill="#17C964"/>
+                        </svg>
+                    )
+                }
+                return <></>
             case "id":
                 return data.id
             case "variant":
@@ -99,24 +108,13 @@ const CuratePage = () => {
                 .filter((item:any) => item.institution === user.institution)
                 .filter((item:any) => item.approved_by_pi === false);
         }
-        // console.log("b4", viewableData, filteredData, sortDescriptor);
         const sortedData = sortData(filteredData, sortDescriptor)
-        // console.log("after", sortedData);
         setViewableData(sortedData);
-        // const initialCheckedItems = data.reduce((state:any, item:any) => ({
-        //     ...state,
-        //     [item.id]: false  // Initialize all checkboxes as unchecked
-        // }), {} as Record<number, boolean>);
-        // setCheckedItems(initialCheckedItems);
     }
 
     const handleColumnClick = (sortDescriptor: SortDescriptor) => {
         setSortDescriptor(sortDescriptor)
-        // console.log("Before:", viewableData)
-        // console.log("sort", sortDescriptor)
         const sortedData = sortData(viewableData, sortDescriptor)
-        // console.log("After:", viewableData)
-
         setViewableData(sortedData);
     };
 
@@ -180,13 +178,6 @@ const CuratePage = () => {
         return `${resid}${resnum}${resmut}`;
     };
 
-    // const handleCheckboxChange = (id: number) => {
-    //     setCheckedItems(prevState => ({
-    //         ...prevState,
-    //         [id]: !prevState[id]
-    //     }));
-    // };
-
     const roundTo = (number:number, decPlaces:number) => {
         if (number === null) {
           return null;
@@ -196,9 +187,7 @@ const CuratePage = () => {
     };
 
     const getSelectedIds = () => {
-        return Object.entries(checkedItems)
-                .filter(([key, value]) => value === true)
-                .map(([key, value]) => parseInt(key, 10));
+        return Array.from(checkedItems).map(id => typeof id === "string" ? parseInt(id, 10) : id);
     }
 
     const approveData = () => {
@@ -266,10 +255,8 @@ const CuratePage = () => {
 
     const removeIdsFromCheckedItems = (idsToRemove: number[]) => {
         setCheckedItems(currentItems => {
-            const updatedItems = { ...currentItems };
-            idsToRemove.forEach(id => {
-                delete updatedItems[id]; // Remove each id from the record
-            });
+            const updatedItems = new Set(currentItems);
+            idsToRemove.forEach(id => updatedItems.delete(id));
             return updatedItems;
         });
     };
@@ -280,12 +267,7 @@ const CuratePage = () => {
             <AuthChecker minimumStatus={"professor"}>
                 <div className="m-24 bg-white">
                     <div className="col-span-1 items-center">
-                        <Breadcrumbs
-                            itemClasses={{
-                            item: "text-black data-[current=true]:text-gray-300", // White text for breadcrumb items, lighter for current item
-                            separator: "text-black/40", // Lighter white for separators
-                            }}
-                        >
+                        <Breadcrumbs className="mb-2">
                             <BreadcrumbItem href="/">Home</BreadcrumbItem>
                             <BreadcrumbItem>Database</BreadcrumbItem>
                             <BreadcrumbItem>Bulk Curation of Data</BreadcrumbItem>
@@ -335,8 +317,8 @@ const CuratePage = () => {
                             aria-label="Data to Curate"
                             isHeaderSticky
                             selectionMode="multiple"
-                            // selectedKeys={checkedItems}
-                            // onSelectionChange={setCheckedItems}
+                            selectedKeys={checkedItems}
+                            onSelectionChange={setCheckedItems}
                             sortDescriptor={sortDescriptor}
                             onSortChange={handleColumnClick}
                             className="mb-8 sm:mb-12"
