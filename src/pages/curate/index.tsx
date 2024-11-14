@@ -3,7 +3,8 @@ import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
-import { Breadcrumbs, BreadcrumbItem, Button, Chip, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 
@@ -19,7 +20,9 @@ const CuratePage = () => {
     const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
     const [viewAs, setViewAs] = useState<string>("")
     const [isLoading, setIsLoading] = useState(true);
-    // const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
+    const [visibleColumns, setVisibleColumns] = useState(new Set([
+        "Approved", "STATUS", "ID", "Variant", "Creator", "Assay Date", "Km", "Kcat", "T50", "Comments", "ACTIONS"
+    ]));
 
     useEffect(() => {
         const fetchData = async () => {
@@ -45,8 +48,8 @@ const CuratePage = () => {
     }, [viewAs])
 
     const columns = [
+        { name: "Approved", uid: "approved_by_pi", sortable: false},
         { name: "STATUS", uid: "status", sortable: false},
-        { name: "", uid: "approved_by_pi", sortable: false},
         { name: "ID", uid: "id", sortable: true },
         { name: "Variant", uid: "variant", sortable: true },
         { name: "Creator", uid: "creator", sortable: true },
@@ -68,6 +71,7 @@ const CuratePage = () => {
                     </Chip>
                 );
             case "approved_by_pi":
+                // TODO: test this!
                 if (viewAs === "ADMIN" && data.approved_by_pi) {
                     return (
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
@@ -265,15 +269,17 @@ const CuratePage = () => {
         <div>
             <NavBar/>
             <AuthChecker minimumStatus={"professor"}>
-                <div className="m-24 bg-white">
-                    <div className="col-span-1 items-center">
+                <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+                    <div className="max-w-7xl mx-auto">
                         <Breadcrumbs className="mb-2">
                             <BreadcrumbItem href="/">Home</BreadcrumbItem>
                             <BreadcrumbItem>Database</BreadcrumbItem>
                             <BreadcrumbItem>Bulk Curation of Data</BreadcrumbItem>
                         </Breadcrumbs>
-                        <div className="pt-8">
-                            <h1 className="mb-4 text-4xl font-inter md:text-3xl xl:text-4xl dark:text-white">Bulk Curation of Data</h1>
+                        <div className="mb-8 lg:mb-20">
+                            <h1 className="mb-4 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
+                                Bulk Curation of Data
+                            </h1>
                             { viewAs === "professor" &&
                                 <h2 className="text-xl">Data from the {user?.user_name} Lab or other labs at {user?.institution}</h2>
                             }
@@ -284,16 +290,18 @@ const CuratePage = () => {
                             {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
-                                <div className="flex">
-                                    <p>You are curating as a {viewAs === "ADMIN" ? "D2D Network Administrator." : "professor."} </p>
-                                    <p
-                                        className='ml-1 underline text-blue-500 cursor-pointer'
+                                <div>
+                                    <span>You are curating as a {viewAs === "ADMIN" ? "D2D Network Administrator." : "professor."} </span>
+                                    <span
+                                        className='underline text-blue-500 cursor-pointer'
                                         onClick={() => setViewAs((currentView) => currentView === "ADMIN" ? "professor" : "ADMIN")}
                                     >
                                         Click here to curate data as {viewAs === "ADMIN" ? "the instructor of a laboratory." : "a D2D Network Administrator"}
-                                    </p>
+                                    </span>
                                 </div>
                             }
+
+
 
                             {/* <div className="flex flex-row items-center my-2">
                                 <button
@@ -313,38 +321,40 @@ const CuratePage = () => {
                             </div> */}
                         </div>
 
-                        <Table
-                            aria-label="Data to Curate"
-                            isHeaderSticky
-                            selectionMode="multiple"
-                            selectedKeys={checkedItems}
-                            onSelectionChange={setCheckedItems}
-                            sortDescriptor={sortDescriptor}
-                            onSortChange={handleColumnClick}
-                            className="mb-8 sm:mb-12"
-                        >
-                            <TableHeader columns={columns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        allowsSorting={column.sortable}
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                            <TableBody
-                                items={viewableData}
-                                isLoading={isLoading}
-                                loadingContent={<Spinner label="Loading..." />}
+                        <div>
+                            <Table
+                                aria-label="Data to Curate"
+                                isHeaderSticky
+                                selectionMode="multiple"
+                                selectedKeys={checkedItems}
+                                onSelectionChange={setCheckedItems}
+                                sortDescriptor={sortDescriptor}
+                                onSortChange={handleColumnClick}
+                                className="mb-8 sm:mb-12"
                             >
-                                {(item) => (
-                                    <TableRow key={item.id}>
-                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                <TableHeader columns={columns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody
+                                    items={viewableData}
+                                    isLoading={isLoading}
+                                    loadingContent={<Spinner label="Loading..." />}
+                                >
+                                    {(item) => (
+                                        <TableRow key={item.id}>
+                                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
                 </div>
             </AuthChecker>
