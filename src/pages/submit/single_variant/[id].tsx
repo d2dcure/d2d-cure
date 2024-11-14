@@ -9,8 +9,15 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-// Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
+import StatusChip from '@/components/StatusChip';
+import { EditIcon } from "@/components/icons/EditIcon";
+import { DeleteIcon } from "@/components/icons/DeleteIcon";
+import { EyeIcon } from "@/components/icons/EyeIcon";
+import { Tooltip } from "@nextui-org/react";
+import confetti from 'canvas-confetti';
 
+
+// Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinModeledView from '@/components/single_variant_submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/single_variant_submission/OligonucleotideOrderedView';
 import PlasmidSequenceVerifiedView from '@/components/single_variant_submission/PlasmidSequenceVerifiedView';
@@ -22,12 +29,7 @@ import ThermoAssayDataView from '@/components/single_variant_submission/ThermoAs
 import WildTypeThermoDataView from '@/components/single_variant_submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/single_variant_submission/MeltingPointView';
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
-import StatusChip from '@/components/StatusChip';
-import { EditIcon } from "@/components/icons/EditIcon";
-import { DeleteIcon } from "@/components/icons/DeleteIcon";
-import { EyeIcon } from "@/components/icons/EyeIcon";
-import { Tooltip } from "@nextui-org/react";
-import confetti from 'canvas-confetti';
+
 
 const SingleVariant = () => {
   const { user } = useUser();
@@ -117,6 +119,41 @@ const SingleVariant = () => {
       alert("Failed to download file. Please try again.");
     }
   };
+
+  const submitForCuration = async () => {
+    if (!id) {
+      alert('Invalid entry ID');
+      return;
+    }
+    try {
+      const response = await fetch('/api/updateCharacterizationDataSubmitted', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit for curation');
+      }
+
+      const updatedEntry = await response.json();
+      setEntryData(updatedEntry); // Update entry data to reflect submission status
+
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+
+      alert('Submitted for curation successfully!');
+    } catch (error) {
+      console.error('Error submitting for curation:', error);
+      alert('Failed to submit for curation. Please try again.');
+    }
+  };
+
 
   const renderChecklistTable = () => {
     const checklistItems = [
@@ -380,27 +417,6 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const buttonWidth = rect.right - rect.left;
-    
-    // Create multiple confetti bursts across the button
-    for (let i = 0; i < 3; i++) {
-      const x = (rect.left + (buttonWidth * (i/2))) / window.innerWidth;
-      const y = rect.top / window.innerHeight;
-      
-      confetti({
-        particleCount: 40,
-        spread: 55,
-        origin: { x, y },
-        colors: ['#06B7DB', '#0891b2', '#155e75'],
-        startVelocity: 30,
-        gravity: 1.2,
-        ticks: 300
-      });
-    }
-  };
-
   return (
     <>
       <NavBar />
@@ -430,12 +446,18 @@ const SingleVariant = () => {
                       <ExternalLink className="w-5 h-5 stroke-[1.5]" />
                     </Link>
                   </h1>
-                  <StatusChip status="in_progress" />
+                  <StatusChip 
+                    status={
+                      entryData.submitted_for_curation && !entryData.approved_by_pi && !entryData.curated 
+                        ? 'pending_approval' 
+                        : 'in_progress'
+                    } 
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   <button 
                     className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
-                    onClick={handleSubmit}
+                    onClick={submitForCuration}
                   >
                     Submit for Review
                   </button>
