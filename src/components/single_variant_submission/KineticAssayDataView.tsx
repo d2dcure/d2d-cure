@@ -154,6 +154,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     try {
       const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
       });
 
       const responseData = response.data;
@@ -189,6 +190,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     try {
       const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plotit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true, // fix
       });
 
       const responseData = response.data;

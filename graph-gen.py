@@ -15,7 +15,7 @@ import pandas as pd
 import base64
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://d2d-cure.vercel.app"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Turn debug mode on or off
 debug_mode = False
