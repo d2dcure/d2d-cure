@@ -11,6 +11,9 @@ import { RiSparklingFill } from "react-icons/ri";
 import StatusChip from '@/components/StatusChip';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import s3 from '../../../s3config';
+import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
+import Toast from '@/components/Toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 interface CharacterizationData {
   curated: boolean;
@@ -40,6 +43,23 @@ const Dashboard = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [gelImages, setGelImages] = useState<GelImage[]>([]);
+  const [selectedImageData, setSelectedImageData] = useState<GelImage | null>(null);
+  const [toastConfig, setToastConfig] = useState<{
+    show: boolean;
+    title: string;
+    message?: string;
+    type?: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    show: false,
+    title: '',
+  });
+  const [confirmationModal, setConfirmationModal] = useState<{
+    show: boolean;
+    imageKey: string | null;
+  }>({
+    show: false,
+    imageKey: null
+  });
 
   useEffect(() => {
     if (userLoading) return;
@@ -92,7 +112,8 @@ const Dashboard = () => {
           data.Contents
             .filter((file): file is Required<typeof file> => 
               file.Key !== undefined && 
-              !file.Key.endsWith('/') // Skip folder entries
+              !file.Key.endsWith('/') && // Skip folder entries
+              file.Key.toLowerCase().endsWith('.png') // Only include PNG files
             )
             .map(async (file) => {
               try {
@@ -101,19 +122,22 @@ const Dashboard = () => {
                   Key: file.Key
                 }).promise();
                 
-                const pathParts = file.Key.split('/');
-                const formattedFilename = pathParts[pathParts.length - 2];
+                // Extract filename without extension and path
+                const filename = file.Key.split('/').pop()?.replace('.png', '') || '';
                 
-                const [institution, userName, ...dateParts] = formattedFilename.split('-');
-                const fileDate = dateParts.join('-').split('.')[0];
+                // Parse filename parts (assuming format: institution-username-date)
+                const parts = filename.split('-');
+                const institution = parts[0] || 'Unknown';
+                const userName = parts[1] || 'Unknown';
+                const fileDate = parts.slice(2).join('-') || 'Unknown';
                 
                 return {
                   key: file.Key,
                   url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                  filename: formattedFilename,
-                  institution: institution || 'Unknown',
-                  userName: userName || 'Unknown',
-                  fileDate: fileDate || 'Unknown'
+                  filename: filename,
+                  institution: institution,
+                  userName: userName,
+                  fileDate: fileDate
                 };
               } catch (err) {
                 console.error(`Error fetching metadata for ${file.Key}:`, err);
@@ -122,14 +146,15 @@ const Dashboard = () => {
             })
         );
 
-        // Filter out null values and user's images only
-        const userImages = imagesWithMetadata
+        // Filter out null values, filter by current user, and sort by date
+        const validImages = imagesWithMetadata
           .filter((img): img is GelImage => 
-            img !== null && img.userName === user?.user_name
+            img !== null && 
+            img.userName === user?.user_name // Only show current user's images
           )
           .sort((a, b) => new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime());
 
-        setGelImages(userImages);
+        setGelImages(validImages);
       }
     } catch (err) {
       console.error('Error fetching gel images:', err);
@@ -229,6 +254,63 @@ const Dashboard = () => {
     );
   };
 
+  const showToast = (title: string, message?: string, type: 'success' | 'error' | 'info' | 'warning' = 'error') => {
+    setToastConfig({
+      show: true,
+      title,
+      message,
+      type,
+    });
+  };
+
+  const handleDeleteImage = async (imageKey: string) => {
+    setConfirmationModal({
+      show: true,
+      imageKey
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    const imageKey = confirmationModal.imageKey;
+    if (!imageKey) return;
+
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: imageKey
+      };
+
+      await s3.deleteObject(params).promise();
+      
+      setGelImages(prevImages => prevImages.filter(img => img.key !== imageKey));
+      
+      if (selectedImageData?.key === imageKey) {
+        setSelectedImageData(null);
+      }
+
+      showToast('Image deleted successfully', undefined, 'success');
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      showToast('Failed to delete image', 'Please try again later');
+    } finally {
+      setConfirmationModal({ show: false, imageKey: null });
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (!selectedImageData) return;
+    const currentIndex = gelImages.findIndex(img => img.key === selectedImageData.key);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : gelImages.length - 1;
+    setSelectedImageData(gelImages[prevIndex]);
+  };
+
+  const handleNextImage = () => {
+    if (!selectedImageData) return;
+    const currentIndex = gelImages.findIndex(img => img.key === selectedImageData.key);
+    const nextIndex = currentIndex < gelImages.length - 1 ? currentIndex + 1 : 0;
+    setSelectedImageData(gelImages[nextIndex]);
+  };
+
   return (
     <>
       <NavBar />
@@ -299,8 +381,6 @@ const Dashboard = () => {
                   </Card>
                 ))}
               </div>
-
-
 
               {/* Submissions Section */}
               <div className="mb-12">
@@ -392,6 +472,7 @@ const Dashboard = () => {
                       <TableColumn>DATE</TableColumn>
                       <TableColumn>FILENAME</TableColumn>
                       <TableColumn>INSTITUTION</TableColumn>
+                      <TableColumn>Actions</TableColumn>
                     </TableHeader>
                     <TableBody>
                       {(isLoading || gelImages.length === 0) ? (
@@ -408,6 +489,9 @@ const Dashboard = () => {
                           <TableCell>
                             <div className="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
                           </TableCell>
+                          <TableCell>
+                            <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                          </TableCell>
                         </TableRow>
                       ) : (
                         gelImages.map((image, index) => (
@@ -422,6 +506,25 @@ const Dashboard = () => {
                             <TableCell>{image.fileDate}</TableCell>
                             <TableCell>{image.filename}</TableCell>
                             <TableCell>{image.institution}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  isIconOnly
+                                  variant="light"
+                                  onClick={() => setSelectedImageData(image)}
+                                >
+                                  <EyeIcon className="h-5 w-5" />
+                                </Button>
+                                <Button
+                                  isIconOnly
+                                  variant="light"
+                                  color="danger"
+                                  onClick={() => handleDeleteImage(image.key)}
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </Button>
+                              </div>
+                            </TableCell>
                           </TableRow>
                         ))
                       )}
@@ -429,6 +532,64 @@ const Dashboard = () => {
                   </Table>
                 </div>
               </div>
+
+              {/* FAQ Section */}
+              <section className="py-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="mb-10">
+                    <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">FAQs</Chip>
+                    <h2 className="text-4xl text-gray-900 leading-[3.25rem]">
+                      Frequently Asked Questions
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    {faqs.map((faq, index) => (
+                      <div
+                        key={index}
+                        className={`accordion py-6 px-6 border border-solid border-gray-200 rounded-2xl transition-all duration-500 ${
+                          activeIndex === index ? '' : ''
+                        }`}
+                      >
+                        <button
+                          className="accordion-toggle flex items-center justify-between leading-8 text-gray-900 w-full text-left font-medium"
+                          onClick={() => toggleAccordion(index)}
+                        >
+                          <h5 className="text-lg hover:text-[#06B7DB]">{faq.question}</h5>
+                          <svg
+                            className={`transition-transform duration-500 ${
+                              activeIndex === index ? 'rotate-180' : ''
+                            }`}
+                            width="22"
+                            height="22"
+                            viewBox="0 0 22 22"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M16.5 8.25L12.4142 12.3358C11.7475 13.0025 11.4142 13.3358 11 13.3358C10.5858 13.3358 10.2525 13.0025 9.58579 12.3358L5.5 8.25"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            ></path>
+                          </svg>
+                        </button>
+
+                        <div
+                          className={`accordion-content transition-all duration-500 overflow-hidden ${
+                            activeIndex === index ? 'max-h-64' : 'max-h-0'
+                          }`}
+                        >
+                          <p className="text-base text-gray-600 leading-6 mt-4">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
             </div>
           )}
         </ErrorChecker>
@@ -473,6 +634,135 @@ const Dashboard = () => {
           </div>
         </PopoverContent>
       </Popover>
+      <Toast
+        show={toastConfig.show}
+        onClose={() => setToastConfig(prev => ({ ...prev, show: false }))}
+        title={toastConfig.title}
+        message={toastConfig.message}
+        type={toastConfig.type}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationModal.show}
+        onClose={() => setConfirmationModal({ show: false, imageKey: null })}
+        onConfirm={handleConfirmDelete}
+        title="Delete Image"
+        message="Are you sure you want to delete this image?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {selectedImageData && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImageData(null)}
+        >
+          <div 
+            className="bg-white rounded-lg flex max-w-6xl w-full max-h-[90vh] overflow-hidden relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Navigation Buttons */}
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevImage();
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              className="absolute right-[400px] top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextImage();
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Left side - Image */}
+            <div className="flex-1 bg-gray-100 flex items-center justify-center p-4">
+              <img
+                src={selectedImageData.url}
+                alt="Gel Image Preview"
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+            </div>
+
+            {/* Right side - Info Card */}
+            <div className="w-96 p-6 border-l border-gray-200">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-xl font-semibold">Image Details</h3>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setSelectedImageData(null)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-500">Filename</label>
+                  <p className="font-medium break-words">{selectedImageData.filename}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-500">Institution</label>
+                  <p className="font-medium">{selectedImageData.institution}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-500">Uploaded By</label>
+                  <p className="font-medium">{selectedImageData.userName}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-500">Date</label>
+                  <p className="font-medium">{selectedImageData.fileDate}</p>
+                </div>
+
+                <div className="pt-4 space-y-2">
+                  <a
+                    href={selectedImageData.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center bg-[#06B7DB] text-white py-2 px-4 rounded-lg hover:bg-[#05a5c6] transition-colors"
+                  >
+                    Download Image
+                  </a>
+                  
+                  {user?.user_name === selectedImageData.userName && (
+                    <>
+                      <div className="text-xs text-gray-500 px-1">
+                        As the uploader, you can delete this image
+                      </div>
+                      <button
+                        onClick={() => handleDeleteImage(selectedImageData.key)}
+                        className="block w-full text-center text-red-500 hover:text-white py-2 px-4 rounded-lg transition-all border border-red-500 hover:border-red-600 hover:bg-red-500"
+                      >
+                        Delete Image
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div className="text-center text-sm text-gray-500 pt-4">
+                  Image {gelImages.findIndex(img => img.key === selectedImageData.key) + 1} of {gelImages.length}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

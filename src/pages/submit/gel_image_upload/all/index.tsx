@@ -286,12 +286,17 @@ const ViewAllGelImages: React.FC = () => {
               <Table 
                 aria-label="Gel images table" 
                 id="gel-images-table"
+                isHeaderSticky
                 sortDescriptor={sortDescriptor}
                 onSortChange={(descriptor) => {
                   setSortDescriptor(descriptor as { column: string; direction: "ascending" | "descending" });
                 }}
+                classNames={{
+                  wrapper: "max-h-[600px]",
+                  table: "min-h-[400px]",
+                }}
               >
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableColumn key="preview">PREVIEW</TableColumn>
                   <TableColumn key="institution">INSTITUTION</TableColumn>
                   <TableColumn key="userName">UPLOADED BY</TableColumn>
@@ -305,7 +310,7 @@ const ViewAllGelImages: React.FC = () => {
                         <img
                           src={image.url}
                           alt={`Gel Image ${index + 1}`}
-                          className="w-20 h-20 object-cover rounded"
+                          className="w-16 h-16 object-cover rounded"
                         />
                       </TableCell>
                       <TableCell>{image.institution}</TableCell>

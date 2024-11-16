@@ -7,6 +7,7 @@ import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, CardBody } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
+import Footer from '@/components/Footer';
 
 const SubmitPage = () => {
   const { user } = useUser();
@@ -345,6 +346,7 @@ const SubmitPage = () => {
           </div>
         </div>
       </AuthChecker>
+      <Footer />
     </div>
   );
 };
