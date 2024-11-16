@@ -76,6 +76,7 @@ const DragAndDropUpload: React.FC = () => {
         }).replace(/\//g, '-');
 
         const filename = `${formData.institution}-${formData.userName}-${formattedDate}.${selectedFile.name.split('.').pop()}`;
+        
         await uploadFileToS3(selectedFile, filename);
         
         setToastInfo({
@@ -84,6 +85,8 @@ const DragAndDropUpload: React.FC = () => {
           title: 'Upload Successful',
           message: `File "${filename}" has been uploaded successfully`
         });
+        setPreview(null);
+        setSelectedFile(null);
       } catch (error) {
         console.error("Error uploading to S3:", error);
         setToastInfo({
