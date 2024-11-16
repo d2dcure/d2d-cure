@@ -3,7 +3,6 @@ import { useDropzone } from "react-dropzone";
 import { uploadFileToS3 } from "../../../utils/s3Utils";
 import { Spinner } from "@nextui-org/react";
 import { BiCheck, BiError } from "react-icons/bi";
-import NotificationPopup from "@/components/NotificationPopup";
 import { Button } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import { useUser } from '@/components/UserProvider';
@@ -12,11 +11,11 @@ import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
 import { useRouter } from 'next/router';
+import Toast from '@/components/Toast';
 
 const DragAndDropUpload: React.FC = () => {
   const { user } = useUser();
   const [isUploading, setIsUploading] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -26,6 +25,18 @@ const DragAndDropUpload: React.FC = () => {
     userName: user?.user_name || '',
     institution: user?.institution || '',
     date: new Date().toISOString().split('T')[0]
+  });
+
+  const [toastInfo, setToastInfo] = useState<{
+    show: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    show: false,
+    type: 'info',
+    title: '',
+    message: ''
   });
 
   React.useEffect(() => {
@@ -49,8 +60,12 @@ const DragAndDropUpload: React.FC = () => {
   const handleUpload = async () => {
     if (selectedFile) {
       setIsUploading(true);
-      setShowNotification(true);
-      setStatus('loading');
+      setToastInfo({
+        show: true,
+        type: 'info',
+        title: 'Uploading',
+        message: `Uploading ${selectedFile.name}...`
+      });
 
       try {
         const dateObj = new Date(formData.date);
@@ -62,15 +77,31 @@ const DragAndDropUpload: React.FC = () => {
 
         const filename = `${formData.institution}-${formData.userName}-${formattedDate}.${selectedFile.name.split('.').pop()}`;
         await uploadFileToS3(selectedFile, filename);
-        setStatus('success');
+        
+        setToastInfo({
+          show: true,
+          type: 'success',
+          title: 'Upload Successful',
+          message: `File "${filename}" has been uploaded successfully`
+        });
       } catch (error) {
         console.error("Error uploading to S3:", error);
-        setStatus('error');
+        setToastInfo({
+          show: true,
+          type: 'error',
+          title: 'Upload Failed',
+          message: `Failed to upload "${selectedFile.name}". Please try again.`
+        });
       } finally {
         setIsUploading(false);
       }
     } else {
-      alert("Please select a file");
+      setToastInfo({
+        show: true,
+        type: 'error',
+        title: 'No File Selected',
+        message: 'Please select a file to upload'
+      });
     }
   };
 
@@ -213,27 +244,13 @@ const DragAndDropUpload: React.FC = () => {
           </div>
         </div>
 
-        {showNotification && (
-          <NotificationPopup
-            show={showNotification}
-            title={
-              status === 'loading' ? 'Uploading' :
-              status === 'error' ? 'Error' :
-              'Success'
-            }
-            icon={
-              status === 'loading' ? <Spinner /> :
-              status === 'error' ? <BiError /> :
-              <BiCheck />
-            }
-            message={
-              status === 'loading' ? 'File uploading...' :
-              status === 'error' ? 'File upload failed' :
-              'File uploaded successfully'
-            }
-            onClose={() => setShowNotification(false)}
-          />
-        )}
+        <Toast
+          show={toastInfo.show}
+          type={toastInfo.type}
+          title={toastInfo.title}
+          message={toastInfo.message}
+          onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
+        />
       </AuthChecker>
     </>
   );

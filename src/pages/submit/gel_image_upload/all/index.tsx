@@ -5,8 +5,11 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
 import s3 from '../../../../../s3config';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner } from "@nextui-org/react";
-import { EyeIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { useUser } from '@/components/UserProvider';
+import Toast from '@/components/Toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 interface GelImage {
   key: string;
@@ -26,6 +29,39 @@ const ViewAllGelImages: React.FC = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(true);
   const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
+  const { user } = useUser();
+  const [sortDescriptor, setSortDescriptor] = useState<{
+    column: string;
+    direction: "ascending" | "descending";
+  }>({
+    column: "fileDate",
+    direction: "descending",
+  });
+  const [toastConfig, setToastConfig] = useState<{
+    show: boolean;
+    title: string;
+    message?: string;
+    type?: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    show: false,
+    title: '',
+  });
+  const [confirmationModal, setConfirmationModal] = useState<{
+    show: boolean;
+    imageKey: string | null;
+  }>({
+    show: false,
+    imageKey: null
+  });
+
+  const showToast = (title: string, message?: string, type: 'success' | 'error' | 'info' | 'warning' = 'error') => {
+    setToastConfig({
+      show: true,
+      title,
+      message,
+      type,
+    });
+  };
 
   useEffect(() => {
     const fetchGelImages = async () => {
@@ -78,12 +114,16 @@ const ViewAllGelImages: React.FC = () => {
                   };
                 }
               })
-          ).then(images => images.sort((a, b) => b.fileDate.localeCompare(a.fileDate)));
-          setGelImages(imagesWithMetadata);
+          );
+          // Sort the images by date in descending order before setting state
+          const sortedImages = imagesWithMetadata.sort((a, b) => 
+            new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime()
+          );
+          setGelImages(sortedImages);
         }
       } catch (err) {
         console.error('Error fetching gel images:', err);
-        setError('Failed to fetch gel images.');
+        showToast('Failed to fetch gel images', 'Please try again later');
       } finally {
         setIsLoading(false);
       }
@@ -144,6 +184,71 @@ const ViewAllGelImages: React.FC = () => {
     setSelectedImageData(gelImages[nextIndex]);
   };
 
+  const handleDeleteImage = async (imageKey: string) => {
+    setConfirmationModal({
+      show: true,
+      imageKey
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    const imageKey = confirmationModal.imageKey;
+    if (!imageKey) return;
+
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: imageKey
+      };
+
+      await s3.deleteObject(params).promise();
+      
+      setGelImages(prevImages => prevImages.filter(img => img.key !== imageKey));
+      
+      if (selectedImageData?.key === imageKey) {
+        setSelectedImageData(null);
+      }
+
+      showToast('Image deleted successfully', undefined, 'success');
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      showToast('Failed to delete image', 'Please try again later');
+    } finally {
+      setConfirmationModal({ show: false, imageKey: null });
+    }
+  };
+
+  const sortedItems = React.useMemo(() => {
+    let sortedData = [...gelImages];
+    
+    const getValue = (item: GelImage, column: string) => {
+      switch (column) {
+        case "preview":
+          return item.url;
+        case "institution":
+          return item.institution;
+        case "userName":
+          return item.userName;
+        case "fileDate":
+          return item.fileDate;
+        default:
+          return "";
+      }
+    };
+
+    if (sortDescriptor.column) {
+      sortedData.sort((a, b) => {
+        const first = getValue(a, sortDescriptor.column);
+        const second = getValue(b, sortDescriptor.column);
+        const cmp = first.localeCompare(second);
+
+        return sortDescriptor.direction === "descending" ? -cmp : cmp;
+      });
+    }
+
+    return sortedData;
+  }, [gelImages, sortDescriptor]);
+
   return (
     <>
       <NavBar />
@@ -170,22 +275,31 @@ const ViewAllGelImages: React.FC = () => {
                 </Button>
               </div>
 
-              {error && (
-                <div className="text-red-500 mb-4">
-                  {error}
-                </div>
-              )}
+              <Toast
+                show={toastConfig.show}
+                onClose={() => setToastConfig(prev => ({ ...prev, show: false }))}
+                title={toastConfig.title}
+                message={toastConfig.message}
+                type={toastConfig.type}
+              />
 
-              <Table aria-label="Gel images table" id="gel-images-table">
+              <Table 
+                aria-label="Gel images table" 
+                id="gel-images-table"
+                sortDescriptor={sortDescriptor}
+                onSortChange={(descriptor) => {
+                  setSortDescriptor(descriptor as { column: string; direction: "ascending" | "descending" });
+                }}
+              >
                 <TableHeader>
-                  <TableColumn>PREVIEW</TableColumn>
-                  <TableColumn>INSTITUTION</TableColumn>
-                  <TableColumn>UPLOADED BY</TableColumn>
-                  <TableColumn>DATE</TableColumn>
+                  <TableColumn key="preview">PREVIEW</TableColumn>
+                  <TableColumn key="institution">INSTITUTION</TableColumn>
+                  <TableColumn key="userName">UPLOADED BY</TableColumn>
+                  <TableColumn allowsSorting key="fileDate">DATE</TableColumn>
                   <TableColumn>ACTIONS</TableColumn>
                 </TableHeader>
                 <TableBody>
-                  {gelImages.map((image, index) => (
+                  {sortedItems.map((image, index) => (
                     <TableRow key={index}>
                       <TableCell>
                         <img
@@ -198,15 +312,27 @@ const ViewAllGelImages: React.FC = () => {
                       <TableCell>{image.userName}</TableCell>
                       <TableCell>{image.fileDate}</TableCell>
                       <TableCell>
-                        <Button
-                          isIconOnly
-                          variant="light"
-                          onClick={() => {
-                            setSelectedImageData(image);
-                          }}
-                        >
-                          <EyeIcon className="h-5 w-5" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            onClick={() => {
+                              setSelectedImageData(image);
+                            }}
+                          >
+                            <EyeIcon className="h-5 w-5" />
+                          </Button>
+                          {user?.user_name === image.userName && (
+                            <Button
+                              isIconOnly
+                              variant="light"
+                              color="danger"
+                              onClick={() => handleDeleteImage(image.key)}
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -309,7 +435,7 @@ const ViewAllGelImages: React.FC = () => {
                           <p className="font-medium">{selectedImageData.fileDate}</p>
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-4 space-y-2">
                           <a
                             href={selectedImageData.url}
                             target="_blank"
@@ -318,6 +444,20 @@ const ViewAllGelImages: React.FC = () => {
                           >
                             Download Image
                           </a>
+                          
+                          {user?.user_name === selectedImageData.userName && (
+                            <>
+                              <div className="text-xs text-gray-500 px-1">
+                                As the uploader, you can delete this image
+                              </div>
+                              <button
+                                onClick={() => handleDeleteImage(selectedImageData.key)}
+                                className="block w-full text-center text-red-500 hover:text-white py-2 px-4 rounded-lg transition-all border border-red-500 hover:border-red-600 hover:bg-red-500"
+                              >
+                                Delete Image
+                              </button>
+                            </>
+                          )}
                         </div>
 
                         <div className="text-center text-sm text-gray-500 pt-4">
@@ -367,6 +507,16 @@ const ViewAllGelImages: React.FC = () => {
           </div>
         </div>
       </AuthChecker>
+
+      <ConfirmationModal
+        isOpen={confirmationModal.show}
+        onClose={() => setConfirmationModal({ show: false, imageKey: null })}
+        onConfirm={handleConfirmDelete}
+        title="Delete Image"
+        message="Are you sure you want to delete this image?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 };
