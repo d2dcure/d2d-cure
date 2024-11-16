@@ -15,7 +15,7 @@ import pandas as pd
 import base64
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Turn debug mode on or off
 debug_mode = False
