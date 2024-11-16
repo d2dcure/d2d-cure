@@ -9,8 +9,8 @@ const Spinner = (props: SpinnerProps) => {
     }
   };
 
-  // Merge default props with any custom props passed in
-  return <NextUISpinner {...defaultProps} {...props} />;
+  // Spread props first, then defaultProps as fallback
+  return <NextUISpinner {...props} {...defaultProps} />;
 };
 
 export default Spinner; 

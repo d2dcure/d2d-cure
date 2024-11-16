@@ -10,6 +10,7 @@ import { AuthChecker } from '@/components/AuthChecker';
 import { RiSparklingFill } from "react-icons/ri";
 import StatusChip from '@/components/StatusChip';
 import { ErrorChecker } from '@/components/ErrorChecker';
+import s3 from '../../../s3config';
 
 interface CharacterizationData {
   curated: boolean;
@@ -21,6 +22,15 @@ interface CharacterizationData {
   resmut?: string;
 }
 
+interface GelImage {
+  key: string;
+  url: string;
+  filename: string;
+  institution: string;
+  userName: string;
+  fileDate: string;
+}
+
 const Dashboard = () => {
   const { user, loading: userLoading } = useUser();
   const [activeIndex, setActiveIndex] = useState(null);
@@ -29,6 +39,7 @@ const Dashboard = () => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [gelImages, setGelImages] = useState<GelImage[]>([]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -40,6 +51,7 @@ const Dashboard = () => {
 
     if (user.user_name) {
       fetchCharacterizationData(user.user_name);
+      fetchGelImages();
     }
   }, [user, userLoading]);
 
@@ -65,6 +77,62 @@ const Dashboard = () => {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch characterization data');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchGelImages = async () => {
+    const params = {
+      Bucket: 'd2dcurebucket',
+      Prefix: 'gel-images/',
+    };
+    try {
+      const data = await s3.listObjectsV2(params).promise();
+      if (data && data.Contents) {
+        const imagesWithMetadata = await Promise.all(
+          data.Contents
+            .filter((file): file is Required<typeof file> => 
+              file.Key !== undefined && 
+              !file.Key.endsWith('/') // Skip folder entries
+            )
+            .map(async (file) => {
+              try {
+                const metadata = await s3.headObject({
+                  Bucket: params.Bucket,
+                  Key: file.Key
+                }).promise();
+                
+                const pathParts = file.Key.split('/');
+                const formattedFilename = pathParts[pathParts.length - 2];
+                
+                const [institution, userName, ...dateParts] = formattedFilename.split('-');
+                const fileDate = dateParts.join('-').split('.')[0];
+                
+                return {
+                  key: file.Key,
+                  url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
+                  filename: formattedFilename,
+                  institution: institution || 'Unknown',
+                  userName: userName || 'Unknown',
+                  fileDate: fileDate || 'Unknown'
+                };
+              } catch (err) {
+                console.error(`Error fetching metadata for ${file.Key}:`, err);
+                return null;
+              }
+            })
+        );
+
+        // Filter out null values and user's images only
+        const userImages = imagesWithMetadata
+          .filter((img): img is GelImage => 
+            img !== null && img.userName === user?.user_name
+          )
+          .sort((a, b) => new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime());
+
+        setGelImages(userImages);
+      }
+    } catch (err) {
+      console.error('Error fetching gel images:', err);
     }
   };
 
@@ -307,31 +375,56 @@ const Dashboard = () => {
                 <div>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
-                    <Button color="primary" href="/submit/gel_image_upload" className="bg-[#06B7DB]">Upload New Image</Button>
+                    <Link href="/submit/gel_image_upload" passHref>
+                      <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
+                    </Link>
                   </div>
                   <Table 
                     aria-label="Gel Image Uploads"
                     classNames={{
-                      base: "max-h-[400px]", // Fixed height
+                      base: "max-h-[400px]",
                       table: "min-h-[100px]",
-                      wrapper: "max-h-[400px]" // Makes table scrollable
+                      wrapper: "max-h-[400px]"
                     }}
                   >
                     <TableHeader>
-                      <TableColumn>Gel ID</TableColumn>
-                      <TableColumn>Upload Date</TableColumn>
-                      <TableColumn>Associated Profile</TableColumn>
-                      <TableColumn>Comments</TableColumn>
+                      <TableColumn>PREVIEW</TableColumn>
+                      <TableColumn>DATE</TableColumn>
+                      <TableColumn>FILENAME</TableColumn>
+                      <TableColumn>INSTITUTION</TableColumn>
                     </TableHeader>
                     <TableBody>
-                      <TableRow key="1">
-                        <TableCell><img src="/resources/images/gel_image.png" alt="Gel" style={{ width: '50px' }} /></TableCell>
-                        <TableCell>04-13-2022</TableCell>
-                        <TableCell>Q124W</TableCell>
-                        <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
-                          Need to be revised
-                        </TableCell>
-                      </TableRow>
+                      {(isLoading || gelImages.length === 0) ? (
+                        <TableRow>
+                          <TableCell>
+                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        gelImages.map((image, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <img
+                                src={image.url}
+                                alt={`Gel Image ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            </TableCell>
+                            <TableCell>{image.fileDate}</TableCell>
+                            <TableCell>{image.filename}</TableCell>
+                            <TableCell>{image.institution}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
