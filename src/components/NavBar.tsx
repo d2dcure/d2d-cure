@@ -192,7 +192,7 @@ const NavBar = () => {
                 >
                   <div className="p-1">
                     <Link 
-                      href="/resources/StructuredFiles" 
+                      href="/resources/structuredfiles" 
                       className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
                     >
                       <FileText className="w-4 h-4 stroke-[1.5]" />
