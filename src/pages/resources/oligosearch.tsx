@@ -87,7 +87,7 @@ const OligoSearchPage = () => {
           <Breadcrumbs
           >
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
-            <BreadcrumbItem>Resources</BreadcrumbItem>
+            <BreadcrumbItem href="/resources">Resources</BreadcrumbItem>
             <BreadcrumbItem>Oligo Search</BreadcrumbItem>
           </Breadcrumbs>
           

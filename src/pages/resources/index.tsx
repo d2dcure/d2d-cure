@@ -13,7 +13,7 @@ const Resources = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-36">
           <div className="flex flex-col justify-center">
             <Breadcrumbs className="mb-4">
-              <BreadcrumbItem>Home</BreadcrumbItem>
+              <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem>Resources</BreadcrumbItem>
             </Breadcrumbs>
             <div className="pt-4 lg:pt-10">

@@ -412,8 +412,8 @@ const DataPage = () => {
 
         <div className="max-w-7xl mx-auto">
           <Breadcrumbs className="mb-2">
-            <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>Database</BreadcrumbItem>
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/database">Database</BreadcrumbItem>
             <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
           </Breadcrumbs>
 

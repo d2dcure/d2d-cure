@@ -13,10 +13,8 @@ export const uploadFileToS3 = (file: File, gelId: string) => {
   s3.upload(params, (err: any, data: any) => {
     if (err) {
       console.error("Error uploading file:", err);
-      alert("Error uploading file.");
     } else {
       console.log("File uploaded successfully:", data.Location);
-      alert(`File uploaded successfully: ${data.Location}`);
     }
   });
 };

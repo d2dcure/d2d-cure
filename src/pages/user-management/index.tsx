@@ -282,10 +282,10 @@ const handleDeleteFirebase = async () => {
         )}
 
         <div className="max-w-7xl mx-auto">
-          <Breadcrumbs className="mb-2">
-            <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>Management</BreadcrumbItem>
-            <BreadcrumbItem>Users</BreadcrumbItem>
+          <Breadcrumbs className="mb-4">
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/user-settings">User Settings</BreadcrumbItem>
+            <BreadcrumbItem>User Management</BreadcrumbItem>
           </Breadcrumbs>
 
           <div className="pt-3">
