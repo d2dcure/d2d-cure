@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  confirmButtonColor?: string;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -17,9 +18,17 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   title,
   message,
   confirmText = 'OK',
-  cancelText = 'Cancel'
+  cancelText = 'Cancel',
+  confirmButtonColor
 }) => {
   if (!isOpen) return null;
+
+  const getConfirmButtonClasses = () => {
+    if (confirmButtonColor === 'danger') {
+      return 'px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors';
+    }
+    return 'px-4 py-2 text-sm font-medium text-white bg-[#06B7DB] hover:bg-[#05a6c7] rounded-md transition-colors';
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -45,7 +54,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               onConfirm();
               onClose();
             }}
-            className="px-4 py-2 text-sm font-medium text-white bg-[#06B7DB] hover:bg-[#05a6c7] rounded-md transition-colors"
+            className={getConfirmButtonClasses()}
           >
             {confirmText}
           </button>
