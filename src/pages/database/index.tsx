@@ -34,8 +34,8 @@ const DatabasePage = () => {
       <NavBar />
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
         <div className="max-w-7xl mx-auto">
-          <Breadcrumbs className="mb-2">
-            <BreadcrumbItem>Home</BreadcrumbItem>
+          <Breadcrumbs className="mb-4">
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem>Database</BreadcrumbItem>
           </Breadcrumbs>
 

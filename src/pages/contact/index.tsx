@@ -95,7 +95,7 @@ const ContactUs = () => {
       <NavBar />
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
         <Breadcrumbs className="mb-4">
-          <BreadcrumbItem>Home</BreadcrumbItem>
+          <BreadcrumbItem href="/">Home</BreadcrumbItem>
           <BreadcrumbItem>Contact Us</BreadcrumbItem>
         </Breadcrumbs>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10 mb-20">

@@ -12,8 +12,8 @@ const BglBPage = () => {
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
         <div className="col-span-1 items-center">
           <Breadcrumbs className="mb-2">
-            <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>About</BreadcrumbItem>
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/about">About</BreadcrumbItem>
             <BreadcrumbItem>β-glucosidase B</BreadcrumbItem>
           </Breadcrumbs>
           <div className="pt-6">

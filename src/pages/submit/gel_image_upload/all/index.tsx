@@ -3,7 +3,7 @@ import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
-import s3 from '../../../../s3config';
+import s3 from '../../../../../s3config';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
 import { EyeIcon } from "@heroicons/react/24/outline";
 
@@ -74,9 +74,10 @@ const ViewAllGelImages: React.FC = () => {
         <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
           <div className="max-w-7xl mx-auto">
             <Breadcrumbs className="mb-2">
-              <BreadcrumbItem>Home</BreadcrumbItem>
-              <BreadcrumbItem>Database</BreadcrumbItem>
-              <BreadcrumbItem>View All Gel Images</BreadcrumbItem>
+              <BreadcrumbItem href="/">Home</BreadcrumbItem>
+              <BreadcrumbItem href="/submit">Data Analysis & Submission</BreadcrumbItem>
+              <BreadcrumbItem href="/submit/gel_image_upload">Gel Images</BreadcrumbItem>
+              <BreadcrumbItem href="/submit/gel_image_upload/all">View All Gel Images</BreadcrumbItem>
             </Breadcrumbs>
 
             <div className="pt-8">

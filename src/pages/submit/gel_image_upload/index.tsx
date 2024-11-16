@@ -75,9 +75,9 @@ const DragAndDropUpload: React.FC = () => {
         <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
           <div className="max-w-7xl mx-auto">
             <Breadcrumbs className="mb-2">
-              <BreadcrumbItem>Home</BreadcrumbItem>
-              <BreadcrumbItem>Database</BreadcrumbItem>
-              <BreadcrumbItem>Gel Image Upload</BreadcrumbItem>
+              <BreadcrumbItem href="/">Home</BreadcrumbItem>
+              <BreadcrumbItem href="/submit">Data Analysis & Submission</BreadcrumbItem>
+              <BreadcrumbItem href="/submit/gel_image_upload">Gel Image Upload</BreadcrumbItem>
             </Breadcrumbs>
 
             <div className="pt-8">

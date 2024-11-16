@@ -53,8 +53,8 @@ const ProfileSettings = () => {
         <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
           <div className="max-w-7xl mx-auto">
             <Breadcrumbs className="mb-2">
-              <BreadcrumbItem>Home</BreadcrumbItem>
-              <BreadcrumbItem>Account Settings</BreadcrumbItem>
+              <BreadcrumbItem href="/">Home</BreadcrumbItem>
+              <BreadcrumbItem href="/user-settings">User Settings</BreadcrumbItem>
             </Breadcrumbs>
 
             <div className="pt-8">
