@@ -53,7 +53,7 @@ const LogoutSuccessNotification = () => {
 
   return (
     <div className={`
-      fixed top-4 right-4 z-50 transform transition-all duration-700 ease-out
+      fixed top-4 right-4 z-[60] transform transition-all duration-700 ease-out
       ${mounted ? 'translate-y-0' : '-translate-y-[200%]'}
       ${showSuccessNotif ? 'opacity-100' : 'opacity-0 pointer-events-none'}
     `}>
