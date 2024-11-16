@@ -95,7 +95,7 @@ const LoginSuccessNotification = () => {
             Dashboard
           </Link>
           <Link 
-            href="/settings"
+            href="/user-settings"
             className="px-3 py-1.5 text-xs text-[#06B7DB] bg-[#06B7DB]/10 rounded-md hover:bg-[#06B7DB]/20 transition-colors font-medium"
           >
             Settings
