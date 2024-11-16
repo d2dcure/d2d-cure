@@ -125,9 +125,9 @@ const NavBar = () => {
                 </Link>
 
                 <div
-                  className={`absolute top-full left-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
+                  className={`absolute top-full left-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
                     activeDropdown === 'database'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >
@@ -184,9 +184,9 @@ const NavBar = () => {
                 </Link>
 
                 <div
-                  className={`absolute top-full left-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
+                  className={`absolute top-full left-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
                     activeDropdown === 'resources'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >
@@ -257,9 +257,9 @@ const NavBar = () => {
                 </div>
 
                 <div
-                  className={`absolute top-full right-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right z-50 ${
+                  className={`absolute top-full right-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right z-50 ${
                     activeDropdown === 'user'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >

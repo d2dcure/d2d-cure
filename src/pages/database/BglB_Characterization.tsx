@@ -367,6 +367,62 @@ const DataPage = () => {
     scrollToPosition('top');
   };
 
+  // Add this function near other utility functions
+  const downloadCSV = () => {
+    // Only include curated data
+    const curatedData = characterizationData.filter(data => data.curated);
+    
+    // Define headers for CSV
+    const headers = [
+      'Variant',
+      'Yield (mg/mL)',
+      'KM (mM)',
+      'KM SD',
+      'kcat (1/s)',
+      'kcat SD',
+      'kcat/KM (1/mM*s)',
+      'T50 (°C)',
+      'T50 SD',
+      'Tm (°C)',
+      'Tm SD',
+      'Rosetta Score',
+      'Institution'
+    ];
+
+    // Transform data into CSV rows
+    const csvRows = curatedData.map(data => {
+      const variant = getVariantDisplay(data.resid, data.resnum, data.resmut);
+      return [
+        variant,
+        data.yield_avg || '',
+        data.KM_avg || '',
+        data.KM_SD || '',
+        data.kcat_avg || '',
+        data.kcat_SD || '',
+        data.kcat_over_KM || '',
+        data.T50 || '',
+        data.T50_SD || '',
+        data.Tm || '',
+        data.Tm_SD || '',
+        data.Rosetta_score || '',
+        data.institution || ''
+      ].join(',');
+    });
+
+    // Combine headers and rows
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'BglB_characterization_data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <ErrorChecker 
       isError={isError} 
@@ -540,6 +596,7 @@ const DataPage = () => {
                             className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB]"
                             variant="bordered"
                             size="sm"
+                            onClick={downloadCSV}
                           >
                             Download CSV file
                           </Button>
