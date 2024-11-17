@@ -338,6 +338,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
       if (response1.status === 200) {
         const raw_data_id = response1.data.kineticRawDataId;
+        setKineticRawDataEntryData(response1.data);
 
         // Now update CharacterizationData
         const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {
@@ -444,10 +445,18 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                 ))}
               </tbody>
             </table>
-            <p>Yield: {kineticRawDataEntryData.yield} {kineticRawDataEntryData.yield_units}</p>
-            <p className="mb-2">Dilution: {kineticRawDataEntryData.dilution}x</p>
-            <p>Protein purified on {kineticRawDataEntryData.purification_date} and assayed on {kineticRawDataEntryData.assay_date}.</p>
-            <p>Data uploaded by {kineticRawDataEntryData.user_name} and last updated on {kineticRawDataEntryData.updated}</p>
+            <p>
+              Yield: {kineticRawDataEntryData?.yield ?? 'N/A'} {kineticRawDataEntryData?.yield_units ?? ''}
+            </p>
+            <p className="mb-2">
+              Dilution: {kineticRawDataEntryData?.dilution ?? 'N/A'}x
+            </p>
+            <p>
+              Protein purified on {kineticRawDataEntryData?.purification_date ?? 'N/A'} and assayed on {kineticRawDataEntryData?.assay_date ?? 'N/A'}.
+            </p>
+            <p>
+              Data uploaded by {kineticRawDataEntryData?.user_name ?? 'Unknown'} and last updated on {kineticRawDataEntryData?.updated ?? 'N/A'}.
+            </p>
           </div>
 
           <button
