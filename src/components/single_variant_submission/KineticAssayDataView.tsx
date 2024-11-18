@@ -369,6 +369,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
       if (response1.status === 200) {
         const raw_data_id = response1.data.kineticRawDataId;
+        setKineticRawDataEntryData(response1.data);
 
         // Now update CharacterizationData
         const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {

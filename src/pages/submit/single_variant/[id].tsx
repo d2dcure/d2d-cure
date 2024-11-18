@@ -461,7 +461,7 @@ const SingleVariant = () => {
                     className="px-4 py-2 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
                     onClick={() => {/* Add delete logic here */}}
                   >
-                    Delete Profile!!?!?! test
+                    Delete Profile
                   </button>
                 </div>
               </div>
