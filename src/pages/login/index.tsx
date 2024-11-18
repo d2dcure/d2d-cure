@@ -190,12 +190,16 @@ const Login = () => {
            style={{ maxWidth: '100%' }}>
         <div className="w-full max-w-[380px] mx-auto">
           <div className="mb-8">
-            <img 
-              src="/resources/images/D2D_Logo.svg" 
-              alt="D2D Logo" 
-              className="h-7 mb-6"
-            />
-            <h1 className="text-2xl font-semibold mb-2">Sign in to your account</h1>
+            <Link href="/">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-6 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            <div className="flex justify-between items-center mb-2">
+              <h1 className="text-2xl font-semibold">Sign in to your account</h1>
+            </div>
             <p className="text-sm text-gray-600">
               Not a member?{' '}
               <Link href="/signup" className="text-[#06B7DB] hover:underline">

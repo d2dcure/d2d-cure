@@ -12,7 +12,6 @@ import Link from 'next/link';
 import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
-import { EyeIcon } from "@/components/icons/EyeIcon";
 import { Tooltip } from "@nextui-org/react";
 import confetti from 'canvas-confetti';
 
@@ -224,28 +223,25 @@ const SingleVariant = () => {
 
     const renderAdditionalInfo = (item: string) => {
       if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
-        return `ΔΔG = ${entryData.Rosetta_score} REU`;
-      }
-      if (item === "Plasmid sequence verified" && entryData.ab1_filename) {
         return (
-          <button
-            className="text-[#06B7DB] hover:underline"
-            onClick={() => handleAB1Download(entryData.ab1_filename)}
-          >
-            (Download)
-          </button>
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">ΔΔG =</span>
+            <span>{entryData.Rosetta_score} REU</span>
+          </div>
         );
       }
+
       if (item === "Expressed" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
-        return `c = ${entryData.yield_avg} ${yieldUnitsDisplay}`;
+        return (
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">c =</span>
+            <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
+          </div>
+        );
       }
-      if (
-        item === "Kinetic assay data uploaded" &&
-        entryData.KM_avg !== null &&
-        entryData.kcat_avg !== null
-      ) {
-        // Parse values to numbers and round them
+
+      if (item === "Kinetic assay data uploaded" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
         const kmAvg = parseFloat(entryData.KM_avg);
         const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
         const kcatAvg = parseFloat(entryData.kcat_avg);
@@ -257,45 +253,44 @@ const SingleVariant = () => {
         const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
 
         return (
-          <>
-            K<sub>M</sub> = {kmAvgRounded}
-            {kmSdRounded !== null ? (
-              <>
-                {" "}
-                &plusmn; {kmSdRounded}
-              </>
-            ) : null}{" "}
-            mM; K<sub>cat</sub> = {kcatAvgRounded}
-            {kcatSdRounded !== null ? (
-              <>
-                {" "}
-                &plusmn; {kcatSdRounded}
-              </>
-            ) : null}{" "}
-            min<sup>-1</sup>
-          </>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <span className="font-semibold">K<sub>M</sub> =</span>
+              <span>
+                {kmAvgRounded}
+                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold">k<sub>cat</sub> =</span>
+              <span>
+                {kcatAvgRounded}
+                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
+              </span>
+            </div>
+          </div>
         );
       }
 
       if (item === "Thermostability assay data uploaded" && entryData.T50 !== null) {
-
         const t50 = parseFloat(entryData.T50).toFixed(1); 
         const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
         return (
-          <>
-            T<sub>50</sub> = {t50} &plusmn; {t50sd}°C
-          </>
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">T<sub>50</sub> =</span>
+            <span>{t50} ± {t50sd}°C</span>
+          </div>
         );
       }
 
       if (item === "Melting point values uploaded" && entryData.Tm !== null) {
-
         const tm = parseFloat(entryData.Tm).toFixed(1); 
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
-          <>
-            T<sub>M</sub> = {tm} &plusmn; {tmSD}°C
-          </>
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">T<sub>M</sub> =</span>
+            <span>{tm} ± {tmSD}°C</span>
+          </div>
         );
       }
 
@@ -306,43 +301,44 @@ const SingleVariant = () => {
       <Table 
         aria-label="Checklist items"
         classNames={{
-          base: "max-h-[600px]",
+          base: "max-h-[700px]",
           table: "min-h-[100px]",
-          td: "py-3 text-sm",
-          th: "text-sm",
+          td: "h-[52px]",
+          th: "h-[52px] text-sm",
+          tr: "h-[52px]",
         }}
       >
         <TableHeader>
           <TableColumn>Status</TableColumn>
           <TableColumn>Checklist Item</TableColumn>
-          <TableColumn>Additional Info</TableColumn>
+          <TableColumn align="start">Additional Info</TableColumn>
           <TableColumn align="center">Actions</TableColumn>
         </TableHeader>
         <TableBody>
           {checklistItems.map((item, index) => (
-            <TableRow key={index}>
+            <TableRow key={index} className="h-[52px]">
               <TableCell>
                 <span className={getStatusStyle(item).className}>
                   {getStatusStyle(item).text}
                 </span>
               </TableCell>
               <TableCell>{item}</TableCell>
-              <TableCell className="text-center">
-                {renderAdditionalInfo(item)}
+              <TableCell className="text-left font-medium text-gray-600">
+                {item === "Plasmid sequence verified" && entryData.ab1_filename ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="text-[#06B7DB] hover:underline text-sm font-semibold"
+                      onClick={() => handleAB1Download(entryData.ab1_filename)}
+                    >
+                      Download
+                    </button>
+                  </div>
+                ) : (
+                  renderAdditionalInfo(item)
+                )}
               </TableCell>
               <TableCell>
                 <div className="relative flex items-center justify-center gap-2">
-                  <Tooltip content="View Details">
-                    <span 
-                      className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                      onClick={() => {
-                        setCurrentView('detail');
-                        setSelectedDetail(item);
-                      }}
-                    >
-                      <EyeIcon />
-                    </span>
-                  </Tooltip>
                   <Tooltip content="Edit">
                     <span 
                       className="text-lg text-default-400 cursor-pointer active:opacity-50"

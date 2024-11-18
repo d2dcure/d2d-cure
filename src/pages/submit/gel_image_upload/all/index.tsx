@@ -21,7 +21,11 @@ interface GelImage {
   fileDate: string;
 }
 
-const ViewAllGelImages: React.FC = () => {
+interface ViewAllGelImagesProps {
+  embedded?: boolean;
+}
+
+const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false }) => {
   const router = useRouter();
   const [gelImages, setGelImages] = useState<GelImage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -285,16 +289,18 @@ const ViewAllGelImages: React.FC = () => {
 
   return (
     <>
-      <NavBar />
+      {!embedded && <NavBar />}
       <AuthChecker minimumStatus="student">
-        <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <Breadcrumbs className="mb-2">
-              <BreadcrumbItem href="/">Home</BreadcrumbItem>
-              <BreadcrumbItem href="/submit">Data Analysis & Submission</BreadcrumbItem>
-              <BreadcrumbItem href="/submit/gel_image_upload">Gel Images</BreadcrumbItem>
-              <BreadcrumbItem href="/submit/gel_image_upload/all">View All Gel Images</BreadcrumbItem>
-            </Breadcrumbs>
+        <div className={embedded ? "" : "px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white"}>
+          <div className={embedded ? "" : "max-w-7xl mx-auto"}>
+            {!embedded && (
+              <Breadcrumbs className="mb-2">
+                <BreadcrumbItem href="/">Home</BreadcrumbItem>
+                <BreadcrumbItem href="/submit">Data Analysis & Submission</BreadcrumbItem>
+                <BreadcrumbItem href="/submit/gel_image_upload">Gel Images</BreadcrumbItem>
+                <BreadcrumbItem href="/submit/gel_image_upload/all">View All Gel Images</BreadcrumbItem>
+              </Breadcrumbs>
+            )}
 
             <div className="pt-8">
               <div className="flex justify-between items-center mb-8">
@@ -365,8 +371,8 @@ const ViewAllGelImages: React.FC = () => {
                   setSortDescriptor(descriptor as { column: string; direction: "ascending" | "descending" });
                 }}
                 classNames={{
-                  wrapper: "max-h-[600px]",
-                  table: "min-h-[400px]",
+                  // wrapper: "max-h-[600px]",
+                  // table: "min-h-[400px]",
                 }}
               >
                 <TableHeader className="sticky top-0 z-10 bg-white">
@@ -675,7 +681,7 @@ const ViewAllGelImages: React.FC = () => {
           </div>
         </div>
       </AuthChecker>
-      <Footer />
+      {!embedded && <Footer />}
 
       <ConfirmationModal
         isOpen={confirmationModal.show}

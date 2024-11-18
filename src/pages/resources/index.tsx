@@ -81,6 +81,7 @@ const Resources = () => {
               className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
               as={Link}
               href={item.link}
+              isPressable
             >
               <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
                 <h3 className="pl-4 pt-2">{item.title}</h3>
@@ -118,6 +119,7 @@ const Resources = () => {
               className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
               as={Link}
               href={item.link}
+              isPressable
             >
               <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
                 <h3 className="pl-4 pt-2">{item.title}</h3>
@@ -150,6 +152,7 @@ const Resources = () => {
               className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
               as={Link}
               href={item.link}
+              isPressable
             >
               <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
                 <h3 className="pl-4 pt-2">{item.title}</h3>

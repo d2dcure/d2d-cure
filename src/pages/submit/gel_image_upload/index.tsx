@@ -12,6 +12,7 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
 import { useRouter } from 'next/router';
 import Toast from '@/components/Toast';
+import { Card, CardBody } from "@nextui-org/react";
 
 const DragAndDropUpload: React.FC = () => {
   const { user } = useUser();

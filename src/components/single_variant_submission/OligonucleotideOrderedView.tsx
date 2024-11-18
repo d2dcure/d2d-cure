@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
+import {Select, SelectItem} from "@nextui-org/select";
 
 interface OligonucleotideOrderedViewProps {
   entryData: any;
@@ -38,43 +40,60 @@ const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <button 
-        className="text-blue-500 hover:text-blue-700"
-        onClick={() => setCurrentView('checklist')}
-      >
-        &lt; Back to Checklist
-      </button>
-      <h2 className="text-2xl font-bold text-left">Oligonucleotide Ordered?</h2>
-      <div className="flex flex-col space-y-2">
-        <label className="block">
-          Order Status:
-          <select 
-            value={oligoOrdered} 
-            onChange={(e) => setOligoOrdered(e.target.value)}
-            className="mt-1 block w-full p-2 bg-gray-100 border border-gray-300 rounded"
-          >
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </label>
-      </div>
-
-      {/* Current Order Status */}
-      <p className="text-lg font-semibold">
-        Current order status: {entryData.oligo_ordered ? 'Yes' : 'No'}
-      </p>
-
-      {/* Save button */}
-      <div className="flex justify-start space-x-2">
+    <Card className="bg-white">
+      <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
         <button 
-          onClick={updateOligoOrdered} 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
+          onClick={() => setCurrentView('checklist')}
         >
-          Save
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to checklist
         </button>
-      </div>
-    </div>
+        <div className="flex items-center gap-3 mb-3">
+          <h2 className="text-xl font-bold text-gray-800">Oligonucleotide Order Status</h2>
+          <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+            entryData.oligo_ordered 
+              ? "text-green-700 bg-green-100" 
+              : "text-yellow-700 bg-yellow-100"
+          }`}>
+            {entryData.oligo_ordered ? "Complete" : "Incomplete"}
+          </span>
+        </div>
+        <p className="text-sm text-gray-600">
+          Update the oligonucleotide order status
+        </p>
+      </CardHeader>
+
+      <CardBody className="px-6 py-6 space-y-6">
+        <div className="space-y-4">
+          <Select
+            label="Order Status"
+            placeholder={`${entryData.oligo_ordered ? 'Yes' : 'No'}`}
+            value={oligoOrdered}
+            onChange={(e) => setOligoOrdered(e.target.value)}
+            className="max-w-xs"
+          >
+            <SelectItem key="yes" value="yes">Yes</SelectItem>
+            <SelectItem key="no" value="no">No</SelectItem>
+          </Select>
+        </div>
+      </CardBody>
+
+      <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
+        <button 
+          onClick={updateOligoOrdered}
+          className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2"
+        >
+          Submit
+        </button>
+        
+        <span className="text-xs text-gray-500">
+          Selection required
+        </span>
+      </CardFooter>
+    </Card>
   );
 };
 

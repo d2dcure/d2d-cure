@@ -192,7 +192,7 @@ const NavBar = () => {
                 >
                   <div className="p-1">
                     <Link 
-                      href="/resources/structuredfiles" 
+                      href="/resources/StructuredFiles" 
                       className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
                     >
                       <FileText className="w-4 h-4 stroke-[1.5]" />
@@ -317,6 +317,20 @@ const NavBar = () => {
           className={`md:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
         >
           <div className="pt-2 pb-4 space-y-1">
+            {/* Add Dashboard link for mobile */}
+            {user && (
+              <Link
+                href="/dashboard"
+                className={`block px-4 py-2 rounded-lg transition-colors duration-200 ${
+                  isActiveLink('/dashboard')
+                    ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                    : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
+
             {/* Mobile Database Dropdown */}
             <div>
               <button
@@ -380,7 +394,7 @@ const NavBar = () => {
 
               <div className={`transition-all duration-200 ${activeDropdown === 'mobile-resources' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <Link 
-                  href="/resources/structuredfiles" 
+                  href="/resources/StructuredFiles" 
                   className="flex items-center gap-2 px-8 py-2 text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                 >
                   <FileText className="w-4 h-4 stroke-[1.5]" />

@@ -1,11 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import s3 from '../../../s3config';
 import { useUser } from '@/components/UserProvider';
+import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
+import { useRouter } from 'next/router';
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@nextui-org/table";
+import { useDropzone } from "react-dropzone";
+import { Spinner } from "@nextui-org/react";
+import { DeleteIcon } from "@nextui-org/shared-icons";
+import Toast from '@/components/Toast';
 
 interface GelUploadedViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
   updateEntryData: (newData: any) => void; 
+}
+
+// Add new form data interface
+interface UploadFormData {
+  userName: string;
+  institution: string;
+  date: string;
 }
 
 const GelUploadedView: React.FC<GelUploadedViewProps> = ({
@@ -14,12 +28,41 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
   updateEntryData
 }) => {
   const { user } = useUser();
+  const router = useRouter();
   const [gelImages, setGelImages] = useState<any[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialImage, setInitialImage] = useState<string | null>(null);
+  const [view, setView] = useState<'choose' | 'upload' | 'select'>('choose');
+  const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [toastInfo, setToastInfo] = useState<{
+    show: boolean;
+    type: 'success' | 'error' | 'info';
+    message: string;
+  }>({
+    show: false,
+    type: 'info',
+    message: ''
+  });
+  const [formData, setFormData] = useState<UploadFormData>({
+    userName: user?.user_name || '',
+    institution: user?.institution || '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  // Update form data when user data is available
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        userName: user.user_name || '',
+        institution: user.institution || ''
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchGelImages = async () => {
@@ -55,37 +98,66 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
     fetchGelImages();
   }, [entryData.institution, entryData.gel_filename]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Ensure the file is either a PNG or JPG
-    const validTypes = ['image/png', 'image/jpeg'];
-    if (!validTypes.includes(file.type)) {
-      setError('Only PNG and JPG file types are allowed.');
-      return;
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreview(URL.createObjectURL(file));
     }
+  }, []);
 
-    // Construct the new filename
-    const newFileName = `${user.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${user.user_name}.${file.type.split('/')[1]}`;
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif']
+    }
+  });
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setUploading(true);
+    const dateObj = new Date(formData.date);
+    const formattedDate = dateObj.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: '2-digit'
+    }).replace(/\//g, '-');
+
+    const newFileName = `${formData.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
+    
     const params = {
       Bucket: 'd2dcurebucket',
       Key: `gel-images/${newFileName}`,
-      Body: file,
+      Body: selectedFile,
     };
 
-    setUploading(true);
     try {
       await s3.upload(params).promise();
-      console.log('File uploaded successfully:', newFileName);
-      setUploadedFileName(newFileName); // Save the new filename for later use
-      setSelectedImage(newFileName); // Set the newly uploaded file as the selected image
-      setInitialImage(`https://d2dcurebucket.s3.amazonaws.com/gel-images/${newFileName}`); // Display newly uploaded image
-      setUploading(false);
-      setError(null);
+      setUploadedFileName(newFileName);
+      setSelectedImage(`gel-images/${newFileName}`);
+      setInitialImage(`https://${params.Bucket}.s3.amazonaws.com/gel-images/${newFileName}`);
+      await handleSave();
+      
+      // Update the entry data locally
+      updateEntryData({
+        ...entryData,
+        gel_filename: newFileName
+      });
+
+      setToastInfo({
+        show: true,
+        type: 'success',
+        message: 'File uploaded and linked successfully'
+      });
     } catch (err) {
       console.error('Error uploading file:', err);
-      setError('File upload failed. Please try again.');
+      setToastInfo({
+        show: true,
+        type: 'error',
+        message: 'Failed to upload file'
+      });
+    } finally {
       setUploading(false);
     }
   };
@@ -120,80 +192,253 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <button
-        className="text-blue-500 hover:text-blue-700"
-        onClick={() => setCurrentView('checklist')}
-      >
-        &lt; Back to Checklist
-      </button>
+    <Card className="bg-white">
+      <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
+        <button 
+          className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
+          onClick={() => {
+            if (view === 'choose') {
+              setCurrentView('checklist');
+            } else {
+              setView('choose');
+            }
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          {view === 'choose' ? 'Back to checklist' : 'Back to options'}
+        </button>
+        <div className="flex items-center gap-3 mb-3">
+          <h2 className="text-xl font-bold text-gray-800">
+            {view === 'choose' ? 'Gel Image Upload' : 
+             view === 'upload' ? 'Upload New Gel Image' : 'Select Existing Gel Image'}
+          </h2>
+          {view === 'choose' && (
+            <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+              entryData.gel_filename 
+                ? "text-green-700 bg-green-100" 
+                : "text-yellow-700 bg-yellow-100"
+            }`}>
+              {entryData.gel_filename ? "Complete" : "Incomplete"}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-600">
+          {view === 'choose' 
+            ? 'Choose how you would like to add your gel image'
+            : view === 'upload' 
+              ? 'Upload a new gel image from your computer'
+              : 'Select from your previously uploaded gel images'}
+        </p>
+      </CardHeader>
 
-      <h2 className="text-2xl font-bold">Gel Uploaded?</h2>
+      <CardBody className="px-6 py-6">
+        {view === 'choose' ? (
+          <CardBody className="px-6 py-6">
+            {initialImage ? (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">Currently Selected Image</h3>
+                </div>
+                <div className="border rounded-lg overflow-hidden bg-white">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={initialImage} 
+                        alt="Selected gel" 
+                        className="h-16 w-16 object-cover rounded"
+                      />
+                      <span className="text-sm text-gray-600">
+                        {selectedImage?.split('/').pop()}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setInitialImage(null);
+                        setSelectedImage(null);
+                        updateEntryData({ ...entryData, gel_filename: null });
+                      }}
+                      className="text-red-600 hover:text-red-700 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={() => setView('upload')}
+                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
+                  hover:bg-blue-50/50 transition-all group text-left"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Upload New Gel Image</h3>
+                    <p className="text-sm text-gray-500">
+                      Upload a new gel image from your computer
+                    </p>
+                  </div>
+                </div>
+              </button>
 
-      {error && <div className="text-red-500">{error}</div>}
+              <button
+                onClick={() => setView('select')}
+                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
+                  hover:bg-blue-50/50 transition-all group text-left"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Select from Existing Images</h3>
+                    <p className="text-sm text-gray-500">
+                      Choose from previously uploaded gel images
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </CardBody>
+        ) : view === 'upload' ? (
+          <div className="grid grid-cols-1 gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                User Name
+              </label>
+              <input
+                type="text"
+                value={formData.userName}
+                disabled
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50"
+              />
+            </div>
 
-      <div className="mt-4">
-        <input
-          type="file"
-          accept="image/png, image/jpeg"
-          onChange={handleFileUpload}
-          disabled={uploading}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        />
-        {uploading && <p>Uploading...</p>}
-      </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Institution
+              </label>
+              <input
+                type="text"
+                value={formData.institution}
+                disabled
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50"
+              />
+            </div>
 
-      <div className="mt-4">
-        <p><strong>Selected image:</strong> {selectedImage ? selectedImage.split('/').pop() : 'None'}</p>
-        {initialImage && (
-          <div className="mt-2">
-            <img src={initialImage} alt="Selected Gel Image" className="w-48 h-48 object-cover border border-gray-300 rounded" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Gel Image
+              </label>
+              <div {...getRootProps()}>
+                {preview ? (
+                  <div className="mt-1 p-4 border border-gray-300 rounded-md">
+                    <div className="relative w-full h-48">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreview(null);
+                          setSelectedFile(null);
+                        }}
+                        className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow-md hover:bg-gray-100"
+                      >
+                        <DeleteIcon className="h-5 w-5 text-gray-600" />
+                      </button>
+                      <img 
+                        src={preview} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div className="space-y-1 text-center">
+                      <div className="flex text-sm text-gray-600">
+                        <input {...getInputProps()} />
+                        <p>Drag and drop a file here, or click to select</p>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 50MB</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Up to 50MB
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Table aria-label="Gel images table">
+              <TableHeader>
+                <TableColumn>PREVIEW</TableColumn>
+                <TableColumn>FILENAME</TableColumn>
+                <TableColumn>UPLOAD DATE</TableColumn>
+                <TableColumn>ACTION</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {gelImages.map((image, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <img src={image.url} alt="" className="h-16 w-16 object-cover rounded" />
+                    </TableCell>
+                    <TableCell>{image.key.split('/').pop()}</TableCell>
+                    <TableCell>
+
+-                    </TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => {
+                          setSelectedImage(image.key);
+                          setInitialImage(image.url);
+                          handleSave();
+                        }}
+                        className="text-[#06B7DB] hover:text-[#05a5c6]"
+                      >
+                        Select
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
-      </div>
+      </CardBody>
 
-      {gelImages.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Select a Previous Gel Image</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {gelImages.map((image, index) => (
-              <div key={index} className="flex items-center">
-                <input
-                  type="radio"
-                  id={`gel-image-${index}`}
-                  name="gel-image"
-                  value={image.key}
-                  onChange={() => {
-                    setSelectedImage(image.key);
-                    setInitialImage(image.url);
-                  }}
-                  checked={selectedImage === image.key}
-                  className="mr-2"
-                />
-                <label htmlFor={`gel-image-${index}`}>
-                  <img
-                    src={image.url}
-                    alt={`Gel Image ${index}`}
-                    className="max-w-full h-32 object-cover"
-                  />
-                  <p className="text-sm mt-1">{image.key.split('/').pop()}</p> {/* Display filename */}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 flex space-x-4">
-        <button
-          className="px-6 py-2 bg-green-500 text-white font-semibold rounded hover:bg-green-600"
-          onClick={handleSave}
-          disabled={!selectedImage && !uploadedFileName}
-        >
-          Save
-        </button>
-      </div>
-    </div>
+      <Toast
+        show={toastInfo.show}
+        type={toastInfo.type}
+        title={toastInfo.type.charAt(0).toUpperCase() + toastInfo.type.slice(1)}
+        message={toastInfo.message}
+        onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
+      />
+    </Card>
   );
 };
 
