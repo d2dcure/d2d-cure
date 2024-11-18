@@ -158,14 +158,12 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
                 label: "text-default-600 text-small",
                 input: "text-small",
               }}
-              disabled={!yieldAvg && !selectedUnit}
             />
             <Select
               label="Units"
               value={selectedUnit}
               onChange={(e) => setSelectedUnit(e.target.value)}
               className="w-32"
-              disabled={!yieldAvg && !selectedUnit}
             >
               <SelectItem key="mg/mL" value="mg/mL">mg/mL</SelectItem>
               <SelectItem key="A280*" value="A280*">A280*</SelectItem>

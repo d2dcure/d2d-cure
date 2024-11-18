@@ -391,6 +391,27 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                 Up to 50MB
               </p>
             </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleUpload}
+                disabled={!selectedFile || uploading}
+                className={`px-4 py-2 rounded-md text-white ${
+                  !selectedFile || uploading
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-[#06B7DB] hover:bg-[#05a5c6]'
+                }`}
+              >
+                {uploading ? (
+                  <div className="flex items-center gap-2">
+                    <Spinner size="sm" color="white" />
+                    <span>Uploading...</span>
+                  </div>
+                ) : (
+                  'Upload Image'
+                )}
+              </button>
+            </div>
           </div>
         ) : (
           <div>
