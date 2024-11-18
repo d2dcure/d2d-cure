@@ -10,27 +10,27 @@ const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
     switch (status) {
       case 'in_progress':
         return {
-          className: "bg-[#06B7DB]/20 text-[#06B7DB]",
+          className: "bg-[#E6F1FE] text-[#06B7DB]",
           children: "In Progress"
         };
       case 'pending_approval':
         return {
-          color: "warning" as const,
+          className: "bg-[#FFF4CF] text-[#F5A524]",
           children: "Pending Approval"
         };
       case 'needs_revision':
         return {
-          color: "danger" as const,
+          className: "bg-[#FEE7EF] text-[#F31260]",
           children: "Needs Revision"
         };
       case 'approved':
         return {
-          color: "success" as const,
+          className: "bg-[#D4F4D9] text-[#17C964]",
           children: "Approved"
         };
       case 'awaiting_replication':
         return {
-          color: "secondary" as const,
+          className: "bg-[#F4F4F5] text-[#000000]",
           children: "Awaiting Replication"
         };
       default:

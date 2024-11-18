@@ -174,50 +174,50 @@ const SingleVariant = () => {
       switch (item) {
         case "Protein Modeled":
           return entryData.Rosetta_score === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Oligonucleotide ordered":
           return entryData.oligo_ordered === false
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Plasmid sequence verified":
           return entryData.plasmid_verified === false
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein induced":
           return entryData.expressed === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Expressed":
           return entryData.yield_avg === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Kinetic assay data uploaded":
           return entryData.KM_avg === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Wild type kinetic data uploaded":
           return entryData.WT_raw_data_id === 0
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Thermostability assay data uploaded":
           return entryData.T50 === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Wild type thermostability assay data uploaded":
           return entryData.WT_temp_raw_data_id === 0
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Melting point values uploaded":
           return entryData.Tm === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Gel uploaded":
           return entryData.gel_filename === null
-            ? { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" }
-            : { text: "Complete", className: "text-green-700 bg-green-100 rounded-full px-4 py-1" };
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         default:
-          return { text: "Incomplete", className: "text-yellow-700 bg-yellow-100 rounded-full px-4 py-1" };
+          return { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" };
       }
     };
 
