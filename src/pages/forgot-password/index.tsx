@@ -64,11 +64,13 @@ const ForgotPassword = () => {
            style={{ maxWidth: '100%' }}>
         <div className="w-full max-w-[380px] mx-auto">
           <div className="mb-8">
-            <img 
-              src="/resources/images/D2D_Logo.svg" 
-              alt="D2D Logo" 
-              className="h-7 mb-6"
-            />
+            <Link href="/">
+              <img 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                className="h-7 mb-6"
+              />
+            </Link>
             <h1 className="text-2xl font-semibold mb-2">Reset your password</h1>
             <p className="text-sm text-gray-600">
               Enter your email address and we&apos;ll send you instructions to reset your password.

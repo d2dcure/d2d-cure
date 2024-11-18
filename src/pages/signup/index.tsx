@@ -145,11 +145,14 @@ const SignUpPage = () => {
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
             <div className="mb-8">
+            <Link href="/">
+
               <img 
                 src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
                 className="h-7 mb-4"
-              />
+                />
+              </Link>
 
               <h1 className="text-2xl font-semibold mb-2">CURE Network Access</h1>
             </div>
@@ -210,11 +213,13 @@ const SignUpPage = () => {
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
             <div className="mb-8">
-              <img 
-                src="/resources/images/D2D_Logo.svg" 
+              <Link href="/">
+                <img 
+                  src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
-                className="h-7 mb-4"
-              />
+                  className="h-7 mb-4"
+                />
+              </Link>
               <h1 className="text-2xl font-semibold mb-2">Create faculty account</h1>
             </div>
 
@@ -362,11 +367,13 @@ const SignUpPage = () => {
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
             <div className="mb-8">
+              <Link href="/">
               <img 
                 src="/resources/images/D2D_Logo.svg" 
                 alt="D2D Logo" 
                 className="h-7 mb-4"
               />
+              </Link>
               {/* <div className="flex items-center gap-2 mb-4 bg-[#06B7DB]/5 px-3 py-2 rounded-lg">
                 <div className="h-4 w-1 bg-[#06B7DB] rounded-full"></div>
                 <span className="text-sm font-medium text-gray-600">

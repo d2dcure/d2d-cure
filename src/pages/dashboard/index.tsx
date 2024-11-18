@@ -370,21 +370,23 @@ const Dashboard = () => {
                   linkText: "Curate Data",
                 }] : [])
               ].map((item, index) => (
-                <Card 
-                  key={index} 
-                  className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
-                >
-                  <CardBody className="text-3xl pt-2 font-light">
-                    <h3 className="pl-4 pt-2 pb-5 text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
-                      {item.title}
-                    </h3>
-                  </CardBody>
-                  <CardFooter>
-                    <Link href={item.link} className="text-sm px-4 pb-3 text-[#06B7DB]">
-                      {item.linkText} {'>'}
-                    </Link>
-                  </CardFooter>
-                </Card>
+                <Link href={item.link} key={index}>
+                  <Card 
+                    isPressable
+                    className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
+                  >
+                    <CardBody className="text-3xl pt-2 font-light">
+                      <h3 className="pl-4 pt-2 pb-5 text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
+                        {item.title}
+                      </h3>
+                    </CardBody>
+                    <CardFooter>
+                      <span className="text-sm px-4 pb-3 text-[#06B7DB]">
+                        {item.linkText} {'>'}
+                      </span>
+                    </CardFooter>
+                  </Card>
+                </Link>
               ))}
             </div>
 

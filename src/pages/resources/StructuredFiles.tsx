@@ -17,26 +17,30 @@ interface ResourceCard {
 
 const bglbFiles: ResourceCard[] = [
   { id: 1, title: "BglB.pdb", imagePath: "/resources/images/download.svg", downloadUrl: "/downloads/BglB.pdb" },
-  { id: 2, title: "BglB Foldit Files (zipped)", imagePath: "/resources/images/download.svg", downloadUrl: "/downloads/BglB-foldit.zip" },
+  { id: 2, title: "BglB Foldit Files (zipped)", imagePath: "/resources/images/download.svg", downloadUrl: "/downloads/BglB_Foldit_files.zip" },
   { id: 3, title: "BglB FastA Sequence File", imagePath: "/resources/images/download.svg", downloadUrl: "/downloads/BglB.fasta" },
 ];
 
 const assayTemplates: ResourceCard[] = [
-  { id: 1, title: "Kinetic Assay Data",     imagePath: "/resources/images/Microsoft_Excel-Logo.wine.svg",
-     downloadUrl: "/downloads/kinetic-assay-template.xlsx" },
+  { 
+    id: 1, 
+    title: "Kinetic Assay Data", 
+    imagePath: "/resources/images/Microsoft_Excel-Logo.wine.svg",
+    downloadUrl: "/downloads/kinetic_assay_single_variant_template.xlsx" 
+  },
   { 
     id: 2, 
     title: "Temperature Assay Data",
     subtitle: "(standard vertical temperature gradient)", 
     imagePath: "/resources/images/Microsoft_Excel-Logo.wine.svg",
-    downloadUrl: "/downloads/temperature-assay-template-1.xlsx"
+    downloadUrl: "/downloads/temperature_assay_single_variant_template.xlsx"
   },
   { 
     id: 3, 
     title: "Temperature Assay Data",
     subtitle: "(alternate horizontal temperature gradient)", 
     imagePath: "/resources/images/Microsoft_Excel-Logo.wine.svg",
-    downloadUrl: "/downloads/temperature-assay-template-2.xlsx"
+    downloadUrl: "/downloads/temperature_assay_single_variant_template_horizontal.xlsx"
   },
 ];
 

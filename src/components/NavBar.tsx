@@ -24,6 +24,9 @@ const NavBar = () => {
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
+  // Add new state for nested dropdowns
+  const [activeNestedDropdown, setActiveNestedDropdown] = useState<string | null>(null);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -77,6 +80,126 @@ const NavBar = () => {
     }, 100); // 100ms delay before closing
   };
 
+  // Add handlers for nested dropdowns
+  const handleNestedDropdownEnter = (dropdown: string) => {
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+    }
+    setActiveNestedDropdown(dropdown);
+  };
+
+  const handleNestedDropdownLeave = () => {
+    closeTimeout.current = setTimeout(() => {
+      setActiveNestedDropdown(null);
+    }, 100);
+  };
+
+  // Update the Database dropdown section with nested items
+  const databaseDropdownContent = (
+    <div className="p-1">
+      <div
+        className="relative"
+        onMouseEnter={() => handleNestedDropdownEnter('characterization')}
+        onMouseLeave={handleNestedDropdownLeave}
+      >
+        <Link 
+          href="/database/BglB_Characterization"
+          className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+        >
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 stroke-[1.5]" />
+            <span>BglB Characterization</span>
+          </div>
+          <ChevronDown className="w-4 h-4 -rotate-90" />
+        </Link>
+
+        {/* Nested Dropdown */}
+        <div
+          className={`absolute left-full top-0 w-56 ml-0.5 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left ${
+            activeNestedDropdown === 'characterization'
+              ? 'opacity-100 scale-100 translate-x-0'
+              : 'opacity-0 scale-95 -translate-x-2 pointer-events-none'
+          }`}
+        >
+          <div className="p-1">
+            <Link 
+              href="/database/BglB_Characterization/wildtype"
+              className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+            >
+              <span>Wildtype Data</span>
+            </Link>
+            <Link 
+              href="/database/BglB_Characterization/variants"
+              className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+            >
+              <span>Variant Data</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Submit Data with nested dropdown */}
+      {user?.status && (
+        <div
+          className="relative"
+          onMouseEnter={() => handleNestedDropdownEnter('submit')}
+          onMouseLeave={handleNestedDropdownLeave}
+        >
+          <Link 
+            href="/submit"
+            className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+          >
+            <div className="flex items-center gap-2">
+              <Upload className="w-4 h-4 stroke-[1.5]" />
+              <span>Analyze/Submit Data</span>
+            </div>
+            <ChevronDown className="w-4 h-4 -rotate-90" />
+          </Link>
+
+          <div
+            className={`absolute left-full top-0 w-56 ml-0.5 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left ${
+              activeNestedDropdown === 'submit'
+                ? 'opacity-100 scale-100 translate-x-0'
+                : 'opacity-0 scale-95 -translate-x-2 pointer-events-none'
+            }`}
+          >
+            <div className="p-1">
+              <Link 
+                href="/submit/single-variant"
+                className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+              >
+                <span>Single Variant</span>
+              </Link>
+              <Link 
+                href="/submit/wildtype"
+                className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+              >
+                <span>Wildtype</span>
+              </Link>
+              <Link 
+                href="/submit/gel-image"
+                className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+              >
+                <span>Gel Image</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keep the existing Curate Data link */}
+      {(user?.status === "professor" || user?.status === "ADMIN") && (
+        <Link 
+          href="/curate" 
+          className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
+        >
+          <ClipboardEdit className="w-4 h-4 stroke-[1.5]" />
+          <span>Curate Data</span>
+        </Link>
+      )}
+    </div>
+  );
+
   return (
     <nav ref={navRef} className="bg-white py-4 border-b border-gray-200 dark:bg-gray-900 relative z-50">
       <div className="max-w-screen-xl mx-auto px-4">
@@ -125,39 +248,13 @@ const NavBar = () => {
                 </Link>
 
                 <div
-                  className={`absolute top-full left-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
+                  className={`absolute top-full left-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
                     activeDropdown === 'database'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >
-                  <div className="p-1">
-                    <Link 
-                      href="/database/BglB_Characterization" 
-                      className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
-                    >
-                      <Database className="w-4 h-4 stroke-[1.5]" />
-                      <span>BglB Characterization</span>
-                    </Link>
-                    {user?.status && (
-                      <Link 
-                        href="/submit" 
-                        className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
-                      >
-                        <Upload className="w-4 h-4 stroke-[1.5]" />
-                        <span>Analyze/Submit Data</span>
-                      </Link>
-                    )}
-                    {(user?.status === "professor" || user?.status === "ADMIN") && (
-                      <Link 
-                        href="/curate" 
-                        className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
-                      >
-                        <ClipboardEdit className="w-4 h-4 stroke-[1.5]" />
-                        <span>Curate Data</span>
-                      </Link>
-                    )}
-                  </div>
+                  {databaseDropdownContent}
                 </div>
               </div>
 
@@ -184,15 +281,15 @@ const NavBar = () => {
                 </Link>
 
                 <div
-                  className={`absolute top-full left-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
+                  className={`absolute top-full left-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left z-50 ${
                     activeDropdown === 'resources'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >
                   <div className="p-1">
                     <Link 
-                      href="/resources/structuredfiles" 
+                      href="/resources/StructuredFiles" 
                       className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
                     >
                       <FileText className="w-4 h-4 stroke-[1.5]" />
@@ -257,9 +354,9 @@ const NavBar = () => {
                 </div>
 
                 <div
-                  className={`absolute top-full right-0 w-56 mt-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right z-50 ${
+                  className={`absolute top-full right-0 w-56 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right z-50 ${
                     activeDropdown === 'user'
-                      ? 'opacity-100 scale-100 translate-y-0 backdrop-blur-md backdrop-saturate-150'
+                      ? 'opacity-100 scale-100 translate-y-0'
                       : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
                 >
@@ -317,6 +414,20 @@ const NavBar = () => {
           className={`md:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
         >
           <div className="pt-2 pb-4 space-y-1">
+            {/* Add Dashboard link for mobile */}
+            {user && (
+              <Link
+                href="/dashboard"
+                className={`block px-4 py-2 rounded-lg transition-colors duration-200 ${
+                  isActiveLink('/dashboard')
+                    ? 'text-[#06B7DB] bg-gray-100 dark:bg-gray-800'
+                    : 'text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800'
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
+
             {/* Mobile Database Dropdown */}
             <div>
               <button
@@ -380,7 +491,7 @@ const NavBar = () => {
 
               <div className={`transition-all duration-200 ${activeDropdown === 'mobile-resources' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <Link 
-                  href="/resources/structuredfiles" 
+                  href="/resources/StructuredFiles" 
                   className="flex items-center gap-2 px-8 py-2 text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                 >
                   <FileText className="w-4 h-4 stroke-[1.5]" />

@@ -206,115 +206,114 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
       </div>
 
       {/* Section 2: Teammates */}
-      <div className="space-y-2">
-        <span className="font-medium text-sm">Teammate 1</span>
-        <select
-          value={teammate1 || 'None'}
-          onChange={(e) => setTeammate1(e.target.value === 'None' ? null : e.target.value)}
-          className="max-w-full bg-gray-50 text-sm"
-        >
-          <option value="None">None</option>
-          {possibleTeammates.map((mate) => (
-            <option key={mate.user_name} value={mate.user_name}>
-              {mate.given_name} ({mate.user_name})
-            </option>
-          ))}
-        </select>
+      <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+        <div className="space-y-2">
+          <div>
+            <span className="font-medium text-sm">Teammate 1</span>
+            <select
+              value={teammate1 || 'None'}
+              onChange={(e) => setTeammate1(e.target.value === 'None' ? null : e.target.value)}
+              className="w-full mt-1 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#06B7DB] focus:border-transparent"
+            >
+              <option value="None">None</option>
+              {possibleTeammates.map((mate) => (
+                <option key={mate.user_name} value={mate.user_name}>
+                  {mate.given_name} ({mate.user_name})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <span className="font-medium text-sm">Teammate 2</span>
-        <select
-          value={teammate2 || 'None'}
-          onChange={(e) => setTeammate2(e.target.value === 'None' ? null : e.target.value)}
-          className="max-w-full bg-gray-50 text-sm"
-        >
-          <option value="None">None</option>
-          {possibleTeammates.map((mate) => (
-            <option key={mate.user_name} value={mate.user_name}>
-              {mate.given_name} ({mate.user_name})
-            </option>
-          ))}
-        </select>
+          <div>
+            <span className="font-medium text-sm">Teammate 2</span>
+            <select
+              value={teammate2 || 'None'}
+              onChange={(e) => setTeammate2(e.target.value === 'None' ? null : e.target.value)}
+              className="w-full mt-1 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#06B7DB] focus:border-transparent"
+            >
+              <option value="None">None</option>
+              {possibleTeammates.map((mate) => (
+                <option key={mate.user_name} value={mate.user_name}>
+                  {mate.given_name} ({mate.user_name})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <span className="font-medium text-sm">Teammate 3</span>
-        <select
-          value={teammate3 || 'None'}
-          onChange={(e) => setTeammate3(e.target.value === 'None' ? null : e.target.value)}
-          className="max-w-full bg-gray-50 text-sm"
-        >
-          <option value="None">None</option>
-          {possibleTeammates.map((mate) => (
-            <option key={mate.user_name} value={mate.user_name}>
-              {mate.given_name} ({mate.user_name})
-            </option>
-          ))}
-        </select>
+          <div>
+            <span className="font-medium text-sm">Teammate 3</span>
+            <select
+              value={teammate3 || 'None'}
+              onChange={(e) => setTeammate3(e.target.value === 'None' ? null : e.target.value)}
+              className="w-full mt-1 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#06B7DB] focus:border-transparent"
+            >
+              <option value="None">None</option>
+              {possibleTeammates.map((mate) => (
+                <option key={mate.user_name} value={mate.user_name}>
+                  {mate.given_name} ({mate.user_name})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <Button color="primary" size="sm" className="mt-2 bg-[#06B7DB]" onClick={handleSaveTeammates}>
-          Save Teammates
-        </Button>
+          <Button 
+            color="primary" 
+            size="sm" 
+            className="w-full mt-2 bg-[#06B7DB]" 
+            onClick={handleSaveTeammates}
+          >
+            Save Teammates
+          </Button>
+        </div>
       </div>
 
       {/* Section 3: Comment */}
-      <div>
-        <label className="font-medium text-sm">Comment:</label>
-        {comment ? (
-          <div className="mt-2">
-            <div className="bg-gray-50 rounded-lg p-3 relative">
-              <p className="text-sm">{comment}</p>
-              <div className="text-[11px] text-gray-400 mt-2">
-                Last updated by {entryData.creator} • {formatTimestamp(new Date())}
+      <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+        <div>
+          <span className="font-medium text-sm">Latest Comment</span>
+          {comment ? (
+            <div className="mt-2">
+              <div className="bg-white rounded-lg p-3 relative">
+                <p className="text-sm">{comment}</p>
+                <div className="text-[11px] text-gray-400 mt-2">
+                  Last updated by {entryData.creator} • {formatTimestamp(new Date())}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400 italic mt-1">No comment added yet</p>
-        )}
+          ) : (
+            <p className="text-sm text-gray-400 italic mt-1">No comment added yet</p>
+          )}
 
-        <div className="mt-2 flex gap-1">
-          <div className="flex-1 relative">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Update comment..."
-              maxLength={100}
-              minRows={1}
-              maxRows={3}
-              classNames={{
-                input: "resize-none py-1 text-sm min-h-0",
-                base: "w-full min-h-0",
-                inputWrapper: "min-h-0 bg-gray-50"
-              }}
-            />
-            <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
-              {newComment.length}/100
-            </span>
+          <div className="mt-3 space-y-2">
+            <div className="relative">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Update comment..."
+                maxLength={100}
+                minRows={1}
+                maxRows={3}
+                classNames={{
+                  input: "resize-none py-1 text-sm min-h-0",
+                  base: "w-full min-h-0",
+                  inputWrapper: "min-h-0 bg-white"
+                }}
+              />
+              <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
+                {newComment.length}/100
+              </span>
+            </div>
+            <Button
+              color="primary"
+              size="sm"
+              className="w-full bg-[#06B7DB]"
+              onClick={handleSaveComment}
+              isLoading={saving}
+              isDisabled={!newComment.trim()}
+            >
+              {saving ? 'Saving...' : 'Send Comment'}
+            </Button>
           </div>
-          <Button
-            color="primary"
-            size="sm"
-            className="bg-[#06B7DB] h-[42px] -pl-1 min-w-[40px] px-1"
-            onClick={handleSaveComment}
-            isLoading={saving}
-            isDisabled={!newComment.trim()}
-          >
-            {saving ? '...' : (
-              <svg 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor"
-                className="rotate-45"
-              >
-                <path 
-                  d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </Button>
         </div>
       </div>
     </div>

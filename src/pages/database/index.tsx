@@ -56,6 +56,7 @@ const DatabasePage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
               <Card 
+                isPressable
                 className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                 as={Link}
                 href="/database/BglB_Characterization"
@@ -98,6 +99,7 @@ const DatabasePage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
                   <Card 
+                    isPressable
                     className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                     as={Link}
                     href="/submit/single_variant"
@@ -113,6 +115,7 @@ const DatabasePage = () => {
                   </Card>
 
                   <Card 
+                    isPressable
                     className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                     as={Link}
                     href="/submit/wild_type"
@@ -128,6 +131,7 @@ const DatabasePage = () => {
                   </Card>
 
                   <Card 
+                    isPressable
                     className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                     as={Link}
                     href="/submit/gel_image_upload"
@@ -159,6 +163,7 @@ const DatabasePage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   <Card 
+                    isPressable
                     className="h-[170px] hover:scale-105 transition-transform cursor-pointer"
                     as={Link}
                     href="/curate"
