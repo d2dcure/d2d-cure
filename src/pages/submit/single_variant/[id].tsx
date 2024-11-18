@@ -444,8 +444,12 @@ const SingleVariant = () => {
                   </h1>
                   <StatusChip 
                     status={
-                      entryData.submitted_for_curation && !entryData.approved_by_pi && !entryData.curated 
-                        ? 'pending_approval' 
+                      entryData.submitted_for_curation 
+                        ? entryData.approved_by_pi 
+                          ? 'approved' 
+                          : !entryData.curated 
+                            ? 'pending_approval' 
+                            : 'in_progress'
                         : 'in_progress'
                     } 
                   />
