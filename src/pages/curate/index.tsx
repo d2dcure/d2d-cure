@@ -3,10 +3,24 @@ import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
-import { Breadcrumbs, BreadcrumbItem, Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, select } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
+
+const columns = [
+    { name: "Approved", uid: "approved_by_pi", sortable: false},
+    { name: "STATUS", uid: "status", sortable: false},
+    { name: "ID", uid: "id", sortable: true },
+    { name: "Variant", uid: "variant", sortable: true },
+    { name: "Creator", uid: "creator", sortable: true },
+    { name: "Assay Date", uid: "assay_date", sortable: false},
+    { name: "Km", uid: "km", sortable: false },
+    { name: "Kcat", uid: "kcat", sortable: false },
+    { name: "T50", uid: "t50", sortable: false },
+    { name: "Comments", uid: "comments", sortable: false },
+    { name: "ACTIONS", uid: "actions", sortable: false }
+];
 
 const CuratePage = () => {
     const { user, loading } = useUser();
@@ -20,11 +34,32 @@ const CuratePage = () => {
     const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
     const [viewAs, setViewAs] = useState<string>("")
     const [isLoading, setIsLoading] = useState(true);
+
+    interface Institution {
+        abbr: string;
+        fullname: string;
+    }
+    const [institutions, setInstitutions] = useState<Institution[]>([]);
+    const [showNonSubmitted, setShowNonSubmitted] = useState(false);
+    const [selectedInstitution, setSelectedInstitution] = useState('');
+
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "Approved", "STATUS", "ID", "Variant", "Creator", "Assay Date", "Km", "Kcat", "T50", "Comments", "ACTIONS"
+        "approved_by_pi", "status", "id", "variant", "creator", "assay_date", "km", "kcat", "t50", "comments", "actions"
     ]));
 
+    const headerColumns = React.useMemo(() => {
+        return columns.filter((column) => Array.from(visibleColumns).includes(column.uid));
+    }, [visibleColumns]);
+
     useEffect(() => {
+        const fetchInstitutions = async () => {
+            const response = await fetch('/api/getInstitutions');
+            const data = await response.json();
+
+            const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
+            setInstitutions(sortedData);
+        };
+
         const fetchData = async () => {
             if (!user) return;
 
@@ -34,6 +69,7 @@ const CuratePage = () => {
             setData(data)
             filterAndSortData(data);
         };
+        fetchInstitutions();
         fetchData();
         setIsLoading(false);
     }, [user])
@@ -47,19 +83,13 @@ const CuratePage = () => {
         setIsLoading(false);
     }, [viewAs])
 
-    const columns = [
-        { name: "Approved", uid: "approved_by_pi", sortable: false},
-        { name: "STATUS", uid: "status", sortable: false},
-        { name: "ID", uid: "id", sortable: true },
-        { name: "Variant", uid: "variant", sortable: true },
-        { name: "Creator", uid: "creator", sortable: true },
-        { name: "Assay Date", uid: "assay_date", sortable: false},
-        { name: "Km", uid: "km", sortable: false },
-        { name: "Kcat", uid: "kcat", sortable: false },
-        { name: "T50", uid: "t50", sortable: false },
-        { name: "Comments", uid: "comments", sortable: false },
-        { name: "ACTIONS", uid: "actions", sortable: false }
-    ];
+    useEffect(() => {
+        if (!user) return;
+
+        setIsLoading(true);
+        filterAndSortData(data);
+        setIsLoading(false);
+    }, [showNonSubmitted, selectedInstitution])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
@@ -111,6 +141,14 @@ const CuratePage = () => {
             filteredData = data
                 .filter((item:any) => item.institution === user.institution)
                 .filter((item:any) => item.approved_by_pi === false);
+        }
+        if (!showNonSubmitted) {
+            filteredData = filteredData
+                .filter((item:any) => item.submitted_for_curation === true);
+        }
+        if (viewAs === "ADMIN" && selectedInstitution !== "") {
+            filteredData = filteredData
+                .filter((item:any) => item.institution === selectedInstitution)
         }
         const sortedData = sortData(filteredData, sortDescriptor)
         setViewableData(sortedData);
@@ -195,6 +233,8 @@ const CuratePage = () => {
     }
 
     const approveData = () => {
+        // TODO: handle checkedItems === "all" properly!
+        if (checkedItems === "all") return;
         const selectedIds = getSelectedIds();
         console.log(selectedIds);
         fetch(`/api/curateData`, {
@@ -235,6 +275,8 @@ const CuratePage = () => {
     }
 
     const rejectData = () => {
+        // TODO: handle checkedItems === "all" properly!
+        if (checkedItems === "all") return;
         const selectedIds = getSelectedIds();
         console.log(selectedIds);
         fetch(`/api/curateData`, {
@@ -264,6 +306,14 @@ const CuratePage = () => {
             return updatedItems;
         });
     };
+
+    const isCheckedItemsEmpty = () => {
+        if (typeof checkedItems === "string" && checkedItems === "all") {
+            return false;
+        }
+
+        return checkedItems.size === 0;
+    }
 
     return (
         <div>
@@ -301,24 +351,53 @@ const CuratePage = () => {
                                 </div>
                             }
 
+                            <Dropdown
+                                className="w-full"
+                                shouldBlockScroll={false}
+                                shouldCloseOnInteractOutside={() => false}
+                            >
+                                <DropdownTrigger>
+                                    <Button
+                                        size="sm"
+                                        variant="flat"
+                                        className="w-full"
+                                        startContent={<FaColumns className="text-small" />}
+                                    >
+                                        Columns
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    aria-label="Table Columns"
+                                    closeOnSelect={false}
+                                    selectedKeys={visibleColumns}
+                                    selectionMode="multiple"
+                                    onSelectionChange={(keys) => setVisibleColumns(new Set(Array.from(keys).map(String)))}
+                                >
+                                    {columns.map((column) => (
+                                        <DropdownItem key={column.uid}>
+                                            {column.name}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
 
-
-                            {/* <div className="flex flex-row items-center my-2">
+                            <div className="flex flex-row items-center my-2">
                                 <button
-                                    className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-green-500"} mx-2 p-2 rounded`}
+                                    className={`${isCheckedItemsEmpty() ? "bg-gray-500" : "bg-green-500"} mx-2 p-2 rounded`}
                                     onClick={approveData}
-                                    disabled={!Object.values(checkedItems).some(value => value === true)}
+                                    disabled={isCheckedItemsEmpty()}
                                 >
                                     Approve
                                 </button>
                                 <button
-                                    className={`${!Object.values(checkedItems).some(value => value === true) ? "bg-gray-500" : "bg-red-500"} mx-2 p-2 rounded`}
+                                    className={`${isCheckedItemsEmpty() ? "bg-gray-500" : "bg-red-500"} mx-2 p-2 rounded`}
                                     onClick={rejectData}
-                                    disabled={!Object.values(checkedItems).some(value => value === true)}
+                                    disabled={isCheckedItemsEmpty()}
                                 >
                                     Reject
                                 </button>
-                            </div> */}
+                            </div>
                         </div>
 
                         <div>
@@ -332,7 +411,7 @@ const CuratePage = () => {
                                 onSortChange={handleColumnClick}
                                 className="mb-8 sm:mb-12"
                             >
-                                <TableHeader columns={columns}>
+                                <TableHeader columns={headerColumns}>
                                     {(column) => (
                                         <TableColumn
                                             key={column.uid}
