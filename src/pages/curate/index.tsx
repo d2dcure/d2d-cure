@@ -3,14 +3,14 @@ import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
-import { Breadcrumbs, BreadcrumbItem, Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, select } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 
 const columns = [
     { name: "Approved", uid: "approved_by_pi", sortable: false},
-    { name: "STATUS", uid: "status", sortable: false},
+    { name: "Status", uid: "status", sortable: false},
     { name: "ID", uid: "id", sortable: true },
     { name: "Variant", uid: "variant", sortable: true },
     { name: "Creator", uid: "creator", sortable: true },
@@ -19,7 +19,7 @@ const columns = [
     { name: "Kcat", uid: "kcat", sortable: false },
     { name: "T50", uid: "t50", sortable: false },
     { name: "Comments", uid: "comments", sortable: false },
-    { name: "ACTIONS", uid: "actions", sortable: false }
+    { name: "Actions", uid: "actions", sortable: false }
 ];
 
 const CuratePage = () => {
@@ -42,6 +42,7 @@ const CuratePage = () => {
     const [institutions, setInstitutions] = useState<Institution[]>([]);
     const [showNonSubmitted, setShowNonSubmitted] = useState(false);
     const [selectedInstitution, setSelectedInstitution] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
         "approved_by_pi", "status", "id", "variant", "creator", "assay_date", "km", "kcat", "t50", "comments", "actions"
@@ -89,24 +90,37 @@ const CuratePage = () => {
         setIsLoading(true);
         filterAndSortData(data);
         setIsLoading(false);
-    }, [showNonSubmitted, selectedInstitution])
+    }, [showNonSubmitted, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
             case "status":
-                {/* TODO: Hard coded rn!! */}
+                {/* TODO: Hard coded rn!! Also approved-by-pi part of status?*/}
                 return (
                     <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
                         In Progress
                     </Chip>
-                );
+                )
+                // return (
+                //     <div>
+                //         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
+                //             <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.90186C4.1 1.90186 1 5.00186 1 8.90186C1 12.8019 4.1 15.9019 8 15.9019C11.9 15.9019 15 12.8019 15 8.90186C15 5.00186 11.9 1.90186 8 1.90186ZM7 11.6022L4.5 9.10225L5.3 8.30225L7 10.0022L10.7 6.30225L11.5 7.10225L7 11.6022ZM2 8.90186C2 12.2019 4.7 14.9019 8 14.9019C11.3 14.9019 14 12.2019 14 8.90186C14 5.60186 11.3 2.90186 8 2.90186C4.7 2.90186 2 5.60186 2 8.90186Z" fill="#17C964"/>
+                //         </svg>
+                //         <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
+                //             In Progress
+                //         </Chip>
+                //     </div>
+                // );
             case "approved_by_pi":
-                // TODO: test this!
+                // TODO: Discuss is this needed?
                 if (viewAs === "ADMIN" && data.approved_by_pi) {
                     return (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.90186C4.1 1.90186 1 5.00186 1 8.90186C1 12.8019 4.1 15.9019 8 15.9019C11.9 15.9019 15 12.8019 15 8.90186C15 5.00186 11.9 1.90186 8 1.90186ZM7 11.6022L4.5 9.10225L5.3 8.30225L7 10.0022L10.7 6.30225L11.5 7.10225L7 11.6022ZM2 8.90186C2 12.2019 4.7 14.9019 8 14.9019C11.3 14.9019 14 12.2019 14 8.90186C14 5.60186 11.3 2.90186 8 2.90186C4.7 2.90186 2 5.60186 2 8.90186Z" fill="#17C964"/>
-                        </svg>
+                        <Chip className="bg-[#D4F4D9]" variant="flat">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16" fill="none">
+                                <path d="M10.3684 5.05041L4.86839 12.5504C4.83647 12.594 4.79856 12.6286 4.75683 12.6522C4.7151 12.6757 4.67037 12.6879 4.62519 12.6879C4.58002 12.6879 4.53529 12.6757 4.49356 12.6522C4.45182 12.6286 4.41391 12.594 4.38199 12.5504L1.97574 9.26916C1.91124 9.1812 1.875 9.06191 1.875 8.93752C1.875 8.81313 1.91124 8.69383 1.97574 8.60588C2.04024 8.51792 2.12772 8.46851 2.21894 8.46851C2.31016 8.46851 2.39764 8.51792 2.46214 8.60588L4.62519 11.5561L9.88199 4.38713C9.94649 4.29917 10.034 4.24976 10.1252 4.24976C10.2164 4.24976 10.3039 4.29917 10.3684 4.38713C10.4329 4.47508 10.4691 4.59438 10.4691 4.71877C10.4691 4.84316 10.4329 4.96245 10.3684 5.05041Z" fill="#17C964"/>
+                            </svg>
+                        </Chip>
+
                     )
                 }
                 return <></>
@@ -125,7 +139,7 @@ const CuratePage = () => {
             case "t50":
                 return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
             case "comments":
-                return data.comments
+                return decodeHTML(data.comments)
             case "actions":
                 return (
                     <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} className="text-[#06B7DB]">
@@ -142,15 +156,21 @@ const CuratePage = () => {
                 .filter((item:any) => item.institution === user.institution)
                 .filter((item:any) => item.approved_by_pi === false);
         }
+        let sortedData = sortData(filteredData, sortDescriptor)
         if (!showNonSubmitted) {
-            filteredData = filteredData
+            sortedData = sortedData
                 .filter((item:any) => item.submitted_for_curation === true);
         }
         if (viewAs === "ADMIN" && selectedInstitution !== "") {
-            filteredData = filteredData
+            sortedData = sortedData
                 .filter((item:any) => item.institution === selectedInstitution)
         }
-        const sortedData = sortData(filteredData, sortDescriptor)
+        if (searchTerm.trim()) {
+            sortedData = sortedData
+                .filter((item:any) =>
+                    getVariantDisplay(item.resid, item.resnum, item.resmut).includes(searchTerm.trim()))
+        }
+
         setViewableData(sortedData);
     }
 
@@ -311,8 +331,11 @@ const CuratePage = () => {
         if (typeof checkedItems === "string" && checkedItems === "all") {
             return false;
         }
-
         return checkedItems.size === 0;
+    }
+
+    const decodeHTML = (html:string) => {
+        return new DOMParser().parseFromString(html, "text/html").documentElement.textContent;
     }
 
     return (
@@ -350,53 +373,219 @@ const CuratePage = () => {
                                     </span>
                                 </div>
                             }
-
-                            <Dropdown
-                                className="w-full"
-                                shouldBlockScroll={false}
-                                shouldCloseOnInteractOutside={() => false}
-                            >
-                                <DropdownTrigger>
-                                    <Button
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
+                                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                    <Input
+                                        isClearable
+                                        classNames={{
+                                            base: "w-full sm:w-[200px] md:w-[300px]",
+                                        }}
+                                        placeholder="Search for variant..."
                                         size="sm"
-                                        variant="flat"
-                                        className="w-full"
-                                        startContent={<FaColumns className="text-small" />}
-                                    >
-                                        Columns
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    disallowEmptySelection
-                                    aria-label="Table Columns"
-                                    closeOnSelect={false}
-                                    selectedKeys={visibleColumns}
-                                    selectionMode="multiple"
-                                    onSelectionChange={(keys) => setVisibleColumns(new Set(Array.from(keys).map(String)))}
-                                >
-                                    {columns.map((column) => (
-                                        <DropdownItem key={column.uid}>
-                                            {column.name}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
+                                        value={searchTerm}
+                                        onClear={() => setSearchTerm("")}
+                                        onValueChange={(value) => setSearchTerm(value)}
+                                        startContent={
+                                            <svg
+                                                aria-hidden="true"
+                                                fill="none"
+                                                focusable="false"
+                                                height="1em"
+                                                stroke="currentColor"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                viewBox="0 0 24 24"
+                                                width="1em"
+                                            >
+                                                <circle cx="11" cy="11" r="8" />
+                                                <line x1="21" x2="16.65" y1="21" y2="16.65" />
+                                            </svg>
+                                        }
+                                    />
+                                    <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                                        <Dropdown
+                                            className="w-full"
+                                            shouldBlockScroll={false}
+                                            shouldCloseOnInteractOutside={() => false}
+                                        >
+                                            <DropdownTrigger>
+                                                <Button
+                                                    size="sm"
+                                                    variant="flat"
+                                                    className="w-full"
+                                                    startContent={<FaColumns className="text-small" />}
+                                                >
+                                                    Columns
+                                                </Button>
+                                            </DropdownTrigger>
+                                            <DropdownMenu
+                                                disallowEmptySelection
+                                                aria-label="Table Columns"
+                                                closeOnSelect={false}
+                                                selectedKeys={visibleColumns}
+                                                selectionMode="multiple"
+                                                onSelectionChange={(keys) => setVisibleColumns(new Set(Array.from(keys).map(String)))}
+                                            >
+                                                {columns.map((column) => (
+                                                    <DropdownItem key={column.uid}>
+                                                        {column.name}
+                                                    </DropdownItem>
+                                                ))}
+                                            </DropdownMenu>
+                                        </Dropdown>
 
-                            <div className="flex flex-row items-center my-2">
-                                <button
-                                    className={`${isCheckedItemsEmpty() ? "bg-gray-500" : "bg-green-500"} mx-2 p-2 rounded`}
-                                    onClick={approveData}
-                                    disabled={isCheckedItemsEmpty()}
-                                >
-                                    Approve
-                                </button>
-                                <button
-                                    className={`${isCheckedItemsEmpty() ? "bg-gray-500" : "bg-red-500"} mx-2 p-2 rounded`}
-                                    onClick={rejectData}
-                                    disabled={isCheckedItemsEmpty()}
-                                >
-                                    Reject
-                                </button>
+                                        <Dropdown
+                                            className="w-full"
+                                            shouldBlockScroll={false}
+                                            shouldCloseOnInteractOutside={() => false}
+                                        >
+                                            <DropdownTrigger>
+                                                <Button
+                                                    size="sm"
+                                                    variant="flat"
+                                                    className="w-full"
+                                                    startContent={<FaFilter className="text-small" />}
+                                                >
+                                                    Filters
+                                                </Button>
+                                            </DropdownTrigger>
+                                            <DropdownMenu
+                                                aria-label="Filter options"
+                                                className="w-[240px] p-3"
+                                                itemClasses={{
+                                                    base: [
+                                                        "rounded-md",
+                                                        "text-gray-700",
+                                                        "transition-opacity",
+                                                        "data-[hover=true]:bg-transparent",
+                                                        "data-[hover=true]:text-gray-900",
+                                                        "data-[selected=true]:bg-transparent",
+                                                        "data-[selected=true]:text-gray-900",
+                                                        "data-[disabled=true]:text-gray-400",
+                                                        "border-none",
+                                                        "text-sm",
+                                                        "py-2"
+                                                    ].join(" ")
+                                                }}
+                                                variant="flat"
+                                                closeOnSelect={false}
+                                            >
+                                                {/* Display Options */}
+                                                <DropdownItem className="p-0 mb-2">
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-gray-600">Institution</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                className="text-blue-500 text-sm"
+                                                                onPress={() => setSelectedInstitution('')}
+                                                            >
+                                                                Clear
+                                                            </Button>
+                                                        </div>
+                                                        <Select
+                                                            size="sm"
+                                                            placeholder="All"
+                                                            selectedKeys={selectedInstitution ? [selectedInstitution] : []}
+                                                            onChange={(e) => setSelectedInstitution(e.target.value)}
+                                                            className="w-full text-sm"
+                                                        >
+                                                            {[
+                                                                <SelectItem key="" value="">All</SelectItem>,
+                                                                ...institutions.map((institution: Institution) => (
+                                                                <SelectItem
+                                                                    key={institution.abbr}
+                                                                    value={institution.abbr}
+                                                                >
+                                                                    {institution.fullname || institution.abbr}
+                                                                </SelectItem>
+                                                                ))
+                                                            ]}
+                                                        </Select>
+                                                    </div>
+                                                </DropdownItem>
+
+                                                <DropdownItem className="p-0 mb-2">
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-gray-600">Non-Submitted Data</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                className="text-blue-500 text-sm"
+                                                                onPress={() => setShowNonSubmitted(false)}
+                                                            >
+                                                                Clear
+                                                            </Button>
+                                                        </div>
+                                                        <Select
+                                                            size="sm"
+                                                            placeholder="Included"
+                                                            selectedKeys={[showNonSubmitted ? "included" : "excluded"]}
+                                                            onChange={(e) => setShowNonSubmitted(e.target.value === "included")}
+                                                            className="w-full text-sm"
+                                                        >
+                                                            <SelectItem key="included" value="included">Included</SelectItem>
+                                                            <SelectItem key="excluded" value="excluded">Excluded</SelectItem>
+                                                        </Select>
+                                                    </div>
+                                                </DropdownItem>
+                                            </DropdownMenu>
+                                        </Dropdown>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                    <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                                        <Button
+                                            size="sm"
+                                            variant="solid"
+                                            className="w-full bg-[#06B7DB]"
+                                            isDisabled={isCheckedItemsEmpty()}
+                                            onClick={approveData}
+                                        >
+                                            Approve
+                                        </Button>
+
+                                        <Dropdown>
+                                            <DropdownTrigger>
+                                                <Button
+                                                    size="sm"
+                                                    variant="flat"
+                                                    className="w-full"
+                                                    endContent={
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                            <path d="M4 6L8 10L12 6" stroke="#11181C" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    }
+                                                >
+                                                    More Actions
+                                                </Button>
+                                            </DropdownTrigger>
+                                            <DropdownMenu
+                                                aria-label="More Options"
+                                                closeOnSelect={true}
+                                                selectionMode="single"
+                                            >
+                                                <DropdownItem
+                                                    color="danger"
+                                                    className="text-danger"
+                                                >
+                                                    Delete Datasets
+                                                </DropdownItem>
+                                                <DropdownItem>
+                                                    Mark as &quot;Awaiting Replication&quot;
+                                                </DropdownItem>
+                                                <DropdownItem>
+                                                    Mark as &quot;Needs Revision&quot;
+                                                </DropdownItem>
+                                            </DropdownMenu>
+                                        </Dropdown>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
