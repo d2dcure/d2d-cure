@@ -142,7 +142,10 @@ const CuratePage = () => {
                 return decodeHTML(data.comments)
             case "actions":
                 return (
-                    <Link href={`/submit/single_variant/${encodeURIComponent(data.id)}`} className="text-[#06B7DB]">
+                    <Link
+                        href={data.resnum.toString() === "0" ? `/submit/wild_type/${encodeURIComponent(data.id)}` : `/submit/single_variant/${encodeURIComponent(data.id)}`}
+                        className="text-[#06B7DB]"
+                    >
                         View
                     </Link>
                 )
@@ -589,6 +592,10 @@ const CuratePage = () => {
                             </div>
                         </div>
 
+                        <div className="flex justify-start">
+                            <span className='text-default-400 text-sm'>{viewableData.length} Records</span>
+                        </div>
+
                         <div>
                             <Table
                                 aria-label="Data to Curate"
@@ -598,7 +605,7 @@ const CuratePage = () => {
                                 onSelectionChange={setCheckedItems}
                                 sortDescriptor={sortDescriptor}
                                 onSortChange={handleColumnClick}
-                                className="mb-8 sm:mb-12"
+                                className="mt-2 mb-8 sm:mb-12"
                             >
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
