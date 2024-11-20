@@ -1,10 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import axios, { AxiosResponse } from 'axios';
 import './styles.css';
-import { useRouter } from 'next/router';
-
-import { fontString } from 'chart.js/helpers';
-import { parse } from 'path';
+import s3 from '../../../s3config';
 
 const MetaData: React.FC<{ data: any }> = ({ data }) => {
   if (data == null) {
@@ -55,7 +51,7 @@ interface TableProps {
   data: string[][];
 }
 
-interface KineticTableProps {
+interface BglbProps {
   id: string | null;
 
 }
@@ -72,11 +68,35 @@ function parseData(data:any) : string [][] {
     }
     finalData.push(temp);
   }
-  console.log(finalData);
   return finalData;
 }
 
-function KineticTable(props:KineticTableProps) {
+async function prepImage(gelImageName: string) {
+  const fileType = gelImageName.split(".")[1];
+
+  const gel_params = {
+    Bucket: "d2dcurebucket",
+    Key: gelImageName,
+  };
+
+  return new Promise<string>((resolve, reject) => {
+    s3.getObject(gel_params, function (err, data) {
+      if (err) {
+        console.log("Error fetching object: ", err);
+        reject(err);
+        return;
+      }
+
+      const b64 = data.Body?.toString('base64');
+      const mimeType = `image/${fileType}`; // e.g., image/png
+      const gelImageURL = `data:${mimeType};base64,${b64}`;
+      
+      resolve(gelImageURL); // Return the base64 Data URL
+    });
+  });
+}
+
+function BglBPage(props:BglbProps) {
   const default2d = [[]];
   const [wtKineticData, setWTKineticData] = useState<any>();
   const [wtKineticTable, setWTKineticTable] = useState<string[][]>(default2d);
@@ -87,12 +107,21 @@ function KineticTable(props:KineticTableProps) {
   const [tempData, setTempData] = useState<any>();
   const [tempTable, setTempTable] = useState<string[][]>(default2d);
 
+  const [kineticPlotImage, setKineticPlotImage] = useState <string>();
+  const [tempPlotImage, setTempPlotImage] = useState <string>();
+  const [gelImage, setGelImage] = useState <any>();
+
   
   const displayKineticData = async () => {
     try {
-      console.log(props);
       const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${props.id}`);
       const data = await response.json();
+
+      const gelImageName = "gel-images/" + data.gel_filename;
+  
+      // Wait for prepImage to resolve and set the gel image
+      const gelImageURL = await prepImage(gelImageName);
+      setGelImage(gelImageURL)
 
         // const response = await fetch('/api/getKineticData');
       const kineticRawId = data.raw_data_id;
@@ -105,7 +134,6 @@ function KineticTable(props:KineticTableProps) {
         body: JSON.stringify({ ids: kineticIds }),
       });
       const kineticDataList = await kineticDataResponse.json();
-      // console.log(kineticData)
       for (let i = 0; i < kineticDataList.length; i++) {
         const kineticData = kineticDataList[i];
         if (kineticData.variant === "WT") {
@@ -114,9 +142,13 @@ function KineticTable(props:KineticTableProps) {
         } else {
           setKineticData(kineticData);
           setKineticTable(parseData(kineticData));
+
+          const kineticPlotFileName = "kinetic_assays/plots/" + kineticData.plot_filename
+          
+          const kineticPlotURL = await prepImage(kineticPlotFileName);
+          setKineticPlotImage(kineticPlotURL)
         }
       }
-      
 
       const tempRawId = data.temp_raw_data_id;
       const wtTempRawId = data.WT_temp_raw_data_id;
@@ -130,15 +162,20 @@ function KineticTable(props:KineticTableProps) {
       const tempDataList = await tempDataResponse.json();
       for (let i = 0; i < tempDataList.length; i++) {
         const tempData = tempDataList[i];
-        if (tempData.id === tempRawId) {
+        if (tempData.id !== tempRawId) {
           setWTTempData(tempData);
           setWTTempTable(parseData(tempData));
         } else {
           setTempData(tempData);
           setTempTable(parseData(tempData));
+
+
+          const tempPlotFileName = "temp/" + tempData.plot_filename;
+          console.log(tempPlotFileName)
+          // const tempPlotURL = await prepImage(tempPlotFileName);
+          // setTempPlotImage(tempPlotURL);
         }
       }
-
     } catch (error) {
         console.error('Error uploading file:', error);
     }
@@ -159,15 +196,12 @@ function KineticTable(props:KineticTableProps) {
       <MetaData data={tempData} />
       <Table data={wtTempTable} />
       <MetaData data={wtTempData} />
+      <img src = {gelImage}></img>
+      <img src = {kineticPlotImage}></img>
+      <img src = {tempPlotImage}></img>
+
     </div>
   );
-}
-
-function displayMetaData(data:any) {
-  return <div>
-
-    {data.yeild} {data.dilution}
-  </div>
 }
 
 function dataParse(s:string) {
@@ -192,5 +226,5 @@ function dataParse(s:string) {
   return ""
 }
 
-export default KineticTable;
+export default BglBPage;
 

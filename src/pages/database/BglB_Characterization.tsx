@@ -20,10 +20,8 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-
-
-function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
-  const link = `/bglb?id=${id}&wt_id=${wt_id}`;
+function Page({ id, variant}: { id: string, variant:string}) {
+  const link = `/bglb?id=${id}`;
   return <Link href={link}>
     <button className="text-gray-600 hover:text-gray-800">
       {variant}
@@ -819,8 +817,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <Page 
-                                          id={data.raw_data_id} 
-                                          wt_id={data.WT_raw_data_id} 
+                                          id={data.id} 
                                           variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
                                         />
                                         {data.isAggregate && (
