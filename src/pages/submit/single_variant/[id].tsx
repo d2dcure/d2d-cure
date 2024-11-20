@@ -14,6 +14,8 @@ import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
 import { Tooltip } from "@nextui-org/react";
 import confetti from 'canvas-confetti';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Toast from '@/components/Toast';
 
 
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
@@ -40,6 +42,29 @@ const SingleVariant = () => {
   const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row 
   const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row 
 
+  // Add toast state
+  const [toastInfo, setToastInfo] = useState<{
+    show: boolean;
+    type: 'error' | 'success' | 'warning' | 'info';
+    title: string;
+    message: string;
+  }>({
+    show: false,
+    type: 'error',
+    title: '',
+    message: ''
+  });
+
+  // Add showToast helper function
+  const showToast = (title: string, message: string, type: 'error' | 'success' | 'warning' | 'info' = 'error') => {
+    setToastInfo({
+      show: true,
+      type,
+      title,
+      message,
+      
+    });
+  };
 
   useEffect(() => {
     const fetchEntryData = async () => {
@@ -52,7 +77,7 @@ const SingleVariant = () => {
         const data = await response.json();
         setEntryData(data);
       } catch (error) {
-        console.error('Error fetching entry data:', error);
+        showToast('Error', 'Failed to fetch entry data. Please try again.', 'error');
       }
     };
 
@@ -66,14 +91,14 @@ const SingleVariant = () => {
       try {
         const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
         if (!response.ok) {
-          console.error('No KineticRawData entry found for this parent_id');
+          showToast('No Data Found', 'No KineticRawData entry found for this parent_id', 'warning');
           setEntryData2(null);
           return;
         }
         const data = await response.json();
         setEntryData2(data);
       } catch (error) {
-        console.error('Error fetching KineticRawData entry:', error);
+        showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
         setEntryData2(null);
       }
     };
@@ -114,8 +139,7 @@ const SingleVariant = () => {
       link.download = filename;
       link.click();
     } catch (error) {
-      console.error("Error downloading file:", error);
-      alert("Failed to download file. Please try again.");
+      showToast('Download Failed', 'Failed to download file. Please try again.', 'error');
     }
   };
 
@@ -138,18 +162,33 @@ const SingleVariant = () => {
       }
 
       const updatedEntry = await response.json();
-      setEntryData(updatedEntry); // Update entry data to reflect submission status
+      setEntryData(updatedEntry);
 
+      // Create two confetti instances, one from each side of the screen
       confetti({
         particleCount: 100,
         spread: 70,
-        origin: { y: 0.6 },
+        origin: { x: 0, y: 0.6 },
+        colors: ['#06B7DB', '#0F172A'],
+        startVelocity: 30,
+        scalar: 1.2,
+      });
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { x: 1, y: 0.6 },
+        colors: ['#06B7DB', '#0F172A'],
+        startVelocity: 30,
+        scalar: 1.2,
       });
 
-      alert('Submitted for curation successfully!');
+      showToast(
+        'Submitted for curation!', 
+        'Keep an eye on the status for updates.',
+        'success'
+      );
     } catch (error) {
-      console.error('Error submitting for curation:', error);
-      alert('Failed to submit for curation. Please try again.');
+      showToast('Submission Failed', 'Failed to submit for curation. Please try again.', 'error');
     }
   };
 
@@ -372,33 +411,111 @@ const SingleVariant = () => {
   };
 
   const renderDetailView = () => {
-    switch (selectedDetail) {
-      case "Protein Modeled":
-        return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Oligonucleotide ordered":
-        return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
-      case "Plasmid sequence verified":
-        return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case 'Protein induced':
-        return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case 'Expressed':
-        return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Kinetic assay data uploaded":
-        return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case "Wild type kinetic data uploaded":
-        return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case "Thermostability assay data uploaded":
-        return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Wild type thermostability assay data uploaded":
-        return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Melting point values uploaded":
-        return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Gel uploaded":
-        return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+    const checklistItems = [
+      "Protein Modeled",
+      "Oligonucleotide ordered",
+      "Plasmid sequence verified",
+      'Protein induced',
+      'Expressed',
+      "Kinetic assay data uploaded",
+      "Wild type kinetic data uploaded",
+      "Thermostability assay data uploaded",
+      "Wild type thermostability assay data uploaded",
+      "Melting point values uploaded",
+      "Gel uploaded"
+    ];
 
-      default:
-        return <div>Detail view for {selectedDetail}</div>;
-    }
+    const currentIndex = checklistItems.indexOf(selectedDetail);
+    const prevItem = currentIndex > 0 ? checklistItems[currentIndex - 1] : null;
+    const nextItem = currentIndex < checklistItems.length - 1 ? checklistItems[currentIndex + 1] : null;
+
+    const DetailComponent = (() => {
+      switch (selectedDetail) {
+        case "Protein Modeled":
+          return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Oligonucleotide ordered":
+          return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
+        case "Plasmid sequence verified":
+          return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case 'Protein induced':
+          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case 'Expressed':
+          return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Kinetic assay data uploaded":
+          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Wild type kinetic data uploaded":
+          return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Thermostability assay data uploaded":
+          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Wild type thermostability assay data uploaded":
+          return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Melting point values uploaded":
+          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Gel uploaded":
+          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+
+        default:
+          return <div>Detail view for {selectedDetail}</div>;
+      }
+    })();
+
+    return (
+      <div className="flex flex-col">
+        {DetailComponent}
+        
+        {/* Navigation */}
+        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+          {/* Previous Button */}
+          <button
+            onClick={() => prevItem && setSelectedDetail(prevItem)}
+            className={`flex items-center gap-2 transition-colors ${
+              prevItem 
+                ? 'text-gray-600 hover:text-[#06B7DB]' 
+                : 'text-gray-200 cursor-not-allowed'
+            }`}
+            disabled={!prevItem}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm hidden sm:inline">{prevItem}</span>
+          </button>
+
+          {/* Progress Dots with Tooltip */}
+          <Tooltip 
+            content={`Step ${currentIndex + 1} of ${checklistItems.length}`}
+            placement="top"
+          >
+            <div className="hidden md:flex items-center gap-1.5 cursor-help">
+              {checklistItems.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-1 rounded-full transition-all ${
+                    idx === currentIndex
+                      ? 'w-6 bg-[#06B7DB]'
+                      : idx < currentIndex
+                        ? 'w-1.5 bg-[#06B7DB]/30'
+                        : 'w-1.5 bg-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+          </Tooltip>
+
+          {/* Next Button */}
+          <button
+            onClick={() => nextItem && setSelectedDetail(nextItem)}
+            className={`flex items-center gap-2 transition-colors ${
+              nextItem 
+                ? 'text-gray-600 hover:text-[#06B7DB]' 
+                : 'text-gray-200 cursor-not-allowed'
+            }`}
+            disabled={!nextItem}
+          >
+            <span className="text-sm hidden sm:inline">{nextItem}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const getVariantDisplay = (data: any) => {
@@ -488,6 +605,14 @@ const SingleVariant = () => {
             </div>
           </div>
         </div>
+        
+        <Toast
+          show={toastInfo.show}
+          type={toastInfo.type}
+          title={toastInfo.title}
+          message={toastInfo.message}
+          onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
+        />
       </AuthChecker>
     </>
   );
