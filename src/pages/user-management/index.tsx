@@ -13,7 +13,8 @@ import {
   TableRow,
   TableCell
 } from "@nextui-org/table";
-import { Button, Link, Checkbox} from "@nextui-org/react";
+import { useAsyncList } from "@react-stately/data";
+import { Button, Link, Checkbox, Input} from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
@@ -29,6 +30,78 @@ function UserManagement() {
   const [showScrollToBottom, setShowScrollToBottom] = useState(true);
   const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  interface Column {
+    name: string;
+    uid: string;
+    sortable: boolean;
+    width: string;
+  }
+  
+  const columns: Column[] = [
+    { name: "Username", uid: "user_name", sortable: true, width: "40" },
+    { name: "Given Name", uid: "given_name", sortable: true, width: "40" },
+    { name: "Title", uid: "title", sortable: true, width: "40" },
+    { name: "Institution", uid: "institution", sortable: true, width: "40" },
+    { name: "Status/Role", uid: "status", sortable: true, width: "40" },
+    { name: "PI", uid: "pi", sortable: true, width: "40" },
+    { name: "Email", uid: "email", sortable: true, width: "40" },
+    { name: "Registered Date", uid: "registered_date", sortable: true, width: "40" },
+    { name: "Approved", uid: "approved", sortable: true, width: "40" },
+  ];
+  
+interface User {
+  user_name: string;
+  given_name: string;
+  title: string;
+  institution: string;
+  status: string;
+  pi: string;
+  email: string;
+  registered_date: string;
+  approved: boolean;
+}
+
+// `column` is constrained to the keys of `User`
+const list = useAsyncList<User>({
+  async load({ signal }) {
+    const res = await fetch('/api/getAllUsers', { signal });
+    const data: User[] = await res.json();
+    return { items: data };
+  },
+
+  async sort({ items, sortDescriptor }) {
+    const column = sortDescriptor.column as keyof User; // Explicitly define the type of `column`
+  
+    // Ensure column is defined before sorting
+    if (typeof column === 'undefined') {
+      return { items }; // If column is undefined, return items without sorting
+    }
+  
+    // Sorting logic
+    const sortedItems = items.sort((a, b) => {
+      const first = a[column];  // Now TypeScript knows `a[column]` is valid
+      const second = b[column]; // Same for `b[column]`
+
+      let cmp = 0;
+      if (first < second) {
+        cmp = -1;
+      } else if (first > second) {
+        cmp = 1;
+      }
+
+      // Reverse the comparison if sorting is in descending order
+      if (sortDescriptor.direction === 'descending') {
+        cmp *= -1;
+      }
+
+      return cmp;
+    });
+
+    return { items: sortedItems };
+  },
+});
+
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -115,24 +188,38 @@ const filteredUsers: any[] = [];
   console.log("Filtered Users", filteredUsers);
 
     // Sorting function
-    const sortTable = (key: string) => {
-      let direction = 'ascending';
-      if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-        direction = 'descending';
-      }
-      setSortConfig({ key, direction });
-    };
+const sortTable = (key: string) => {
+  let direction = 'ascending';
+  if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+    direction = 'descending';
+  }
+  setSortConfig({ key, direction });
+};
   
-    // Sorting logic
-    const sortedUsers = [...filteredUsers].sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
+const sortedUsers = [...filteredUsers].sort((a, b) => {
+  if (sortConfig.key && a[sortConfig.key] !== undefined && b[sortConfig.key] !== undefined) {
+    const valueA = a[sortConfig.key];
+    const valueB = b[sortConfig.key];
+
+    // Check if values are numerical
+    const isNumeric = !isNaN(valueA) && !isNaN(valueB);
+    if (isNumeric) {
+      // Numerical comparison
+      return sortConfig.direction === 'ascending'
+        ? valueA - valueB
+        : valueB - valueA;
+    } else {
+      // String comparison (case-sensitive)
+      if (valueA < valueB) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
+      if (valueA > valueB) {
         return sortConfig.direction === 'ascending' ? 1 : -1;
       }
-      return 0;
-    });
+    }
+  }
+  return 0;
+});
 
 
   const handleCheckboxChange = (userId: number) => {
@@ -236,7 +323,44 @@ const handleDeleteFirebase = async () => {
       console.error('Error deleting users:', error);
     }
   };
-  
+
+  const filteredAndSortedUsers = [...filteredUsers]
+  .filter((user) =>
+    user.given_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  .sort((a, b) => {
+    if (sortConfig.key) {
+      const valueA = a[sortConfig.key];
+      const valueB = b[sortConfig.key];
+
+      // Handle null or undefined values
+      if ((valueA == null && valueB == null) || (valueA == "" && valueB == "")) return 0; // Both are null/undefined
+      if (valueA == null || valueA== "") return sortConfig.direction === 'ascending' ? 1 : -1; // Null/undefined goes last
+      if (valueB == null || valueB == "") return sortConfig.direction === 'ascending' ? -1 : 1; // Null/undefined goes last
+
+      const valueAStr = valueA.toString().toLowerCase(); // Convert to string and lowercase
+      const valueBStr = valueB.toString().toLowerCase(); // Convert to string and lowercase
+
+      // Check if values are numerical
+      const isNumeric = !isNaN(valueA) && !isNaN(valueB);
+      if (isNumeric) {
+        return sortConfig.direction === 'ascending'
+          ? valueA - valueB
+          : valueB - valueA;
+      } else {
+        // String comparison
+        if (valueAStr < valueBStr) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (valueAStr > valueBStr) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+      }
+    }
+    return 0;
+  });
+
+
   return (
     <AuthChecker minimumStatus="professor">
       <NavBar />
@@ -245,40 +369,6 @@ const handleDeleteFirebase = async () => {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600">{error}</p>
           </div>
-        )}
-        {/* Scroll notification */}
-        {isScrolling && scrollDirection && (
-          <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
-            text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
-            Scrolling to {scrollDirection}
-          </div>
-        )}
-
-        {/* Scroll buttons */}
-        {showScrollToBottom && (
-          <button
-            onClick={() => scrollToPosition('bottom')}
-            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
-              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
-              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
-              flex items-center justify-center"
-            aria-label="Scroll to bottom"
-          >
-            <FaArrowDown size={12} />
-          </button>
-        )}
-
-        {!showScrollToBottom && (
-          <button
-            onClick={() => scrollToPosition('top')}
-            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
-              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
-              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
-              flex items-center justify-center"
-            aria-label="Scroll to top"
-          >
-            <FaArrowUp size={12} />
-          </button>
         )}
 
         <div className="max-w-7xl mx-auto">
@@ -294,53 +384,106 @@ const handleDeleteFirebase = async () => {
             </h1>
             <p className="text-gray-500 mb-8">Members of labs at {user.institution}</p>
 
-            <div className="flex justify-end gap-2 mb-4">
-              <Button
-                color="danger"
-                variant="bordered"
-                onClick={() => {
-                  handleDeleteFirebase();
-                  handleDelete();
-                }}
-                className="rounded-lg text-sm"
-              >
-                Remove User
-              </Button>
-              <Button
-                className="bg-[#06B7DB] text-white rounded-lg text-sm"
-                onClick={handleApprove}
-              >
-                Approve
-              </Button>
-            </div>
+<div className="flex justify-between items-center gap-4 mb-4">
+    <Input
+    isClearable
+    classNames={{
+      base: "w-full sm:w-[200px] md:w-[300px]",
+    }}
+    placeholder="Search for given name..."
+    size="sm"
+    value={searchTerm}
+    onClear={() => setSearchTerm("")}
+    onValueChange={(value) => setSearchTerm(value)}
+    startContent={
+      <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height="1em"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="1em"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" x2="16.65" y1="21" y2="16.65" />
+      </svg>
+    }
+  />
+  <div className="flex gap-2">
+    <Button
+      color="danger"
+      variant="bordered"
+      onClick={() => {
+        handleDeleteFirebase();
+        handleDelete();
+      }}
+      className="rounded-lg text-sm"
+    >
+      Remove User
+    </Button>
+    <Button
+      className="bg-[#06B7DB] text-white rounded-lg text-sm"
+      onClick={handleApprove}
+    >
+      Approve
+    </Button>
+  </div>
+
+
+</div>
+
 
             <div id="user-management-table">
               <Table
                 aria-label="Members Table"
+                sortDescriptor={list.sortDescriptor}
+                onSortChange={list.sort}
                 classNames={{
                   wrapper: "min-h-[400px]",
                 }}
               >
-                <TableHeader>
-                  <TableColumn width="40">Check</TableColumn>
-                  <TableColumn width="40" onClick={() => setSortConfig({ key: 'user_name', direction: 'ascending' })}>Username</TableColumn>
-                  <TableColumn width="40">Given Name</TableColumn>
-                  <TableColumn width="40">Title</TableColumn>
-                  <TableColumn width="40">Institution</TableColumn>
-                  <TableColumn width="40">Status/Role</TableColumn>
-                  <TableColumn width="40">PI</TableColumn>
-                  <TableColumn width="40">Email</TableColumn>
-                  <TableColumn width="40">Registered Date</TableColumn>
-                  <TableColumn width="40">Approved</TableColumn>
-                </TableHeader>
+<TableHeader>
+  <TableColumn width="40">Check</TableColumn>
+        <TableColumn
+          width="40"
+          key="user_name"
+          onClick={() => sortTable("user_name")}
+          allowsSorting
+        >
+          Username
+        </TableColumn>
+
+        <TableColumn
+          width="40"
+          key="given_name"
+          allowsSorting
+          onClick={() => sortTable("given_name")}
+        >
+          Given Name
+        </TableColumn>
+
+        <TableColumn width="40" key="title"
+          onClick={() => sortTable("title")} allowsSorting>Title</TableColumn>
+
+        <TableColumn width="40" key = "institution" onClick={() => sortTable("institution")} allowsSorting>Institution</TableColumn>
+        <TableColumn width="40" key = "status" onClick={() => sortTable("status")} allowsSorting>Status/Role</TableColumn>
+        <TableColumn width="40" key = "pi" onClick={() => sortTable("pi")} allowsSorting>PI</TableColumn>
+        <TableColumn width="40" key = "email" onClick={() => sortTable("email")} allowsSorting>Email</TableColumn>
+        <TableColumn width="40" key = "registered_date" onClick={() => sortTable("registered_date")} allowsSorting>Registered Date</TableColumn>
+        <TableColumn width="40" key = "approved" onClick={() => sortTable("approved")} allowsSorting>Approved</TableColumn>
+      </TableHeader>
 
                 <TableBody>
-                  {sortedUsers.map((user) => (
+                  {filteredAndSortedUsers.map(user => (
                     <TableRow key={user.id}>
                       <TableCell>
                         <Checkbox
                           isSelected={checkedUsers[user.id] || false}
-                          onChange={() => setCheckedUsers(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
+                          onChange={() => handleCheckboxChange(user.id)}
                         />
                       </TableCell>
                       <TableCell>{user.user_name}</TableCell>
@@ -352,8 +495,8 @@ const handleDeleteFirebase = async () => {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.reg_date}</TableCell>
                       <TableCell>
-                        <StatusChip 
-                          status={user.approved ? 'approved' : 'pending_approval'} 
+                        <StatusChip
+                          status={user.approved ? "approved" : "pending_approval"}
                         />
                       </TableCell>
                     </TableRow>
