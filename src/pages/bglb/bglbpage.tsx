@@ -72,7 +72,10 @@ function parseData(data:any) : string [][] {
   return finalData;
 }
 
+<<<<<<< HEAD
 // get an image from s3 given the key
+=======
+>>>>>>> cbc6858593a310c208c1ad32efaaf0491a8497ab
 async function prepImage(imageName: string) {
   const fileType = imageName.split(".")[1];
 
