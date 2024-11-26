@@ -71,12 +71,12 @@ function parseData(data:any) : string [][] {
   return finalData;
 }
 
-async function prepImage(gelImageName: string) {
-  const fileType = gelImageName.split(".")[1];
+async function prepImage(imageName: string) {
+  const fileType = imageName.split(".")[1];
 
   const gel_params = {
     Bucket: "d2dcurebucket",
-    Key: gelImageName,
+    Key: imageName,
   };
 
   return new Promise<string>((resolve, reject) => {
@@ -176,16 +176,14 @@ function BglBPage(props:BglbProps) {
           const tempPlotFileName = tempData.plot_filename
           if (tempPlotFileName) {
             
-            const tempPlotFileKey = "temp/" + tempData.plot_filename;
+            const tempPlotFileKey = "temperature_assays/plots/" + tempData.plot_filename;
             console.log(tempPlotFileName)
             const tempPlotURL = await prepImage(tempPlotFileKey);
             setTempPlotImage(tempPlotURL);
           }
         }
       }
-    } catch (error) {
-        console.error('Error uploading file:', error);
-    }
+    } catch (error) {}
   }
 
   useEffect(() => {
