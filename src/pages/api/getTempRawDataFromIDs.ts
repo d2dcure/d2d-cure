@@ -17,6 +17,7 @@ export default async function handler(req:any, res:any) {
         // slope_units is not included in the select. Something's wrong with the enum defined in the schema 
         assay_date: true,
         cell_data: true,
+        plot_filename: true,
       }
     });
 

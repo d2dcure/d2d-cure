@@ -112,16 +112,19 @@ function BglBPage(props:BglbProps) {
   const [gelImage, setGelImage] = useState <any>();
 
   
-  const displayKineticData = async () => {
+  const displayBglb = async () => {
     try {
       const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${props.id}`);
       const data = await response.json();
 
-      const gelImageName = "gel-images/" + data.gel_filename;
-  
-      // Wait for prepImage to resolve and set the gel image
-      const gelImageURL = await prepImage(gelImageName);
-      setGelImage(gelImageURL)
+      const gelFileName = data.gel_filename
+
+      if (gelFileName){ 
+        const gelImageKey = "gel-images/" + gelFileName;
+        // Wait for prepImage to resolve and set the gel image
+        const gelImageURL = await prepImage(gelImageKey);
+        setGelImage(gelImageURL)
+      }
 
         // const response = await fetch('/api/getKineticData');
       const kineticRawId = data.raw_data_id;
@@ -142,11 +145,13 @@ function BglBPage(props:BglbProps) {
         } else {
           setKineticData(kineticData);
           setKineticTable(parseData(kineticData));
-
-          const kineticPlotFileName = "kinetic_assays/plots/" + kineticData.plot_filename
           
-          const kineticPlotURL = await prepImage(kineticPlotFileName);
-          setKineticPlotImage(kineticPlotURL)
+          const kineticPlotFilename = kineticData.plot_filename;
+          if (kineticPlotFilename) {
+            const kineticPlotFilekey = "kinetic_assays/plots/" + kineticPlotFilename
+            const kineticPlotURL = await prepImage(kineticPlotFilekey);
+            setKineticPlotImage(kineticPlotURL)
+          }
         }
       }
 
@@ -168,12 +173,14 @@ function BglBPage(props:BglbProps) {
         } else {
           setTempData(tempData);
           setTempTable(parseData(tempData));
-
-
-          const tempPlotFileName = "temp/" + tempData.plot_filename;
-          console.log(tempPlotFileName)
-          // const tempPlotURL = await prepImage(tempPlotFileName);
-          // setTempPlotImage(tempPlotURL);
+          const tempPlotFileName = tempData.plot_filename
+          if (tempPlotFileName) {
+            
+            const tempPlotFileKey = "temp/" + tempData.plot_filename;
+            console.log(tempPlotFileName)
+            const tempPlotURL = await prepImage(tempPlotFileKey);
+            setTempPlotImage(tempPlotURL);
+          }
         }
       }
     } catch (error) {
@@ -182,7 +189,7 @@ function BglBPage(props:BglbProps) {
   }
 
   useEffect(() => {
-    displayKineticData();
+    displayBglb();
   }, []);
 
   return (
