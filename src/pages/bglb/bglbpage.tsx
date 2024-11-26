@@ -60,15 +60,17 @@ interface BglbProps {
 function parseData(data:any) : string [][] {
   const buffer64 = Buffer.from(data.cell_data, 'binary').toString('utf8').slice(4, -3).split(';');
   const parsedData = buffer64.map(dataParse);
-  const finalData = new Array();
-  finalData.push(["Row", "1", "2", "3"]);
+  const finalData = [["", "[S] (mm)",  "1", "2", "3"], [ "75.00"], ["25.00"], ["8.33"], ["2.78"], ["0.93"], ["0.31"], ["0.10"], ["0.03"]];
+  let entry = 0;
   for (let i = 0; i < parsedData.length; i = i + 7) {
     const temp = new Array();
     for (let j = i; j < i + 7; j = j + 2) {
       temp.push(parsedData[j]);
     }
-    finalData.push(temp);
+    finalData[entry + 1] = finalData[entry+1].concat(temp);
+    entry += 1;
   }
+  console.log(finalData)
   return finalData;
 }
 
