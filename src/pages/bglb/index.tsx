@@ -7,8 +7,6 @@ function bglbComponent() {
   if (typeof window !== "undefined") {
     const urlParams = new URLSearchParams(window.location.search);
     id = urlParams.get('id');
-    console.log(id);
-
   }
   return (
     <div>

@@ -56,6 +56,7 @@ interface BglbProps {
 
 }
 
+// Converts blob data to a 2d array
 function parseData(data:any) : string [][] {
   const buffer64 = Buffer.from(data.cell_data, 'binary').toString('utf8').slice(4, -3).split(';');
   const parsedData = buffer64.map(dataParse);
@@ -71,18 +72,19 @@ function parseData(data:any) : string [][] {
   return finalData;
 }
 
-async function prepImage(gelImageName: string) {
-  const fileType = gelImageName.split(".")[1];
+// get an image from s3 given the key
+async function prepImage(imageName: string) {
+  const fileType = imageName.split(".")[1];
 
   const gel_params = {
     Bucket: "d2dcurebucket",
-    Key: gelImageName,
+    Key: imageName,
   };
 
   return new Promise<string>((resolve, reject) => {
     s3.getObject(gel_params, function (err, data) {
       if (err) {
-        console.log("Error fetching object: ", err);
+        console.log(`Error fetching object: ${imageName}`, err);
         reject(err);
         return;
       }
@@ -108,8 +110,10 @@ function BglBPage(props:BglbProps) {
   const [tempTable, setTempTable] = useState<string[][]>(default2d);
 
   const [kineticPlotImage, setKineticPlotImage] = useState <string>();
+  const [wtKineticPlotImage, setWTKineticPlotImage] = useState <string>();
   const [tempPlotImage, setTempPlotImage] = useState <string>();
-  const [gelImage, setGelImage] = useState <any>();
+  const [wtTempPlotImage, setWTTempPlotImage] = useState <string>();
+  const [gelImage, setGelImage] = useState <string>();
 
   
   const displayBglb = async () => {
@@ -117,16 +121,19 @@ function BglBPage(props:BglbProps) {
       const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${props.id}`);
       const data = await response.json();
 
-      const gelFileName = data.gel_filename
-
+      const gelFileName = data.gel_filename;
       if (gelFileName){ 
-        const gelImageKey = "gel-images/" + gelFileName;
-        // Wait for prepImage to resolve and set the gel image
-        const gelImageURL = await prepImage(gelImageKey);
-        setGelImage(gelImageURL)
+        try {
+          const gelImageKey = "gel-images/" + gelFileName;
+          // Wait for prepImage to resolve and set the gel image
+          const gelImageURL = await prepImage(gelImageKey);
+          setGelImage(gelImageURL)
+        } catch (err) {
+          console.error(`error fetching gel image ${gelImage}`, err);
+        }
       }
 
-        // const response = await fetch('/api/getKineticData');
+      // get and parse the kinetic assay data
       const kineticRawId = data.raw_data_id;
       const wtKineticRawId = data.WT_raw_data_id;
       const kineticIds = [kineticRawId, wtKineticRawId]
@@ -139,25 +146,28 @@ function BglBPage(props:BglbProps) {
       const kineticDataList = await kineticDataResponse.json();
       for (let i = 0; i < kineticDataList.length; i++) {
         const kineticData = kineticDataList[i];
-        if (kineticData.variant === "WT") {
+        const kineticPlotFilename = kineticData.plot_filename;
+        let kineticPlotURL;
+        if (kineticPlotFilename) {
+          const kineticPlotFilekey = "kinetic_assays/plots/" + kineticPlotFilename;
+          kineticPlotURL = await prepImage(kineticPlotFilekey);
+        }
+
+        if (kineticData.id === wtKineticRawId) {
           setWTKineticData(kineticData);
           setWTKineticTable(parseData(kineticData));
+          setWTKineticPlotImage(kineticPlotURL);
         } else {
           setKineticData(kineticData);
           setKineticTable(parseData(kineticData));
-          
-          const kineticPlotFilename = kineticData.plot_filename;
-          if (kineticPlotFilename) {
-            const kineticPlotFilekey = "kinetic_assays/plots/" + kineticPlotFilename
-            const kineticPlotURL = await prepImage(kineticPlotFilekey);
-            setKineticPlotImage(kineticPlotURL)
-          }
+          setKineticPlotImage(kineticPlotURL);
         }
       }
 
+      // get and parse the temperature assay data
       const tempRawId = data.temp_raw_data_id;
       const wtTempRawId = data.WT_temp_raw_data_id;
-      const tempIds = [tempRawId, wtTempRawId]
+      const tempIds = [tempRawId, wtTempRawId];
       const tempDataResponse = await fetch('/api/getTempRawDataFromIDs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,25 +177,24 @@ function BglBPage(props:BglbProps) {
       const tempDataList = await tempDataResponse.json();
       for (let i = 0; i < tempDataList.length; i++) {
         const tempData = tempDataList[i];
-        if (tempData.id !== tempRawId) {
+        const tempPlotFileName = tempData.plot_filename;
+        let tempPlotURL;
+        if (tempPlotFileName) {
+          const tempPlotFileKey = "temperature_assays/plots/" + tempData.plot_filename;
+          tempPlotURL = await prepImage(tempPlotFileKey);
+        }
+
+        if (tempData.id === wtTempRawId) {
           setWTTempData(tempData);
           setWTTempTable(parseData(tempData));
+          setWTTempPlotImage(tempPlotURL);
         } else {
           setTempData(tempData);
           setTempTable(parseData(tempData));
-          const tempPlotFileName = tempData.plot_filename
-          if (tempPlotFileName) {
-            
-            const tempPlotFileKey = "temp/" + tempData.plot_filename;
-            console.log(tempPlotFileName)
-            const tempPlotURL = await prepImage(tempPlotFileKey);
-            setTempPlotImage(tempPlotURL);
-          }
+          setTempPlotImage(tempPlotURL);          
         }
       }
-    } catch (error) {
-        console.error('Error uploading file:', error);
-    }
+    } catch (error) {}
   }
 
   useEffect(() => {
@@ -206,6 +215,9 @@ function BglBPage(props:BglbProps) {
       <img src = {gelImage}></img>
       <img src = {kineticPlotImage}></img>
       <img src = {tempPlotImage}></img>
+      <div> WT REFERENCE PLOTS</div>
+      <img src = {wtKineticPlotImage}></img>
+      <img src = {wtTempPlotImage}></img>
 
     </div>
   );
@@ -234,4 +246,3 @@ function dataParse(s:string) {
 }
 
 export default BglBPage;
-
