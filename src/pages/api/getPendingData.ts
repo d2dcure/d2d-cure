@@ -4,7 +4,6 @@ export default async function handler(req: any, res: any) {
   try {
     const characterizationData = await prismaProteins.characterizationData.findMany({
       where: {
-        submitted_for_curation: true,
         curated: false
       }
     });
