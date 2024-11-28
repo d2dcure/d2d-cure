@@ -19,7 +19,7 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
+  const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
 
@@ -76,6 +76,13 @@ const SignUpPage = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long.');
+      return; // Stop submission
+    }
+    setPasswordError('');
+    // Proceed with form submission logic
+    console.log('Form submitted successfully!');
     await handleSignUp(email, password);
   };
 
@@ -321,16 +328,30 @@ const SignUpPage = () => {
                     Password
                   </label>
                   <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    variant="bordered"
-                    size="md"
-                    className="w-full text-base"
-                    required
-                  />
+                      id="password"
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setPassword(value);
+
+                        // Real-time validation
+                        if (value.length > 0 && value.length < 6) {
+                          setPasswordError('Password must be at least 6 characters long.');
+                        } else {
+                          setPasswordError('');
+                        }
+                      }}
+                      variant="bordered"
+                      size="md"
+                      className="w-full text-base"
+                      required
+                    />
+                    {passwordError && (
+                      <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                    )}
+
                 </div>
               </div>
 
@@ -488,16 +509,29 @@ const SignUpPage = () => {
                     Password
                   </label>
                   <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    variant="bordered"
-                    size="md"
-                    className="w-full text-base"
-                    required
-                  />
+                      id="password"
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setPassword(value);
+
+                        // Real-time validation
+                        if (value.length > 0 && value.length < 6) {
+                          setPasswordError('Password must be at least 6 characters long.');
+                        } else {
+                          setPasswordError('');
+                        }
+                      }}
+                      variant="bordered"
+                      size="md"
+                      className="w-full text-base"
+                      required
+                    />
+                    {passwordError && (
+                      <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                    )}
                 </div>
               </div>
 
