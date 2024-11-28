@@ -170,7 +170,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
     }
   
     try {
-      const response = await axios.post('http://127.0.0.1:5003/plot_temperature', formData, {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_temperature', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'json',
       });
