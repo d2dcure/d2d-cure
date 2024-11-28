@@ -424,7 +424,7 @@ const Dashboard = () => {
                     {characterizationData.map((data: any, index: any) => {
                       const variant = renderVariant(data);
                       const viewUrl = 
-                        variant === "XOX" 
+                        variant === "X0X" 
                           ? `/submit/wild_type/${data.id}` 
                           : `/submit/single_variant/${data.id}`;
 

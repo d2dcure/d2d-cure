@@ -17,15 +17,10 @@ import confetti from 'canvas-confetti';
 
 
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
-import ProteinModeledView from '@/components/submission/ProteinModeledView';
-import OligonucleotideOrderedView from '@/components/submission/OligonucleotideOrderedView';
-import PlasmidSequenceVerifiedView from '@/components/submission/PlasmidSequenceVerifiedView';
 import ProteinInducedView from '@/components/submission/ProteinInducedView';
 import ExpressedView from '@/components/submission/ExpressedView';
 import KineticAssayDataView from '@/components/submission/KineticAssayDataView';
-import WildTypeKineticDataView from '@/components/submission/WildTypeKineticDataView';
 import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
-import WildTypeThermoDataView from '@/components/submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
 
@@ -102,23 +97,6 @@ const SingleVariant = () => {
     setEntryData((prevData:any) => ({ ...prevData, ...newData }));
   };
 
-  // for downloading the AB1 file from the checklist view, if it exists 
-  const handleAB1Download = async (filename: string) => {
-    try {
-      const url = await s3.getSignedUrlPromise("getObject", {
-        Bucket: "d2dcurebucket",
-        Key: `sequencing/${filename}`,
-      });
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      alert("Failed to download file. Please try again.");
-    }
-  };
-
   const submitForCuration = async () => {
     if (!id) {
       alert('Invalid entry ID');
@@ -156,15 +134,10 @@ const SingleVariant = () => {
 
   const renderChecklistTable = () => {
     const checklistItems = [
-      "Protein Modeled",
-      "Oligonucleotide ordered",
-      "Plasmid sequence verified",
       'Protein induced',
       'Expressed',
       "Kinetic assay data uploaded",
-      "Wild type kinetic data uploaded",
       "Thermostability assay data uploaded",
-      "Wild type thermostability assay data uploaded",
       "Melting point values uploaded",
       "Gel uploaded"
     ];
@@ -172,22 +145,6 @@ const SingleVariant = () => {
     // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
       switch (item) {
-        case "Protein Modeled":
-          return entryData.Rosetta_score === null
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Oligonucleotide ordered":
-          return entryData.oligo_ordered === false
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Plasmid sequence verified":
-          return entryData.plasmid_verified === false
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Protein induced":
-          return entryData.expressed === null
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Expressed":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
@@ -196,16 +153,8 @@ const SingleVariant = () => {
           return entryData.KM_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Wild type kinetic data uploaded":
-          return entryData.WT_raw_data_id === 0
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Thermostability assay data uploaded":
           return entryData.T50 === null
-            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Wild type thermostability assay data uploaded":
-          return entryData.WT_temp_raw_data_id === 0
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Melting point values uploaded":
@@ -222,14 +171,6 @@ const SingleVariant = () => {
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold">ΔΔG =</span>
-            <span>{entryData.Rosetta_score} REU</span>
-          </div>
-        );
-      }
 
       if (item === "Expressed" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
@@ -324,18 +265,7 @@ const SingleVariant = () => {
               </TableCell>
               <TableCell>{item}</TableCell>
               <TableCell className="text-left font-medium text-gray-600">
-                {item === "Plasmid sequence verified" && entryData.ab1_filename ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="text-[#06B7DB] hover:underline text-sm font-semibold"
-                      onClick={() => handleAB1Download(entryData.ab1_filename)}
-                    >
-                      Download
-                    </button>
-                  </div>
-                ) : (
-                  renderAdditionalInfo(item)
-                )}
+               {renderAdditionalInfo(item)} 
               </TableCell>
               <TableCell>
                 <div className="relative flex items-center justify-center gap-2">
@@ -373,29 +303,18 @@ const SingleVariant = () => {
 
   const renderDetailView = () => {
     switch (selectedDetail) {
-      case "Protein Modeled":
-        return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Oligonucleotide ordered":
-        return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
-      case "Plasmid sequence verified":
-        return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case 'Protein induced':
         return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case 'Expressed':
         return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Kinetic assay data uploaded":
         return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case "Wild type kinetic data uploaded":
-        return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
       case "Thermostability assay data uploaded":
         return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Wild type thermostability assay data uploaded":
-        return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Melting point values uploaded":
         return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
       case "Gel uploaded":
         return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-
       default:
         return <div>Detail view for {selectedDetail}</div>;
     }

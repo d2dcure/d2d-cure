@@ -49,6 +49,8 @@ def plot_kinetic():
             log_file.write("\nSTART LOG\n")
 
     variant_name = request.form['variant-name']
+    if variant_name == "X0X":
+        variant_name = "WT"
 
     if 'file' not in request.files:
         return 'No file part', 400
@@ -326,6 +328,8 @@ def plot_kinetic():
 def plot_temperature():
     file = request.files.get('file')
     variant_name = request.form.get('variant-name', 'Thermostability Assay Data')
+    if variant_name == "X0X":
+        variant_name = "WT"
 
     if not file:
         return jsonify({'error': 'No file provided'}), 400
