@@ -183,7 +183,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     );
 
     try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plotit', formData, {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -219,7 +219,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     );
 
     try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plotit', formData, {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true, // fix
       });
