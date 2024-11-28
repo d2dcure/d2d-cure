@@ -9,7 +9,7 @@ import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import GelUploadedView from '@/components/single_variant_submission/GelUploadedView';
+import GelUploadedView from '@/components/submission/GelUploadedView';
 import { useRouter } from 'next/router';
 import Toast from '@/components/Toast';
 import { Card, CardBody } from "@nextui-org/react";

@@ -34,7 +34,7 @@ const SubmitPage = () => {
   const [newEntry, setNewEntry] = useState<any>();
 
 
-  const handleSubmit = () => {
+  const handleSubmitSingleVar = () => {
     setError('');
     setEntered('null');
     // Regular expression to match the format {resid}{resnum}{resmut}
@@ -55,7 +55,7 @@ const SubmitPage = () => {
       return;
     }
   
-    // Variant the user entered is valid 
+    // check if variant the user entered is valid + show list of other variants from same school
     console.log('Variant is valid:', { resid, resnum, resmut });
     setEntered(resid); 
     setResid(resid); 
@@ -69,6 +69,25 @@ const SubmitPage = () => {
     );
 
     setMatchedData(filteredData);
+  };
+
+  const handleSubmitWT = () => {
+    setError('');
+    setEntered('null');
+
+    setEntered('X'); 
+    setResid('X'); 
+    setResnum('0'); 
+    setResmut('X'); 
+    const filteredData = charData.filter((data) => 
+    String(data.resid) === 'X' &&
+    String(data.resnum) === '0' &&
+    String(data.resmut) === 'X' &&
+    String(data.institution) === user?.institution 
+    );
+
+    setMatchedData(filteredData);
+
   };
 
   const handleCreateNewDataset = async () => {
@@ -96,7 +115,6 @@ const SubmitPage = () => {
       const newDataEntry = await response.json();
       setNewEntry(newDataEntry);
       console.log("New dataset created successfully!", newDataEntry);
-      //router.push(`/submit/single_variant/${newEntry.id}`);
 
   
     } catch (error) {
@@ -105,14 +123,13 @@ const SubmitPage = () => {
     }
   };
 
-  const handleSelectDataset = (id:any) => {
-    router.push(`/submit/single_variant/${id}`);
-  };
-
 
   // for new dataset navigation to work 
   useEffect(() => {
-    if (newEntry && newEntry.id) {
+    if (newEntry && newEntry.id && newEntry.resid == 'X') {
+      router.push(`/submit/wild_type/${newEntry.id}`);
+    } 
+    else if (newEntry && newEntry.id) {
       router.push(`/submit/single_variant/${newEntry.id}`);
     }
   }, [newEntry, router]);
@@ -261,7 +278,7 @@ const SubmitPage = () => {
                         </div>
 
                         <Button
-                          onClick={handleSubmit}
+                          onClick={handleSubmitSingleVar}
                           className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                           radius="sm"
                         >
@@ -302,7 +319,17 @@ const SubmitPage = () => {
                               {matchedData.map((item) => (
                                 <TableRow key={item.id}>
                                   <TableCell>
-                                    <StatusChip status="in_progress" />
+                                  <StatusChip 
+                                    status={
+                                      item.submitted_for_curation 
+                                        ? item.approved_by_pi 
+                                          ? 'approved' 
+                                          : !item.curated 
+                                            ? 'pending_approval' 
+                                            : 'in_progress'
+                                        : 'in_progress'
+                                    } 
+                                  />
                                   </TableCell>
                                   <TableCell>BglB</TableCell>
                                   <TableCell>{`${item.resid}${item.resnum}${item.resmut}`}</TableCell>
@@ -335,10 +362,109 @@ const SubmitPage = () => {
 
                   {/* Wild Type Form */}
                   {selection === 'wild_type' && (
-                    <div className="bg-white rounded-lg p-6 border">
-                      <h2 className="text-2xl font-light mb-6">Wild Type Submission</h2>
-                      {/* Add your wild type form content here */}
+                  <div>
+                    <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+                      <div className="w-full md:w-auto min-w-[200px]">
+                        <label htmlFor="enzyme" className="block mb-2">
+                          Enzyme
+                        </label>
+                        <Select
+                          size="sm"
+                          id="enzyme"
+                          value={enzyme}
+                          onChange={(e) => setEnzyme(e.target.value)}
+                          label="Select Enzyme"
+                          className="w-full"
+                        >
+                          {enzymeList.map((enzyme) => (
+                            <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                              {enzyme.abbr}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                      </div>
+
+                      <Button
+                        onClick={handleSubmitWT}
+                        className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
+                        radius="sm"
+                      >
+                        Search
+                      </Button>
                     </div>
+
+                    {error && (
+                      <div className="text-red-500 mt-4">{error}</div>
+                    )}
+
+                    {entered !== 'null' && (
+                      <div className="mt-8">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-small text-default-400">
+                            {matchedData.length} records found
+                          </span>
+                        </div>
+
+                        <Table 
+                          aria-label="Variant records"
+                          classNames={{
+                            base: "max-h-[400px]",
+                            table: "min-h-[100px]",
+                            wrapper: "max-h-[400px]"
+                          }}
+                        >
+                          <TableHeader>
+                            <TableColumn>STATUS</TableColumn>
+                            <TableColumn>ENZYME</TableColumn>
+                            <TableColumn>VARIANT</TableColumn>
+                            <TableColumn>CREATOR</TableColumn>
+                            <TableColumn>ID</TableColumn>
+                            <TableColumn>COMMENTS</TableColumn>
+                            <TableColumn>ACTIONS</TableColumn>
+                          </TableHeader>
+                          <TableBody>
+                            {matchedData.map((item) => (
+                              <TableRow key={item.id}>
+                                <TableCell>
+                                <StatusChip 
+                                    status={
+                                      item.submitted_for_curation 
+                                        ? item.approved_by_pi 
+                                          ? 'approved' 
+                                          : !item.curated 
+                                            ? 'pending_approval' 
+                                            : 'in_progress'
+                                        : 'in_progress'
+                                    } 
+                                  />
+                                </TableCell>
+                                <TableCell>BglB</TableCell>
+                                <TableCell>{`WT`}</TableCell>
+                                <TableCell>{item.creator || 'Unknown'}</TableCell>
+                                <TableCell>{item.id}</TableCell>
+                                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
+                                  {item.comments || 'No comments'}
+                                </TableCell>
+                                <TableCell>
+                                  <Link href={`/submit/wild_type/${item.id}`} className="text-[#06B7DB]">
+                                    View
+                                  </Link>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+
+                        <Button
+                          className="mt-6 border border-[#06B7DB] text-[#06B7DB] hover:bg-[#06B7DB] hover:text-white"
+                          variant="bordered"
+                          onClick={handleCreateNewDataset}
+                        >
+                          Create New Dataset
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   )}
                 </div>
               )}
