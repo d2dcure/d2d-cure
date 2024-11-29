@@ -43,7 +43,7 @@ const Toast = ({
     }
   }, [show, duration, onClose]);
 
-  const getIconAndHelper = () => {
+  const getIcon = () => {
     switch (type) {
       case 'success':
         return {
@@ -88,7 +88,7 @@ const Toast = ({
         <div className="flex items-center gap-4 p-4">
           <div className={`h-10 w-10 rounded-full flex-shrink-0 flex items-center justify-center ${getTypeStyles()}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {icon}
+              {getIcon()}
             </svg>
           </div>
           
