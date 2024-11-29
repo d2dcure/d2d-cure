@@ -161,7 +161,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
 
   return (
     <Card className="bg-white">
-      <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
+      <CardHeader className="flex flex-col items-start px-4 sm:px-6 pt-6 pb-4 border-b border-gray-100">
         <button 
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
@@ -186,15 +186,15 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
         </p>
       </CardHeader>
 
-      <CardBody className="px-6 py-6 space-y-6">
+      <CardBody className="px-4 sm:px-6 py-6 space-y-6">
         {kineticRawDataEntryData && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <h3 className="font-medium text-gray-900 mb-4">Experiment Details</h3>
 
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
                         <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -285,72 +285,82 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
 
               {plotImageUrl && (
                 <div className="p-4 bg-gray-50 rounded-xl h-full">
-                  <img src={plotImageUrl} alt="Plot Image" className="w-full h-auto" />
+                  <img src={plotImageUrl} alt="Plot Image" className="w-full h-auto object-contain" />
                 </div>
               )}
             </div>
 
             {kineticAssayData.length > 0 && (
-              <Table 
-                aria-label="Kinetic assay data table"
-                classNames={{
-                  wrapper: "min-h-[400px]",
-                }}
-              >
-                <TableHeader>
-                  <TableColumn>Row</TableColumn>
-                  <TableColumn>[S] (mM)</TableColumn>
-                  <TableColumn>1</TableColumn>
-                  <TableColumn>2</TableColumn>
-                  <TableColumn>3</TableColumn>
-                </TableHeader>
-                <TableBody>
-                  {rowLabels.map((rowLabel, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{rowLabel}</TableCell>
-                      <TableCell>{sValues[index]}</TableCell>
-                      <TableCell>{kineticAssayData[index + 4]?.[2] || ''}</TableCell>
-                      <TableCell>{kineticAssayData[index + 4]?.[3] || ''}</TableCell>
-                      <TableCell>{kineticAssayData[index + 4]?.[4] || ''}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table 
+                  aria-label="Kinetic assay data table"
+                  classNames={{
+                    wrapper: "min-h-[400px]",
+                    table: "min-w-full",
+                  }}
+                >
+                  <TableHeader>
+                    <TableColumn>Row</TableColumn>
+                    <TableColumn>[S] (mM)</TableColumn>
+                    <TableColumn>1</TableColumn>
+                    <TableColumn>2</TableColumn>
+                    <TableColumn>3</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {rowLabels.map((rowLabel, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{rowLabel}</TableCell>
+                        <TableCell>{sValues[index]}</TableCell>
+                        <TableCell>{kineticAssayData[index + 4]?.[2] || ''}</TableCell>
+                        <TableCell>{kineticAssayData[index + 4]?.[3] || ''}</TableCell>
+                        <TableCell>{kineticAssayData[index + 4]?.[4] || ''}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </div>
         )}
 
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-gray-900">Available Wild Type Data</h3>
-          <Table aria-label="Available wild type data">
-            <TableHeader>
-              <TableColumn>Enzyme</TableColumn>
-              <TableColumn>Date Assayed</TableColumn>
-              <TableColumn>Uploaded By</TableColumn>
-              <TableColumn>Actions</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {kineticData.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>BglB</TableCell>
-                  <TableCell>{row.assay_date}</TableCell>
-                  <TableCell>{row.user_name}</TableCell>
-                  <TableCell>
-                    <button
-                      onClick={() => updateWTRawDataId(row.id)}
-                      className="text-[#06B7DB] hover:text-[#05a5c6]"
-                    >
-                      Select
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table 
+              aria-label="Available wild type data"
+              classNames={{
+                table: "min-w-full",
+              }}
+            >
+              <TableHeader>
+                <TableColumn>Enzyme</TableColumn>
+                <TableColumn>Date Assayed</TableColumn>
+                <TableColumn>Uploaded By</TableColumn>
+                <TableColumn>Actions</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {kineticData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>BglB</TableCell>
+                    <TableCell>{row.assay_date}</TableCell>
+                    <TableCell>{row.user_name}</TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => updateWTRawDataId(row.id)}
+                        className="text-[#06B7DB] hover:text-[#05a5c6]"
+                      >
+                        Select
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </CardBody>
 
-      <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
+      <CardFooter className="px-4 sm:px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
         <span className="text-xs text-gray-500">
           Select a wild type dataset to continue
         </span>

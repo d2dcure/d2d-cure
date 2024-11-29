@@ -550,7 +550,7 @@ const DataPage = () => {
                         <div className="mb-6">
                           <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
                           
-                          <Link href="#" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
+                          <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view?usp=sharing" target="_blank" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
                             How is the data calculated?
                           </Link>
                           
@@ -849,9 +849,8 @@ const DataPage = () => {
                       isHeaderSticky
                       aria-label="BglB Variant Characterization Data"
                       classNames={{
-                        // base: "max-h-[3000px] rounded-lg",
-                        // table: "min-h-[600px] min-w-[800px]",
-                        // wrapper: "w-full"
+                        th: "text-default-500 bg-default-100/50 font-medium py-3 px-4",
+                        tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm  hover:rounded-lg", // Subtle hover effect
                       }}
                     >
                       <TableHeader>
@@ -1048,11 +1047,11 @@ const DataPage = () => {
                     <Pagination
                       showControls
                       classNames={{
-                        cursor: "bg-foreground text-background",
-                        wrapper: "justify-center gap-0 sm:gap-2",
-                        item: "w-8 h-8 sm:w-10 sm:h-10",
-                        next: "w-8 h-8 sm:w-10 sm:h-10",
-                        prev: "w-8 h-8 sm:w-10 sm:h-10",
+                        cursor: "bg-[#06B7DB] text-white font-medium",
+                        wrapper: "justify-center gap-1 sm:gap-2",
+                        item: "w-8 h-8 sm:w-9 sm:h-9 text-sm",
+                        next: "w-8 h-8 sm:w-9 sm:h-9 bg-default-100/50",
+                        prev: "w-8 h-8 sm:w-9 sm:h-9 bg-default-100/50",
                       }}
                       color="default"
                       page={page}

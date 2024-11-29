@@ -69,11 +69,11 @@ const Toast = ({
   if (!show) return null;
 
   return (
-    <div className={`
-      fixed top-4 right-4 z-50 transform transition-all duration-700 ease-out
+    <div className={
+      `fixed top-4 right-4 z-50 transform transition-all duration-700 ease-out
       ${mounted ? 'translate-y-0' : '-translate-y-[200%]'}
-      ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-    `}>
+      ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`
+    }>
       <div className="backdrop-blur-md bg-white dark:bg-gray-800/30 rounded-lg shadow-lg relative">
         <div className="flex items-center gap-4 p-4">
           <div className={`h-10 w-10 rounded-full flex-shrink-0 flex items-center justify-center ${getTypeStyles()}`}>
@@ -109,12 +109,12 @@ const Toast = ({
               <button
                 key={index}
                 onClick={action.onClick}
-                className={`
-                  px-3 py-1.5 text-xs rounded-md transition-colors font-medium
+                className={
+                  `px-3 py-1.5 text-xs rounded-md transition-colors font-medium
                   ${action.variant === 'secondary' 
                     ? 'text-[#06B7DB] bg-[#06B7DB]/10 hover:bg-[#06B7DB]/20' 
-                    : 'text-white bg-[#06B7DB] hover:bg-[#05a6c7]'}
-                `}
+                    : 'text-white bg-[#06B7DB] hover:bg-[#05a6c7]'}`
+                }
               >
                 {action.label}
               </button>
@@ -126,4 +126,4 @@ const Toast = ({
   );
 };
 
-export default Toast; 
+export default Toast;

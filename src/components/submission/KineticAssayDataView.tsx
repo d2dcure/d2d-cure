@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import s3 from '../../../s3config'; 
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
+import {Button} from "@nextui-org/button";
 
 interface KineticAssayDataViewProps {
   entryData: any;
@@ -41,6 +42,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState('');
+
+  // Add a new state for loading
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchKineticRawDataEntryData = async () => {
@@ -262,48 +266,49 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   };
 
   const handleSave = async () => {
-    // Collect necessary data
-    const user_name = user.user_name;
-    const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
-    const slope_units = kineticAssayData[1][4];
-    const yield_value = entryData.yield_avg;
-    const yield_units = kineticAssayData[1][6];
-    const dilution = kineticAssayData[2][7];
-    let purification_date = kineticAssayData[2][8];
-    if (purification_date && purification_date.includes('#')) {
-      purification_date = null;
-    }
-    let assay_date = kineticAssayData[2][9];
-    if (assay_date && assay_date.includes('#')) {
-      assay_date = null;
-    }
-    const parent_id = entryData.id;
-
-    // Kinetic constants
-    const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
-
-    // Prepare data to send
-    const dataToSend = {
-      user_name,
-      variant,
-      slope_units,
-      yield: yield_value,
-      yield_units,
-      dilution,
-      purification_date,
-      assay_date,
-      parent_id,
-      kcat,
-      kcat_SD,
-      KM,
-      KM_SD,
-      kcat_over_KM,
-      kcat_over_KM_SD,
-      csv_filename: '',
-      plot_filename: '',
-    };
-
+    setIsSubmitting(true);
     try {
+      // Collect necessary data
+      const user_name = user.user_name;
+      const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
+      const slope_units = kineticAssayData[1][4];
+      const yield_value = entryData.yield_avg;
+      const yield_units = kineticAssayData[1][6];
+      const dilution = kineticAssayData[2][7];
+      let purification_date = kineticAssayData[2][8];
+      if (purification_date && purification_date.includes('#')) {
+        purification_date = null;
+      }
+      let assay_date = kineticAssayData[2][9];
+      if (assay_date && assay_date.includes('#')) {
+        assay_date = null;
+      }
+      const parent_id = entryData.id;
+
+      // Kinetic constants
+      const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
+
+      // Prepare data to send
+      const dataToSend = {
+        user_name,
+        variant,
+        slope_units,
+        yield: yield_value,
+        yield_units,
+        dilution,
+        purification_date,
+        assay_date,
+        parent_id,
+        kcat,
+        kcat_SD,
+        KM,
+        KM_SD,
+        kcat_over_KM,
+        kcat_over_KM_SD,
+        csv_filename: '',
+        plot_filename: '',
+      };
+
       // Generate filenames
       const csvFilename = generateFilename('', '', 'csv');
       const mentenPlotFilename = generateFilename('', '', 'png');
@@ -401,6 +406,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     } catch (error: any) {
       console.error('Error saving data:', error);
       alert('Error saving data: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -737,15 +744,61 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         <button 
           onClick={handleSave}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!kineticAssayData.length}
+          disabled={!kineticAssayData.length || isSubmitting}
         >
-          Save
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            'Save'
+          )}
         </button>
         
         <span className="text-xs text-gray-500">
           Data file and plots required
         </span>
       </CardFooter>
+
+      {/* Add the template card section */}
+      <div className="px-6 pb-6">
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-start">
+            <span className="pr-3 bg-white text-sm font-medium text-gray-500">
+              Template Files
+            </span>
+          </div>
+        </div>
+
+        <Card className="h-[200px] w-[400px]">
+          <CardBody className="text-4xl pt-8 font-light overflow-hidden">
+            <img 
+              src="/resources/images/Microsoft_Excel-Logo.wine.svg"
+              className="pl-4 pt-2 w-14 h-12 select-none pointer-events-none" 
+              draggable="false"
+              alt="Excel logo" 
+            />
+            <h1 className="text-lg pl-5 pt-2 font-regular">Kinetic Assay Data</h1>
+          </CardBody>
+          <CardFooter>
+            <Button 
+              variant="bordered" 
+              onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
+              className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
+              style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
+            >
+              <span className="group-hover:text-white">Download Template</span>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </Card>
   );
 };

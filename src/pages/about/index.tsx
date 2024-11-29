@@ -621,12 +621,11 @@ const networkLogos = [
 
   // row3
   { src: "/resources/school_logos/row3/Creighton_logo.png", alt: "Creighton University" },
-  { src: "/resources/school_logos/row3/CSU_Fresno_logo.png", alt: "CSU Fresno" },
+  { src: "/resources/school_logos/row3/CSUFresno_logo.png", alt: "CSU Fresno" },
   { src: "/resources/school_logos/row3/Gettysburg_logo.png", alt: "Gettysburg College" },
   { src: "/resources/school_logos/row3/GHC_logo.png", alt: "Georgia Highlands College" },
   { src: "/resources/school_logos/row3/Hofstra_logo.png", alt: "Hofstra University" },
-  { src: "/resources/school_logos/row3/JCQUST_logo.png", alt: "JCQUST" },
-  { src: "/resources/school_logos/row3/Juniata_logo.png", alt: "Juniata College" },
+   { src: "/resources/school_logos/row3/Juniata_logo.png", alt: "Juniata College" },
   { src: "/resources/school_logos/row3/KCKCC_logo.png", alt: "Kansas City Kansas Community College" },
   { src: "/resources/school_logos/row3/La_Sierra_logo.png", alt: "La Sierra University" },
   { src: "/resources/school_logos/row3/NSU_logo.png", alt: "Norfolk State University" },

@@ -407,9 +407,7 @@ const Dashboard = () => {
                 <Table 
                   aria-label="Variant Profiles"
                   classNames={{
-                    base: "max-h-[400px]", // Fixed height
                     table: "min-h-[100px]",
-                    wrapper: "max-h-[400px]" // Makes table scrollable
                   }}
                 >
                   <TableHeader>
@@ -474,23 +472,23 @@ const Dashboard = () => {
                     </Link>
                   </div>
                 </div>
-                <Table 
-                  aria-label="Gel Image Uploads"
-                  classNames={{
-                    base: "max-h-[400px]",
-                    table: "min-h-[100px]",
-                    wrapper: "max-h-[400px]"
-                  }}
-                >
-                  <TableHeader>
-                    <TableColumn>PREVIEW</TableColumn>
-                    <TableColumn>DATE</TableColumn>
-                    <TableColumn>FILENAME</TableColumn>
-                    <TableColumn>INSTITUTION</TableColumn>
-                    <TableColumn>Actions</TableColumn>
-                  </TableHeader>
-                  <TableBody>
-                    {(isLoading || gelImages.length === 0) ? (
+                {isLoading ? (
+                  <Table 
+                    aria-label="Gel Image Uploads Loading"
+                    classNames={{
+                      base: "max-h-[400px]",
+                      table: "min-h-[100px]",
+                      wrapper: "max-h-[400px]"
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>PREVIEW</TableColumn>
+                      <TableColumn>DATE</TableColumn>
+                      <TableColumn>FILENAME</TableColumn>
+                      <TableColumn>INSTITUTION</TableColumn>
+                      <TableColumn>Actions</TableColumn>
+                    </TableHeader>
+                    <TableBody>
                       <TableRow>
                         <TableCell>
                           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
@@ -508,8 +506,56 @@ const Dashboard = () => {
                           <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      gelImages.map((image, index) => (
+                    </TableBody>
+                  </Table>
+                ) : gelImages.length === 0 ? (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <svg 
+                          className="h-5 w-5 text-gray-600" 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="12" y1="18" x2="12" y2="12" />
+                          <line x1="9" y1="15" x2="15" y2="15" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-gray-600">
+                          You haven&apos;t uploaded any gel images yet.{' '}
+                          <Link href="/submit/gel_image_upload" className="font-medium text-[#06B7DB] hover:text-[#06B7DB]/80">
+                            Upload your first image
+                          </Link>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Table 
+                    aria-label="Gel Image Uploads"
+                    classNames={{
+                      base: "max-h-[400px]",
+                      table: "min-h-[100px]",
+                      wrapper: "max-h-[400px]"
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>PREVIEW</TableColumn>
+                      <TableColumn>DATE</TableColumn>
+                      <TableColumn>FILENAME</TableColumn>
+                      <TableColumn>INSTITUTION</TableColumn>
+                      <TableColumn>Actions</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {gelImages.map((image, index) => (
                         <TableRow key={index}>
                           <TableCell>
                             <img
@@ -541,10 +587,10 @@ const Dashboard = () => {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </div>
 

@@ -18,6 +18,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
   const [WT, setWT] = useState<string>('');
   const [variant, setVariant] = useState<string>('');
   const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const expectedWTScore = -1089.697; // Example expected score
 
@@ -89,6 +90,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
     const isValid = validateScores();
     if (!isValid) return;
 
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
         method: 'POST',
@@ -105,9 +107,11 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
       const updatedEntry = await response.json();
       updateEntryData(updatedEntry);
-      setCurrentView('checklist'); // Go back to checklist after saving
+      setCurrentView('checklist');
     } catch (error) {
       console.error('Error updating Rosetta score:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -219,9 +223,19 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           <button 
             onClick={updateRosettaScore}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!WT || !variant || validationMessages.length > 0}
+            disabled={!WT || !variant || validationMessages.length > 0 || isSubmitting}
           >
-            Submit
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              'Submit'
+            )}
           </button>
 
           {/* Move success message here */}

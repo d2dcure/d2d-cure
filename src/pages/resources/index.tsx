@@ -83,8 +83,8 @@ const Resources = () => {
               href={item.link}
               isPressable
             >
-              <CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
-                <h3 className="pl-4 pt-2">{item.title}</h3>
+              <CardBody className="text-xl md:text-2xl lg:text-3xl font-light overflow-hidden">
+                <p className="pl-4 pt-2">{item.title}</p>
               </CardBody>
               <CardFooter>
                 <span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
