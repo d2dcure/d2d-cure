@@ -9,7 +9,6 @@ import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 
 const columns = [
-    { name: "Approved", uid: "approved_by_pi", sortable: false},
     { name: "Status", uid: "status", sortable: false},
     { name: "ID", uid: "id", sortable: true },
     { name: "Variant", uid: "variant", sortable: true },
@@ -45,7 +44,7 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "approved_by_pi", "status", "id", "variant", "creator", "assay_date", "km", "kcat", "t50", "comments", "actions"
+        "status", "id", "variant", "creator", "assay_date", "km", "kcat", "t50", "comments", "actions"
     ]));
 
     const headerColumns = React.useMemo(() => {
@@ -111,19 +110,6 @@ const CuratePage = () => {
                 //         </Chip>
                 //     </div>
                 // );
-            case "approved_by_pi":
-                // TODO: Discuss is this needed?
-                if (viewAs === "ADMIN" && data.approved_by_pi) {
-                    return (
-                        <Chip className="bg-[#D4F4D9]" variant="flat">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16" fill="none">
-                                <path d="M10.3684 5.05041L4.86839 12.5504C4.83647 12.594 4.79856 12.6286 4.75683 12.6522C4.7151 12.6757 4.67037 12.6879 4.62519 12.6879C4.58002 12.6879 4.53529 12.6757 4.49356 12.6522C4.45182 12.6286 4.41391 12.594 4.38199 12.5504L1.97574 9.26916C1.91124 9.1812 1.875 9.06191 1.875 8.93752C1.875 8.81313 1.91124 8.69383 1.97574 8.60588C2.04024 8.51792 2.12772 8.46851 2.21894 8.46851C2.31016 8.46851 2.39764 8.51792 2.46214 8.60588L4.62519 11.5561L9.88199 4.38713C9.94649 4.29917 10.034 4.24976 10.1252 4.24976C10.2164 4.24976 10.3039 4.29917 10.3684 4.38713C10.4329 4.47508 10.4691 4.59438 10.4691 4.71877C10.4691 4.84316 10.4329 4.96245 10.3684 5.05041Z" fill="#17C964"/>
-                            </svg>
-                        </Chip>
-
-                    )
-                }
-                return <></>
             case "id":
                 return data.id
             case "variant":
