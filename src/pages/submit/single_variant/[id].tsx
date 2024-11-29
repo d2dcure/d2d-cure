@@ -17,7 +17,6 @@ import confetti from 'canvas-confetti';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 
-
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinModeledView from '@/components/submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/submission/OligonucleotideOrderedView';
@@ -39,33 +38,60 @@ const SingleVariant = () => {
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
-  const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row 
-  const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row 
+  const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row
+  const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalEntries, setTotalEntries] = useState(0);
-  const [showToast, setShowToast] = useState(false);
+
+  // Toast and modal states
+  const [toastInfo, setToastInfo] = useState<{
+    show: boolean;
+    type: 'error' | 'success' | 'warning' | 'info';
+    title: string;
+    message: string;
+  }>({
+    show: false,
+    type: 'success',
+    title: '',
+    message: '',
+  });
   const [showCompletionToast, setShowCompletionToast] = useState(false);
   const [showItemCompletionToast, setShowItemCompletionToast] = useState<string | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const checklistItems = [
-    "Protein Modeled",
-    "Oligonucleotide ordered",
-    "Plasmid sequence verified",
+    'Protein Modeled',
+    'Oligonucleotide ordered',
+    'Plasmid sequence verified',
     'Protein induced',
     'Expressed',
-    "Kinetic assay data uploaded",
-    "Wild type kinetic data uploaded",
-    "Thermostability assay data uploaded",
-    "Wild type thermostability assay data uploaded",
-    "Melting point values uploaded",
-    "Gel uploaded"
+    'Kinetic assay data uploaded',
+    'Wild type kinetic data uploaded',
+    'Thermostability assay data uploaded',
+    'Wild type thermostability assay data uploaded',
+    'Melting point values uploaded',
+    'Gel uploaded',
   ];
+
+  // Helper function to show toast
+  const showToast = (
+    title: string,
+    message: string,
+    type: 'error' | 'success' | 'warning' | 'info' = 'success'
+  ) => {
+    setToastInfo({
+      show: true,
+      type,
+      title,
+      message,
+    });
+  };
 
   useEffect(() => {
     const fetchEntryData = async () => {
-      if (!id) return; 
+      if (!id) return;
       try {
         const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
         if (!response.ok) {
@@ -74,7 +100,7 @@ const SingleVariant = () => {
         const data = await response.json();
         setEntryData(data);
       } catch (error) {
-        console.error('Error fetching entry data:', error);
+        showToast('Error', 'Failed to fetch entry data. Please try again.', 'error');
       }
     };
 
@@ -88,14 +114,14 @@ const SingleVariant = () => {
       try {
         const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
         if (!response.ok) {
-          console.error('No KineticRawData entry found for this parent_id');
+          showToast('No Data Found', 'No KineticRawData entry found for this parent_id', 'warning');
           setEntryData2(null);
           return;
         }
         const data = await response.json();
         setEntryData2(data);
       } catch (error) {
-        console.error('Error fetching KineticRawData entry:', error);
+        showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
         setEntryData2(null);
       }
     };
@@ -119,7 +145,7 @@ const SingleVariant = () => {
     }
   };
 
-  // Add this function to check if all items are complete
+  // Function to check if all items are complete
   const checkAllComplete = (data: any) => {
     return (
       data.Rosetta_score !== null &&
@@ -136,49 +162,49 @@ const SingleVariant = () => {
     );
   };
 
-  // Add this function to check if an item was just completed
+  // Function to check if an item was just completed
   const checkItemCompletion = (oldData: any, newData: any) => {
     // Check each field to see if it changed from incomplete to complete
     if (oldData.Rosetta_score === null && newData.Rosetta_score !== null) {
-      return "Protein Modeled";
+      return 'Protein Modeled';
     }
     if (oldData.oligo_ordered === false && newData.oligo_ordered === true) {
-      return "Oligonucleotide ordered";
+      return 'Oligonucleotide ordered';
     }
     if (oldData.plasmid_verified === false && newData.plasmid_verified === true) {
-      return "Plasmid sequence verified";
+      return 'Plasmid sequence verified';
     }
     if (oldData.expressed === null && newData.expressed !== null) {
-      return "Protein induced";
+      return 'Protein induced';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
-      return "Expressed";
+      return 'Expressed';
     }
     if (oldData.KM_avg === null && newData.KM_avg !== null) {
-      return "Kinetic assay data uploaded";
+      return 'Kinetic assay data uploaded';
     }
     if (oldData.WT_raw_data_id === 0 && newData.WT_raw_data_id !== 0) {
-      return "Wild type kinetic data uploaded";
+      return 'Wild type kinetic data uploaded';
     }
     if (oldData.T50 === null && newData.T50 !== null) {
-      return "Thermostability assay data uploaded";
+      return 'Thermostability assay data uploaded';
     }
     if (oldData.WT_temp_raw_data_id === 0 && newData.WT_temp_raw_data_id !== 0) {
-      return "Wild type thermostability assay data uploaded";
+      return 'Wild type thermostability assay data uploaded';
     }
     if (oldData.Tm === null && newData.Tm !== null) {
-      return "Melting point values uploaded";
+      return 'Melting point values uploaded';
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
-      return "Gel uploaded";
+      return 'Gel uploaded';
     }
     return null;
   };
 
-  // Modify the updateEntryData function to remove the confetti trigger
+  // Update entry data with completion checks
   const updateEntryData = (newData: any) => {
     const updatedData = { ...entryData, ...newData };
-    
+
     // Check if an individual item was just completed
     const completedItem = checkItemCompletion(entryData, updatedData);
     if (completedItem) {
@@ -187,29 +213,29 @@ const SingleVariant = () => {
 
     setEntryData(updatedData);
 
-    // Check if all items are complete after update, but don't trigger confetti
+    // Check if all items are complete after update
     if (checkAllComplete(updatedData)) {
       setShowCompletionToast(true);
     }
   };
 
-  // for downloading the AB1 file from the checklist view, if it exists 
+  // Download AB1 file
   const handleAB1Download = async (filename: string) => {
     try {
-      const url = await s3.getSignedUrlPromise("getObject", {
-        Bucket: "d2dcurebucket",
+      const url = await s3.getSignedUrlPromise('getObject', {
+        Bucket: 'd2dcurebucket',
         Key: `sequencing/${filename}`,
       });
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       link.click();
     } catch (error) {
-      console.error("Error downloading file:", error);
-      alert("Failed to download file. Please try again.");
+      showToast('Download Failed', 'Failed to download file. Please try again.', 'error');
     }
   };
 
+  // Fetch total entries for pagination
   useEffect(() => {
     const fetchTotalEntries = async () => {
       try {
@@ -217,7 +243,7 @@ const SingleVariant = () => {
         if (!response.ok) throw new Error('Failed to fetch total entries');
         const { total } = await response.json();
         setTotalEntries(total);
-        
+
         // Find current index if id exists
         if (id) {
           const indexResponse = await fetch(`/api/getEntryIndex?id=${id}`);
@@ -302,7 +328,7 @@ const SingleVariant = () => {
 
   const submitForCuration = async () => {
     if (!id) {
-      setShowToast(true);
+      showToast('Error', 'Invalid entry ID', 'error');
       return;
     }
 
@@ -329,13 +355,46 @@ const SingleVariant = () => {
       triggerConfetti();
 
       // Show success toast
-      setShowToast(true);
-
+      showToast(
+        'Submitted for curation!',
+        "We'll notify you when there are any status changes.",
+        'success'
+      );
     } catch (error) {
       console.error('Error submitting for curation:', error);
-      setShowToast(true);
+      showToast('Submission Failed', 'Failed to submit for curation. Please try again.', 'error');
     }
   };
+
+  // Handle variant deletion
+  const handleDelete = async () => {
+    if (!id) return;
+
+    // Close the modal first
+    setShowDeleteModal(false);
+
+    try {
+      const response = await fetch('/api/deleteCharacterizationData', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete variant');
+      }
+
+      // Show success toast and redirect
+      showToast('Variant Deleted', 'The variant has been successfully deleted.', 'success');
+      router.push('/submit');
+    } catch (error) {
+      console.error('Error deleting variant:', error);
+      showToast('Deletion Failed', 'Failed to delete variant. Please try again.', 'error');
+    }
+  };
+  
 
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
@@ -575,33 +634,111 @@ const SingleVariant = () => {
   };
 
   const renderDetailView = () => {
-    switch (selectedDetail) {
-      case "Protein Modeled":
-        return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Oligonucleotide ordered":
-        return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
-      case "Plasmid sequence verified":
-        return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case 'Protein induced':
-        return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case 'Expressed':
-        return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Kinetic assay data uploaded":
-        return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case "Wild type kinetic data uploaded":
-        return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-      case "Thermostability assay data uploaded":
-        return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Wild type thermostability assay data uploaded":
-        return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Melting point values uploaded":
-        return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-      case "Gel uploaded":
-        return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+    const checklistItems = [
+      "Protein Modeled",
+      "Oligonucleotide ordered",
+      "Plasmid sequence verified",
+      'Protein induced',
+      'Expressed',
+      "Kinetic assay data uploaded",
+      "Wild type kinetic data uploaded",
+      "Thermostability assay data uploaded",
+      "Wild type thermostability assay data uploaded",
+      "Melting point values uploaded",
+      "Gel uploaded"
+    ];
 
-      default:
-        return <div>Detail view for {selectedDetail}</div>;
-    }
+    const currentIndex = checklistItems.indexOf(selectedDetail);
+    const prevItem = currentIndex > 0 ? checklistItems[currentIndex - 1] : null;
+    const nextItem = currentIndex < checklistItems.length - 1 ? checklistItems[currentIndex + 1] : null;
+
+    const DetailComponent = (() => {
+      switch (selectedDetail) {
+        case "Protein Modeled":
+          return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Oligonucleotide ordered":
+          return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
+        case "Plasmid sequence verified":
+          return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case 'Protein induced':
+          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case 'Expressed':
+          return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Kinetic assay data uploaded":
+          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Wild type kinetic data uploaded":
+          return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Thermostability assay data uploaded":
+          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Wild type thermostability assay data uploaded":
+          return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Melting point values uploaded":
+          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Gel uploaded":
+          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+
+        default:
+          return <div>Detail view for {selectedDetail}</div>;
+      }
+    })();
+
+    return (
+      <div className="flex flex-col">
+        {DetailComponent}
+        
+        {/* Navigation */}
+        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+          {/* Previous Button */}
+          <button
+            onClick={() => prevItem && setSelectedDetail(prevItem)}
+            className={`flex items-center gap-2 transition-colors ${
+              prevItem 
+                ? 'text-gray-600 hover:text-[#06B7DB]' 
+                : 'text-gray-200 cursor-not-allowed'
+            }`}
+            disabled={!prevItem}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm hidden sm:inline">{prevItem}</span>
+          </button>
+
+          {/* Progress Dots with Tooltip */}
+          <Tooltip 
+            content={`Step ${currentIndex + 1} of ${checklistItems.length}`}
+            placement="top"
+          >
+            <div className="hidden md:flex items-center gap-1.5 cursor-help">
+              {checklistItems.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-1 rounded-full transition-all ${
+                    idx === currentIndex
+                      ? 'w-6 bg-[#06B7DB]'
+                      : idx < currentIndex
+                        ? 'w-1.5 bg-[#06B7DB]/30'
+                        : 'w-1.5 bg-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+          </Tooltip>
+
+          {/* Next Button */}
+          <button
+            onClick={() => nextItem && setSelectedDetail(nextItem)}
+            className={`flex items-center gap-2 transition-colors ${
+              nextItem 
+                ? 'text-gray-600 hover:text-[#06B7DB]' 
+                : 'text-gray-200 cursor-not-allowed'
+            }`}
+            disabled={!nextItem}
+          >
+            <span className="text-sm hidden sm:inline">{nextItem}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const getVariantDisplay = (data: any) => {
@@ -665,36 +802,6 @@ const SingleVariant = () => {
     );
   };
 
-  // Add delete functionality
-  const handleDelete = async () => {
-    if (!id) return;
-
-    // Close the modal first
-    setShowDeleteModal(false);
-
-    try {
-      const response = await fetch('/api/deleteCharacterizationData', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete variant');
-      }
-
-      // Show success toast and redirect
-      setShowToast(true);
-      router.push('/submit');
-
-    } catch (error) {
-      console.error('Error deleting variant:', error);
-      setShowToast(true);
-    }
-  };
-
   return (
     <>
       <NavBar />
@@ -713,37 +820,35 @@ const SingleVariant = () => {
                 <div>
                   <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                     {getVariantDisplay(entryData)}
-                    <Link 
+                    <Link
                       href={`/database/BglB_Characterization?search=${encodeURIComponent(
-                        getVariantDisplay(entryData)
-                          .replace(' BglB', '')
-                          .trim()
+                        getVariantDisplay(entryData).replace(' BglB', '').trim()
                       )}`}
                       className="inline-flex items-center hover:text-[#06B7DB]"
                     >
                       <ExternalLink className="w-5 h-5 stroke-[1.5]" />
                     </Link>
                   </h1>
-                  <StatusChip 
+                  <StatusChip
                     status={
-                      entryData.submitted_for_curation 
-                        ? entryData.approved_by_pi 
-                          ? 'approved' 
-                          : !entryData.curated 
-                            ? 'pending_approval' 
-                            : 'in_progress'
+                      entryData.submitted_for_curation
+                        ? entryData.approved_by_pi
+                          ? 'approved'
+                          : !entryData.curated
+                          ? 'pending_approval'
+                          : 'in_progress'
                         : 'in_progress'
-                    } 
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
-                  <button 
+                  <button
                     className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
                     onClick={() => setShowSubmitModal(true)}
                   >
                     Submit for Review
                   </button>
-                  <button 
+                  <button
                     className="px-4 py-2 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
                     onClick={() => setShowDeleteModal(true)}
                   >
@@ -774,11 +879,14 @@ const SingleVariant = () => {
           </div>
         </div>
       </AuthChecker>
+
+      {/* Toast Notifications */}
       <Toast
-        show={showToast}
-        onClose={() => setShowToast(false)}
-        title="Successfully submitted for curation"
-        message="We'll notify you when there are any status changes."
+        show={toastInfo.show}
+        type={toastInfo.type}
+        title={toastInfo.title}
+        message={toastInfo.message}
+        onClose={() => setToastInfo((prev) => ({ ...prev, show: false }))}
       />
       <Toast
         show={showCompletionToast}
@@ -788,13 +896,13 @@ const SingleVariant = () => {
         type="success"
         actions={[
           {
-            label: "Submit for Review",
+            label: 'Submit for Review',
             onClick: () => {
               setShowCompletionToast(false);
               submitForCuration();
             },
-            variant: "primary"
-          }
+            variant: 'primary',
+          },
         ]}
       />
       <Toast
@@ -805,7 +913,7 @@ const SingleVariant = () => {
         type="success"
       />
 
-      {/* Existing Submit Modal */}
+      {/* Confirmation Modals */}
       <ConfirmationModal
         isOpen={showSubmitModal}
         onClose={() => setShowSubmitModal(false)}
@@ -816,8 +924,6 @@ const SingleVariant = () => {
         cancelText="Cancel"
         confirmButtonColor="primary"
       />
-
-      {/* Add Delete Modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
