@@ -76,7 +76,7 @@ const Toast = ({
 
   if (!show) return null;
 
-  const { icon } = getIconAndHelper();
+//  const { icon } = getIconAndHelper();  why is this here? - Hussain
 
   return (
     <div className={`
