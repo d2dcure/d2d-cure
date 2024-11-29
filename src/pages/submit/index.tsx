@@ -301,9 +301,7 @@ const SubmitPage = () => {
                           <Table 
                             aria-label="Variant records"
                             classNames={{
-                              base: "max-h-[400px]",
                               table: "min-h-[100px]",
-                              wrapper: "max-h-[400px]"
                             }}
                           >
                             <TableHeader>

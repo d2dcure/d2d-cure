@@ -110,32 +110,10 @@ const NavBar = () => {
             <Database className="w-4 h-4 stroke-[1.5]" />
             <span>BglB Characterization</span>
           </div>
-          <ChevronDown className="w-4 h-4 -rotate-90" />
         </Link>
 
         {/* Nested Dropdown */}
-        <div
-          className={`absolute left-full top-0 w-56 ml-0.5 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-left ${
-            activeNestedDropdown === 'characterization'
-              ? 'opacity-100 scale-100 translate-x-0'
-              : 'opacity-0 scale-95 -translate-x-2 pointer-events-none'
-          }`}
-        >
-          <div className="p-1">
-            <Link 
-              href="/database/BglB_Characterization/wildtype"
-              className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
-            >
-              <span>Wildtype Data</span>
-            </Link>
-            <Link 
-              href="/database/BglB_Characterization/variants"
-              className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
-            >
-              <span>Variant Data</span>
-            </Link>
-          </div>
-        </div>
+        
       </div>
 
       {/* Submit Data with nested dropdown */}
@@ -165,19 +143,19 @@ const NavBar = () => {
           >
             <div className="p-1">
               <Link 
-                href="/submit/single-variant"
+                href="/submit"
                 className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
               >
                 <span>Single Variant</span>
               </Link>
               <Link 
-                href="/submit/wildtype"
+                href="/submit"
                 className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
               >
                 <span>Wildtype</span>
               </Link>
               <Link 
-                href="/submit/gel-image"
+                href="/submit/gel_image_upload"
                 className="flex items-center w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
               >
                 <span>Gel Image</span>

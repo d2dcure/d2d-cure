@@ -20,6 +20,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showUploadBox, setShowUploadBox] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Set initial filename from entryData when component mounts
   useEffect(() => {
@@ -81,6 +82,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
       return;
     }
 
+    setIsSubmitting(true);
     const newFileName = `${user.user_name}-BglB-${entryData.resid}${entryData.resnum}${entryData.resmut}-${entryData.id}.ab1`;
 
     try {
@@ -110,11 +112,13 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
       
       const updatedEntry = await response.json();
       updateEntryData(updatedEntry);
-      setShowUploadBox(false); // Hide upload box after successful upload
+      setShowUploadBox(false);
 
     } catch (error) {
       console.error('Error during file upload or database update:', error);
       setFileError('There was an error uploading the file or updating the database. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -282,9 +286,19 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
           <button 
             onClick={updatePlasmid}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!plasmidFile}
+            disabled={!plasmidFile || isSubmitting}
           >
-            Submit
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C9.545 0 5.965 3.93 4.95 8.87c-.197.813.302 1.623.805 2.126A8.07 8.07 0 0112 20c.966 0 1.897-.165 2.754-.479 1.952-1.07 3.36-2.59 3.81-4.574C18.728 13.186 16.524 11 14 11h-2v2h2c.567 0 1.098.149 1.574.426.476.277.815.684 1.005 1.184.427 1.17 1.057 2.097 1.993 2.823 1.329 1.322 2.878 2.002 4.597 2.002 1.719 0 3.268-.68 4.597-2.002 1.329-1.322 2.002-2.878 2.002-4.597 0-1.719-.68-3.268-2.002-4.597-1.329-1.322-2.878-2.002-4.597-2.002-1.719 0-3.268.68-4.597 2.002z"></path>
+                </svg>
+                Submitting
+              </>
+            ) : (
+              'Submit'
+            )}
           </button>
         </div>
         
