@@ -341,11 +341,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-bold text-gray-800">Thermostability Assay Data Upload</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
-            entryData.T50_avg 
+            entryData.T50 
               ? "text-green-700 bg-green-100" 
               : "text-yellow-700 bg-yellow-100"
           }`}>
-            {entryData.T50_avg ? "Complete" : "Incomplete"}
+            {entryData.T50 ? "Complete" : "Incomplete"}
           </span>
         </div>
         <p className="text-sm text-gray-600">

@@ -573,7 +573,17 @@ const SingleVariant = () => {
                     {getStatusStyle(item).text}
                   </span>
                 </TableCell>
-                <TableCell>{item}</TableCell>
+                <TableCell>
+                  <button
+                    onClick={() => {
+                      setCurrentView('detail');
+                      setSelectedDetail(item);
+                    }}
+                    className="text-left hover:text-[#06B7DB] transition-colors duration-200"
+                  >
+                    {item}
+                  </button>
+                </TableCell>
                 <TableCell className="text-left font-medium text-gray-600">
                   {item === "Plasmid sequence verified" && entryData.ab1_filename ? (
                     <div className="flex items-center gap-2">
@@ -753,55 +763,6 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
-  const navigateChecklist = (direction: 'next' | 'prev') => {
-    const currentIndex = checklistItems.indexOf(selectedDetail);
-    if (direction === 'next' && currentIndex < checklistItems.length - 1) {
-      setSelectedDetail(checklistItems[currentIndex + 1]);
-    } else if (direction === 'prev' && currentIndex > 0) {
-      setSelectedDetail(checklistItems[currentIndex - 1]);
-    }
-  };
-
-  const renderChecklistNavigation = () => {
-    if (currentView !== 'detail') return null;
-    
-    const currentIndex = checklistItems.indexOf(selectedDetail);
-    
-    return (
-      <div className="flex items-center justify-between mt-6 pb-4 px-4">
-        {/* Previous */}
-        <div 
-          onClick={() => currentIndex > 0 && navigateChecklist('prev')}
-          className={`flex items-center gap-1.5 ${
-            currentIndex > 0 
-              ? 'text-[#06B7DB] cursor-pointer hover:text-[#048ea6] transition-colors duration-200' 
-              : 'invisible'  // Using invisible instead of opacity-0 to maintain spacing
-          }`}
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-          <span className="text-xs font-medium">
-            {currentIndex > 0 ? checklistItems[currentIndex - 1] : ''}
-          </span>
-        </div>
-
-        {/* Next */}
-        <div 
-          onClick={() => currentIndex < checklistItems.length - 1 && navigateChecklist('next')}
-          className={`flex items-center gap-1.5 ${
-            currentIndex < checklistItems.length - 1 
-              ? 'text-[#06B7DB] cursor-pointer hover:text-[#048ea6] transition-colors duration-200' 
-              : 'invisible'  // Using invisible instead of opacity-0 to maintain spacing
-          }`}
-        >
-          <span className="text-xs font-medium">
-            {currentIndex < checklistItems.length - 1 ? checklistItems[currentIndex + 1] : ''}
-          </span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <NavBar />
@@ -870,7 +831,6 @@ const SingleVariant = () => {
                   ) : (
                     <div className="p-4">
                       {renderDetailView()}
-                      {renderChecklistNavigation()}
                     </div>
                   )}
                 </div>

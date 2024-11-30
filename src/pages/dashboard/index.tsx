@@ -420,9 +420,9 @@ const Dashboard = () => {
                   </TableHeader>
                   <TableBody>
                     {characterizationData.map((data: any, index: any) => {
-                      const variant = renderVariant(data);
+                      const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
                       const viewUrl = 
-                        variant === "X0X" 
+                        variant === "WT" 
                           ? `/submit/wild_type/${data.id}` 
                           : `/submit/single_variant/${data.id}`;
 
