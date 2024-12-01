@@ -1076,7 +1076,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
+                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? -(data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'center',
