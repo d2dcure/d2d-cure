@@ -3,6 +3,7 @@ import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
+import StatusChip from '@/components/StatusChip';
 import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
@@ -20,6 +21,10 @@ const columns = [
     { name: "Comments", uid: "comments", sortable: false },
     { name: "Actions", uid: "actions", sortable: false }
 ];
+
+interface StatusChipProps {
+    status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
+}
 
 const CuratePage = () => {
     const { user, loading } = useUser();
@@ -94,22 +99,21 @@ const CuratePage = () => {
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
             case "status":
-                {/* TODO: Hard coded rn!! Also approved-by-pi part of status?*/}
+                {/*
+                    TODO: We eventually want to transition to a single "status" entry in data!
+                    Also, statuses like "Needs Revision" and "Awaiting Replication" aren't included yet
+                */}
+                let status: StatusChipProps['status'];
+                if (data.approved_by_pi) {
+                    status = "pi_approved"
+                } else if (data.submitted_for_curation) {
+                    status = "pending_approval"
+                } else {
+                    status = "in_progress"
+                }
                 return (
-                    <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
-                        In Progress
-                    </Chip>
+                    <StatusChip status={status} />
                 )
-                // return (
-                //     <div>
-                //         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="17" viewBox="0 0 16 17" fill="none">
-                //             <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.90186C4.1 1.90186 1 5.00186 1 8.90186C1 12.8019 4.1 15.9019 8 15.9019C11.9 15.9019 15 12.8019 15 8.90186C15 5.00186 11.9 1.90186 8 1.90186ZM7 11.6022L4.5 9.10225L5.3 8.30225L7 10.0022L10.7 6.30225L11.5 7.10225L7 11.6022ZM2 8.90186C2 12.2019 4.7 14.9019 8 14.9019C11.3 14.9019 14 12.2019 14 8.90186C14 5.60186 11.3 2.90186 8 2.90186C4.7 2.90186 2 5.60186 2 8.90186Z" fill="#17C964"/>
-                //         </svg>
-                //         <Chip className="bg-[#E6F1FE] text-[#06B7DB]" variant="flat">
-                //             In Progress
-                //         </Chip>
-                //     </div>
-                // );
             case "id":
                 return data.id
             case "variant":
