@@ -8,6 +8,7 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
+import { Key, SortDescriptor } from '@react-types/shared';
 import { ErrorChecker } from '@/components/ErrorChecker';
 
 // Add this interface near the top of the file
@@ -20,7 +21,17 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-
+// Define your columns
+const columns = [
+  { name: "Variant", uid: "variant", sortable: true },
+  { name: "Yield", uid: "yield", sortable: true },
+  { name: "Km", uid: "km", sortable: true },
+  { name: "Kcat", uid: "kcat", sortable: true },
+  { name: "Kcat/Km", uid: "kcat_km", sortable: true },
+  { name: "T50", uid: "t50", sortable: true },
+  { name: "Tm", uid: "tm", sortable: true },
+  { name: "Rosetta Score", uid: "rosetta", sortable: true }
+];
 
 function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
   const link = `/bglb?id=${id}&wt_id=${wt_id}`;
@@ -35,7 +46,7 @@ const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
   const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
   const [sequences, setSequences] = useState<any[]>([]);
-  const [showNonCurated, setShowNonCurated] = useState(false); 
+  const [showNonCurated, setShowNonCurated] = useState(false);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,26 +66,22 @@ const DataPage = () => {
     "tm",
     "rosetta"
   ]));
+  const headerColumns = React.useMemo(() => {
+    return columns.filter((column) => Array.from(visibleColumns).includes(column.uid));
+  }, [visibleColumns])
+
   const [showFullText, setShowFullText] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isScrolling, setIsScrolling] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(true);
   const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "variant",
+    direction: "ascending"
+  });
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  // Define your columns
-  const columns = [
-    { name: "Variant", uid: "variant", sortable: true },
-    { name: "Yield", uid: "yield", sortable: true },
-    { name: "Km", uid: "km", sortable: true },
-    { name: "Kcat", uid: "kcat", sortable: true },
-    { name: "Kcat/Km", uid: "kcat_km", sortable: true },
-    { name: "T50", uid: "t50", sortable: true },
-    { name: "Tm", uid: "tm", sortable: true },
-    { name: "Rosetta Score", uid: "rosetta", sortable: true }
-  ];
 
   const resetFilters = () => {
     setSelectedInstitution('');
@@ -88,13 +95,13 @@ const DataPage = () => {
       try {
         const response = await fetch('/api/getInstitutions');
         const data = await response.json();
-        
+
         if (!Array.isArray(data)) {
           setIsError(true);
           setErrorMessage("Invalid data format received from server");
           return;
         }
-        
+
         const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
         setInstitutions(sortedData);
       } catch (error) {
@@ -139,14 +146,14 @@ const DataPage = () => {
           throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
         }
 
-        const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
+        const sortedInstitutions = institutionsData.sort((a:any, b:any) =>
           a.fullname.localeCompare(b.fullname)
         );
         setInstitutions(sortedInstitutions);
         setCharacterizationData(characterizationData);
         setSequences(sequencesData);
 
-        // For color coding 
+        // For color coding
         const WT_row = characterizationData.find((row:any) => row.id === 1);
         if (WT_row) {
           setWTValues({
@@ -187,10 +194,11 @@ const DataPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+
   const scrollToPosition = (position: 'top' | 'bottom') => {
     setIsScrolling(true);
     setScrollDirection(position);
-    
+
     if (position === 'top') {
       window.scrollTo({
         top: 0,
@@ -203,7 +211,7 @@ const DataPage = () => {
         const tableBottom = tableElement.getBoundingClientRect().bottom;
         const windowHeight = window.innerHeight;
         const scrollTarget = window.scrollY + tableBottom - windowHeight + 100;
-        
+
         window.scrollTo({
           top: scrollTarget,
           behavior: 'smooth'
@@ -219,17 +227,17 @@ const DataPage = () => {
   };
 
   const filteredData = characterizationData
-    .filter(data => 
-      data.curated || 
-      (showNonCurated && !data.curated && data.submitted_for_curation) 
+    .filter(data =>
+      data.curated ||
+      (showNonCurated && !data.curated && data.submitted_for_curation)
     )
     .filter(data => !selectedInstitution || data.institution === selectedInstitution)
     .filter(data => {
       if (!searchTerm.trim()) return true;
-  
+
       // Determine the correct number to use based on the useRosettaNumbering state
       let numberToCompare = data.resnum.toString(); // Default to Rosetta numbering
-  
+
       if (!useRosettaNumbering) {
         // If Rosetta numbering is off, find the corresponding PDB number
         const sequenceEntry = sequences.find(seq => seq.Rosetta_resnum === data.resnum);
@@ -239,122 +247,183 @@ const DataPage = () => {
       }
       // Now compare the correct number with the search term
       return numberToCompare.includes(searchTerm.trim());
-    })
-    .sort((a, b) => {
-      // Convert resnum to numbers for comparison, assuming they are stored as strings
-      const resnumA = a.resnum === 'X' ? -1 : parseInt(a.resnum, 10);
-      const resnumB = b.resnum === 'X' ? -1 : parseInt(b.resnum, 10);
-  
-      // First, sort by resnum in ascending order
-      if (resnumA !== resnumB) {
-        return resnumA - resnumB;
-      }
-  
-      // If resnum is the same, sort by resmut in ascending order
-      return a.resmut.localeCompare(b.resmut);
     });
 
-    const getVariantDisplay = (resid: any, resnum: any, resmut: any) => {
-      if (resid === 'X') {
-        return 'WT';
-      }
-        
-      // You can't just subtract 3 from the rosetta num to get the PBD num. You have to perform the lookup on the Sequence table
-      const sequenceEntry = sequences.find(seq => seq.resid === resid && seq.Rosetta_resnum === parseInt(resnum, 10));
-      const correctResnum = useRosettaNumbering ? sequenceEntry?.Rosetta_resnum : sequenceEntry?.PDBresnum || resnum;
-        
-      const variant = `${resid}${correctResnum}${resmut}`;
-      return variant;
-    };
+  const getCorrectResnum = (resid: any, resnum: any) => {
+    if (resnum === 0) {
+      // Wildtype, just return 0
+      return 0;
+    }
+    // You can't just subtract 3 from the rosetta num to get the PBD num. You have to perform the lookup on the Sequence table
+    const sequenceEntry = sequences.find(seq => seq.resid === resid && seq.Rosetta_resnum === parseInt(resnum, 10));
+    const correctResnum = useRosettaNumbering ? sequenceEntry?.Rosetta_resnum : sequenceEntry?.PDBresnum || resnum;
+    return correctResnum;
+  }
 
-    const roundTo = (number:number, decPlaces:number) => {
-      if (number === null) {
-        return null; 
-      }
-      const factor = Math.pow(10, decPlaces);
-      return (Math.round(number * factor) / factor).toFixed(decPlaces);
-    };
-
-    const getGroupKey = (data:any) => {
-      // This function defines how we collapse the data (in this case, if variant is the same)
-      return `${data.resid}${data.resnum}${data.resmut}`;
-    };
-    
-    let displayData = []; // This will be the data we actually render. Needed for averaged/collapsed view
-    if (expandData) {
-      displayData = filteredData; // Use the data as-is for expanded view
-    } else {
-      const groupedData:any = {};
-      filteredData.forEach(data => {
-        const key = getGroupKey(data);
-        if (!groupedData[key]) {
-          groupedData[key] = []; 
-        }
-        groupedData[key].push(data);
-      });
-    
-      // NOTE: we are mutating the original data. So if you want to access NON NUMERICAL COLUMNS from here on out (like expressed, which is a boolean), define them here or it won't work 
-      displayData = Object.values(groupedData).map((group: any) => {
-        const averageRow: any = {
-          resid: group[0].resid,
-          resnum: group[0].resnum,
-          resmut: group[0].resmut,
-          isAggregate: group.length > 1,
-          count: group.length, 
-          expressed: group.some((item: any) => item.expressed)
-        };
-      
-        const sums: any = {};
-        const counts: any = {};
-      
-        group.forEach((item: any) => {
-          Object.keys(item).forEach(key => {
-            if (typeof item[key] === 'number') {
-              if (!sums[key]) {
-                sums[key] = 0;
-                counts[key] = 0;
-              }
-              if (item[key] !== null) { 
-                sums[key] += item[key];
-                counts[key]++;
-              }
-            }
-          });
-        });
-      
-        Object.keys(sums).forEach(key => {
-          averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null; 
-        });
-      
-        return averageRow;
-      });
+  const getVariantDisplay = (resid: any, resnum: any, resmut: any) => {
+    if (resid === 'X') {
+      return 'WT';
     }
 
-    const getColorForValue = (value: any) => {
-      if (!showColors) return '#FFFFFF';
-      
-      if (value < -4.75) return '#36929A';
-      else if (value < -4.25) return '#4A9DA4';
-      else if (value < -3.75) return '#5EA8AE';
-      else if (value < -3.25) return '#72B2B8';
-      else if (value < -2.75) return '#86BDC2';
-      else if (value < -2.25) return '#9AC8CC';
-      else if (value < -1.75) return '#AAD3D6';
-      else if (value < -1.25) return '#C2DEE0';
-      else if (value < -0.75) return '#D7E9EB';
-      else if (value < -0.25) return '#EBF4F5';
-      else if (value > 0.25 && value <= 0.75) return '#FAC498';
-      else if (value > 0.75) return '#F68932';
-      else return '#FFFFFF'; 
-    };
+    const variant = `${resid}${getCorrectResnum(resid, resnum)}${resmut}`;
+    return variant;
+  };
 
-    // Modify your displayData to use pagination
-    const paginatedData = rowsPerPage === 0 
-      ? displayData  // Show all records when rowsPerPage is 0
-      : displayData.slice(
-          (page - 1) * rowsPerPage,
-          page * rowsPerPage
-        );
+  const roundTo = (number:number, decPlaces:number) => {
+    if (number === null) {
+      return null;
+    }
+    const factor = Math.pow(10, decPlaces);
+    return (Math.round(number * factor) / factor).toFixed(decPlaces);
+  };
+
+  const getGroupKey = (data:any) => {
+    // This function defines how we collapse the data (in this case, if variant is the same)
+    return `${data.resid}${data.resnum}${data.resmut}`;
+  };
+
+  const sortData = (data: any, sortDescriptor: SortDescriptor) => {
+    const { column, direction } = sortDescriptor;
+    return [...data].sort((a: any, b: any) => {
+      let compareVal = 0;
+      let valA, valB;
+
+      const getValue = (item: any, col: Key) => {
+        switch (col) {
+          case "yield": return item.yield_avg ?? -Infinity;
+          case "km": return item.KM_avg ?? -Infinity;
+          case "kcat": return item.kcat_avg ?? -Infinity;
+          case "kcat_km": return item.kcat_over_KM ?? -Infinity;
+          case "t50": return item.T50 ?? -Infinity
+          case "tm": return item.Tm ?? -Infinity
+          case "rosetta": return item.Rosetta_score ?? -Infinity
+          default: return 0; // Fallback for undefined columns
+        }
+      }
+
+      // Primary sort
+      if (column !== "variant") {
+
+        valA = getValue(a, column ?? "");
+        valB = getValue(b, column ?? "");
+
+        if (valA === -Infinity && valB === -Infinity) {
+          // Both undefined/null
+          compareVal = 0;
+        } else if (valA === -Infinity) {
+          // Just valA undefined, treat B as larger
+          compareVal = -1;
+        } else if (valB === -Infinity) {
+          // Just valB undefined, treat A as larger
+          compareVal = 1;
+        } else {
+          compareVal = valA - valB;
+        }
+
+        if (compareVal !== 0) {
+          return direction === "ascending" ? compareVal : -compareVal
+        }
+      }
+
+      // Sort by variant secondarily (or if variant column is selected)
+      valA = getCorrectResnum(a.resid, a.resnum);
+      valB = getCorrectResnum(b.resid, b.resnum);
+      compareVal = valA - valB;
+      if (compareVal === 0) {
+        // Same resnum, compare resmut next
+        compareVal = a.resmut.localeCompare(b.resmut);
+      }
+
+      if (compareVal !== 0) {
+        // Sort according to direction if column is set to variant,
+        // otherwise sort by variant ascending
+        return (column === "variant" && direction === "descending") ? -compareVal : compareVal
+      }
+
+      // Finally sort by ID ascending if all else yields no difference
+      compareVal = a.id - b.id;
+      return compareVal
+    })
+  }
+
+  let displayData = []; // This will be the data we actually render. Needed for averaged/collapsed view
+  if (expandData) {
+    displayData = sortData(filteredData, sortDescriptor); // Use the data as-is for expanded view
+  } else {
+    const groupedData:any = {};
+    filteredData.forEach(data => {
+      const key = getGroupKey(data);
+      if (!groupedData[key]) {
+        groupedData[key] = [];
+      }
+      groupedData[key].push(data);
+    });
+
+    // NOTE: we are mutating the original data. So if you want to access NON NUMERICAL COLUMNS from here on out (like expressed, which is a boolean), define them here or it won't work
+    displayData = Object.values(groupedData).map((group: any) => {
+      const averageRow: any = {
+        resid: group[0].resid,
+        resnum: group[0].resnum,
+        resmut: group[0].resmut,
+        isAggregate: group.length > 1,
+        count: group.length,
+        expressed: group.some((item: any) => item.expressed),
+        id: `${group[0].resid}${group[0].resnum}${group[0].resmut}`
+      };
+
+      const sums: any = {};
+      const counts: any = {};
+
+      group.forEach((item: any) => {
+        Object.keys(item).forEach(key => {
+          if (typeof item[key] === 'number') {
+            if (!sums[key]) {
+              sums[key] = 0;
+              counts[key] = 0;
+            }
+            if (item[key] !== null) {
+              sums[key] += item[key];
+              counts[key]++;
+            }
+          }
+        });
+      });
+
+      Object.keys(sums).forEach(key => {
+        averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null;
+      });
+
+      return averageRow;
+    });
+
+    displayData = sortData(displayData, sortDescriptor)
+  }
+
+  const getColorForValue = (value: any) => {
+    if (!showColors) return '#FFFFFF';
+
+    if (value < -4.75) return '#36929A';
+    else if (value < -4.25) return '#4A9DA4';
+    else if (value < -3.75) return '#5EA8AE';
+    else if (value < -3.25) return '#72B2B8';
+    else if (value < -2.75) return '#86BDC2';
+    else if (value < -2.25) return '#9AC8CC';
+    else if (value < -1.75) return '#AAD3D6';
+    else if (value < -1.25) return '#C2DEE0';
+    else if (value < -0.75) return '#D7E9EB';
+    else if (value < -0.25) return '#EBF4F5';
+    else if (value > 0.25 && value <= 0.75) return '#FAC498';
+    else if (value > 0.75) return '#F68932';
+    else return '#FFFFFF';
+  };
+
+  // Modify your displayData to use pagination
+  const paginatedData = rowsPerPage === 0
+    ? displayData  // Show all records when rowsPerPage is 0
+    : displayData.slice(
+        (page - 1) * rowsPerPage,
+        page * rowsPerPage
+      );
 
   // Replace the scrollToTable function with scrollToTop
   const scrollToTop = () => {
@@ -371,7 +440,7 @@ const DataPage = () => {
   const downloadCSV = () => {
     // Only include curated data
     const curatedData = characterizationData.filter(data => data.curated);
-    
+
     // Define headers for CSV
     const headers = [
       'Variant',
@@ -424,8 +493,8 @@ const DataPage = () => {
   };
 
   return (
-    <ErrorChecker 
-      isError={isError} 
+    <ErrorChecker
+      isError={isError}
       errorMessage={errorMessage}
       errorType="api"
     >
@@ -433,7 +502,7 @@ const DataPage = () => {
       <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
         {/* Scroll notification - D2D glassmorphism style */}
         {isScrolling && scrollDirection && (
-          <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
+          <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200
             text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
             Scrolling to {scrollDirection}
           </div>
@@ -443,9 +512,9 @@ const DataPage = () => {
         {showScrollToBottom && (
           <button
             onClick={() => scrollToPosition('bottom')}
-            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
-              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
-              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7
               flex items-center justify-center"
             aria-label="Scroll to bottom"
           >
@@ -456,9 +525,9 @@ const DataPage = () => {
         {!showScrollToBottom && (
           <button
             onClick={() => scrollToPosition('top')}
-            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200 
-              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90 
-              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7 
+            className="fixed bottom-6 right-6 bg-white/80 backdrop-blur-md border border-gray-200
+              text-[#06B7DB] hover:text-[#06B7DB]/80 hover:bg-white/90
+              p-1.5 rounded-lg shadow-sm transition-all z-50 h-7 w-7
               flex items-center justify-center"
             aria-label="Scroll to top"
           >
@@ -499,19 +568,19 @@ const DataPage = () => {
                         {/* Color Key section */}
                         <div className="mb-6">
                           <h2 className="text-xl font-light mb-2">Color Key</h2>
-                          
+
                           <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
                             View full BglB Sequence
                           </Link>
-                          
+
                           {/* Color gradient bar */}
                           <div className="flex items-center gap-[2px] mb-2">
                             {[
-                              '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
+                              '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2',
                               '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
                               '#FAC498', '#F68932'
                             ].map((color, index) => (
-                              <div 
+                              <div
                                 key={index}
                                 style={{
                                   backgroundColor: color,
@@ -522,7 +591,7 @@ const DataPage = () => {
                               />
                             ))}
                           </div>
-                          
+
                           {/* Scale numbers - Updated for better alignment */}
                           <div className="relative w-full h-6 mb-2">
                             {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
@@ -538,7 +607,7 @@ const DataPage = () => {
                               </div>
                             ))}
                           </div>
-                          
+
                           {/* Labels */}
                           <div className="flex justify-between text-sm text-gray-600 mb-8">
                             <div>Underperform<br/>WT</div>
@@ -549,11 +618,11 @@ const DataPage = () => {
                         {/* Variant Analysis section */}
                         <div className="mb-6">
                           <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
-                          
+
                           <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view?usp=sharing" target="_blank" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
                             How is the data calculated?
                           </Link>
-                          
+
                           <div className="text-gray-600">
                             <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
                               <div className="text-sm space-y-3">
@@ -561,21 +630,21 @@ const DataPage = () => {
                                   For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
                                   {!showFullText && "..."}
                                 </p>
-                                
+
                                 {showFullText && (
                                   <>
                                     <p>
                                       log 1/KM is used so that larger values are &quot;better&quot;.
                                     </p>
-                                    
+
                                     <p>
                                       For T50 and TM values and Rosetta scores, a linear scale is used.
                                     </p>
-                                    
+
                                     <p>
                                       Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
                                     </p>
-                                    
+
                                     <p>
                                       Variants marked with an asterisk (*) expressed, but no yield was recorded.
                                     </p>
@@ -583,8 +652,8 @@ const DataPage = () => {
                                 )}
                               </div>
                             </div>
-                            
-                            <button 
+
+                            <button
                               onClick={() => setShowFullText(!showFullText)}
                               className="text-gray-600 hover:underline text-sm mt-1"
                             >
@@ -592,7 +661,7 @@ const DataPage = () => {
                             </button>
                           </div>
 
-                          <Button 
+                          <Button
                             className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB]"
                             variant="bordered"
                             size="sm"
@@ -627,16 +696,16 @@ const DataPage = () => {
                         onClear={() => setSearchTerm("")}
                         onValueChange={(value) => setSearchTerm(value)}
                         startContent={
-                          <svg 
-                            aria-hidden="true" 
-                            fill="none" 
-                            focusable="false" 
-                            height="1em" 
-                            stroke="currentColor" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth="2" 
-                            viewBox="0 0 24 24" 
+                          <svg
+                            aria-hidden="true"
+                            fill="none"
+                            focusable="false"
+                            height="1em"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
                             width="1em"
                           >
                             <circle cx="11" cy="11" r="8" />
@@ -644,17 +713,17 @@ const DataPage = () => {
                           </svg>
                         }
                       />
-                      
+
                       {/* Controls container - half-half layout */}
                       <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                         {/* Columns dropdown */}
-                        <Dropdown 
-                          className="w-full" 
-                          shouldBlockScroll={false} 
+                        <Dropdown
+                          className="w-full"
+                          shouldBlockScroll={false}
                           shouldCloseOnInteractOutside={() => false}
                         >
                           <DropdownTrigger>
-                            <Button 
+                            <Button
                               size="sm"
                               variant="flat"
                               className="w-full"
@@ -680,13 +749,13 @@ const DataPage = () => {
                         </Dropdown>
 
                         {/* Filter dropdown */}
-                        <Dropdown 
-                          className="w-full" 
-                          shouldBlockScroll={false} 
+                        <Dropdown
+                          className="w-full"
+                          shouldBlockScroll={false}
                           shouldCloseOnInteractOutside={() => false}
                         >
                           <DropdownTrigger>
-                            <Button 
+                            <Button
                               size="sm"
                               variant="flat"
                               className="w-full"
@@ -695,7 +764,7 @@ const DataPage = () => {
                               Filters
                             </Button>
                           </DropdownTrigger>
-                          <DropdownMenu 
+                          <DropdownMenu
                             aria-label="Filter options"
                             className="w-[240px] p-3"
                             itemClasses={{
@@ -720,7 +789,7 @@ const DataPage = () => {
                             <DropdownItem className="p-0 mb-2">
                               <div className="space-y-1">
                                 <h3 className="text-sm font-medium mb-1">Display Options</h3>
-                                <Checkbox 
+                                <Checkbox
                                   size="sm"
                                   isSelected={showColors}
                                   onValueChange={setShowColors}
@@ -747,9 +816,9 @@ const DataPage = () => {
                               <div className="space-y-1">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-gray-600">Institution</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="light" 
+                                  <Button
+                                    size="sm"
+                                    variant="light"
                                     className="text-blue-500 text-sm"
                                     onPress={() => setSelectedInstitution('')}
                                   >
@@ -766,8 +835,8 @@ const DataPage = () => {
                                   {[
                                     <SelectItem key="" value="">All</SelectItem>,
                                     ...institutions.map((institution: Institution) => (
-                                      <SelectItem 
-                                        key={institution.abbr} 
+                                      <SelectItem
+                                        key={institution.abbr}
                                         value={institution.abbr}
                                       >
                                         {institution.fullname || institution.abbr}
@@ -782,9 +851,9 @@ const DataPage = () => {
                               <div className="space-y-1">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-gray-600">Non-Curated Data</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="light" 
+                                  <Button
+                                    size="sm"
+                                    variant="light"
                                     className="text-blue-500 text-sm"
                                     onPress={() => setShowNonCurated(false)}
                                   >
@@ -808,9 +877,9 @@ const DataPage = () => {
                               <div className="space-y-1">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-gray-600">Overall Data</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="light" 
+                                  <Button
+                                    size="sm"
+                                    variant="light"
                                     className="text-blue-500 text-sm"
                                     onPress={() => setExpandData(false)}
                                   >
@@ -852,19 +921,22 @@ const DataPage = () => {
                         th: "text-default-500 bg-default-100/50 font-medium py-3 px-4",
                         tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm  hover:rounded-lg", // Subtle hover effect
                       }}
+                      sortDescriptor={sortDescriptor}
+                      onSortChange={setSortDescriptor}
                     >
-                      <TableHeader>
-                        {columns
-                          .filter(column => visibleColumns.has(column.uid))
-                          .map(column => (
-                            <TableColumn key={column.uid}>
-                              {column.name}
-                            </TableColumn>
-                          ))}
+                      <TableHeader columns={headerColumns}>
+                        {(column) => (
+                          <TableColumn
+                            key={column.uid}
+                            allowsSorting={column.sortable}
+                          >
+                            {column.name}
+                          </TableColumn>
+                        )}
                       </TableHeader>
                       <TableBody items={paginatedData}>
                         {(data) => (
-                          <TableRow key={`${data.resid}${data.resnum}${data.resmut}`}>
+                          <TableRow key={data.id}>
                             {/* Only render cells for visible columns */}
                             {columns
                               .filter(column => visibleColumns.has(column.uid))
@@ -874,15 +946,15 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <Page 
-                                          id={data.raw_data_id} 
-                                          wt_id={data.WT_raw_data_id} 
-                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
+                                        <Page
+                                          id={data.raw_data_id}
+                                          wt_id={data.WT_raw_data_id}
+                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)}
                                         />
                                         {data.isAggregate && (
-                                          <span 
-                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
-                                            className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1" 
+                                          <span
+                                            title={`Average of ${data.count} separate experiments. Click to expand`}
+                                            className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1"
                                             onClick={() => setExpandData(true)}
                                           >
                                             <HiChevronRight className="w-4 h-4 -ml-1 translate-y-[1px]" />
@@ -894,7 +966,7 @@ const DataPage = () => {
                                   case "yield":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <div style={{ 
+                                        <div style={{
                                           backgroundColor: data.expressed ? '#D1D5DB' : '#D1D5DB',
                                           color: data.expressed ? '#000000' : '#000000',
                                           borderRadius: '4px',
@@ -1031,7 +1103,7 @@ const DataPage = () => {
 
                   {isLoading && (
                     <div className="flex justify-center items-center py-8">
-                      <Spinner 
+                      <Spinner
                         size="lg"
                         classNames={{
                           circle1: "border-b-[#06B7DB]",
