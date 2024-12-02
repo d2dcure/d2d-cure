@@ -26,6 +26,7 @@
     "axios": "^1.6.8",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.2",
+    "date-fns": "^4.1.0",
     "firebase": "^10.11.1",
     "firebase-admin": "^12.1.0",
     "flowbite": "^2.5.2",

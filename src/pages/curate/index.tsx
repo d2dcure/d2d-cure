@@ -8,6 +8,7 @@ import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, Dropdown
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
+import { parse, format } from 'date-fns';
 
 const columns = [
     { name: "Status", uid: "status", sortable: false},
@@ -121,7 +122,48 @@ const CuratePage = () => {
             case "creator":
                 return data.creator
             case "assay_date":
-                return "hi"
+                // TODO: This is not ideal! We want to add a date column to database
+                let date = "";
+
+                if (data.tempRawData) {
+                    if (data.tempRawData.purification_date) {
+                        date = data.tempRawData.purification_date
+                    }
+                    if (data.tempRawData.assay_date) {
+                        date = data.tempRawData.assay_date
+                    }
+                }
+                if (data.kineticRawData) {
+                    if (data.kineticRawData.purification_date) {
+                        date = data.kineticRawData.purification_date
+                    }
+                    if (data.kineticRawData.assay_date) {
+                        date = data.kineticRawData.assay_date
+                    }
+                }
+                if (date === "") {
+                    // no date provided
+                    return "N/A";
+                }
+
+                // TODO: Date formats are so inconsistent, this is a bandaid fix
+                const parseFormats = [
+                    // Slash-separated formats
+                    'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
+                    'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
+                    // Period-separated formats
+                    'yyyy.MM.dd'
+                ];
+                for (const parseFormat of parseFormats) {
+                    try {
+                      const parsedDate = parse(date, parseFormat, new Date());
+                      return format(parsedDate, 'MM/dd/yy');
+                    } catch (error) {
+                      continue;
+                    }
+                }
+
+                return date
             case "km":
                 return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
             case "kcat":
@@ -328,6 +370,7 @@ const CuratePage = () => {
     }
 
     const decodeHTML = (html:string) => {
+        if (html === null) return ""
         return new DOMParser().parseFromString(html, "text/html").documentElement.textContent;
     }
 
