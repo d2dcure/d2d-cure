@@ -573,7 +573,17 @@ const SingleVariant = () => {
                     {getStatusStyle(item).text}
                   </span>
                 </TableCell>
-                <TableCell>{item}</TableCell>
+                <TableCell>
+                  <button
+                    onClick={() => {
+                      setCurrentView('detail');
+                      setSelectedDetail(item);
+                    }}
+                    className="text-left hover:text-[#06B7DB] transition-colors duration-200"
+                  >
+                    {item}
+                  </button>
+                </TableCell>
                 <TableCell className="text-left font-medium text-gray-600">
                   {item === "Plasmid sequence verified" && entryData.ab1_filename ? (
                     <div className="flex items-center gap-2">
@@ -753,16 +763,7 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
-  const navigateChecklist = (direction: 'next' | 'prev') => {
-    const currentIndex = checklistItems.indexOf(selectedDetail);
-    if (direction === 'next' && currentIndex < checklistItems.length - 1) {
-      setSelectedDetail(checklistItems[currentIndex + 1]);
-    } else if (direction === 'prev' && currentIndex > 0) {
-      setSelectedDetail(checklistItems[currentIndex - 1]);
-    }
-  };
 
-  
   return (
     <>
       <NavBar />

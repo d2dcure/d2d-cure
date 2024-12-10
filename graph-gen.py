@@ -1,4 +1,7 @@
-# graph-gen.py
+# THis graph gen file is what is hosted on Heroku. It has the logic for both kinetic assay 
+ # and temp assay graph generation. Although the graph generation logic remains unchanged  
+ # from the original python files, the way the python files expects/handles data is different 
+ # so that it fits with our React/Nextjs enviornment  
 
 import os
 from flask import Flask, request, jsonify
@@ -294,7 +297,7 @@ def plot_kinetic():
         plt.plot(inv_s, inv_rates, 'bo')
 
     # Set labels and title
-    plt.title(variant_name + ' Lineweaver-Burk Plot', fontsize=20)
+    plt.title(variant_name, fontsize=20)
     plt.xlabel('1/[S] (1/mM)', fontsize=16)
     plt.ylabel(r'$1/\mathit{v}$ (min/mM)', fontsize=16)
     plt.legend(fontsize=10, loc='upper center')

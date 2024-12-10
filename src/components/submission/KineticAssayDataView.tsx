@@ -131,7 +131,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (file) {
       const fileType = file.name.split('.').pop()?.toLowerCase();
       if (fileType !== 'csv') {
@@ -144,16 +144,24 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         setFileError('');
         setFile(file);
 
-        Papa.parse(file, {
-          complete: (result) => {
-            console.log('Parsed Result:', result);
-            setKineticAssayData(result.data as any[][]);
-          },
-          header: false,
+        // Wait for Papa parse to complete before generating graph
+        await new Promise<void>((resolve) => {
+          Papa.parse(file, {
+            complete: (result) => {
+              console.log('Parsed Result:', result);
+              setKineticAssayData(result.data as any[][]);
+              resolve();
+            },
+            header: false,
+          });
         });
 
-        if (entryData.resid && entryData.resnum && entryData.resmut) {
-          generateGraphFromFile(file);
+        // Generate graph immediately after parsing
+        try {
+          await generateGraphFromFile(file);
+        } catch (error) {
+          console.error('Error generating graphs:', error);
+          setFileError('Failed to generate graphs from file');
         }
       }
     }
