@@ -763,6 +763,7 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
+
   return (
     <>
       <NavBar />

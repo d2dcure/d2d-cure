@@ -772,7 +772,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         </span>
       </CardFooter>
 
-      {/* Add the template card section */}
+      {/* Template card section */}
       <div className="px-6 pb-6">
         <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -785,27 +785,54 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           </div>
         </div>
 
-        <Card className="h-[200px] w-[400px]">
-          <CardBody className="text-4xl pt-8 font-light overflow-hidden">
-            <img 
-              src="/resources/images/Microsoft_Excel-Logo.wine.svg"
-              className="pl-4 pt-2 w-14 h-12 select-none pointer-events-none" 
-              draggable="false"
-              alt="Excel logo" 
-            />
-            <h1 className="text-lg pl-5 pt-2 font-regular">Kinetic Assay Data</h1>
-          </CardBody>
-          <CardFooter>
-            <Button 
-              variant="bordered" 
-              onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
-              className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
-              style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
-            >
-              <span className="group-hover:text-white">Download Template</span>
-            </Button>
-          </CardFooter>
-        </Card>
+        {/* Updated responsive card */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+          <Card className="min-h-[200px] w-full">
+            <CardBody className="pt-8 font-light overflow-hidden">
+              <div className="flex items-start space-x-4">
+                <img 
+                  src="/resources/images/Microsoft_Excel-Logo.wine.svg"
+                  className="w-12 h-12 sm:w-14 sm:h-12 select-none pointer-events-none" 
+                  draggable="false"
+                  alt="Excel logo" 
+                />
+                <div className="flex-1">
+                  <h1 className="text-base sm:text-lg font-regular">
+                    Kinetic Assay Data
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Download the template for kinetic assay data submission
+                  </p>
+                </div>
+              </div>
+            </CardBody>
+            <CardFooter>
+              <Button 
+                variant="bordered" 
+                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
+                className="w-full h-11 font-regular border-2 hover:bg-[#06B7DB] group transition-all"
+                style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
+              >
+                <span className="group-hover:text-white flex items-center justify-center gap-2">
+                  <svg 
+                    className="w-4 h-4" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" 
+                    />
+                  </svg>
+                  Download Template
+                </span>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </Card>
   );
