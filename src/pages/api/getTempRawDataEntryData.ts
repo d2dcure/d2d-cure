@@ -13,7 +13,12 @@ export default async function handler(req: any, res: any) {
 
   try {
     const tempRawDataEntry = await prismaProteins.tempRawData.findFirst({
-      where: { parent_id: parseInt(parent_id) },
+      where: { 
+        parent_id: parseInt(parent_id),
+        slope_units: {
+          in: ['min_3min_Temp', 's_3s_Temp', 'min_1min_Temp', 's_1s_Temp']
+        }
+      },
     });
 
     if (!tempRawDataEntry) {
@@ -23,6 +28,6 @@ export default async function handler(req: any, res: any) {
     res.status(200).json(tempRawDataEntry);
   } catch (error) {
     console.error('Error fetching TempRawData entry:', error);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    res.status(500).json({ error: 'Failed to fetch data', details: error });
   }
 }

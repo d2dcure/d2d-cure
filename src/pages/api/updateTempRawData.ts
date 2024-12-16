@@ -29,6 +29,7 @@ export default async function handler(req:any, res:any) {
     csv_filename,
     plot_filename,
     parent_id,
+    approved_by_student,
   } = req.body;
 
   try {
@@ -51,6 +52,7 @@ export default async function handler(req:any, res:any) {
           assay_date,
           csv_filename,
           plot_filename,
+          approved_by_student: !!approved_by_student,
         },
       });
     } else {
@@ -65,6 +67,7 @@ export default async function handler(req:any, res:any) {
           csv_filename,
           plot_filename,
           parent_id,
+          approved_by_student: !!approved_by_student,
         },
       });
     }

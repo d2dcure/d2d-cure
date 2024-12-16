@@ -13,7 +13,12 @@ export default async function handler(req: any, res: any) {
 
   try {
     const kineticRawDataEntry = await prismaProteins.kineticRawData.findFirst({
-      where: { parent_id: parseInt(parent_id) },
+      where: { 
+        parent_id: parseInt(parent_id),
+        slope_units: {
+          in: ['min_1min_Kin', 's_1s_Kin', 'min_3min_Kin', 's_10s_Kin']
+        }
+      },
     });
 
     if (!kineticRawDataEntry) {
@@ -23,6 +28,6 @@ export default async function handler(req: any, res: any) {
     res.status(200).json(kineticRawDataEntry);
   } catch (error) {
     console.error('Error fetching KineticRawData entry:', error);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    res.status(500).json({ error: 'Failed to fetch data', details: error });
   }
 }
