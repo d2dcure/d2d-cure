@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Pagination } from "@nextui-org/react";
-import "../../app/globals.css";
+import "../../../app/globals.css";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Checkbox, Select, SelectItem, Input, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Popover, PopoverTrigger, PopoverContent, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
@@ -9,6 +9,7 @@ import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react
 import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
+import { useRouter } from 'next/router';
 
 // Add this interface near the top of the file
 interface Institution {
@@ -63,6 +64,7 @@ const DataPage = () => {
   const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   // Define your columns
   const columns = [
@@ -864,8 +866,15 @@ const DataPage = () => {
                       </TableHeader>
                       <TableBody items={paginatedData}>
                         {(data) => (
-                          <TableRow key={`${data.resid}${data.resnum}${data.resmut}`}>
-                            {/* Only render cells for visible columns */}
+                          <TableRow 
+                            key={`${data.resid}${data.resnum}${data.resmut}`}
+                            className={expandData ? "cursor-pointer hover:bg-default-100/50" : ""}
+                            onClick={() => {
+                              if (expandData) {
+                                router.push(`/database/BglB_characterization/${data.id}`);
+                              }
+                            }}
+                          >
                             {columns
                               .filter(column => visibleColumns.has(column.uid))
                               .map(column => {
@@ -874,16 +883,17 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <Page 
-                                          id={data.raw_data_id} 
-                                          wt_id={data.WT_raw_data_id} 
-                                          variant={getVariantDisplay(data.resid, data.resnum, data.resmut)} 
-                                        />
+                                        <span className={expandData ? "text-[#06B7DB]" : ""}>
+                                          {getVariantDisplay(data.resid, data.resnum, data.resmut)}
+                                        </span>
                                         {data.isAggregate && (
                                           <span 
                                             title={`Average of ${data.count} separate experiments. Click to expand`} 
                                             className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1" 
-                                            onClick={() => setExpandData(true)}
+                                            onClick={(e) => {
+                                              e.stopPropagation(); // Prevent row click
+                                              setExpandData(true);
+                                            }}
                                           >
                                             <HiChevronRight className="w-4 h-4 -ml-1 translate-y-[1px]" />
                                           </span>

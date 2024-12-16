@@ -7,6 +7,7 @@ import s3 from '../../../s3config';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
+import { Checkbox } from "@nextui-org/checkbox";
 
 interface KineticAssayDataViewProps {
   entryData: any;
@@ -45,6 +46,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   // Add a new state for loading
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [approvedByStudent, setApprovedByStudent] = useState(false);
 
   useEffect(() => {
     const fetchKineticRawDataEntryData = async () => {
@@ -315,6 +318,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         kcat_over_KM_SD,
         csv_filename: '',
         plot_filename: '',
+        approved_by_student: approvedByStudent,
       };
 
       // Generate filenames
@@ -743,6 +747,18 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                   </div>
                 </div>
               )}
+
+            <div className="flex items-center gap-2 mb-4">
+              <Checkbox
+                isSelected={approvedByStudent}
+                onValueChange={setApprovedByStudent}
+                size="sm"
+              >
+                <span className="text-sm text-gray-600">
+                  I approve this data and agree to attach my name to it
+                </span>
+              </Checkbox>
+            </div>
             </>
           )}
         </div>

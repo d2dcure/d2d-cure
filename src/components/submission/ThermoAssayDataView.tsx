@@ -6,6 +6,7 @@ import s3 from '../../../s3config';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import { Button } from "@nextui-org/button";
+import { Checkbox } from "@nextui-org/checkbox";
 
 interface ThermoAssayDataViewProps {
   setCurrentView: (view: string) => void;
@@ -31,6 +32,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approvedByStudent, setApprovedByStudent] = useState(false);
 
   useEffect(() => {
     const fetchTempRawDataEntryData = async () => {
@@ -263,6 +265,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         csv_filename: csvFilename,
         plot_filename: plotFilename,
         parent_id: entryData.id,
+        approved_by_student: approvedByStudent,
       });
   
       // Extract calculated values from the graph generation response
@@ -607,6 +610,18 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                   </div>
                 </div>
               )}
+
+            <div className="flex items-center gap-2 mb-4">
+              <Checkbox
+                isSelected={approvedByStudent}
+                onValueChange={setApprovedByStudent}
+                size="sm"
+              >
+                <span className="text-sm text-gray-600">
+                  I approve this data and agree to attach my name to it
+                </span>
+              </Checkbox>
+            </div>
             </>
           )}
         </div>

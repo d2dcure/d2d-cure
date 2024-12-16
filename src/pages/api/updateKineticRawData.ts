@@ -17,6 +17,7 @@ export default async function handler(req: any, res: any) {
     parent_id,
     csv_filename,
     plot_filename,
+    approved_by_student,
   } = req.body;
 
   try {
@@ -46,6 +47,7 @@ export default async function handler(req: any, res: any) {
           assay_date,
           csv_filename,
           plot_filename,
+          approved_by_student: !!approved_by_student,
           updated: new Date(), // Optionally update the 'updated' timestamp
         },
       });
@@ -64,6 +66,7 @@ export default async function handler(req: any, res: any) {
           parent_id,
           csv_filename,
           plot_filename,
+          approved_by_student: !!approved_by_student,
         },
       });
     }

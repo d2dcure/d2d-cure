@@ -33,7 +33,7 @@ export const AuthChecker = (
             secondaryButton: { text: "Learn More", href: "/" },
             footerLinks: [
                 { text: "Documentation", href: "/docs" },
-                { text: "Support", href: "/support" },
+                { text: "Support", href: "/contact" },
                 { text: "Contact", href: "/contact" }
             ]
         },
@@ -45,7 +45,7 @@ export const AuthChecker = (
             secondaryButton: { text: "Go Back", href: "#", onClick: () => window.history.back() },
             footerLinks: [
                 { text: "Documentation", href: "/docs" },
-                { text: "Support", href: "/support" },
+                { text: "Support", href: "/contact" },
                 { text: "Contact", href: "/contact" }
             ]
         },
@@ -53,8 +53,8 @@ export const AuthChecker = (
             icon: "M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z",
             title: "Approval Pending",
             message: "Your account is currently under review",
-            primaryButton: { text: "View Status", href: "/dashboard" },
-            secondaryButton: { text: "Contact Support", href: "/support" },
+            primaryButton: { text: "View Status", href: "/contact" },
+            secondaryButton: { text: "Contact Support", href: "/contact" },
             footerLinks: [
                 { text: "Documentation", href: "/docs" },
                 { text: "Support", href: "/support" },

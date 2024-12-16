@@ -374,7 +374,7 @@ const SingleVariant = () => {
     setShowDeleteModal(false);
 
     try {
-      const response = await fetch('/api/deleteCharacterizationData', {
+      const response = await fetch('/api/deleteCharacterizationEntryData', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -539,7 +539,7 @@ const SingleVariant = () => {
         return (
           <div className="flex items-center gap-1">
             <span className="font-semibold">T<sub>M</sub> =</span>
-            <span>{tm} ± {tmSD}°C</span>
+            <span>{tm} ± {tmSD}��C</span>
           </div>
         );
       }
@@ -783,7 +783,7 @@ const SingleVariant = () => {
                   <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                     {getVariantDisplay(entryData)}
                     <Link
-                      href={`/database/BglB_Characterization?search=${encodeURIComponent(
+                      href={`/database/BglB_characterization?search=${encodeURIComponent(
                         getVariantDisplay(entryData).replace(' BglB', '').trim()
                       )}`}
                       className="inline-flex items-center hover:text-[#06B7DB]"
@@ -794,9 +794,9 @@ const SingleVariant = () => {
                   <StatusChip
                     status={
                       entryData.submitted_for_curation
-                        ? entryData.approved_by_pi
+                        ? entryData.curated
                           ? 'approved'
-                          : !entryData.curated
+                          : !entryData.approved_by_pi
                           ? 'pending_approval'
                           : 'in_progress'
                         : 'in_progress'
@@ -811,8 +811,13 @@ const SingleVariant = () => {
                     Submit for Review
                   </button>
                   <button
-                    className="px-4 py-2 text-sm text-[#E91E63] border-2 border-[#E91E63] font-semibold rounded-xl hover:bg-[#E91E63] hover:text-white transition-colors"
+                    className={`px-4 py-2 text-sm border-2 font-semibold rounded-xl transition-colors
+                      ${entryData.curated 
+                        ? "text-gray-400 border-gray-400 cursor-not-allowed" 
+                        : "text-[#E91E63] border-[#E91E63] hover:bg-[#E91E63] hover:text-white"
+                      }`}
                     onClick={() => setShowDeleteModal(true)}
+                    disabled={entryData.curated}
                   >
                     Delete Profile
                   </button>
