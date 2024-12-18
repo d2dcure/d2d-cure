@@ -503,14 +503,14 @@ const DataPageCool = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {entryData1?.gel_filename || 'gel-image.png'}
                         </p>
                         <p className="text-xs text-gray-500">Click to view full size</p>
                       </div>
                       <svg 
-                        className="w-5 h-5 text-gray-400 group-hover:text-[#06B7DB] transition-colors duration-200" 
+                        className="w-5 h-5 text-gray-400 group-hover:text-[#06B7DB] transition-colors duration-200 ml-2" 
                         fill="none" 
                         viewBox="0 0 24 24" 
                         stroke="currentColor"
