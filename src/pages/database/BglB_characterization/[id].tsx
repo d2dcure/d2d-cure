@@ -4,6 +4,14 @@ import NavBar from '@/components/NavBar';
 import "../../../app/globals.css";
 import s3 from '../../../../s3config';
 import Papa from 'papaparse';
+import { Card, CardBody } from '@nextui-org/card';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
+import Link from 'next/link';
+import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
+import { Button } from '@nextui-org/react';
+import { Download, Share, Printer, BugIcon } from 'lucide-react';
+import Toast from '@/components/Toast';
+import {  ErrorChecker} from '@/components/ErrorChecker';
 
 const DataPageCool = () => {
   const router = useRouter();
@@ -25,6 +33,16 @@ const DataPageCool = () => {
   const [wtMentenImageUrl, setWtMentenImageUrl] = useState<string | null>(null);
   const [wtThermoData, setWtThermoData] = useState<any[][]>([]);
   const [wtThermoImageUrl, setWtThermoImageUrl] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [toastInfo, setToastInfo] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success' as const
+  });
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorType, setErrorType] = useState<'api' | 'validation' | 'general' | 'auth' | 'custom'>('api');
 
   // Fetch gel image when gel_filename changes
   useEffect(() => {
@@ -298,489 +316,702 @@ const DataPageCool = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const handleAB1Download = async (filename: string) => {
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `sequencing/${filename}`,
+        Expires: 60,
+      };
 
+      const url = await s3.getSignedUrlPromise('getObject', params);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error downloading AB1:', error);
+    }
+  };
 
-  console.log("WT Kinetic Data:", {
-    entryData11,
-    wtKineticData,
-    wtMentenImageUrl
-  });
-  
-  console.log("WT Thermo Data:", {
-    entryData12,
-    wtThermoData,
-    wtThermoImageUrl
-  });
-  return (
-    <>
-      <NavBar />
-      <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <h1 className="text-3xl font-bold mb-16">
-            Raw Data for BglB {entryData1?.resid === 'X' ? 'WT' : 
-              `Variant ${entryData1?.resid}${entryData1?.resnum}${entryData1?.resmut}`}
-          </h1>
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setToastInfo({
+      show: true,
+      title: 'Link Copied',
+      message: 'URL has been copied to clipboard',
+      type: 'success'
+    });
+  };
 
-          {/* Expression Data Section */}
-          <div className="mb-48">
-            <h2 className="text-2xl font-semibold mb-4">Expression Data</h2>
-            
-            {/* Gel Image */}
-            {gelImageUrl && (
-              <div className="mb-4">
-                <img 
-                  src={gelImageUrl} 
-                  alt="Gel" 
-                  className="max-w-md rounded-lg shadow-md"
-                />
+  const renderSidebar = () => {
+    return (
+      <div className="w-full lg:w-1/5">
+        <div className="lg:sticky lg:top-4">
+          <div className="flex flex-col pt-5 gap-6">
+            <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+              <div>
+                <span className="font-medium text-sm">Variant Details</span>
+                <p className="text-gray-500 text-sm">
+                  {entryData1?.resid === 'X' ? 'WT' : 
+                    `${entryData1?.resid}${entryData1?.resnum}${entryData1?.resmut}`}
+                </p>
               </div>
-            )}
 
-            {/* Yield Value */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700">
-                <span className="font-medium">Yield:</span> {entryData1?.yield_avg || 'N/A'} mg/mL
-              </p>
+              <div>
+                <span className="font-medium text-sm">Yield</span>
+                <p className="text-gray-500 text-sm">{entryData1?.yield_avg || 'N/A'} mg/mL</p>
+              </div>
+
+              <div>
+                <span className="font-medium text-sm">Created By</span>
+                <p className="text-gray-500 text-sm">{entryData1?.user_name}</p>
+              </div>
+
+              <div>
+                <span className="font-medium text-sm">Last Updated</span>
+                <p className="text-gray-500 text-sm">
+                  {new Date(entryData1?.updated).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Expression Data Card */}
+            {/* {gelImageUrl && (
+              <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+                <span className="font-medium text-sm">Expression Data</span>
+                <button 
+                  onClick={() => setIsImageModalOpen(true)}
+                  className="w-full aspect-square bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200"
+                >
+                  <img 
+                    src={gelImageUrl || ''} 
+                    alt="Gel" 
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+                <div className="space-y-2">
+                  <p className="text-gray-500 text-sm truncate">
+                    {entryData1?.gel_filename || 'gel-image.png'}
+                  </p>
+                  <div className="bg-white rounded-lg p-2">
+                    <p className="text-sm">
+                      <span className="font-medium">Yield:</span> {entryData1?.yield_avg || 'N/A'} mg/mL
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )} */}
+
+            {/* Downloads Card */}
+            <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+              <span className="font-medium text-sm">Downloads</span>
+              <div className="space-y-2">
+                {entryData2?.csv_filename && (
+                  <button
+                    onClick={() => handleDownloadCSV(entryData2.csv_filename, 'kinetic_assays/raw')}
+                    className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Kinetic Data CSV</span>
+                  </button>
+                )}
+                {entryData3?.csv_filename && (
+                  <button
+                    onClick={() => handleDownloadCSV(entryData3.csv_filename, 'temperature_assays/raw')}
+                    className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Thermostability Data CSV</span>
+                  </button>
+                )}
+                {entryData1?.ab1_filename && (
+                  <button
+                    onClick={() => handleDownloadCSV(entryData1.ab1_filename, 'sequencing')}
+                    className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Sequencing Data (AB1)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions Card */}
+            <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+              <span className="font-medium text-sm">Quick Actions</span>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
+                >
+                  <Share className="w-4 h-4" />
+                  <span>Share</span>
+                </button>
+                
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print</span>
+                </button>
+
+                <Link 
+                  href={`/contact/report?page=${encodeURIComponent(`/database/BglB_characterization/${id}`)}`}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
+                >
+                  <BugIcon className="w-4 h-4" />
+                  <span>Report a bug</span>
+                </Link>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  };
 
-          {/* Kinetic Data Section */}
-          {entryData2 && (
-            <div className="mb-48">
-              <h2 className="text-2xl font-semibold mb-4">Kinetic Data</h2>
+  const renderMainContent = () => {
+    return (
+      <div className="flex-1 space-y-6">
+        {/* Expression Data Section */}
+        <Card className="border-none bg-white shadow-small rounded-xl">
+          <div className="p-6">
+            <h2 className="text-xl  mb-4">Expression Data</h2>
+            <div className="flex flex-col space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-gray-700">
+                  <span className="font-medium">Yield (mg/mL):</span> {entryData1?.yield_avg || 'N/A'}
+                </p>
+              </div>
               
-              {/* For Kinetic Data */}
-              {kineticData.length > 0 && (
-                <>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="bg-gray-50 px-4 py-2 rounded-lg flex-grow">
-                      <span className="font-medium">CSV file: </span>
-                      <span className="text-gray-600">{entryData2?.csv_filename}</span>
-                    </div>
-                    <button
-                      onClick={() => handleDownloadCSV(entryData2?.csv_filename, 'kinetic_assays/raw')}
-                      className="px-4 py-2 text-sm font-medium text-[#06B7DB] border border-[#06B7DB] rounded-lg hover:bg-[#06B7DB] hover:text-white transition-colors"
+              {gelImageUrl && (
+                <div className="space-y-3">
+                  <div className="relative group">
+                    <button 
+                      onClick={() => setIsImageModalOpen(true)}
+                      className="flex items-center w-full max-w-sm bg-white border rounded-lg p-2 hover:border-[#06B7DB] transition-colors"
                     >
-                      Download CSV
-                    </button>
-                  </div>
-                  <div className="overflow-x-auto mb-6">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Row
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            [S][mM]
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            1
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            2
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            3
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
-                          const concentrations = [
-                            '75.00', '25.00', '8.33', '2.78', 
-                            '0.93', '0.31', '0.10', '0.03'
-                          ];
-                          
-                          return (
-                            <tr key={row}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {row}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {concentrations[index]}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {kineticData[index + 4]?.[2] || '—'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {kineticData[index + 4]?.[3] || '—'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {kineticData[index + 4]?.[4] || '—'}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-6 rounded-lg mb-6 space-y-2">
-                    <p className="text-gray-700">
-                      <span className="font-medium">Yield:</span>{' '}
-                      {entryData2?.yield} {entryData2?.yield_units}
-                    </p>
-                    <p className="text-gray-700">
-                      <span className="font-medium">Dilution factor:</span>{' '}
-                      {entryData2?.dilution}x
-                    </p>
-                    {entryData2?.plate_num && (
-                      <p className="text-gray-700">
-                        <span className="font-medium">Plate num:</span>{' '}
-                        {entryData2.plate_num}
-                      </p>
-                    )}
-                    <p className="text-gray-700">
-                      <span className="font-medium">Protein purified on</span>{' '}
-                      {entryData2?.purification_date} <span className="font-medium">and assayed on</span>{' '}
-                      {entryData2?.assay_date}
-                    </p>
-                    <p className="text-gray-700">
-                      <span className="font-medium">Data uploaded by</span>{' '}
-                      {entryData2?.user_name} <span className="font-medium">and last updated on</span>{' '}
-                      {new Date(entryData2?.updated).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  {/* Graph */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {mentenImageUrl && (
-                      <div>
+                      <div className="w-12 h-12 bg-gray-50 rounded overflow-hidden mr-3">
                         <img 
-                          src={mentenImageUrl} 
-                          alt="Michaelis-Menten Plot" 
-                          className="rounded-lg shadow-md"
+                          src={gelImageUrl} 
+                          alt="Gel electrophoresis" 
+                          className="w-full h-full object-cover"
                         />
                       </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* WT Reference Data */}
-              {entryData11 && (
-                <div className="mt-12">
-                  <h3 className="text-xl font-semibold mb-4">Reference Data for WT</h3>
-                  
-                  {wtKineticData.length > 0 && (
-                    <>
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="bg-gray-50 px-4 py-2 rounded-lg flex-grow">
-                          <span className="font-medium">CSV file: </span>
-                          <span className="text-gray-600">{entryData11?.csv_filename}</span>
-                        </div>
-                        <button
-                          onClick={() => handleDownloadCSV(entryData11?.csv_filename, 'kinetic_assays/raw')}
-                          className="px-4 py-2 text-sm font-medium text-[#06B7DB] border border-[#06B7DB] rounded-lg hover:bg-[#06B7DB] hover:text-white transition-colors"
-                        >
-                          Download CSV
-                        </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {entryData1?.gel_filename || 'gel-image.png'}
+                        </p>
+                        <p className="text-xs text-gray-500">Click to view full size</p>
                       </div>
-
-                      <div className="overflow-x-auto mb-6">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead>
-                            <tr className="bg-gray-50">
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Row
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                [S][mM]
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                1
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                2
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                3
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
-                              const concentrations = [
-                                '75.00', '25.00', '8.33', '2.78', 
-                                '0.93', '0.31', '0.10', '0.03'
-                              ];
-                              
-                              return (
-                                <tr key={row}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {row}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {concentrations[index]}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtKineticData[index + 4]?.[2] || '—'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtKineticData[index + 4]?.[3] || '—'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtKineticData[index + 4]?.[4] || '—'}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                      
-                      <div className="bg-gray-50 p-6 rounded-lg mb-6 space-y-2">
-                        <p className="text-gray-700">
-                          <span className="font-medium">Yield:</span>{' '}
-                          {entryData11?.yield} {entryData11?.yield_units}
-                        </p>
-                        <p className="text-gray-700">
-                          <span className="font-medium">Dilution factor:</span>{' '}
-                          {entryData11?.dilution}x
-                        </p>
-                        <p className="text-gray-700">
-                          <span className="font-medium">Protein purified on</span>{' '}
-                          {entryData11?.purification_date} <span className="font-medium">and assayed on</span>{' '}
-                          {entryData11?.assay_date}
-                        </p>
-                        <p className="text-gray-700">
-                          <span className="font-medium">Data uploaded by</span>{' '}
-                          {entryData11?.user_name} <span className="font-medium">and last updated on</span>{' '}
-                          {new Date(entryData11?.updated).toLocaleDateString()}
-                        </p>
-                      </div>
-
-                      {/* Graph */}
-                      {wtMentenImageUrl && (
-                        <div>
-                          <img 
-                            src={wtMentenImageUrl} 
-                            alt="WT Michaelis-Menten Plot" 
-                            className="rounded-lg shadow-md w-full"
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
-            </div>
-          )}
-
-          {/* Thermostability Data Section */}
-          {entryData3 && (
-            <div className="mb-48">
-              <h2 className="text-2xl font-semibold mb-4">Thermostability Assay Data</h2>
-              
-              {/* For Thermostability Data */}
-              {thermoData.length > 0 && (
-                <>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="bg-gray-50 px-4 py-2 rounded-lg flex-grow">
-                      <span className="font-medium">CSV file: </span>
-                      <span className="text-gray-600">{entryData3?.csv_filename}</span>
-                    </div>
-                    <button
-                      onClick={() => handleDownloadCSV(entryData3?.csv_filename, 'temperature_assays/raw')}
-                      className="px-4 py-2 text-sm font-medium text-[#06B7DB] border border-[#06B7DB] rounded-lg hover:bg-[#06B7DB] hover:text-white transition-colors"
-                    >
-                      Download CSV
+                      <svg 
+                        className="w-5 h-5 text-gray-400 group-hover:text-[#06B7DB] transition-colors duration-200" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
                     </button>
                   </div>
-                  <div className="overflow-x-auto mb-6">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Row
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Temp (°C)
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            1
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            2
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            3
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+       
+
+        {/* Kinetic Data Section */}
+        {entryData2 && (
+          <Card className="border-none bg-white shadow-small rounded-xl">
+            <div className="p-6">
+              <h2 className="text-xl  mb-4">Kinetic Data</h2>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                      <h3 className="font-medium text-gray-900 mb-4">Experiment Details</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <div>
+                              <span className="text-sm text-gray-500">Yield</span>
+                              <p className="text-sm font-medium text-gray-900">
+                                {entryData2?.yield} {entryData2?.yield_units?.replace(/_/g, '/')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                            <div>
+                              <span className="text-sm text-gray-500">Dilution</span>
+                              <p className="text-sm font-medium text-gray-900">{entryData2?.dilution}x</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                              <span className="text-sm text-gray-500">Dates</span>
+                              <p className="text-sm font-medium text-gray-900">
+                                Purified: {new Date(entryData2?.purification_date).toLocaleDateString()}
+                              </p>
+                              <p className="text-sm font-medium text-gray-900">
+                                Assayed: {new Date(entryData2?.assay_date).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
+                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <div>
+                          <span className="text-sm text-gray-500">Last Update</span>
+                          <p className="text-sm font-medium text-gray-900">
+                            {entryData2?.user_name} on {new Date(entryData2?.updated).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                      <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <button
+                          onClick={() => handleDownloadCSV(entryData2?.csv_filename, 'kinetic_assays/raw')}
+                          className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+                        >
+                          {entryData2?.csv_filename}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {mentenImageUrl && (
+                    <div className="p-4 bg-gray-50 rounded-xl h-full">
+                      <img 
+                        src={mentenImageUrl} 
+                        alt="Michaelis-Menten Plot" 
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {kineticData.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <Table 
+                      aria-label="Kinetic assay data table"
+                      classNames={{
+                        wrapper: "min-h-[400px]",
+                        table: "min-w-full",
+                      }}
+                    >
+                      <TableHeader>
+                        <TableColumn>Row</TableColumn>
+                        <TableColumn>[S] (mM)</TableColumn>
+                        <TableColumn>1</TableColumn>
+                        <TableColumn>2</TableColumn>
+                        <TableColumn>3</TableColumn>
+                      </TableHeader>
+                      <TableBody>
+                        {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
+                          const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'];
+                          return (
+                            <TableRow key={row}>
+                              <TableCell>{row}</TableCell>
+                              <TableCell>{sValues[index]}</TableCell>
+                              <TableCell>{kineticData[index + 4]?.[2] || '—'}</TableCell>
+                              <TableCell>{kineticData[index + 4]?.[3] || '—'}</TableCell>
+                              <TableCell>{kineticData[index + 4]?.[4] || '—'}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Thermostability Data Section */}
+        {entryData3 && (
+          <Card className="border-none bg-white shadow-small rounded-xl">
+            <div className="p-6">
+              <h2 className="text-xl  mb-4">Thermostability Data</h2>
+              <div className="space-y-6">
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                      <h3 className="font-medium text-gray-900 mb-4">Experiment Details</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                              <span className="text-sm text-gray-500">Dates</span>
+                              <p className="text-sm font-medium text-gray-900">
+                                Purified: {new Date(entryData3?.purification_date).toLocaleDateString()}
+                              </p>
+                              <p className="text-sm font-medium text-gray-900">
+                                Assayed: {new Date(entryData3?.assay_date).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <div>
+                            <span className="text-sm text-gray-500">Last Update</span>
+                            <p className="text-sm font-medium text-gray-900">
+                              {entryData3?.user_name} on {new Date(entryData3?.updated).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                      <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <button
+                          onClick={() => handleDownloadCSV(entryData3?.csv_filename, 'temperature_assays/raw')}
+                          className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+                        >
+                          {entryData3?.csv_filename}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {thermoImageUrl && (
+                    <div className="p-4 bg-gray-50 rounded-xl h-full">
+                      <img 
+                        src={thermoImageUrl} 
+                        alt="Temperature Response Plot" 
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {thermoData.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <Table 
+                      aria-label="Temperature assay data table"
+                      classNames={{
+                        wrapper: "min-h-[400px]",
+                        table: "min-w-full",
+                      }}
+                    >
+                      <TableHeader>
+                        <TableColumn>Row</TableColumn>
+                        <TableColumn>Temp (°C)</TableColumn>
+                        <TableColumn>1</TableColumn>
+                        <TableColumn>2</TableColumn>
+                        <TableColumn>3</TableColumn>
+                      </TableHeader>
+                      <TableBody>
                         {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
                           const temperatures = [
                             '50.0', '48.3', '45.7', '42.4', 
                             '37.7', '33.6', '31.3', '30.0'
                           ];
-                          
                           return (
-                            <tr key={row}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {row}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {temperatures[index]}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {thermoData[index + 4]?.[2] || '—'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {thermoData[index + 4]?.[3] || '—'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {thermoData[index + 4]?.[4] || '—'}
-                              </td>
-                            </tr>
+                            <TableRow key={row}>
+                              <TableCell>{row}</TableCell>
+                              <TableCell>{temperatures[index]}</TableCell>
+                              <TableCell>{thermoData[index + 4]?.[2] || '—'}</TableCell>
+                              <TableCell>{thermoData[index + 4]?.[3] || '—'}</TableCell>
+                              <TableCell>{thermoData[index + 4]?.[4] || '—'}</TableCell>
+                            </TableRow>
                           );
                         })}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
-                  
-                  <div className="bg-gray-50 p-6 rounded-lg mb-6 space-y-2">
-                    <p className="text-gray-700">
-                      <span className="font-medium">Protein purified on</span>{' '}
-                      {entryData3?.purification_date} <span className="font-medium">and assayed on</span>{' '}
-                      {entryData3?.assay_date}
-                    </p>
-                    <p className="text-gray-700">
-                      <span className="font-medium">Data uploaded by</span>{' '}
-                      {entryData3?.user_name} <span className="font-medium">and last updated on</span>{' '}
-                      {new Date(entryData3?.updated).toLocaleDateString()}
-                    </p>
-                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
 
-                  {/* Thermostability Plot */}
-                  {thermoImageUrl && (
-                    <div>
-                      <img 
-                        src={thermoImageUrl} 
-                        alt="Temperature Response Plot" 
-                        className="rounded-lg shadow-md w-full max-w-2xl"
-                      />
-                  </div>
-              )}
-                </>
-              )}
-
-              {/* WT Reference Data */}
-              {entryData12 && (
-                <div className="mt-12">
-                  <h3 className="text-xl font-semibold mb-4">Reference Data for WT</h3>
-                  
-                  {wtThermoData.length > 0 && (
-                    <>
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="bg-gray-50 px-4 py-2 rounded-lg flex-grow">
-                          <span className="font-medium">CSV file: </span>
-                          <span className="text-gray-600">{entryData12?.csv_filename}</span>
+        {/* WT Kinetic Data Section */}
+        {entryData11 && (
+          <Card className="p-6 border-none bg-white shadow-small rounded-xl">
+            <h2 className="text-xl  mb-4">Wild Type Kinetic Data</h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <h3 className="font-medium text-gray-900 mb-4">Experiment Details</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          <div>
+                            <span className="text-sm text-gray-500">Yield</span>
+                            <p className="text-sm font-medium text-gray-900">
+                              {entryData11?.yield} {entryData11?.yield_units?.replace(/_/g, '/')}
+                            </p>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => handleDownloadCSV(entryData12?.csv_filename, 'temperature_assays/raw')}
-                          className="px-4 py-2 text-sm font-medium text-[#06B7DB] border border-[#06B7DB] rounded-lg hover:bg-[#06B7DB] hover:text-white transition-colors"
-                        >
-                          Download CSV
-                        </button>
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                          </svg>
+                          <div>
+                            <span className="text-sm text-gray-500">Dilution</span>
+                            <p className="text-sm font-medium text-gray-900">{entryData11?.dilution}x</p>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="overflow-x-auto mb-6">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead>
-                            <tr className="bg-gray-50">
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Row
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Temp (°C)
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                1
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                2
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                3
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
-                              const temperatures = [
-                                '50.0', '48.3', '45.7', '42.4', 
-                                '37.7', '33.6', '31.3', '30.0'
-                              ];
-                              
-                              return (
-                                <tr key={row}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {row}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {temperatures[index]}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtThermoData[index + 4]?.[2] || '—'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtThermoData[index + 4]?.[3] || '—'}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {wtThermoData[index + 4]?.[4] || '—'}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <div>
+                            <span className="text-sm text-gray-500">Dates</span>
+                            <p className="text-sm font-medium text-gray-900">
+                              Purified: {new Date(entryData11?.purification_date).toLocaleDateString()}
+                            </p>
+                            <p className="text-sm font-medium text-gray-900">
+                              Assayed: {new Date(entryData11?.assay_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div className="bg-gray-50 p-6 rounded-lg mb-6 space-y-2">
-                        <p className="text-gray-700">
-                          <span className="font-medium">Protein purified on</span>{' '}
-                          {entryData12?.purification_date} <span className="font-medium">and assayed on</span>{' '}
-                          {entryData12?.assay_date}
-                        </p>
-                        <p className="text-gray-700">
-                          <span className="font-medium">Data uploaded by</span>{' '}
-                          {entryData12?.user_name} <span className="font-medium">and last updated on</span>{' '}
-                          {new Date(entryData12?.updated).toLocaleDateString()}
+                    </div>
+
+                    <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
+                      <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <div>
+                        <span className="text-sm text-gray-500">Last Update</span>
+                        <p className="text-sm font-medium text-gray-900">
+                          {entryData11?.user_name} on {new Date(entryData11?.updated).toLocaleDateString()}
                         </p>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* Graph */}
-                      {wtThermoImageUrl && (
-                        <div>
-                          <img 
-                            src={wtThermoImageUrl} 
-                            alt="WT Temperature Response Plot" 
-                            className="rounded-lg shadow-md w-full max-w-2xl"
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <button
+                        onClick={() => handleDownloadCSV(entryData11?.csv_filename, 'kinetic_assays/raw')}
+                        className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+                      >
+                        {entryData11?.csv_filename}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {wtMentenImageUrl && (
+                  <div className="p-4 bg-gray-50 rounded-xl h-full">
+                    <img 
+                      src={wtMentenImageUrl} 
+                      alt="WT Michaelis-Menten Plot" 
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {wtKineticData.length > 0 && (
+                <div className="overflow-x-auto">
+                  <Table 
+                    aria-label="WT Kinetic assay data table"
+                    classNames={{
+                      wrapper: "min-h-[400px]",
+                      table: "min-w-full",
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>Row</TableColumn>
+                      <TableColumn>[S] (mM)</TableColumn>
+                      <TableColumn>1</TableColumn>
+                      <TableColumn>2</TableColumn>
+                      <TableColumn>3</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
+                        const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'];
+                        return (
+                          <TableRow key={row}>
+                            <TableCell>{row}</TableCell>
+                            <TableCell>{sValues[index]}</TableCell>
+                            <TableCell>{wtKineticData[index + 4]?.[2] || '—'}</TableCell>
+                            <TableCell>{wtKineticData[index + 4]?.[3] || '—'}</TableCell>
+                            <TableCell>{wtKineticData[index + 4]?.[4] || '—'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
-
             </div>
-          )}
+          </Card>
+        )}
 
-          {/* Design Data Section */}
-          {(entryData1?.Rosetta_score || entryData1?.ab1_filename) && (
-            <div className="mb-48">
-              <h2 className="text-2xl font-semibold mb-4">Design Data</h2>
-              
-              {/* Rosetta Score */}
+        {/* WT Thermostability Data Section */}
+        {entryData12 && (
+          <Card className="p-6 border-none bg-white shadow-small rounded-xl">
+            <h2 className="text-xl  mb-4">Wild Type Thermostability Data</h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <h3 className="font-medium text-gray-900 mb-4">Experiment Details</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <div>
+                            <span className="text-sm text-gray-500">Dates</span>
+                            <p className="text-sm font-medium text-gray-900">
+                              Purified: {new Date(entryData12?.purification_date).toLocaleDateString()}
+                            </p>
+                            <p className="text-sm font-medium text-gray-900">
+                              Assayed: {new Date(entryData12?.assay_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <div>
+                          <span className="text-sm text-gray-500">Last Update</span>
+                          <p className="text-sm font-medium text-gray-900">
+                            {entryData12?.user_name} on {new Date(entryData12?.updated).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <button
+                        onClick={() => handleDownloadCSV(entryData12?.csv_filename, 'temperature_assays/raw')}
+                        className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+                      >
+                        {entryData12?.csv_filename}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {wtThermoImageUrl && (
+                  <div className="p-4 bg-gray-50 rounded-xl h-full">
+                    <img 
+                      src={wtThermoImageUrl} 
+                      alt="WT Temperature Response Plot" 
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {wtThermoData.length > 0 && (
+                <div className="overflow-x-auto">
+                  <Table 
+                    aria-label="WT Temperature assay data table"
+                    classNames={{
+                      wrapper: "min-h-[400px]",
+                      table: "min-w-full",
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn>Row</TableColumn>
+                      <TableColumn>Temp (°C)</TableColumn>
+                      <TableColumn>1</TableColumn>
+                      <TableColumn>2</TableColumn>
+                      <TableColumn>3</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
+                        const temperatures = [
+                          '50.0', '48.3', '45.7', '42.4', 
+                          '37.7', '33.6', '31.3', '30.0'
+                        ];
+                        return (
+                          <TableRow key={row}>
+                            <TableCell>{row}</TableCell>
+                            <TableCell>{temperatures[index]}</TableCell>
+                            <TableCell>{wtThermoData[index + 4]?.[2] || '—'}</TableCell>
+                            <TableCell>{wtThermoData[index + 4]?.[3] || '—'}</TableCell>
+                            <TableCell>{wtThermoData[index + 4]?.[4] || '—'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Design Data Section */}
+        {(entryData1?.Rosetta_score || entryData1?.ab1_filename) && (
+          <Card className="p-6 border-none bg-white shadow-small rounded-xl">
+            <h2 className="text-xl  mb-4">Design Data</h2>
+            <div className="space-y-4">
               {entryData1?.Rosetta_score !== null && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-700">
                     <span className="font-medium">
                       Rosetta score for {entryData1?.resid}{entryData1?.resnum}{entryData1?.resmut}:
@@ -790,39 +1021,176 @@ const DataPageCool = () => {
                 </div>
               )}
 
-              {/* Ab1 File */}
-              {entryData1?.ab1_filename && (
-                <div className="flex items-center gap-4">
-                  <div className="bg-gray-50 px-4 py-2 rounded-lg flex-grow">
-                    <span className="font-medium">Ab1 file: </span>
-                    <span className="text-gray-600">{entryData1?.ab1_filename}</span>
-                  </div>
-                  <button
-                    onClick={() => handleDownloadCSV(entryData1?.ab1_filename, 'sequencing')}
-                    className="px-4 py-2 text-sm font-medium text-[#06B7DB] border border-[#06B7DB] rounded-lg hover:bg-[#06B7DB] hover:text-white transition-colors"
-                  >
-                    Download
-                  </button>
-                </div>
+
+{entryData1?.ab1_filename && (
+  <div className="flex items-center gap-2">
+    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <button
+      onClick={() => handleAB1Download(entryData1.ab1_filename)}
+      className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+    >
+      {entryData1.ab1_filename}
+    </button>
+  </div>
               )}
             </div>
-          )}
+          </Card>
+        )}
 
-          {/* Citations Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Citations</h2>
-            
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700">
-                {entryData1?.reference1 
-                  ? "This data set contains a reference/publication, but the code to display this hasn't been done yet. TODO"
-                  : "The unpublished data above were collected by students."}
-              </p>
+        {/* Citations Section */}
+        <Card className="p-6 border-none bg-white shadow-small rounded-xl">
+          <h2 className="text-xl  mb-4">Citations</h2>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-gray-700">
+              {entryData1?.reference1 
+                ? "This data set contains a reference/publication, but the code to display this hasn't been done yet. TODO"
+                : "The unpublished data above were collected by students."}
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderLoadingState = () => (
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-4 w-1/4" />
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-1 space-y-4">
+          <Skeleton className="h-[200px] rounded-xl" />
+          <Skeleton className="h-[150px] rounded-xl" />
+        </div>
+        
+        <div className="lg:col-span-3 space-y-6">
+          <Skeleton className="h-[300px] rounded-xl" />
+          <Skeleton className="h-[250px] rounded-xl" />
+          <Skeleton className="h-[200px] rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+
+  const getVariantDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
+    return `${variant} BglB`;
+  };
+
+  const getBreadcrumbDisplay = (data: any) => {
+    if (!data || !data.resid) return 'Loading...';
+    const variant = getVariantDisplay(data);
+    return `${variant}`;
+  };
+
+  const ImageModal = ({ isOpen, onClose, imageUrl, title }: {
+    isOpen: boolean;
+    onClose: () => void;
+    imageUrl: string;
+    title: string;
+  }) => (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      size="5xl"
+    >
+      <ModalContent>
+        <ModalHeader>{title}</ModalHeader>
+        <ModalBody>
+          <img 
+            src={imageUrl} 
+            alt={title} 
+            className="w-full h-auto object-contain max-h-[80vh]"
+          />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+
+  if (isLoading) return (
+    <>
+      <NavBar />
+      <div className="px-4 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          {renderLoadingState()}
+        </div>
+      </div>
+    </>
+  );
+
+  if (error) return (
+    <>
+      <NavBar />
+      <div className="p-4">Error: {error}</div>
+    </>
+  );
+
+  console.log("WT Kinetic Data:", {
+    entryData11,
+    wtKineticData,
+    wtMentenImageUrl
+  });
+
+  console.log("WT Thermo Data:", {
+    entryData12,
+    wtThermoData,
+    wtThermoImageUrl
+  });
+
+  return (
+    <ErrorChecker 
+      isError={isError} 
+      errorMessage={errorMessage}
+      errorType={errorType}
+    >
+      <NavBar />
+      <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <Breadcrumbs className="mb-2">
+            <BreadcrumbItem>Home</BreadcrumbItem>
+            <BreadcrumbItem>Database</BreadcrumbItem>
+            <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
+            <BreadcrumbItem>{getBreadcrumbDisplay(entryData1)}</BreadcrumbItem>
+          </Breadcrumbs>
+
+          <div className="pt-3">
+            <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
+              <div>
+                <h1 className="text-4xl font-inter dark:text-white mb-2">
+                  {getVariantDisplay(entryData1)}
+                </h1>
+                <p className="text-gray-600">
+                  Characterization Data
+                </p>
+              </div>
+            </div>
+            {/* Main Layout */}
+            <div className="flex flex-col lg:flex-row gap-6">
+              {renderSidebar()}
+              {renderMainContent()}
             </div>
           </div>
         </div>
       </div>
-    </>
+      <ImageModal 
+        isOpen={isImageModalOpen} 
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={gelImageUrl || ''} 
+        title="Gel Image"
+      />
+      <Toast 
+        show={toastInfo.show}
+        title={toastInfo.title}
+        message={toastInfo.message}
+        type={toastInfo.type}
+        onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
+      />
+    </ErrorChecker>
   );
 };
 
