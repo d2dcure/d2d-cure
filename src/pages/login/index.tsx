@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "firebase/auth";
-import { auth } from "../../../firebaseConfig";
+import { auth, googleAuthProvider} from "../../../firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
 import { useRouter } from 'next/router';
+import { getAdditionalUserInfo } from "firebase/auth";
 import { useUser } from '@/components/UserProvider';
 import Link from 'next/link';
 import { Input } from "@nextui-org/react";
-
+import {
+  fetchSignInMethodsForEmail,
+  EmailAuthProvider,
+  linkWithCredential,
+} from "firebase/auth";
 export {};
 
 declare global {
@@ -62,36 +68,85 @@ const Login = () => {
 
   useEffect(() => {
     const loadGoogleScript = () => {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
+      if (window.google) {
+        console.log("Google script already loaded");
+        return;
+      }
+    
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
+    
       script.onload = () => {
-        console.log('Google script loaded');
+        console.log("Google script loaded");
         window.google.accounts.id.initialize({
-          client_id: '908640937966-i4qfvag5cf18pee3e4op0as4d3lo8lad.apps.googleusercontent.com',
+          client_id: "796422843294-gl7t02tfgpsa8vau6v9ofilqdof5fig2.apps.googleusercontent.com",
           callback: handleGoogleSignIn,
         });
         window.google.accounts.id.renderButton(
-          document.getElementById('my-signin2'),
-          { 
+          document.getElementById("my-signin2"),
+          {
             type: "standard",
             size: "large",
-            theme: "nuetral",
+            theme: "neutral",
             shape: "pill",
             width: 380,
-            logo_alignment: "left"
+            logo_alignment: "left",
           }
         );
-        window.google.accounts.id.prompt(); 
+        window.google.accounts.id.prompt();
       };
+    
+      script.onerror = () => {
+        console.error("Failed to load Google script");
+      };
+    
       document.body.appendChild(script);
     };
 
-    const handleGoogleSignIn = (response: { credential: string }) => {
-      console.log('Encoded JWT ID token: ' + response.credential);
-    };
 
+    const handleGoogleSignIn = async () => {
+      try {
+        const result = await signInWithPopup(auth, googleAuthProvider);
+        const googleUser = result.user;
+        console.log("this is google user", googleUser); //this is after google auth user created, before sql user created
+        const email = googleUser.email!; // Asserts email is not null or undefined
+
+
+    
+        if (!googleUser.email) {
+          throw new Error("User email is not available. Cannot proceed with linking accounts.");
+        }
+    
+        // Fetch existing sign-in methods for the email
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    
+        if (signInMethods.includes('password')) {
+          const password = prompt('Enter your password to link accounts:');
+          if (!password) {
+            console.error('Password is required to link accounts.');
+            return;
+          }
+    
+          const credential = EmailAuthProvider.credential(email,password);
+          await linkWithCredential(googleUser, credential);
+          console.log("Accounts linked successfully!");
+        }
+    
+        // Redirect the user
+        const additionalUserInfo = getAdditionalUserInfo(result);
+        const isFirstTime = additionalUserInfo?.isNewUser;
+        const redirectPath = isFirstTime ? '/signup/google' : '/dashboard';
+        router.push({
+          pathname: redirectPath,
+          query: { userEmail: email },
+        });
+      } catch (error) {
+        console.error("Error during Google sign-in:", error);
+      }
+    };
+    
     loadGoogleScript();
   }, []);
 
@@ -122,18 +177,52 @@ const Login = () => {
 
   const handleSignIn = async (email: string, password: string) => {
     try {
+
+      // Fetch users from the SQL database
+      const response = await fetch('/api/getAllUsers');
+      const users = await response.json();
+  
+      // Find the user
+      const user = users.find((u: any) => u.email === email);
+      console.log("This is the user: ", user);
+
+      if (!user) {
+        setError("User not found.");
+        return;
+      }
+  
+      console.log("Password entered:", password);
+      console.log("Password hash from database:", user.password);
+  
+      // Validate password and password hash
+      if (!password || typeof password !== "string") {
+        throw new Error("Password is missing or invalid.");
+      }
+  
+      if (!user.password || typeof user.password !== "string") {
+        throw new Error("Password hash is missing or invalid.");
+      }
+  
+      // Compare password with hashed password
+      const bcrypt = require("bcryptjs");
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+  
+      // Authenticate with Firebase
       await setPersistence(auth, browserLocalPersistence);
       await signInWithEmailAndPassword(auth, email, password);
-      const redirectPath = '/dashboard';
+  
+      // Redirect to dashboard
       router.push({
-        pathname: redirectPath,
-        query: { justLoggedIn: 'true' }
+        pathname: "/dashboard",
+        query: { justLoggedIn: "true", userEmail: email },
       });
     } catch (error) {
-      setError('Failed to sign in');
+      console.error("Error during sign-in:", error);
+      setError("Failed to sign in.");
     }
   };
-
+  
+  
   const handleLogout = async () => {
     try {
       await signOut(auth);
