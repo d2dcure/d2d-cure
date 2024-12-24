@@ -9,7 +9,7 @@ import {Input} from "@nextui-org/react";
 import {Select, SelectSection, SelectItem} from "@nextui-org/select";
 import {Button} from "@nextui-org/react";
 
-const SignUpPage = () => {
+const GoogleSignUpPage = () => {
   const [userType, setUserType] = useState("");
   const [username, setUsername] = useState('');
   const [givenName, setGivenName] = useState('');
@@ -19,13 +19,15 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
   const [institutionError, setInstitutionError] = useState("");
   const [professorError, setProfessorError] = useState("");
+
   const router = useRouter();
+  const userEmail = router.query.userEmail as string || '';
+  console.log("This is the user email: ", userEmail);
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -55,28 +57,33 @@ const SignUpPage = () => {
       institution,
       status: userType,
       email,
-      password
-    }
-    fetch(`/api/createUser`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newUser),
-    }).then((response) => {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          console.log("Successfully created new user.")
-          router.push('/')
-        })
-        // Might want to catch case where createUser succeeds but firebase fails
-    }).catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+      password,
+    };
+  
+    try {
+      // Create user in SQL database only
+      const response = await fetch(`/api/createUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
       });
-  }
-
-
+  
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Failed to create user in SQL database: ${errorMessage}`);
+      }
+  
+      console.log("Successfully created new user in SQL database.");
+  
+      // Redirect to the homepage or another relevant page
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Error during user creation:", error);
+    }
+  };
+  
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (password.length < 6) {
@@ -89,7 +96,7 @@ const SignUpPage = () => {
     let isValid = true;
 
     // Validate institution
-    if (!institution&&!pi) {
+    if (!institution && !pi) {
       setInstitutionError("Please select an institution.");
       isValid = false;
     } else {
@@ -301,7 +308,6 @@ const SignUpPage = () => {
                     selectedKeys={new Set([institution])}
                     onSelectionChange={(value) => setInstitution(Array.from(value).join(''))}
                     className="w-full"
-                    required
                   >
                     {institutions.map((institution) => (
                       <SelectItem key={institution.abbr} textValue={institution.fullname}>
@@ -337,25 +343,13 @@ const SignUpPage = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter email"
                     value={email}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setEmail(value);
-                      if (!validateEmail(value)) {
-                        setEmailError('Invalid email format.');
-                      } else {
-                        setEmailError('');
-                      }
-                    }}
+                    onChange={(e) => setEmail(e.target.value)}
                     variant="bordered"
                     size="md"
                     className="w-full text-base"
                     required
                   />
-                  {emailError && (
-                      <p className="text-red-500 text-sm mt-1">{emailError}</p>
-                    )}
                 </div>
 
                 <div>
@@ -527,26 +521,15 @@ const SignUpPage = () => {
                     Email
                   </label>
                   <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter email"
-                      value={email}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setEmail(value);
-                        if (!validateEmail(value)) {
-                          setEmailError('Invalid email format.');
-                        } else {
-                          setEmailError('');
-                        }
-                      }}
-                      variant="bordered"
-                      size="md"
-                      className="w-full text-base"
-                      required
-                    />
-                    {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    variant="bordered"
+                    size="md"
+                    className="w-full text-base"
+                    required
+                  />
                 </div>
 
                 <div>
@@ -610,4 +593,4 @@ const SignUpPage = () => {
   }
 }
 
-export default SignUpPage;
+export default GoogleSignUpPage;
