@@ -539,7 +539,7 @@ const SingleVariant = () => {
         return (
           <div className="flex items-center gap-1">
             <span className="font-semibold">T<sub>M</sub> =</span>
-            <span>{tm} ± {tmSD}��C</span>
+            <span>{tm} ± {tmSD}°C</span>
           </div>
         );
       }
@@ -771,9 +771,21 @@ const SingleVariant = () => {
         <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
           <div className="max-w-7xl mx-auto">
             <Breadcrumbs className="mb-2">
-              <BreadcrumbItem>Home</BreadcrumbItem>
-              <BreadcrumbItem>Submit</BreadcrumbItem>
-              <BreadcrumbItem>Single Variant</BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link href="/" className="text-gray-600 hover:text-[#06B7DB]">
+                  Home
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link href="/submit" className="text-gray-600 hover:text-[#06B7DB]">
+                  Submit
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link href="/submit" className="text-gray-600 hover:text-[#06B7DB]">
+                  Single Variant
+                </Link>
+              </BreadcrumbItem>
               <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
             </Breadcrumbs>
 
