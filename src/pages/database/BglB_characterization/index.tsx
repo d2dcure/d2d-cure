@@ -150,7 +150,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The catalytic rate constant, a.k.a. "turnover number".</p>
+              <p>The catalytic rate constant, a.k.a. &quot;turnover number&quot;.</p>
               <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
               <p>Click to sort by this column.</p>
             </div>
@@ -175,7 +175,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The specificity constant, a.k.a. "kinetic efficiency".</p>
+              <p>The specificity constant, a.k.a. &quot;kinetic efficiency&quot;.</p>
               <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
               <p>Click to sort by this column.</p>
             </div>
