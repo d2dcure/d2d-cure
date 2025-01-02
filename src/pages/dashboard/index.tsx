@@ -215,24 +215,24 @@ const Dashboard = () => {
   const faqs = [
     {
       question: "What is D2D Cure and how does it work?",
-      answer: "D2D Cure is a research platform designed to predict enzyme function using large datasets and machine learning models. It helps researchers explore the intricate relationships between protein structure and function.",
+      answer: "D2D Cure (Design2Data) is a research platform that connects students and researchers in investigating protein sequence-structure-function relationships. Through the lens of protein biochemistry, users can submit enzyme variants, analyze data, and contribute to improving functionally predictive enzyme-design algorithms in collaboration with RosettaCommons.",
     },
     {
-      question: "How do I submit a new variant profile?",
-      answer: "To submit a new variant profile, navigate to the 'Submit Data' section, fill in the required fields, and upload any relevant documentation. Once submitted, your profile will be reviewed by the D2D Cure team.",
+      question: "How do I submit characterization data?",
+      answer: "To submit characterization data, navigate to the submission section where you can input variant details, upload gel images, and provide experimental results. The platform supports various data types including kinetic measurements, thermal stability data, and expression verification through SDS-PAGE gels.",
     },
     {
-      question: "What type of data can I upload to the platform?",
-      answer: "You can upload enzyme variants, protein structures, gel images, and any other data that contributes to the understanding of enzyme functionality. Ensure that all submissions follow the D2D Cure data formatting guidelines.",
+      question: "What happens after I submit my data?",
+      answer: "After submission, your data goes through a curation process. First, it's marked as 'Submitted for Curation'. Once reviewed and approved by PIs and administrators, it becomes 'Curated' and contributes to the research database. You can track the status of your submissions in your dashboard.",
     },
     {
-      question: "How do I analyze my gel images?",
-      answer: "Once you upload your gel images through the 'SDS-PAGE Gel Image Upload' section, D2D Cure provides automated analysis tools to help you evaluate the images and associate them with specific variant profiles.",
+      question: "How can I collaborate with team members?",
+      answer: "D2D Cure supports team collaboration through its teammate system. You can add up to three teammates to your characterization entries, allowing for collaborative data submission and analysis. Team members can be selected from your institution's registered users.",
     },
     {
-      question: "How can I collaborate with other researchers on D2D Cure?",
-      answer: "D2D Cure allows you to connect with other researchers by sharing your findings, collaborating on joint projects, or participating in community forums. Use the collaboration tools available in your dashboard.",
-    },
+      question: "How do I manage my gel images?",
+      answer: "You can upload, view, and manage gel images through the dashboard's gel image section. The platform supports image preview, deletion, and organization by date and institution. Images are automatically associated with your user account and can be linked to specific variant characterizations.",
+    }
   ];
 
   const ResearchInsight = () => {

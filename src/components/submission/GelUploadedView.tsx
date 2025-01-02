@@ -52,6 +52,13 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
     institution: user?.institution || '',
     date: new Date().toISOString().split('T')[0]
   });
+  const [previewImage, setPreviewImage] = useState<{
+    url: string;
+    filename: string;
+    institution?: string;
+    userName?: string;
+    fileDate?: string;
+  } | null>(null);
 
   // Update form data when user data is available
   useEffect(() => {
@@ -180,7 +187,12 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
       if (response.ok) {
         const updatedEntry = await response.json();
         updateEntryData(updatedEntry);
-        setCurrentView('checklist');
+        setToastInfo({
+          show: true,
+          type: 'success',
+          message: 'Gel image updated successfully'
+        });
+        setView('choose');
       } else {
         console.error('Failed to update gel filename');
         setError('Failed to save the selected image.');
@@ -244,11 +256,32 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                 <div className="border rounded-lg overflow-hidden bg-white">
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4">
-                      <img 
-                        src={initialImage} 
-                        alt="Selected gel" 
-                        className="h-16 w-16 object-cover rounded"
-                      />
+                      <div className="relative group">
+                        <img 
+                          src={initialImage} 
+                          alt="Selected gel" 
+                          className="h-16 w-16 object-cover rounded cursor-pointer"
+                        />
+                        <div 
+                          className="absolute inset-0 bg-black bg-opacity-50 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                          onClick={() => setPreviewImage({
+                            url: initialImage,
+                            filename: selectedImage?.split('/').pop() || 'Image',
+                            institution: entryData.institution,
+                            userName: user?.user_name,
+                            fileDate: new Date().toLocaleDateString('en-US', {
+                              month: '2-digit',
+                              day: '2-digit',
+                              year: '2-digit'
+                            })
+                          })}
+                        >
+                          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </div>
+                      </div>
                       <span className="text-sm text-gray-600">
                         {selectedImage?.split('/').pop()}
                       </span>
@@ -422,33 +455,95 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
               <TableHeader>
                 <TableColumn>PREVIEW</TableColumn>
                 <TableColumn>FILENAME</TableColumn>
-                <TableColumn>UPLOAD DATE</TableColumn>
+                <TableColumn>INSTITUTION</TableColumn>
+                <TableColumn>UPLOADED BY</TableColumn>
+                <TableColumn>DATE</TableColumn>
                 <TableColumn>ACTION</TableColumn>
               </TableHeader>
               <TableBody>
-                {gelImages.map((image, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <img src={image.url} alt="" className="h-16 w-16 object-cover rounded" />
-                    </TableCell>
-                    <TableCell>{image.key.split('/').pop()}</TableCell>
-                    <TableCell>
+                {gelImages.map((image, index) => {
+                  const filename = image.key.split('/').pop() || '';
+                  const [institution, userName, datePart] = filename.split('-');
+                  const fileDate = datePart ? datePart.split('.')[0] : 'N/A';
+                  
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <img 
+                          src={image.url} 
+                          alt="" 
+                          className="h-16 w-16 object-cover rounded cursor-pointer" 
+                          onClick={() => {
+                            const filename = image.key.split('/').pop() || 'Image';
+                            const [institution, userName, datePart] = filename.split('-');
+                            const fileDate = datePart ? datePart.split('.')[0] : 'N/A';
+                            
+                            setPreviewImage({
+                              url: image.url,
+                              filename,
+                              institution,
+                              userName,
+                              fileDate
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{image.key.split('/').pop()}</TableCell>
+                      <TableCell>{institution || 'N/A'}</TableCell>
+                      <TableCell>{userName || 'N/A'}</TableCell>
+                      <TableCell>{fileDate || 'N/A'}</TableCell>
+                      <TableCell>
+                        <button
+                          onClick={async () => {
+                            const filename = image.key.split('/').pop();
+                            setSelectedImage(image.key);
+                            setInitialImage(image.url);
+                            
+                            // Update the entry data with the new filename
+                            const updatedData = {
+                              ...entryData,
+                              gel_filename: filename
+                            };
+                            
+                            try {
+                              const response = await fetch('/api/updateCharacterizationDataGelFilename', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                  id: entryData.id, 
+                                  gel_filename: filename 
+                                }),
+                              });
 
--                    </TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => {
-                          setSelectedImage(image.key);
-                          setInitialImage(image.url);
-                          handleSave();
-                        }}
-                        className="text-[#06B7DB] hover:text-[#05a5c6]"
-                      >
-                        Select
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                              if (response.ok) {
+                                const updatedEntry = await response.json();
+                                updateEntryData(updatedEntry);
+                                setView('choose');
+                                setToastInfo({
+                                  show: true,
+                                  type: 'success',
+                                  message: 'Gel image updated successfully'
+                                });
+                              } else {
+                                throw new Error('Failed to update gel filename');
+                              }
+                            } catch (err) {
+                              console.error('Error updating gel filename:', err);
+                              setToastInfo({
+                                show: true,
+                                type: 'error',
+                                message: 'Failed to update gel image'
+                              });
+                            }
+                          }}
+                          className="text-[#06B7DB] hover:text-[#05a5c6]"
+                        >
+                          Select
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -462,6 +557,70 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
         message={toastInfo.message}
         onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
       />
+
+      {previewImage && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="bg-white rounded-xl flex flex-col lg:flex-row w-full max-w-[95vw] lg:max-w-6xl 
+              max-h-[95vh] overflow-hidden relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image Preview */}
+            <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-4 relative min-h-[300px]">
+              <img
+                src={previewImage.url}
+                alt="Gel Image Preview"
+                className="max-w-full max-h-[40vh] lg:max-h-[80vh] object-contain rounded-lg shadow-md"
+              />
+            </div>
+
+            {/* Info Card */}
+            <div className="w-full lg:w-[400px] p-4 sm:p-6 lg:p-8 border-t lg:border-t-0 lg:border-l border-gray-200">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-800">Image Details</h3>
+                  <p className="text-sm text-gray-500 mt-1">View image information</p>
+                </div>
+                <button
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                  <label className="text-sm font-medium text-gray-600">Filename</label>
+                  <p className="font-medium break-words mt-1 text-gray-800">{previewImage.filename}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                    <label className="text-sm font-medium text-gray-600">Institution</label>
+                    <p className="font-medium mt-1 text-gray-800">{previewImage.institution || 'N/A'}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                    <label className="text-sm font-medium text-gray-600">Date</label>
+                    <p className="font-medium mt-1 text-gray-800">{previewImage.fileDate || 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                  <label className="text-sm font-medium text-gray-600">Uploaded By</label>
+                  <p className="font-medium mt-1 text-gray-800">{previewImage.userName || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

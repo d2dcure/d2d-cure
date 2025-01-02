@@ -1152,9 +1152,15 @@ const DataPageCool = () => {
       <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
         <div className="max-w-7xl mx-auto">
           <Breadcrumbs className="mb-2">
-            <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>Database</BreadcrumbItem>
-            <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link href="/">Home</Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link href="/database">Database</Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link href="/database/BglB_characterization">BglB Characterization</Link>
+            </BreadcrumbItem>
             <BreadcrumbItem>{getBreadcrumbDisplay(entryData1)}</BreadcrumbItem>
           </Breadcrumbs>
 

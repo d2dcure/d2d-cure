@@ -45,7 +45,7 @@ const DataPage = () => {
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(30);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState(new Set([
     "variant",
     "yield",
@@ -68,14 +68,203 @@ const DataPage = () => {
 
   // Define your columns
   const columns = [
-    { name: "Variant", uid: "variant", sortable: true },
-    { name: "Yield", uid: "yield", sortable: true },
-    { name: "Km", uid: "km", sortable: true },
-    { name: "Kcat", uid: "kcat", sortable: true },
-    { name: "Kcat/Km", uid: "kcat_km", sortable: true },
-    { name: "T50", uid: "t50", sortable: true },
-    { name: "Tm", uid: "tm", sortable: true },
-    { name: "Rosetta Score", uid: "rosetta", sortable: true }
+    { 
+      name: "Variant", 
+      uid: "variant", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The variant name in Rosetta/Foldit numbering.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            Variant
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "Yield", 
+      uid: "yield", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Yield is reported as concentration of enzyme after purification, as determined by spectrophotometry assay.</p>
+              <p>Cells shaded grey indicate expression, as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            Yield, c<sub>E</sub> (mg/mL)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "KM", 
+      uid: "km", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The Michaelis constant.</p>
+              <p>It represents the molarity of substrate for which the reaction rate is half of its maximal value. It is an indication of how well an enzyme binds to a substrate, with lower values corresponding to tighter binding.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            <span className="italic">K</span><sub>M</sub> (mM)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "kcat", 
+      uid: "kcat", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The catalytic rate constant, a.k.a. &quot;turnover number&quot;.</p>
+              <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            <span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "kcat/KM", 
+      uid: "kcat_km", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The specificity constant, a.k.a. &quot;kinetic efficiency&quot;.</p>
+              <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mM<sup>−1</sup>min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "T50", 
+      uid: "t50", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The temperature at which the enzyme has 50% activity.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            <span className="italic">T</span><sub>50</sub> (°C)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "Tm", 
+      uid: "tm", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The temperature at which the enzyme melts.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            <span className="italic">T</span><sub>m</sub> (°C)
+          </div>
+        </Tooltip>
+      )
+    },
+    { 
+      name: "Rosetta score change", 
+      uid: "rosetta", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>The change in Rosetta score between the WT and variant, as provided by Foldit.</p>
+              <p>This score is a relative representation of the stability of a chemical structure, with lower values being more stable.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+        >
+          <div className="cursor-help">
+            Rosetta score change
+          </div>
+        </Tooltip>
+      )
+    }
   ];
 
   const resetFilters = () => {
@@ -377,17 +566,17 @@ const DataPage = () => {
     // Define headers for CSV
     const headers = [
       'Variant',
-      'Yield (mg/mL)',
+      'Yield, cE (mg/mL)',
       'KM (mM)',
       'KM SD',
-      'kcat (1/s)',
+      'kcat (min⁻¹)',
       'kcat SD',
-      'kcat/KM (1/mM*s)',
+      'kcat/KM (mM⁻¹min⁻¹)',
       'T50 (°C)',
       'T50 SD',
       'Tm (°C)',
       'Tm SD',
-      'Rosetta Score',
+      'Rosetta score change',
       'Institution'
     ];
 
@@ -575,7 +764,7 @@ const DataPage = () => {
                                     </p>
                                     
                                     <p>
-                                      Variants shaded black expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
+                                      Variants shaded grey are expressed (as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL).
                                     </p>
                                     
                                     <p>
@@ -616,8 +805,8 @@ const DataPage = () => {
                 <div className="flex flex-col gap-4">
                   {/* Search, filter, and records count row */}
                   <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
-                    {/* Left side - Search and controls */}
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {/* Left side - Search, controls, and total records */}
+                    <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
                       <Input
                         isClearable
                         classNames={{
@@ -647,7 +836,7 @@ const DataPage = () => {
                         }
                       />
                       
-                      {/* Controls container - half-half layout */}
+                      {/* Controls container - two columns layout */}
                       <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                         {/* Columns dropdown */}
                         <Dropdown 
@@ -835,13 +1024,30 @@ const DataPage = () => {
                           </DropdownMenu>
                         </Dropdown>
                       </div>
-                    </div>
 
-                    {/* Right side - Total records */}
-                    <div className="flex items-center justify-end sm:justify-start text-sm">
-                      <span className="text-default-400">
+                      <span className="text-default-400 text-sm whitespace-nowrap">
                         Total {displayData.length} records
                       </span>
+                    </div>
+
+                    {/* Right side - Rows per page */}
+                    <div className="flex items-center gap-2">
+                      <Select
+                        size="sm"
+                        defaultSelectedKeys={["all"]}
+                        className="w-[80px]"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setRowsPerPage(value === "all" ? 0 : Number(value));
+                          setPage(1);
+                          scrollToPosition('top');
+                        }}
+                      >
+                        <SelectItem key="20" value="20">20</SelectItem>
+                        <SelectItem key="30" value="30">30</SelectItem>
+                        <SelectItem key="50" value="50">50</SelectItem>
+                        <SelectItem key="all" value="all">All</SelectItem>
+                      </Select>
                     </div>
                   </div>
 
@@ -860,7 +1066,7 @@ const DataPage = () => {
                           .filter(column => visibleColumns.has(column.uid))
                           .map(column => (
                             <TableColumn key={column.uid}>
-                              {column.name}
+                              {column.renderHeader ? column.renderHeader() : column.name}
                             </TableColumn>
                           ))}
                       </TableHeader>
@@ -1076,11 +1282,11 @@ const DataPage = () => {
                       <span className="text-default-400 sm:hidden">Per page:</span>
                       <Select
                         size="sm"
-                        defaultSelectedKeys={["30"]}
+                        defaultSelectedKeys={["all"]}
                         className="w-20 sm:w-24"
                         onChange={(e) => {
                           const value = e.target.value;
-                          setRowsPerPage(value === "all" ? displayData.length : Number(value));
+                          setRowsPerPage(value === "all" ? 0 : Number(value));
                           setPage(1);
                           scrollToPosition('top');
                         }}
