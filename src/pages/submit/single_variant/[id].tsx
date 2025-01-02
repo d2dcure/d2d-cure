@@ -544,6 +544,28 @@ const SingleVariant = () => {
         );
       }
 
+      if (item === "Gel uploaded" && entryData.gel_filename) {
+        return (
+          <div className="flex items-center gap-2">
+            <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+              <img
+                src={`https://d2dcurebucket.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
+                alt="Gel"
+                className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  setCurrentView('detail');
+                  setSelectedDetail(item);
+                }}
+                onError={(e) => {
+                  console.error('Error loading gel image');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
       return null;
     };
 
