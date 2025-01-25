@@ -17,6 +17,11 @@ interface Institution {
   fullname: string;
 }
 
+// Add this interface near the top with the other interfaces
+interface ExpandedRows {
+  [key: string]: boolean;
+}
+
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
@@ -65,6 +70,20 @@ const DataPage = () => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+
+  // Add this new state for tracking expanded rows
+  const [expandedRows, setExpandedRows] = useState<ExpandedRows>({});
+
+  // Add this to your state declarations at the top of the DataPage component
+  const [lastClickedRowId, setLastClickedRowId] = useState<string | null>(null);
+
+  // Add this useEffect to load the last clicked row from localStorage when the component mounts
+  useEffect(() => {
+    const savedLastClickedRow = localStorage.getItem('lastClickedBglBRow');
+    if (savedLastClickedRow) {
+      setLastClickedRowId(savedLastClickedRow);
+    }
+  }, []);
 
   // Define your columns
   const columns = [
@@ -471,33 +490,36 @@ const DataPage = () => {
       return `${data.resid}${data.resnum}${data.resmut}`;
     };
     
-    let displayData = []; // This will be the data we actually render. Needed for averaged/collapsed view
+    let displayData = [];
     if (expandData) {
-      displayData = filteredData; // Use the data as-is for expanded view
+      displayData = filteredData;
     } else {
-      const groupedData:any = {};
+      const groupedData: any = {};
       filteredData.forEach(data => {
         const key = getGroupKey(data);
         if (!groupedData[key]) {
-          groupedData[key] = []; 
+          groupedData[key] = [];
         }
         groupedData[key].push(data);
       });
-    
-      // NOTE: we are mutating the original data. So if you want to access NON NUMERICAL COLUMNS from here on out (like expressed, which is a boolean), define them here or it won't work 
-      displayData = Object.values(groupedData).map((group: any) => {
+
+      // Create display data with nested structure
+      Object.entries(groupedData).forEach(([key, group]: [string, any]) => {
         const averageRow: any = {
           resid: group[0].resid,
           resnum: group[0].resnum,
           resmut: group[0].resmut,
           isAggregate: group.length > 1,
-          count: group.length, 
-          expressed: group.some((item: any) => item.expressed)
+          count: group.length,
+          expressed: group.some((item: any) => item.expressed),
+          groupKey: key, // Add groupKey for tracking expansion
+          children: group // Store original rows as children
         };
-      
+
+        // Calculate averages as before
         const sums: any = {};
         const counts: any = {};
-      
+        
         group.forEach((item: any) => {
           Object.keys(item).forEach(key => {
             if (typeof item[key] === 'number') {
@@ -505,19 +527,27 @@ const DataPage = () => {
                 sums[key] = 0;
                 counts[key] = 0;
               }
-              if (item[key] !== null) { 
+              if (item[key] !== null) {
                 sums[key] += item[key];
                 counts[key]++;
               }
             }
           });
         });
-      
+
         Object.keys(sums).forEach(key => {
-          averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null; 
+          averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null;
         });
-      
-        return averageRow;
+
+        displayData.push(averageRow);
+        
+        // Add child rows if this group is expanded
+        if (expandedRows[key]) {
+          group.forEach((childRow: any) => {
+            childRow.isChild = true; // Mark as child row for styling
+            displayData.push(childRow);
+          });
+        }
       });
     }
 
@@ -612,6 +642,30 @@ const DataPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Modify the handleRowClick function
+  const handleRowClick = (row: any) => {
+    // Generate a unique identifier for the row
+    const rowId = row.isChild ? `child-${row.id}` : `${row.resid}${row.resnum}${row.resmut}`;
+    
+    // Save to both state and localStorage
+    setLastClickedRowId(rowId);
+    localStorage.setItem('lastClickedBglBRow', rowId);
+
+    if (expandData) {
+      // If in expanded view, open detail page in new tab
+      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+    } else if (row.isAggregate) {
+      // If it's an aggregate row, toggle expansion
+      setExpandedRows(prev => ({
+        ...prev,
+        [row.groupKey]: !prev[row.groupKey]
+      }));
+    } else {
+      // If it's any individual row (including child rows), open detail page in new tab
+      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+    }
   };
 
   return (
@@ -1073,13 +1127,16 @@ const DataPage = () => {
                       <TableBody items={paginatedData}>
                         {(data) => (
                           <TableRow 
-                            key={`${data.resid}${data.resnum}${data.resmut}`}
-                            className={expandData ? "cursor-pointer hover:bg-default-100/50" : ""}
-                            onClick={() => {
-                              if (expandData) {
-                                router.push(`/database/BglB_characterization/${data.id}`);
+                            key={data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                            className={`
+                              ${data.isChild ? "bg-default-50" : ""}
+                              ${(!data.isAggregate || data.isChild) ? "cursor-pointer hover:bg-default-100/50" : ""}
+                              ${(data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`) === lastClickedRowId 
+                                ? "bg-[#06B7DB]/10 hover:bg-[#06B7DB]/20" 
+                                : ""
                               }
-                            }}
+                            `}
+                            onClick={() => handleRowClick(data)}
                           >
                             {columns
                               .filter(column => visibleColumns.has(column.uid))
@@ -1089,21 +1146,26 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <span className={expandData ? "text-[#06B7DB]" : ""}>
-                                          {getVariantDisplay(data.resid, data.resnum, data.resmut)}
-                                        </span>
-                                        {data.isAggregate && (
-                                          <span 
-                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
-                                            className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1" 
-                                            onClick={(e) => {
-                                              e.stopPropagation(); // Prevent row click
-                                              setExpandData(true);
-                                            }}
-                                          >
-                                            <HiChevronRight className="w-4 h-4 -ml-1 translate-y-[1px]" />
+                                        <div className={`
+                                          flex items-center gap-2
+                                          ${data.isChild ? "pl-8" : ""} // Add indent for child rows
+                                        `}>
+                                          {data.isAggregate && (
+                                            <HiChevronRight 
+                                              className={`w-4 h-4 transition-transform ${
+                                                expandedRows[data.groupKey] ? "rotate-90" : ""
+                                              }`}
+                                            />
+                                          )}
+                                          <span className={(!data.isAggregate || data.isChild) ? "text-[#06B7DB]" : ""}>
+                                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
                                           </span>
-                                        )}
+                                          {data.isAggregate && (
+                                            <span className="text-gray-500 text-sm">
+                                              ({data.count})
+                                            </span>
+                                          )}
+                                        </div>
                                       </TableCell>
                                     );
                                     break;

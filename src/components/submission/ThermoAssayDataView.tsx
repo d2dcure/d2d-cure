@@ -236,16 +236,25 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       const variant = entryData.resid + entryData.resnum + entryData.resmut;
   
       // Get values from CSV file data and entryData
-      const slopeUnits = originalData[1][4]; // E2 cell 
-      const purificationDate = originalData[2][6]; // G3 cell
-      const assayDate = originalData[2][7]; // H3 cell
+      const slopeUnits = originalData[1][4]; 
+      const purificationDate = originalData[2][6];
+      const assayDate = originalData[2][7];
   
       // Generate filenames for CSV and plot
       const csvFilename = `${user.user_name}-BglB-${variant}-${entryData.id}-temp_assay.csv`;
       const plotFilename = `${user.user_name}-BglB-${variant}-${entryData.id}-temp_assay.png`;
   
+      // Always create new CSV from current table data
+      const updatedData = [...originalData]; // Clone original structure
+      thermoData.forEach((row, rowIndex) => {
+        row.forEach((value, cellIndex) => {
+          updatedData[rowIndex + 4][cellIndex + 2] = value; // Update with current table values
+        });
+      });
+      const csvContent = Papa.unparse(updatedData);
+      const csvFileToUpload = new File([new Blob([csvContent])], csvFilename, { type: 'text/csv' });
+  
       // Upload CSV file to S3
-      const csvFileToUpload = new File([new Blob([Papa.unparse(originalData)])], csvFilename, { type: 'text/csv' });
       await uploadToS3(csvFileToUpload, `temperature_assays/raw/${csvFilename}`);
   
       // Upload graph file to S3
@@ -678,7 +687,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
             <CardFooter>
               <Button 
                 variant="bordered" 
-                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template.xlsx'} 
+                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template.csv'} 
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
                 style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
               >
@@ -696,12 +705,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                 alt="Excel logo" 
               />
               <h1 className="text-lg pl-5 pt-2 font-regular">Temperature Assay Data</h1>
-              <p className="text-xs pl-5 text-gray-500 -mt-1">(standard vertical temperature gradient)</p>
+              <p className="text-xs pl-5 text-gray-500 -mt-1">(alternate horizontal temperature gradient)</p>
             </CardBody>
             <CardFooter>
               <Button 
                 variant="bordered" 
-                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template.xlsx'} 
+                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template_horizontal.csv'} 
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
                 style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
               >

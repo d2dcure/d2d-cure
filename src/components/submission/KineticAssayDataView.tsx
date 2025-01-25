@@ -326,17 +326,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const mentenPlotFilename = generateFilename('', '', 'png');
       const lineweaverPlotFilename = generateFilename('', '-LB', 'png');
 
-      // Upload CSV file to S3
-      let csvFileToUpload;
-      if (file) {
-        // If the user uploaded a file, use it
-        csvFileToUpload = new File([file], csvFilename, { type: 'text/csv' });
-      } else {
-        // If the user edited the table, create a new CSV file from the table data
-        const csvContent = Papa.unparse(kineticAssayData);
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        csvFileToUpload = new File([blob], csvFilename, { type: 'text/csv' });
-      }
+      // Always create CSV from current table data
+      const csvContent = Papa.unparse(kineticAssayData);
+      const csvFileToUpload = new File([new Blob([csvContent])], csvFilename, { type: 'text/csv' });
 
       // Upload CSV to S3
       await s3
@@ -825,7 +817,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
             <CardFooter>
               <Button 
                 variant="bordered" 
-                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
+                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.csv'} 
                 className="w-full h-11 font-regular border-2 hover:bg-[#06B7DB] group transition-all"
                 style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
               >
