@@ -11,7 +11,7 @@ interface ExpressedViewProps {
 }
 
 const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const [yieldAvg, setYieldAvg] = useState<string>('');
+  const [yieldAvg, setYieldAvg] = useState<string>(''); // it says 'Avg' but it's really just the regular yield value 
   const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,7 +133,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-800">Expressed Yield Average</h2>
+          <h2 className="text-xl font-bold text-gray-800">Expressed Yield</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
             entryData.yield_avg !== null 
               ? "text-green-700 bg-green-100" 
@@ -143,7 +143,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the expressed yield average value and units
+          Enter the expressed yield value and units
         </p>
       </CardHeader>
 
@@ -152,7 +152,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
           <div className="flex gap-4">
             <Input
               type="number"
-              label="Yield Average"
+              label="Yield"
               value={yieldAvg}
               onChange={(e) => setYieldAvg(e.target.value)}
               step="0.01"
@@ -181,7 +181,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
               <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Current yield average: 
+              Current yield: 
               <span className="font-medium text-gray-900">
                 {`${kineticRawDataEntryData.yield} ${mapYieldUnitsBack(kineticRawDataEntryData.yield_units)}`}
               </span>
