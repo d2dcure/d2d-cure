@@ -34,6 +34,9 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedByStudent, setApprovedByStudent] = useState(false);
 
+  // Add the sanitization messages state
+  const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchTempRawDataEntryData = async () => {
       try {
@@ -70,28 +73,31 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       const params = {
         Bucket: 'd2dcurebucket',
         Key: `temperature_assays/raw/${filename}`,
-        Expires: 60, // URL expires in 60 seconds
+        Expires: 60,
       };
 
       const url = await s3.getSignedUrlPromise('getObject', params);
-
       const response = await fetch(url);
       const blob = await response.blob();
       const csvFile = new File([blob], filename, { type: 'text/csv' });
 
-      Papa.parse(csvFile, {
-        complete: (result) => {
-          console.log("Parsed CSV data:", result.data); // Log the parsed CSV data
-          setOriginalData(result.data as string[][]);
-
-          const extractedTemperatures = result.data.slice(4, 12).map((row: any) => parseFloat(row[0]));
-          setTempValues(extractedTemperatures);
-
-          const editableData = result.data.slice(4, 12).map((row:any) => row.slice(2, 5));
-          setThermoData(editableData);
-        },
-        header: false,
+      const fileContent = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsText(csvFile);
       });
+
+      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+      setOriginalData(parsedData);
+
+      const extractedTemperatures = parsedData.slice(4, 12).map((row: any) => parseFloat(row[0]));
+      setTempValues(extractedTemperatures);
+
+      const editableData = parsedData.slice(4, 12).map(row => row.slice(2, 5));
+      const sanitizedData = processData(parsedData);
+      
+      const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
+      setThermoData(sanitizedEditableData);
 
       await generateGraphFromFile(csvFile);
     } catch (error) {
@@ -124,41 +130,52 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
     }
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (file) {
       const fileType = file.name.split('.').pop()?.toLowerCase();
       if (fileType !== 'csv') {
         setFileError('Only .csv files are allowed');
         setCsvFilename(null);
-      } else if (file.size > 500000) { // 500kB
+      } else if (file.size > 500000) {
         setFileError('File must be smaller than 500 kB');
         setCsvFilename(null);
       } else {
         setFileError('');
         setCsvFilename(file.name);
         
-        // Parse the file and generate graph
-        Papa.parse(file, {
-          complete: async (result) => {
-            console.log("Parsed CSV data:", result.data);
-            const parsedData = result.data as string[][];
+        try {
+          const fileContent = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsText(file);
+          });
 
-            const extractedTemperatures = parsedData.slice(4, 12).map((row: any) => parseFloat(row[0]));
-            setTempValues(extractedTemperatures);
+          const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+          
+          // Store the full original data
+          setOriginalData(parsedData);
 
-            setOriginalData(parsedData);
-            const editableData = parsedData.slice(4, 12).map((row) => row.slice(2, 5));
-            setThermoData(editableData);
+          // Extract temperatures from first column (rows 5-12)
+          const extractedTemperatures = parsedData.slice(4, 12).map((row: any) => parseFloat(row[0]));
+          setTempValues(extractedTemperatures);
 
-            // Generate graph immediately after parsing
-            try {
-              await generateGraphFromFile(file);
-            } catch (error) {
-              console.error('Error generating graph:', error);
-            }
-          },
-          header: false,
-        });
+          // Extract and sanitize the editable data (cells C5-C12, D5-D12, E5-E12)
+          const editableData = parsedData.slice(4, 12).map(row => row.slice(2, 5));
+          const sanitizedData = processData(parsedData);
+          
+          // Only update the editable portion with sanitized data
+          const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
+          setThermoData(sanitizedEditableData);
+
+          // Generate graph with sanitized data
+          const sanitizedCsv = Papa.unparse(sanitizedData);
+          const sanitizedFile = new File([sanitizedCsv], file.name, { type: 'text/csv' });
+          
+          await generateGraphFromFile(sanitizedFile);
+        } catch (error) {
+          console.error('Error processing file:', error);
+          setFileError('Failed to process file');
+        }
       }
     }
   };
@@ -338,6 +355,164 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
     }
   };
 
+  // Add the data processing function
+  const processData = (data: unknown) => {
+    let messages: string[] = [];
+    
+    if (!Array.isArray(data)) {
+      console.error('Invalid data format');
+      return [];
+    }
+    
+    const typedData = data as any[][];
+    
+    // Check for empty rows
+    let hasEmptyRows = false;
+    for (let rowIndex = 4; rowIndex <= 11; rowIndex++) {
+      const row = typedData[rowIndex];
+      if (!row || 
+          ((!row[2] || row[2] === '') && 
+           (!row[3] || row[3] === '') && 
+           (!row[4] || row[4] === ''))) {
+        hasEmptyRows = true;
+        break;
+      }
+    }
+    
+    if (hasEmptyRows) {
+      messages.push("Warning: Data is missing at least one entire row. Please ensure all required data is included.");
+    }
+
+    // Handle negatives
+    let hasNegatives = false;
+    const noNegativesData = typedData.map((row: any[], rowIndex: number) => {
+      if (rowIndex >= 4 && rowIndex <= 11) {
+        return row.map((cell: any, colIndex: number) => {
+          if (colIndex >= 2 && colIndex <= 4) {
+            const value = parseFloat(cell);
+            if (!isNaN(value) && value < 0) {
+              hasNegatives = true;
+              if (cell.includes('E') || cell.includes('e')) {
+                return '0.00E+00';
+              }
+              return '0';
+            }
+            return cell;
+          }
+          return cell;
+        });
+      }
+      return row;
+    });
+
+    if (hasNegatives) {
+      messages.push("Negative values were detected and converted to zero");
+    }
+
+    // Process outliers
+    let hasOutliers = false;
+    const sanitizedData = noNegativesData.map((row: any[], rowIndex: number) => {
+      if (rowIndex >= 4 && rowIndex <= 11) {
+        const rowValues = [row[2], row[3], row[4]];
+        const processedValues = detectOutliersMAD(rowValues);
+        if (processedValues.some((val, idx) => val === '' && rowValues[idx] !== '')) {
+          hasOutliers = true;
+        }
+        return [
+          ...row.slice(0, 2),
+          ...processedValues,
+          ...row.slice(5)
+        ];
+      }
+      return row;
+    });
+
+    if (hasOutliers) {
+      messages.push("Outliers were detected and removed using the MAD method");
+    }
+
+    // Check for precision issues and impossible rates
+    let previousRowAvg = Infinity;
+    let previousRowSD = 0;
+    
+    for (let rowIndex = 4; rowIndex <= 11; rowIndex++) {
+      const rowValues = sanitizedData[rowIndex].slice(2, 5)
+        .map(val => {
+          const num = parseFloat(val);
+          return isNaN(num) ? null : num;
+        })
+        .filter((val): val is number => val !== null && val !== undefined);
+        
+      if (rowValues.length > 0) {
+        const rowAvg = rowValues.reduce((a, b) => a + b, 0) / rowValues.length;
+        const rowSD = Math.sqrt(
+          rowValues.reduce((sq, n) => sq + Math.pow(n - rowAvg, 2), 0) / 
+          (rowValues.length - 1)
+        );
+        const rowRelSD = (rowSD / rowAvg) * 100;
+
+        // Check precision
+        if (rowRelSD > 20) {
+          messages.push(
+            `Warning: Row ${['A','B','C','D','E','F','G','H'][rowIndex-4]} has poor precision ` +
+            `(relative SD: ${rowRelSD.toFixed(1)}%)`
+          );
+        }
+
+        // For thermo data, we expect activity to decrease as temperature increases
+        if (rowAvg + rowSD < previousRowAvg - previousRowSD && previousRowAvg !== Infinity) {
+          messages.push(
+            `Error: Row ${['A','B','C','D','E','F','G','H'][rowIndex-4]} shows unexpected increase in activity at higher temperature. ` +
+            `This may be due to noise in the measurements.`
+          );
+        }
+
+        previousRowAvg = rowAvg;
+        previousRowSD = rowSD;
+      }
+    }
+
+    setSanitizationMessages(messages);
+    return sanitizedData;
+  };
+
+  // Add the outlier detection helper function
+  const detectOutliersMAD = (rowData: string[]) => {
+    const validNumbers = rowData
+      .map(cell => parseFloat(cell))
+      .filter(num => !isNaN(num));
+
+    if (validNumbers.length === 0) return rowData;
+
+    // Calculate mean and standard deviation
+    const mean = validNumbers.reduce((a, b) => a + b, 0) / validNumbers.length;
+    const sd = Math.sqrt(validNumbers.reduce((sq, n) => sq + Math.pow(n - mean, 2), 0) / (validNumbers.length - 1));
+    const relativeSD = (sd / mean) * 100;
+
+    // Only check for outliers if relative SD is above threshold
+    const PRECISION_THRESHOLD = 20;
+    if (relativeSD <= PRECISION_THRESHOLD) {
+      return rowData;
+    }
+
+    // Calculate median and MAD
+    const sortedNums = [...validNumbers].sort((a, b) => a - b);
+    const median = sortedNums[Math.floor(sortedNums.length / 2)];
+    const absoluteDeviations = validNumbers.map(num => Math.abs(num - median));
+    const sortedDeviations = [...absoluteDeviations].sort((a, b) => a - b);
+    const mad = sortedDeviations[Math.floor(sortedDeviations.length / 2)];
+
+    return rowData.map(cell => {
+      const value = parseFloat(cell);
+      if (isNaN(value)) return cell;
+      
+      if (value < (median - 3 * mad) || value > (median + 3 * mad)) {
+        return '';
+      }
+      return cell;
+    });
+  };
+
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
@@ -511,6 +686,32 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Raw Data</h3>
+                
+                {/* Add sanitization messages above the table */}
+                {sanitizationMessages.length > 0 && (
+                  <div className="mb-4 space-y-2">
+                    {sanitizationMessages.map((message, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center p-4 rounded-lg bg-blue-50 border border-blue-200"
+                      >
+                        <svg
+                          className="w-5 h-5 text-blue-500 mr-3"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm text-blue-700">{message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <Table 
                   aria-label="Temperature assay data table"
                   classNames={{

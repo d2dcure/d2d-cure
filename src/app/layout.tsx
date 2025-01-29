@@ -4,6 +4,7 @@ import "./globals.css";
 import Head from "next/head"; 
 import Script from 'next/script';  // Import the Next.js Script component
 import NavBar from '@/components/NavBar';
+import '@/styles/nprogress.css';
 
 const inter = Inter({ subsets: ["latin"] });
 

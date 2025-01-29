@@ -15,6 +15,7 @@ const columns = [
     { name: "ID", uid: "id", sortable: true },
     { name: "Variant", uid: "variant", sortable: true },
     { name: "Creator", uid: "creator", sortable: true },
+    { name: "Purification Date", uid: "purification_date", sortable: false},
     { name: "Assay Date", uid: "assay_date", sortable: false},
     { name: "Km", uid: "km", sortable: false },
     { name: "Kcat", uid: "kcat", sortable: false },
@@ -26,6 +27,13 @@ const columns = [
 interface StatusChipProps {
     status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
 }
+
+// Move parseFormats outside the renderCell function
+const dateParseFormats = [
+    'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
+    'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
+    'yyyy.MM.dd'
+];
 
 const CuratePage = () => {
     const { user, loading } = useUser();
@@ -50,7 +58,8 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", "assay_date", "km", "kcat", "t50", "comments", "actions"
+        "status", "id", "variant", "creator", "purification_date", "assay_date", 
+        "km", "kcat", "t50", "comments", "actions"
     ]));
 
     const headerColumns = React.useMemo(() => {
@@ -100,12 +109,10 @@ const CuratePage = () => {
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
             case "status":
-                {/*
-                    TODO: We eventually want to transition to a single "status" entry in data!
-                    Also, statuses like "Needs Revision" and "Awaiting Replication" aren't included yet
-                */}
                 let status: StatusChipProps['status'];
-                if (data.approved_by_pi) {
+                if (data.curated) {
+                    status = "approved"
+                } else if (data.approved_by_pi) {
                     status = "pi_approved"
                 } else if (data.submitted_for_curation) {
                     status = "pending_approval"
@@ -120,50 +127,30 @@ const CuratePage = () => {
             case "variant":
                 return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
-                return data.creator
-            case "assay_date":
-                // TODO: This is not ideal! We want to add a date column to database
+                return (data.creator + " (" + data.pi + " Lab)") 
+            case "assay_date": {
                 let date = "";
-
-                if (data.tempRawData) {
-                    if (data.tempRawData.purification_date) {
-                        date = data.tempRawData.purification_date
-                    }
-                    if (data.tempRawData.assay_date) {
-                        date = data.tempRawData.assay_date
-                    }
+                if (data.tempRawData?.assay_date) {
+                    date = data.tempRawData.assay_date;
                 }
-                if (data.kineticRawData) {
-                    if (data.kineticRawData.purification_date) {
-                        date = data.kineticRawData.purification_date
-                    }
-                    if (data.kineticRawData.assay_date) {
-                        date = data.kineticRawData.assay_date
-                    }
+                if (data.kineticRawData?.assay_date) {
+                    date = data.kineticRawData.assay_date;
                 }
                 if (date === "") {
-                    // no date provided
                     return "N/A";
                 }
 
-                // TODO: Date formats are so inconsistent, this is a bandaid fix
-                const parseFormats = [
-                    // Slash-separated formats
-                    'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
-                    'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
-                    // Period-separated formats
-                    'yyyy.MM.dd'
-                ];
-                for (const parseFormat of parseFormats) {
+                // Use shared dateParseFormats
+                for (const parseFormat of dateParseFormats) {
                     try {
-                      const parsedDate = parse(date, parseFormat, new Date());
-                      return format(parsedDate, 'MM/dd/yy');
+                        const parsedDate = parse(date, parseFormat, new Date());
+                        return format(parsedDate, 'MM/dd/yy');
                     } catch (error) {
-                      continue;
+                        continue;
                     }
                 }
-
-                return date
+                return date;
+            }
             case "km":
                 return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
             case "kcat":
@@ -181,6 +168,29 @@ const CuratePage = () => {
                         View
                     </Link>
                 )
+            case "purification_date": {
+                let purificationDate = "";
+                if (data.tempRawData?.purification_date) {
+                    purificationDate = data.tempRawData.purification_date;
+                }
+                if (data.kineticRawData?.purification_date) {
+                    purificationDate = data.kineticRawData.purification_date;
+                }
+                if (purificationDate === "") {
+                    return "N/A";
+                }
+
+                // Use shared dateParseFormats
+                for (const parseFormat of dateParseFormats) {
+                    try {
+                        const parsedDate = parse(purificationDate, parseFormat, new Date());
+                        return format(parsedDate, 'MM/dd/yy');
+                    } catch (error) {
+                        continue;
+                    }
+                }
+                return purificationDate;
+            }
         }
     }, []);
 
@@ -324,6 +334,7 @@ const CuratePage = () => {
 
             removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully approved data.");
+            alert('Datasets approved and/or curated successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -349,6 +360,7 @@ const CuratePage = () => {
             setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
             removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully rejected data.");
+            alert('Datasets rejected and deleted successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -583,7 +595,10 @@ const CuratePage = () => {
                                             isDisabled={isCheckedItemsEmpty()}
                                             onClick={approveData}
                                         >
-                                            Approve
+                                            {viewAs === "ADMIN" 
+                                              ? "Curate"
+                                              : "Approve as PI"
+                                            }
                                         </Button>
 
                                         <Dropdown>
@@ -609,6 +624,7 @@ const CuratePage = () => {
                                                 <DropdownItem
                                                     color="danger"
                                                     className="text-danger"
+                                                    onClick={rejectData}
                                                 >
                                                     Delete Datasets
                                                 </DropdownItem>

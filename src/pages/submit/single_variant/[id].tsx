@@ -16,6 +16,7 @@ import { Tooltip } from "@nextui-org/react";
 import confetti from 'canvas-confetti';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { EntryAccessChecker } from '@/components/EntryAccessChecker';
 
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinModeledView from '@/components/submission/ProteinModeledView';
@@ -38,11 +39,14 @@ const SingleVariant = () => {
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
-  const [entryData, setEntryData] = useState<any>({}); // CharacterizationData row
-  const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row
+  const [entryData, setEntryData] = useState<any>({});
+  const [entryData2, setEntryData2] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalEntries, setTotalEntries] = useState(0);
+
+  console.log(user)
 
   // Toast and modal states
   const [toastInfo, setToastInfo] = useState<{
@@ -93,6 +97,7 @@ const SingleVariant = () => {
     const fetchEntryData = async () => {
       if (!id) return;
       try {
+        setLoading(true);
         const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch entry data');
@@ -101,11 +106,13 @@ const SingleVariant = () => {
         setEntryData(data);
       } catch (error) {
         showToast('Error', 'Failed to fetch entry data. Please try again.', 'error');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchEntryData();
-  }, [id, user]);
+  }, [id]);
 
   // Fetch entryData2 using entryData.id
   useEffect(() => {
@@ -789,7 +796,7 @@ const SingleVariant = () => {
   return (
     <>
       <NavBar />
-      <AuthChecker minimumStatus="student">
+      <EntryAccessChecker entryData={entryData} loading={loading}>
         <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
           <div className="max-w-7xl mx-auto">
             <Breadcrumbs className="mb-2">
@@ -827,13 +834,13 @@ const SingleVariant = () => {
                   </h1>
                   <StatusChip
                     status={
-                      entryData.submitted_for_curation
-                        ? entryData.curated
-                          ? 'approved'
-                          : !entryData.approved_by_pi
-                          ? 'pending_approval'
-                          : 'in_progress'
-                        : 'in_progress'
+                      entryData.curated 
+                        ? 'approved'
+                        : entryData.approved_by_pi
+                          ? 'pi_approved'
+                          : entryData.submitted_for_curation 
+                            ? 'pending_approval'
+                            : 'in_progress'
                     }
                   />
                 </div>
@@ -878,7 +885,7 @@ const SingleVariant = () => {
             </div>
           </div>
         </div>
-      </AuthChecker>
+      </EntryAccessChecker>
 
       {/* Toast Notifications */}
       <Toast

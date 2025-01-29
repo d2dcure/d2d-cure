@@ -1,18 +1,14 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { uploadFileToS3 } from "../../../utils/s3Utils";
-import { Spinner } from "@nextui-org/react";
-import { BiCheck, BiError } from "react-icons/bi";
 import { Button } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import GelUploadedView from '@/components/submission/GelUploadedView';
 import { useRouter } from 'next/router';
 import Toast from '@/components/Toast';
-import { Card, CardBody } from "@nextui-org/react";
+import s3 from "../../../../s3config";
 
 const DragAndDropUpload: React.FC = () => {
   const { user } = useUser();
@@ -40,6 +36,8 @@ const DragAndDropUpload: React.FC = () => {
     message: ''
   });
 
+  const [variant, setVariant] = useState('');
+
   React.useEffect(() => {
     if (user) {
       setFormData(prev => ({
@@ -59,53 +57,67 @@ const DragAndDropUpload: React.FC = () => {
   }, []);
 
   const handleUpload = async () => {
-    if (selectedFile) {
-      setIsUploading(true);
-      setToastInfo({
-        show: true,
-        type: 'info',
-        title: 'Uploading',
-        message: `Uploading ${selectedFile.name}...`
-      });
-
-      try {
-        const dateObj = new Date(formData.date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', {
-          month: '2-digit',
-          day: '2-digit',
-          year: '2-digit'
-        }).replace(/\//g, '-');
-
-        const filename = `${formData.institution}-${formData.userName}-${formattedDate}.${selectedFile.name.split('.').pop()}`;
-        
-        await uploadFileToS3(selectedFile, filename);
-        
-        setToastInfo({
-          show: true,
-          type: 'success',
-          title: 'Upload Successful',
-          message: `File "${filename}" has been uploaded successfully`
-        });
-        setPreview(null);
-        setSelectedFile(null);
-      } catch (error) {
-        console.error("Error uploading to S3:", error);
-        setToastInfo({
-          show: true,
-          type: 'error',
-          title: 'Upload Failed',
-          message: `Failed to upload "${selectedFile.name}". Please try again.`
-        });
-      } finally {
-        setIsUploading(false);
-      }
-    } else {
+    if (!selectedFile) {
       setToastInfo({
         show: true,
         type: 'error',
         title: 'No File Selected',
         message: 'Please select a file to upload'
       });
+      return;
+    }
+
+    if (!variant.trim()) {
+      setToastInfo({
+        show: true,
+        type: 'error',
+        title: 'Variant Required',
+        message: 'Please enter a variant identifier'
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const dateObj = new Date(formData.date);
+      const formattedDate = dateObj.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: '2-digit'
+      }).replace(/\//g, '-');
+
+      const newFileName = `${formData.institution}-${variant}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
+      
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `gel-images/${newFileName}`,
+        Body: selectedFile,
+      };
+
+      await s3.upload(params).promise();
+      
+      setToastInfo({
+        show: true,
+        type: 'success',
+        title: 'Upload Successful',
+        message: `File "${newFileName}" has been uploaded successfully`
+      });
+
+      setPreview(null);
+      setSelectedFile(null);
+      setVariant('');
+
+    } catch (error) {
+      console.error("Error uploading to S3:", error);
+      setToastInfo({
+        show: true,
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Failed to upload file. Please try again.'
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -176,6 +188,19 @@ const DragAndDropUpload: React.FC = () => {
                       value={formData.date}
                       disabled
                       className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Variant
+                    </label>
+                    <input
+                      type="text"
+                      value={variant}
+                      onChange={(e) => setVariant(e.target.value)}
+                      placeholder="Enter variant identifier"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-[#06B7DB] focus:ring-1 focus:ring-[#06B7DB] outline-none"
                     />
                   </div>
 
