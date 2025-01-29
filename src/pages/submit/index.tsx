@@ -101,7 +101,7 @@ const SubmitPage = () => {
         body: JSON.stringify({
           username: user?.user_name, 
           institution: user?.institution, 
-          pi: user?.pi, 
+          pi: user?.pi || user?.given_name,
           resid: resid, 
           resnum: resnum, 
           resmut: resmut, 

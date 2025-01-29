@@ -19,6 +19,7 @@ interface GelImage {
   institution: string;
   userName: string;
   fileDate: string;
+  variant: string;
 }
 
 interface ViewAllGelImagesProps {
@@ -79,68 +80,54 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
         Bucket: 'd2dcurebucket',
         Prefix: 'gel-images/',
       };
+
       try {
         const data = await s3.listObjectsV2(params).promise();
-        if (data && data.Contents) {
-          const batchSize = 10;
-          const processedImages: GelImage[] = [];
-          
-          for (let i = 0; i < data.Contents.length; i += batchSize) {
-            const batch = data.Contents.slice(i, i + batchSize)
+        if (data.Contents) {
+          const processedImages = await Promise.all(
+            data.Contents
               .filter((file): file is Required<typeof file> => 
                 file.Key !== undefined && 
                 !file.Key.endsWith('/')
-              );
-
-            const batchPromises = batch.map(async (file) => {
-              try {
-                const cacheKey = `metadata-${file.Key}`;
-                const cachedMetadata = sessionStorage.getItem(cacheKey);
-                
-                let metadata;
-                if (cachedMetadata) {
-                  metadata = JSON.parse(cachedMetadata);
-                } else {
-                  metadata = await s3.headObject({
-                    Bucket: params.Bucket,
-                    Key: file.Key
-                  }).promise();
-                  sessionStorage.setItem(cacheKey, JSON.stringify(metadata));
+              )
+              .map(async (file) => {
+                try {
+                  const fullFilename = file.Key.replace('gel-images/', '');
+                  const filename = fullFilename.split('.')[0];
+                  const parts = filename.split('-');
+                  
+                  if (parts.length >= 6) {
+                    const dateStartIndex = parts.length - 3;
+                    const institution = parts.slice(0, parts.length - 5).join('-');
+                    const variant = parts[parts.length - 5];
+                    const userName = parts[parts.length - 4];
+                    const date = parts.slice(dateStartIndex).join('-');
+                    
+                    const gelImage: GelImage = {
+                      key: file.Key,
+                      url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
+                      filename: fullFilename,
+                      institution,
+                      variant,
+                      userName,
+                      fileDate: date
+                    };
+                    return gelImage;
+                  }
+                  return null;
+                } catch (err) {
+                  console.error(`Error processing file ${file.Key}:`, err);
+                  return null;
                 }
-                
-                const pathParts = file.Key.split('/');
-                const formattedFilename = pathParts[pathParts.length - 2];
-                const [institution, userName, ...dateParts] = formattedFilename.split('-');
-                const fileDate = dateParts.join('-').split('.')[0];
-                
-                return {
-                  key: file.Key,
-                  url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                  filename: formattedFilename,
-                  institution: institution || 'Unknown',
-                  userName: userName || 'Unknown',
-                  fileDate: fileDate || 'Unknown'
-                };
-              } catch (err) {
-                console.error(`Error fetching metadata for ${file.Key}:`, err);
-                return null;
-              }
-            });
+              })
+          );
 
-            const batchResults = await Promise.all(batchPromises);
-            processedImages.push(...batchResults.filter((img): img is GelImage => img !== null));
-            
-            if (processedImages.length > 0) {
-              const sortedImages = [...processedImages].sort((a, b) => 
-                new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime()
-              );
-              setGelImages(sortedImages);
-            }
-          }
+          const validImages = processedImages.filter((img): img is GelImage => img !== null);
+          setGelImages(validImages);
         }
       } catch (err) {
         console.error('Error fetching gel images:', err);
-        showToast('Failed to fetch gel images', 'Please try again later');
+        setError('Failed to fetch gel images. Please try again later.');
       } finally {
         setIsLoading(false);
       }

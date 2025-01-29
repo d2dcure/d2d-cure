@@ -13,12 +13,39 @@ export default async function handler(req: any, res: any) {
   try {
     const integerIds = ids.map(id => parseInt(id, 10))
     if (req.method === 'DELETE') {
-      await prismaProteins.characterizationData.deleteMany({
+      // First get the associated data IDs
+      const rowsToDelete = await prismaProteins.characterizationData.findMany({
         where: {
           id: { in: integerIds }
+        },
+        select: {
+          id: true
         }
       });
-      res.status(200).json({ message: 'Records deleted successfully' });
+
+      // Delete in sequence to maintain referential integrity
+      for (const row of rowsToDelete) {
+        // Delete associated kinetic data
+        await prismaProteins.kineticRawData.deleteMany({
+          where: {
+            parent_id: row.id
+          }
+        });
+
+        // Delete associated temperature data
+        await prismaProteins.tempRawData.deleteMany({
+          where: {
+            parent_id: row.id
+          }
+        });
+
+        // Delete the characterization data
+        await prismaProteins.characterizationData.delete({
+          where: { id: row.id }
+        });
+      }
+
+      res.status(200).json({ message: 'Records and associated data deleted successfully' });
     } else if (req.method === 'PUT') {
       let data;
       if (status === "ADMIN") {

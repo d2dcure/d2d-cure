@@ -26,7 +26,7 @@ const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
       case 'approved':
         return {
           className: "bg-[#D4F4D9] text-[#17C964]",
-          children: "Approved"
+          children: "Curated"
         };
       case 'awaiting_replication':
         return {

@@ -133,24 +133,38 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
 
     const newFileName = `${formData.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
     
-    const params = {
-      Bucket: 'd2dcurebucket',
-      Key: `gel-images/${newFileName}`,
-      Body: selectedFile,
-    };
-
     try {
+      // 1. Upload to S3
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `gel-images/${newFileName}`,
+        Body: selectedFile,
+      };
       await s3.upload(params).promise();
+
+      // 2. Update database
+      const response = await fetch('/api/updateCharacterizationDataGelFilename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: entryData.id, 
+          gel_filename: newFileName 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update database with new filename');
+      }
+
+      // 3. Get updated entry data from response
+      const updatedEntry = await response.json();
+
+      // 4. Update all local states with confirmed data
       setUploadedFileName(newFileName);
       setSelectedImage(`gel-images/${newFileName}`);
       setInitialImage(`https://${params.Bucket}.s3.amazonaws.com/gel-images/${newFileName}`);
-      await handleSave();
-      
-      // Update the entry data locally
-      updateEntryData({
-        ...entryData,
-        gel_filename: newFileName
-      });
+      updateEntryData(updatedEntry);
+      setView('choose');
 
       setToastInfo({
         show: true,
@@ -166,40 +180,6 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    const filenameToSave = selectedImage || uploadedFileName;
-
-    if (!filenameToSave) {
-      setError('Please select or upload an image before saving.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/updateCharacterizationDataGelFilename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: entryData.id, gel_filename: filenameToSave.split('/').pop() }),
-      });
-
-      if (response.ok) {
-        const updatedEntry = await response.json();
-        updateEntryData(updatedEntry);
-        setToastInfo({
-          show: true,
-          type: 'success',
-          message: 'Gel image updated successfully'
-        });
-        setView('choose');
-      } else {
-        console.error('Failed to update gel filename');
-        setError('Failed to save the selected image.');
-      }
-    } catch (error) {
-      console.error('Error saving gel filename:', error);
-      setError('An error occurred while saving the selected image.');
     }
   };
 
