@@ -656,13 +656,13 @@ const SingleVariant = () => {
   };
 
   const getVariantDisplay = (data: any) => {
-    if (!data || !data.resid) return 'Loading...';
+    if (!data || !data.resid) return '';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
     return `${variant} BglB`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
-    if (!data || !data.resid) return 'Loading...';
+    if (!data || !data.resid) return '';
     const variant = getVariantDisplay(data);
     return `${variant}`;
   };
@@ -673,39 +673,43 @@ const SingleVariant = () => {
       <EntryAccessChecker entryData={entryData} loading={loading}>
         <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
           <div className="max-w-7xl mx-auto">
-            <Breadcrumbs className="mb-2">
-              <BreadcrumbItem>Home</BreadcrumbItem>
-              <BreadcrumbItem>Submit</BreadcrumbItem>
-              <BreadcrumbItem>Single Variant</BreadcrumbItem>
-              <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
-            </Breadcrumbs>
+            {!loading && entryData && (
+              <Breadcrumbs className="mb-2">
+                <BreadcrumbItem>Home</BreadcrumbItem>
+                <BreadcrumbItem>Submit</BreadcrumbItem>
+                <BreadcrumbItem>Single Variant</BreadcrumbItem>
+                <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
+              </Breadcrumbs>
+            )}
 
             <div className="pt-3">
               <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
-                <div>
-                  <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
-                    {getVariantDisplay(entryData)}
-                    <Link
-                      href={`/database/BglB_characterization?search=${encodeURIComponent(
-                        getVariantDisplay(entryData).replace(' BglB', '').trim()
-                      )}`}
-                      className="inline-flex items-center hover:text-[#06B7DB]"
-                    >
-                      <ExternalLink className="w-5 h-5 stroke-[1.5]" />
-                    </Link>
-                  </h1>
-                  <StatusChip
-                    status={
-                      entryData.curated 
-                        ? 'approved'
-                        : entryData.approved_by_pi
-                          ? 'pi_approved'
-                          : entryData.submitted_for_curation 
-                            ? 'pending_approval'
-                            : 'in_progress'
-                    }
-                  />
-                </div>
+                {!loading && entryData && (
+                  <div>
+                    <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
+                      {getVariantDisplay(entryData)}
+                      <Link
+                        href={`/database/BglB_characterization?search=${encodeURIComponent(
+                          getVariantDisplay(entryData).replace(' BglB', '').trim()
+                        )}`}
+                        className="inline-flex items-center hover:text-[#06B7DB]"
+                      >
+                        <ExternalLink className="w-5 h-5 stroke-[1.5]" />
+                      </Link>
+                    </h1>
+                    <StatusChip
+                      status={
+                        entryData.curated 
+                          ? 'approved'
+                          : entryData.approved_by_pi
+                            ? 'pi_approved'
+                            : entryData.submitted_for_curation 
+                              ? 'pending_approval'
+                              : 'in_progress'
+                      }
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   <button
                     className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6]"

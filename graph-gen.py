@@ -1,8 +1,3 @@
-# THis graph gen file is what is hosted on Heroku. It has the logic for both kinetic assay 
- # and temp assay graph generation. Although the graph generation logic remains unchanged  
- # from the original python files, the way the python files expects/handles data is different 
- # so that it fits with our React/Nextjs enviornment  
-
 import os
 from flask import Flask, request, jsonify
 import matplotlib
@@ -21,29 +16,23 @@ from statistics import mean
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-# Turn debug mode on or off
 debug_mode = False
 
-# Functions to fit and/or plot
+# ------------------------------
+# Kinetic assay helpers & route
+# ------------------------------
+
 def kobs_f(S, kcat, KM):
-    '''The Michaelis-Menten-like equation.'''
+    """Michaelis-Menten-like equation."""
     return (kcat * S) / (KM + S)
 
 def high_KM_kobs_f(S, kcat_over_KM):
-    '''The linear equation for systems where KM is very large.'''
+    """Linear fit for high-KM systems."""
     return kcat_over_KM * S
 
 def inv_v(inv_S, inv_vmax, KM):
-    '''The Lineweaver-Burk plot equation'''
+    """Lineweaver-Burk equation."""
     return KM * inv_vmax * inv_S + inv_vmax
-
-def func(T, k, T50):
-    '''The temperature response equation'''
-    return 1 / (1 + exp(-k * (T - T50)))
-
-def line(x, a, b):
-    '''Simple line equation for temperature plots'''
-    return a * x + b
 
 @app.route('/plot_kinetic', methods=['POST'])
 def plot_kinetic():
@@ -51,7 +40,7 @@ def plot_kinetic():
         with open("plot_script_log", 'a') as log_file:
             log_file.write("\nSTART LOG\n")
 
-    variant_name = request.form['variant-name']
+    variant_name = request.form.get('variant-name', 'WT')
     if variant_name == "X0X":
         variant_name = "WT"
 
@@ -62,11 +51,14 @@ def plot_kinetic():
     if file.filename == '':
         return 'No selected file', 400
 
-    # Read the CSV file into a DataFrame
+    # Read CSV
     df = pd.read_csv(file, header=None, encoding='iso-8859-1')
 
     # Extract data
-    string_of_data = ",".join([f"{float(x):.5E}" if pd.notnull(x) else '' for x in df.iloc[4:12, 2:5].values.flatten()])
+    string_of_data = ",".join([
+        f"{float(x):.5E}" if pd.notnull(x) else ''
+        for x in df.iloc[4:12, 2:5].values.flatten()
+    ])
 
     cleaned_value = re.sub(r'[^\x00-\x7F]+', '', str(df.iloc[2, 6])).strip()
     yield_ = cleaned_value
@@ -79,19 +71,16 @@ def plot_kinetic():
 
     yld = float(yield_)
     yld_u = yield_units.strip()
-
     dil = float(dil_factor)
 
-    # Constant values
-    epsilon_enz = 113330  # M^-1 cm^-1 for BglB at 280 nm
-    epsilon_byprod = 10660  # M^-1 cm^-1 for PNP^-1 at 420 nm
-    molar_mass_enz = 51395.85  # g/mol
-    assay_cell_length = 0.572  # cm
-    A280_cell_length = 1  # cm
-    assay_vol = 0.0001  # L
-    enz_vol = 0.000025  # L
+    epsilon_enz = 113330
+    epsilon_byprod = 10660
+    molar_mass_enz = 51395.85
+    assay_cell_length = 0.572
+    A280_cell_length = 1
+    assay_vol = 0.0001
+    enz_vol = 0.000025
 
-    # Substrate concentrations
     c_substrate = [
         75.000, 75.000, 75.000,
         25.000, 25.000, 25.000,
@@ -101,9 +90,8 @@ def plot_kinetic():
         0.309,  0.309,  0.309,
         0.103,  0.103,  0.103,
         0.000,  0.000,  0.000
-    ]  # millimolar
+    ]
 
-    # Parse slopes
     empty_cells = []
     slopes = []
     for i, slope in enumerate(string_of_data.split(',')):
@@ -112,16 +100,14 @@ def plot_kinetic():
         else:
             slopes.append(float(slope))
 
-    # Remove empty cells from substrate concentrations
+    # Remove those from c_substrate
     c_substrate = [c_substrate[i] for i in range(len(c_substrate)) if i not in empty_cells]
 
-    # Convert slopes to correct units
     if '10^-3' in slope_u:
-        slopes = [slope / 1000 for slope in slopes]
+        slopes = [s / 1000 for s in slopes]
     if slope_u.endswith('/s)'):
-        slopes = [slope * 60 for slope in slopes]
+        slopes = [s * 60 for s in slopes]
 
-    # Convert yield into common units
     diluted_yld = yld / dil
     c_enz_molar = 0
     c_enz_mg_per_mL = 0
@@ -141,79 +127,69 @@ def plot_kinetic():
         c_enz_molar = diluted_yld / 1e6
         c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
 
-    # Calculate rates
-    rates = [slope / (epsilon_byprod * assay_cell_length) for slope in slopes]
+    rates = [s / (epsilon_byprod * assay_cell_length) for s in slopes]
+    kobs = [(r * assay_vol) / (c_enz_molar * enz_vol) for r in rates]
 
-    # Calculate kobs
-    kobs = [(rate * assay_vol) / (c_enz_molar * enz_vol) for rate in rates]
-
-    # Curve fitting
+    # Fit
     initial_guesses = (max(kobs), 3)
     try:
         popt, pcov = curve_fit(kobs_f, c_substrate, kobs,
                                p0=initial_guesses, bounds=(0, inf))
         pSD = sqrt(diag(pcov))
 
-        # Extract parameters
         kcat = popt[0]
         KM = popt[1]
         kcat_SD = pSD[0]
         KM_SD = pSD[1]
 
-        # Calculate kcat/KM
         kcat_over_KM = kcat / KM
-        kcat_over_KM_SD = kcat_over_KM * sqrt((kcat_SD / kcat) ** 2 + (KM_SD / KM) ** 2)
+        kcat_over_KM_SD = kcat_over_KM * sqrt(
+            (kcat_SD / kcat) ** 2 + (KM_SD / KM) ** 2
+        )
 
-        vmax = kcat * c_enz_molar * 1000  # mM/min
-
+        vmax = kcat * c_enz_molar * 1000
     except RuntimeError:
-        # Handle fitting error
         return 'Error in curve fitting', 400
 
-    # Check for high KM
     high_KM = False
     if KM > 75:
         high_KM = True
-        # Linear fit
         popt, pcov = curve_fit(high_KM_kobs_f, c_substrate, kobs,
                                p0=[kcat_over_KM], bounds=(0, inf))
         pSD = sqrt(diag(pcov))
         kcat_over_KM = popt[0]
         kcat_over_KM_SD = pSD[0]
 
-    # Generate the first plot (Michaelis-Menten or linear fit)
+    # Generate Michaelis-Menten / linear
     buf1 = io.BytesIO()
     if not high_KM:
-        # Michaelis-Menten plot
         plt.figure(figsize=(5, 5))
         fakex = linspace(0, max(c_substrate)*1.1, 100)
         plt.plot(fakex, kobs_f(fakex, kcat, KM), 'k-')
 
-        # Reference lines
         plt.plot(fakex, [kcat]*len(fakex), 'k:',
-                 label=r'$\mathit{k}_\mathrm{cat} = %3.1f \pm %3.1f\, \mathrm{min}^{-1}$' % (kcat, kcat_SD))
+                 label=rf'$k_{{cat}} = {kcat:.1f} \pm {kcat_SD:.1f}\,\mathrm{{min}}^{{-1}}$')
         plt.plot([], [], " ",
-                 label=r'($\mathit{v}_\mathrm{max} = %2.4f\, \mathrm{mM/min}$)' % (vmax))
+                 label=rf'$(v_{{max}} = {vmax:.4f}\,\mathrm{{mM/min}})$')
         plt.plot([], [], " ", label=" ")
         plt.plot([KM, KM], [0, kcat/2], 'k--',
-                 label=r'$\mathit{K}_\mathrm{M} = %3.2f \pm %3.2f\, \mathrm{mM}$' % (KM, KM_SD))
+                 label=rf'$K_{{M}} = {KM:.2f} \pm {KM_SD:.2f}\,\mathrm{{mM}}$')
         plt.plot([0, KM], [kcat/2, kcat/2], 'k--')
 
         plt.plot(c_substrate, kobs, 'bo')
         plt.title(variant_name, fontsize=20)
         plt.xlabel('[S] (mM)', fontsize=16)
-        plt.ylabel(r'$\mathit{k}_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
+        plt.ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
         plt.legend(fontsize=12, loc='lower right')
     else:
-        # Linear fit plot
         plt.figure(figsize=(5, 5))
         fakex = linspace(0, max(c_substrate)*1.1, 100)
         plt.plot(fakex, high_KM_kobs_f(fakex, kcat_over_KM), 'k-',
-                 label=r'$\mathit{k}_\mathrm{cat}/\mathit{K}_\mathrm{M} = %2.2f \pm %2.2f\, \mathrm{mM}^{-1}\, \mathrm{min}^{-1}$' % (kcat_over_KM, kcat_over_KM_SD))
+                 label=rf'$k_{{cat}}/K_{{M}} = {kcat_over_KM:.2f} \pm {kcat_over_KM_SD:.2f}\,\mathrm{{mM}}^{{-1}}\,\mathrm{{min}}^{{-1}}$')
         plt.plot(c_substrate, kobs, 'bo')
         plt.title(variant_name + ' (Linear Fit)', fontsize=20)
         plt.xlabel('[S] (mM)', fontsize=16)
-        plt.ylabel(r'$\mathit{k}_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
+        plt.ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
         plt.legend(fontsize=12)
 
     plt.savefig(buf1, format='png', bbox_inches='tight')
@@ -221,45 +197,39 @@ def plot_kinetic():
     buf1.seek(0)
     image1_base64 = base64.b64encode(buf1.read()).decode('utf-8')
 
-    # Generate the Lineweaver-Burk plot
+    # Generate Lineweaver-Burk
     buf2 = io.BytesIO()
-
-    # Prepare data for Lineweaver-Burk plot
-    rates = [k * c_enz_molar * 1000 for k in kobs]  # mM/min
+    rates_mm = [k * c_enz_molar * 1000 for k in kobs]
     inv_s = []
     inv_rates = []
-    for cs, rate in zip(c_substrate, rates):
-        if cs > 0 and rate > 0:
-            inv_s.append(1 / cs)
-            inv_rates.append(1 / rate)
+    for cs, r in zip(c_substrate, rates_mm):
+        if cs > 0 and r > 0:
+            inv_s.append(1/cs)
+            inv_rates.append(1/r)
 
-    # Calculate inv_vmax
     if not high_KM:
-        inv_vmax = 1 / vmax
+        inv_vmax = 1/vmax
         initial_guesses = (inv_vmax, KM)
     else:
-        # For high_KM cases, estimate inv_vmax
-        inv_vmax = 1 / (kcat_over_KM * max(c_substrate))
+        inv_vmax = 1/(kcat_over_KM * max(c_substrate))
         initial_guesses = (inv_vmax, max(c_substrate))
 
-    # Attempt to fit Lineweaver-Burk plot
     removed_points = 0
     try:
-        popt_lb, pcov_lb = curve_fit(inv_v, inv_s, inv_rates, p0=initial_guesses, bounds=(0, inf))
+        popt_lb, pcov_lb = curve_fit(inv_v, inv_s, inv_rates,
+                                     p0=initial_guesses, bounds=(0, inf))
     except RuntimeError:
-        # Try removing points one by one
         for i in range(1, len(inv_s)):
             try:
-                popt_lb, pcov_lb = curve_fit(inv_v, inv_s[:-i], inv_rates[:-i], p0=initial_guesses, bounds=(0, inf))
+                popt_lb, pcov_lb = curve_fit(inv_v, inv_s[:-i], inv_rates[:-i],
+                                             p0=initial_guesses, bounds=(0, inf))
                 removed_points = i
                 break
             except RuntimeError:
                 continue
         else:
-            # If fitting fails completely
-            popt_lb = [0, 0]  # Default values if fitting fails
+            popt_lb = [0, 0]
 
-    # Plot Lineweaver-Burk
     plt.figure(figsize=(5, 5))
     axes = plt.gca()
     axes.spines['left'].set_position('zero')
@@ -267,55 +237,46 @@ def plot_kinetic():
     axes.spines['bottom'].set_position('zero')
     axes.spines['top'].set_color('none')
 
-    # Determine the range for plotting
-    max_inv_s_plot = max(inv_s) if inv_s else 1
     if removed_points:
-        max_inv_s_plot = max(inv_s[:-removed_points])
-    fakex = linspace(-max_inv_s_plot / 7, max_inv_s_plot, 100)
+        max_inv_s_plot = max(inv_s[:-removed_points]) if (len(inv_s) > removed_points) else 1
+    else:
+        max_inv_s_plot = max(inv_s) if inv_s else 1
 
-    # Plot the dashed line with "good" parameters if applicable
+    fakex = linspace(-max_inv_s_plot/7, max_inv_s_plot, 100)
+
     if not high_KM and KM <= 75:
-        plt.plot(
-            fakex,
-            inv_v(fakex, inv_vmax, KM),
-            'k--',
-            label=r'$\frac{1}{v} = \frac{\mathrm{%2.2f\, mM}}{\mathrm{%1.4f\, mM/min}}\, \frac{1}{\mathrm{[S]}} + \frac{1}{\mathrm{%1.4f\, mM/min}}$' % (KM, vmax, vmax)
-        )
+        plt.plot(fakex,
+                 inv_v(fakex, 1/vmax, KM),
+                 'k--',
+                 label=rf'$\frac{{1}}{{v}} = \frac{{{KM:.2f}\,\mathrm{{mM}}}}{{{vmax:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{vmax:.4f}}}$')
 
-    # Plot the solid line with fitted parameters
-    plt.plot(
-        fakex,
-        inv_v(fakex, popt_lb[0], popt_lb[1]),
-        'k-',
-        label=r'$\frac{1}{v} = \frac{\mathrm{%2.2f\, mM}}{\mathrm{%1.4f\, mM/min}}\, \frac{1}{\mathrm{[S]}} + \frac{1}{\mathrm{%1.4f\, mM/min}}$' % (popt_lb[1], 1 / popt_lb[0], 1 / popt_lb[0])
-    )
+    plt.plot(fakex,
+             inv_v(fakex, popt_lb[0], popt_lb[1]),
+             'k-',
+             label=rf'$\frac{{1}}{{v}} = \frac{{{popt_lb[1]:.2f}\,\mathrm{{mM}}}}{{{1/popt_lb[0]:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{1/popt_lb[0]:.4f}}}$')
 
-    # Plot the data points
     if removed_points:
         plt.plot(inv_s[:-removed_points], inv_rates[:-removed_points], 'bo')
     else:
         plt.plot(inv_s, inv_rates, 'bo')
 
-    # Set labels and title
     plt.title(variant_name, fontsize=20)
     plt.xlabel('1/[S] (1/mM)', fontsize=16)
-    plt.ylabel(r'$1/\mathit{v}$ (min/mM)', fontsize=16)
+    plt.ylabel(r'$1/v$ (min/mM)', fontsize=16)
     plt.legend(fontsize=10, loc='upper center')
 
-    # Save the plot
     plt.savefig(buf2, format='png', bbox_inches='tight')
     plt.close()
     buf2.seek(0)
     image2_base64 = base64.b64encode(buf2.read()).decode('utf-8')
 
-    # Prepare the JSON response
     response_data = {
         'menten_plot': image1_base64,
         'lineweaver_plot': image2_base64,
-        'kcat': kcat if not high_KM else None,
-        'kcat_SD': kcat_SD if not high_KM else None,
-        'KM': KM if not high_KM else None,
-        'KM_SD': KM_SD if not high_KM else None,
+        'kcat': None if high_KM else kcat,
+        'kcat_SD': None if high_KM else kcat_SD,
+        'KM': None if high_KM else KM,
+        'KM_SD': None if high_KM else KM_SD,
         'kcat_over_KM': kcat_over_KM,
         'kcat_over_KM_SD': kcat_over_KM_SD,
     }
@@ -326,6 +287,56 @@ def plot_kinetic():
             log_file.write("\nSTOP LOG\n")
 
     return jsonify(response_data)
+
+
+# ------------------------------
+# Temperature assay helpers & route
+# ------------------------------
+
+def func(T, k, T50):
+    """Logistic function for temperature response."""
+    return 1 / (1 + exp(-k * (T - T50)))
+
+def line(x, a, b):
+    """Simple line for T50 plot."""
+    return a * x + b
+
+def parse_vertical_temp_data(df: pd.DataFrame):
+    """
+    Old vertical layout:
+     - temperature in rows 4..11 col=0 => repeated 3 times
+     - slope data in rows 4..11, columns 2..4 => flatten
+    """
+    temperature_data = df.iloc[4:12, 0].repeat(3).astype(float).tolist()
+    slope_data = df.iloc[4:12, 2:5].values.flatten().astype(float).tolist()
+    return temperature_data, slope_data
+
+def parse_horizontal_temp_data(df: pd.DataFrame):
+    """
+    Horizontal layout:
+     - row=1 => columns 3..14 for temperature (D..O in Excel)
+     - each temperature col => 2 slope points in row=4..5
+    """
+    temp_row = df.iloc[1]  # row 2 in Excel
+    temperature_cols = []
+    for c in range(3, min(15, len(temp_row))):
+        val = temp_row[c]
+        if pd.notna(val) and val != '':
+            temperature_cols.append(c)
+
+    temperature_data = []
+    slope_data = []
+    for col in temperature_cols:
+        tval = float(temp_row[col])
+        # 2 replicate data points for each T
+        temperature_data.extend([tval, tval])
+
+        s1 = df.iloc[4, col]
+        s2 = df.iloc[5, col]
+        slope_data.append(float(s1))
+        slope_data.append(float(s2))
+
+    return temperature_data, slope_data
 
 @app.route('/plot_temperature', methods=['POST'])
 def plot_temperature():
@@ -339,20 +350,48 @@ def plot_temperature():
 
     try:
         df = pd.read_csv(file, header=None)
-        temperature_data = df.iloc[4:12, 0].repeat(3).astype(float).tolist()
-        slope_data = df.iloc[4:12, 2:5].values.flatten().astype(float).tolist()
-        temperature_data = [temp for temp, slope in zip(temperature_data, slope_data) if not pd.isna(slope)]
-        slope_data = [slope for slope in slope_data if not pd.isna(slope)]
     except Exception as e:
-        return jsonify({'error': f'Invalid data in CSV: {str(e)}'}), 400
+        return jsonify({'error': f'Invalid CSV read: {str(e)}'}), 400
 
-    max_slope = mean(sorted(slope_data, reverse=True)[:3])
-    normalized_slopes = [s / max_slope for s in slope_data]
+    # Detect vertical vs. horizontal layout
+    is_vertical = False
+    try:
+        if df.iloc[2, 1] == 'Row':
+            is_vertical = True
+    except:
+        pass
+
+    try:
+        if is_vertical:
+            temperature_data, slope_data = parse_vertical_temp_data(df)
+        else:
+            temperature_data, slope_data = parse_horizontal_temp_data(df)
+    except Exception as e:
+        return jsonify({'error': f'Error parsing data: {str(e)}'}), 400
+
+    # Remove NaNs / blanks
+    all_data = [
+        (t, s)
+        for (t, s) in zip(temperature_data, slope_data)
+        if not pd.isna(t) and not pd.isna(s)
+    ]
+    if not all_data:
+        return jsonify({'error': 'No valid numeric data found'}), 400
+
+    temperature_data, slope_data = zip(*all_data)
+
+    # Fit logistic
+    try:
+        max_slope = mean(sorted(slope_data, reverse=True)[:3])
+        normalized_slopes = [s / max_slope for s in slope_data]
+    except Exception as e:
+        return jsonify({'error': f'Error normalizing slopes: {str(e)}'}), 400
 
     initial_guess = [-1, 40]
     try:
         k_T50_pair, pcov = curve_fit(
-            func, temperature_data, normalized_slopes, p0=initial_guess, bounds=([-10, 30], [0, 50])
+            func, temperature_data, normalized_slopes,
+            p0=initial_guess, bounds=([-10, 30], [0, 50])
         )
     except Exception as e:
         return jsonify({'error': f'Curve fitting failed: {str(e)}'}), 400
@@ -365,10 +404,12 @@ def plot_temperature():
     plt.plot(temperature_data, normalized_slopes, 'bo')
     x_values = linspace(30, 50, 100)
     plt.plot(x_values, func(x_values, *k_T50_pair), 'r-')
-    plt.plot([T50] * 50, linspace(-0.05, 1.05, 50), 'k--', label=f'T50 = {T50:.2f} ± {T50_SD:.2f}°C')
+    plt.plot([T50]*50, linspace(-0.05, 1.05, 50), 'k--',
+             label=f'T50 = {T50:.2f} ± {T50_SD:.2f}°C')
     a = k / 4
     x_k_values = linspace(30, 50, 50)
-    plt.plot(x_k_values, line(x_k_values, a, (0.5 - a * T50)), 'k:', label=f'k = {k:.2f}')
+    plt.plot(x_k_values, line(x_k_values, a, (0.5 - a*T50)), 'k:',
+             label=f'k = {k:.2f}')
     plt.title(variant_name, fontsize=20)
     plt.xlabel('T (°C)', fontsize=16)
     plt.ylabel('Normalized product formation rate', fontsize=16)
@@ -383,10 +424,10 @@ def plot_temperature():
     buffer.close()
 
     response = {
-        'T50': T50,
-        'T50_SD': T50_SD,
-        'k': k,
-        'k_SD': k_SD,
+        'T50': float(T50),
+        'T50_SD': float(T50_SD),
+        'k': float(k),
+        'k_SD': float(k_SD),
         'image': image_base64
     }
     return jsonify(response)
