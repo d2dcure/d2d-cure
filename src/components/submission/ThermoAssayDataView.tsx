@@ -126,7 +126,6 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       // After extraction, we have an unsanitized table in state (thermoData),
       // so let's process & sanitize
       const sanitizedData = processData(parsedData, isVertical);
-      
       // Overwrite thermoData with sanitized portion
       if (isVertical) {
         // For vertical, sanitized portion is rows 4..12 and cols 2..5
@@ -202,6 +201,17 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
           const sanitizedCsv = Papa.unparse(sanitizedData);
           const sanitizedFile = new File([sanitizedCsv], file.name, { type: 'text/csv' });
           await generateGraphFromFile(sanitizedFile);
+
+          // Set thermoRawDataEntryData with relevant data from parsedData
+
+          console.log(parsedData)
+          setThermoRawDataEntryData({
+            slope_units: isVertical ? parsedData[1]?.[4] : parsedData[5]?.[1],
+            purification_date: isVertical ? parsedData[2]?.[6] : parsedData[7]?.[1],
+            assay_date: isVertical ? parsedData[2]?.[7] : parsedData[8]?.[1],
+            user_name: user.user_name,
+            updated: new Date().toISOString(),
+          });
 
         } catch (error) {
           console.error('Error processing file:', error);
@@ -411,14 +421,9 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         assayDate = originalData[2]?.[7] ?? '';
       } else {
         // Horizontal
-        // the user says date purified is B8 => row=7 col=1
-        // date assayed is B9 => row=8 col=1
         purificationDate = originalData[7]?.[1] ?? '';
         assayDate = originalData[8]?.[1] ?? '';
-        // Slope units was not explicitly stated for horizontal.
-        // If your template places them somewhere else, set accordingly.
-        // Otherwise we can try the same location or set an empty string.
-        slopeUnits = originalData[1]?.[4] ?? ''; 
+        slopeUnits = originalData[5]?.[1] ?? ''; 
       }
 
       // Rebuild CSV with user's current edits
@@ -961,6 +966,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                 )}
               </div>
 
+              {/* Experiment Details Section */}
               {thermoRawDataEntryData && (
                 <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-4">
