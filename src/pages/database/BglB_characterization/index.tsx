@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, Pagination } from "@nextui-org/react";
 import "../../../app/globals.css";
 import NavBar from '@/components/NavBar';
@@ -22,6 +22,12 @@ interface ExpandedRows {
   [key: string]: boolean;
 }
 
+// Add these new interfaces near the top of the file
+interface SortDescriptor {
+  column: string;
+  direction: "ascending" | "descending";
+}
+
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
@@ -39,7 +45,7 @@ function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
-  const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
+  const [useRosettaNumbering, setUseRosettaNumbering] = useState(true);
   const [sequences, setSequences] = useState<any[]>([]);
   const [showNonCurated, setShowNonCurated] = useState(false); 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -76,6 +82,14 @@ const DataPage = () => {
 
   // Add this to your state declarations at the top of the DataPage component
   const [lastClickedRowId, setLastClickedRowId] = useState<string | null>(null);
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Add this new state for sorting
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "",
+    direction: "ascending"
+  });
 
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
@@ -428,41 +442,70 @@ const DataPage = () => {
     }, 1000);
   };
 
-  const filteredData = characterizationData
-    .filter(data => 
-      data.curated || 
-      (showNonCurated && !data.curated && data.submitted_for_curation) 
-    )
-    .filter(data => !selectedInstitution || data.institution === selectedInstitution)
-    .filter(data => {
-      if (!searchTerm.trim()) return true;
-  
-      // Determine the correct number to use based on the useRosettaNumbering state
-      let numberToCompare = data.resnum.toString(); // Default to Rosetta numbering
-  
-      if (!useRosettaNumbering) {
-        // If Rosetta numbering is off, find the corresponding PDB number
-        const sequenceEntry = sequences.find(seq => seq.Rosetta_resnum === data.resnum);
-        if (sequenceEntry) {
-          numberToCompare = sequenceEntry.PDBresnum.toString();
+  // Modify the filteredData useMemo to include sorting
+  const filteredData = useMemo(() => {
+    let data = characterizationData
+      .filter(data => 
+        data.curated || 
+        (showNonCurated && !data.curated && data.submitted_for_curation)
+      )
+      .filter(data => !selectedInstitution || data.institution === selectedInstitution);
+
+    // Apply sorting if a column is selected
+    if (sortDescriptor.column) {
+      data = [...data].sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortDescriptor.column) {
+          case "variant":
+            // Sort by resnum
+            aValue = parseInt(a.resnum) || 0;
+            bValue = parseInt(b.resnum) || 0;
+            break;
+          case "yield":
+            aValue = a.yield_avg || 0;
+            bValue = b.yield_avg || 0;
+            break;
+          case "km":
+            aValue = a.KM_avg || 0;
+            bValue = b.KM_avg || 0;
+            break;
+          case "kcat":
+            aValue = a.kcat_avg || 0;
+            bValue = b.kcat_avg || 0;
+            break;
+          case "kcat_km":
+            aValue = a.kcat_over_KM || 0;
+            bValue = b.kcat_over_KM || 0;
+            break;
+          case "t50":
+            aValue = a.T50 || 0;
+            bValue = b.T50 || 0;
+            break;
+          case "tm":
+            aValue = a.Tm || 0;
+            bValue = b.Tm || 0;
+            break;
+          case "rosetta":
+            aValue = a.Rosetta_score || 0;
+            bValue = b.Rosetta_score || 0;
+            break;
+          default:
+            return 0;
         }
-      }
-      // Now compare the correct number with the search term
-      return numberToCompare.includes(searchTerm.trim());
-    })
-    .sort((a, b) => {
-      // Convert resnum to numbers for comparison, assuming they are stored as strings
-      const resnumA = a.resnum === 'X' ? -1 : parseInt(a.resnum, 10);
-      const resnumB = b.resnum === 'X' ? -1 : parseInt(b.resnum, 10);
-  
-      // First, sort by resnum in ascending order
-      if (resnumA !== resnumB) {
-        return resnumA - resnumB;
-      }
-  
-      // If resnum is the same, sort by resmut in ascending order
-      return a.resmut.localeCompare(b.resmut);
-    });
+
+        const compareResult = aValue - bValue;
+        return sortDescriptor.direction === "ascending" ? compareResult : -compareResult;
+      });
+    }
+
+    return data;
+  }, [
+    characterizationData,
+    showNonCurated,
+    selectedInstitution,
+    sortDescriptor // Add this dependency
+  ]);
 
     const getVariantDisplay = (resid: any, resnum: any, resmut: any) => {
       if (resid === 'X') {
@@ -668,6 +711,32 @@ const DataPage = () => {
     }
   };
 
+  // Modify the scrollToFirstMatch function
+  const scrollToFirstMatch = () => {
+    const firstMatch = displayData.find(data => {
+      const numberToCompare = useRosettaNumbering ? data.resnum.toString() : sequences.find(seq => seq.Rosetta_resnum === data.resnum)?.PDBresnum.toString();
+      return numberToCompare === searchTerm; // Check for exact match
+    });
+
+    if (firstMatch) {
+      const rowId = firstMatch.isChild ? `child-${firstMatch.id}` : `${firstMatch.resid}${firstMatch.resnum}${firstMatch.resmut}`;
+      const rowElement = document.querySelector(`[data-row-id="${rowId}"]`);
+      if (rowElement) {
+        rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedRowId(rowId);
+        setSearchError(null); // Clear any previous error
+
+        // Remove highlight after a delay
+        setTimeout(() => {
+          setHighlightedRowId(null);
+        }, 3000); // Highlight for 3 seconds
+      }
+    } else {
+      setSearchError(`No matching record found for ${searchTerm}`);
+    }
+  };
+
+
   return (
     <ErrorChecker 
       isError={isError} 
@@ -681,6 +750,13 @@ const DataPage = () => {
           <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
             text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
             Scrolling to {scrollDirection}
+          </div>
+        )}
+
+        {/* Error message display */}
+        {searchError && (
+          <div className="fixed top-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
+            {searchError}
           </div>
         )}
 
@@ -862,6 +938,7 @@ const DataPage = () => {
                     {/* Left side - Search, controls, and total records */}
                     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
                       <Input
+                        type="text"
                         isClearable
                         classNames={{
                           base: "w-full sm:w-[200px] md:w-[300px]",
@@ -870,7 +947,11 @@ const DataPage = () => {
                         size="sm"
                         value={searchTerm}
                         onClear={() => setSearchTerm("")}
-                        onValueChange={(value) => setSearchTerm(value)}
+                        onChange={(e) => {
+                          // This ensures only digits are typed
+                          const input = e.target as HTMLInputElement;
+                          setSearchTerm(input.value.replace(/\D/g, ""));
+                        }}
                         startContent={
                           <svg 
                             aria-hidden="true" 
@@ -889,6 +970,14 @@ const DataPage = () => {
                           </svg>
                         }
                       />
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="ml-2"
+                        onClick={scrollToFirstMatch}
+                      >
+                        GO
+                      </Button>
                       
                       {/* Controls container - two columns layout */}
                       <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
@@ -1110,16 +1199,24 @@ const DataPage = () => {
                     <Table
                       isHeaderSticky
                       aria-label="BglB Variant Characterization Data"
+                      sortDescriptor={sortDescriptor}
+                      onSortChange={(descriptor) => {
+                        setSortDescriptor(descriptor as SortDescriptor);
+                      }}
                       classNames={{
                         th: "text-default-500 bg-default-100/50 font-medium py-3 px-4",
-                        tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm  hover:rounded-lg", // Subtle hover effect
+                        tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm hover:rounded-lg",
                       }}
                     >
                       <TableHeader>
                         {columns
                           .filter(column => visibleColumns.has(column.uid))
                           .map(column => (
-                            <TableColumn key={column.uid}>
+                            <TableColumn 
+                              key={column.uid}
+                              allowsSorting={true}
+                              className="cursor-pointer"
+                            >
                               {column.renderHeader ? column.renderHeader() : column.name}
                             </TableColumn>
                           ))}
@@ -1127,12 +1224,17 @@ const DataPage = () => {
                       <TableBody items={paginatedData}>
                         {(data) => (
                           <TableRow 
-                            key={data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                            key={data.isChild ? `child-${data.id}` : expandData ? `row-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                            data-row-id={data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
                             className={`
                               ${data.isChild ? "bg-default-50" : ""}
                               ${(!data.isAggregate || data.isChild) ? "cursor-pointer hover:bg-default-100/50" : ""}
                               ${(data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`) === lastClickedRowId 
                                 ? "bg-[#06B7DB]/10 hover:bg-[#06B7DB]/20" 
+                                : ""
+                              }
+                              ${highlightedRowId === (data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`) 
+                                ? "bg-yellow-200" 
                                 : ""
                               }
                             `}

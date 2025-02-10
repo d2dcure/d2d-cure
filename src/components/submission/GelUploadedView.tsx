@@ -266,16 +266,18 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                         {selectedImage?.split('/').pop()}
                       </span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        setInitialImage(null);
-                        setSelectedImage(null);
-                        updateEntryData({ ...entryData, gel_filename: null });
-                      }}
-                      className="text-red-600 hover:text-red-700 text-sm"
-                    >
-                      Remove
-                    </button>
+                    {!entryData.curated && (
+                      <button 
+                        onClick={() => {
+                          setInitialImage(null);
+                          setSelectedImage(null);
+                          updateEntryData({ ...entryData, gel_filename: null });
+                        }}
+                        className="text-red-600 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -283,9 +285,9 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => setView('upload')}
-                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
-                  hover:bg-blue-50/50 transition-all group text-left"
+                onClick={() => !entryData.curated && setView('upload')}
+                className={`p-6 border-2 border-dashed border-gray-200 rounded-xl transition-all group text-left ${entryData.curated ? 'cursor-not-allowed opacity-50' : 'hover:border-[#06B7DB] hover:bg-blue-50/50'}`}
+                disabled={entryData.curated}
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">
@@ -304,9 +306,9 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
               </button>
 
               <button
-                onClick={() => setView('select')}
-                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
-                  hover:bg-blue-50/50 transition-all group text-left"
+                onClick={() => !entryData.curated && setView('select')}
+                className={`p-6 border-2 border-dashed border-gray-200 rounded-xl transition-all group text-left ${entryData.curated ? 'cursor-not-allowed opacity-50' : 'hover:border-[#06B7DB] hover:bg-blue-50/50'}`}
+                disabled={entryData.curated}
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">

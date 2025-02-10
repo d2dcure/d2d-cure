@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
 import "../../../app/globals.css";
@@ -11,11 +11,13 @@ import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
 import { Download, Share, Printer, BugIcon } from 'lucide-react';
 import Toast from '@/components/Toast';
-import {  ErrorChecker} from '@/components/ErrorChecker';
+import { ErrorChecker } from '@/components/ErrorChecker';
+import { useUser } from '@/components/UserProvider';
 
-const DataPageCool = () => {
+const DataPageView = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { user } = useUser();
   
   const [entryData1, setEntryData1] = useState<any>(null);
   const [entryData2, setEntryData2] = useState<any>(null);
@@ -362,14 +364,7 @@ const DataPageCool = () => {
 
               <div>
                 <span className="font-medium text-sm">Created By</span>
-                <p className="text-gray-500 text-sm">{entryData1?.user_name}</p>
-              </div>
-
-              <div>
-                <span className="font-medium text-sm">Last Updated</span>
-                <p className="text-gray-500 text-sm">
-                  {new Date(entryData1?.updated).toLocaleDateString()}
-                </p>
+                <p className="text-gray-500 text-sm">{entryData1?.creator}</p>
               </div>
             </div>
 
@@ -730,38 +725,7 @@ const DataPageCool = () => {
 
                 {thermoData.length > 0 && (
                   <div className="overflow-x-auto">
-                    <Table 
-                      aria-label="Temperature assay data table"
-                      classNames={{
-                        wrapper: "min-h-[400px]",
-                        table: "min-w-full",
-                      }}
-                    >
-                      <TableHeader>
-                        <TableColumn>Row</TableColumn>
-                        <TableColumn>Temp (°C)</TableColumn>
-                        <TableColumn>1</TableColumn>
-                        <TableColumn>2</TableColumn>
-                        <TableColumn>3</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
-                          const temperatures = [
-                            '50.0', '48.3', '45.7', '42.4', 
-                            '37.7', '33.6', '31.3', '30.0'
-                          ];
-                          return (
-                            <TableRow key={row}>
-                              <TableCell>{row}</TableCell>
-                              <TableCell>{temperatures[index]}</TableCell>
-                              <TableCell>{thermoData[index + 4]?.[2] || '—'}</TableCell>
-                              <TableCell>{thermoData[index + 4]?.[3] || '—'}</TableCell>
-                              <TableCell>{thermoData[index + 4]?.[4] || '—'}</TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    {renderThermoTable(thermoData)}
                   </div>
                 )}
               </div>
@@ -967,38 +931,7 @@ const DataPageCool = () => {
 
               {wtThermoData.length > 0 && (
                 <div className="overflow-x-auto">
-                  <Table 
-                    aria-label="WT Temperature assay data table"
-                    classNames={{
-                      wrapper: "min-h-[400px]",
-                      table: "min-w-full",
-                    }}
-                  >
-                    <TableHeader>
-                      <TableColumn>Row</TableColumn>
-                      <TableColumn>Temp (°C)</TableColumn>
-                      <TableColumn>1</TableColumn>
-                      <TableColumn>2</TableColumn>
-                      <TableColumn>3</TableColumn>
-                    </TableHeader>
-                    <TableBody>
-                      {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
-                        const temperatures = [
-                          '50.0', '48.3', '45.7', '42.4', 
-                          '37.7', '33.6', '31.3', '30.0'
-                        ];
-                        return (
-                          <TableRow key={row}>
-                            <TableCell>{row}</TableCell>
-                            <TableCell>{temperatures[index]}</TableCell>
-                            <TableCell>{wtThermoData[index + 4]?.[2] || '—'}</TableCell>
-                            <TableCell>{wtThermoData[index + 4]?.[3] || '—'}</TableCell>
-                            <TableCell>{wtThermoData[index + 4]?.[4] || '—'}</TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  {renderThermoTable(wtThermoData)}
                 </div>
               )}
             </div>
@@ -1112,6 +1045,98 @@ const DataPageCool = () => {
     </Modal>
   );
 
+  // Function to determine if the CSV is horizontal
+  const isHorizontalTemplate = (data: any[][]) => {
+    return !data[2]?.[1]; // Check if B3 is empty
+  };
+
+  const renderThermoTable = (data: any[][]) => {
+    if (isHorizontalTemplate(data)) {
+      // Horizontal template logic
+      return (
+        <Table 
+          aria-label="Horizontal Temperature assay data table"
+          classNames={{
+            wrapper: "min-h-[400px]",
+            table: "min-w-full",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>Row</TableColumn>
+            <TableColumn>Temp (°C)</TableColumn>
+            <TableColumn>1</TableColumn>
+            <TableColumn>2</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'].map((row, index) => {
+              const temperature = data[1]?.[index + 3] || '—'; // D2, E2, ..., O2
+              return (
+                <TableRow key={row}>
+                  <TableCell>{row}</TableCell>
+                  <TableCell>{temperature}</TableCell>
+                  <TableCell>{data[4]?.[index + 3] || '—'}</TableCell>
+                  <TableCell>{data[5]?.[index + 3] || '—'}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      );
+    } else {
+      // Vertical template logic (existing)
+      return (
+        <Table 
+          aria-label="Vertical Temperature assay data table"
+          classNames={{
+            wrapper: "min-h-[400px]",
+            table: "min-w-full",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>Row</TableColumn>
+            <TableColumn>Temp (°C)</TableColumn>
+            <TableColumn>1</TableColumn>
+            <TableColumn>2</TableColumn>
+            <TableColumn>3</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, index) => {
+              const temperature = data[index + 4]?.[0] || '—'; // A5, A6, ..., A12
+              return (
+                <TableRow key={row}>
+                  <TableCell>{row}</TableCell>
+                  <TableCell>{temperature}</TableCell>
+                  <TableCell>{data[index + 4]?.[2] || '—'}</TableCell>
+                  <TableCell>{data[index + 4]?.[3] || '—'}</TableCell>
+                  <TableCell>{data[index + 4]?.[4] || '—'}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      );
+    }
+  };
+
+  // Determine if the user can edit
+  const canEdit = useMemo(() => {
+    if (!user || !entryData1) return false;
+    return user.status === 'ADMIN' || 
+           user.user_name === entryData1.creator || 
+           user.user_name === entryData1.teammate || 
+           user.user_name === entryData1.teammate2 || 
+           user.user_name === entryData1.teammate3;
+  }, [user, entryData1]);
+
+  // Handle edit button click
+  const handleEditClick = () => {
+    if (!entryData1) return;
+    const path = entryData1.resid === 'X' 
+      ? `/submit/wild_type/${entryData1.id}` 
+      : `/submit/single_variant/${entryData1.id}`;
+    router.push(path);
+  };
+
   if (isLoading) return (
     <>
       <NavBar />
@@ -1174,6 +1199,14 @@ const DataPageCool = () => {
                   Characterization Data
                 </p>
               </div>
+              {canEdit && (
+                <Button 
+                  className="bg-[#06B7DB] text-white"
+                  onClick={handleEditClick}
+                >
+                  Edit
+                </Button>
+              )}
             </div>
             {/* Main Layout */}
             <div className="flex flex-col lg:flex-row gap-6">
@@ -1200,4 +1233,4 @@ const DataPageCool = () => {
   );
 };
 
-export default DataPageCool;
+export default DataPageView;

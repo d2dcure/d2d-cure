@@ -446,7 +446,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       }
   
       // Update the DB for the raw data
-      await axios.post('/api/updateTempRawData', {
+      const updateTempRawDataResponse = await axios.post('/api/updateTempRawData', {
         user_name: user.user_name,
         variant,
         slope_units: slopeUnits,
@@ -457,16 +457,19 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         parent_id: entryData.id,
         approved_by_student: approvedByStudent,
       });
-  
+
+      const tempRawDataId = updateTempRawDataResponse.data.tempRawDataId;
+
       // Then update T50 etc.
       const { T50, T50_SD, k, k_SD } = calculatedValues;
-  
+
       const response = await axios.post('/api/updateCharacterizationDataThermoStuff', {
         parent_id: entryData.id,
         T50,
         T50_SD,
         T50_k: k,
         T50_k_SD: k_SD,
+        temp_raw_data_id: tempRawDataId,
       });
 
       if (response.status === 200) {
@@ -1030,7 +1033,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
               <div className="flex items-center gap-2 mb-4 mt-4">
                 <Checkbox
-                  isSelected={approvedByStudent}
+                  isSelected={thermoRawDataEntryData?.approved_by_student}
                   onValueChange={setApprovedByStudent}
                   size="sm"
                 >
@@ -1049,7 +1052,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         <button 
           onClick={handleSaveData}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!thermoData.length || isSubmitting}
+          disabled={!thermoData.length || isSubmitting || entryData.curated}
         >
           {isSubmitting ? (
             <>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import s3 from '../../../../s3config';
@@ -57,6 +57,8 @@ const SingleVariant = () => {
   const [showItemCompletionToast, setShowItemCompletionToast] = useState<string | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const checklistItems = [
     'Protein induced',
@@ -353,7 +355,141 @@ const SingleVariant = () => {
       showToast('Deletion Failed', 'Failed to delete variant. Please try again.', 'error');
     }
   };
-  
+
+  const handleItemDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      let response;
+      switch (itemToDelete) {
+        case 'Protein induced':
+          // Reset induction data
+          response = await fetch('/api/updateCharacterizationDataExpressed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: entryData.id,
+              expressed: false, 
+            })
+          });
+          break;
+
+        case 'Expressed':
+          // First update KineticRawData
+          response = await fetch('/api/updateKineticRawDataYield', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              parent_id: entryData.id,
+              yield_value: null,
+              yield_units: null,
+            }),
+          });
+
+          // Then update CharacterizationData
+          response = await fetch('/api/updateCharacterizationDataYieldAvg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: entryData.id,
+              yield_avg: null,
+            }),
+          });
+          break;
+
+        case 'Kinetic assay data uploaded':
+          // First delete the KineticRawData entry
+          const response1 = await fetch('/api/deleteKineticData', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parent_id: entryData.id })
+          });
+
+          if (response1.ok) {
+            // Then update CharacterizationData to remove references
+            response = await fetch('/api/updateCharacterizationDataKineticStuff', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                parent_id: entryData.id,
+                kcat: null,
+                kcat_SD: null,
+                KM: null,
+                KM_SD: null,
+                kcat_over_KM: null,
+                kcat_over_KM_SD: null,
+                raw_data_id: 0,
+                yield: entryData.yield_avg,
+              })
+            });
+          }
+          break;
+
+
+        case 'Thermostability assay data uploaded':
+          // First delete the TempRawData entry
+          const response2 = await fetch('/api/deleteTempData', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parent_id: entryData.id })
+          });
+
+          if (response2.ok) {
+            // Then update CharacterizationData to remove references
+            response = await fetch('/api/updateCharacterizationDataThermoStuff', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                parent_id: entryData.id, 
+                T50: null, 
+                T50_SD: null, 
+                T50_k: null, 
+                T50_k_SD: null, 
+                temp_raw_data_id: 0, 
+              })
+            }); 
+          }
+          break;
+
+
+        case 'Melting point values uploaded':
+          // Reset melting point data
+          response = await fetch('/api/updateMeltingPointValues', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: entryData.id,
+              tm_mean: null, 
+              tm_std_dev: null,
+            })
+          });
+          break;
+
+        case 'Gel uploaded':
+          // Reset gel data
+          response = await fetch('/api/updateCharacterizationDataGelFilename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: entryData.id, 
+              gel_filename: null, 
+            })
+          });
+          break;
+      }
+
+      if (response && response.status == 200) {
+        const updatedEntry = await response.json();
+        updateEntryData(updatedEntry);
+        showToast('Success', 'Data deleted successfully', 'success');
+      } else {
+        throw new Error('Failed to delete data');
+      }
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      showToast('Error', 'Failed to delete data. Please try again.', 'error');
+    }
+  };
 
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
@@ -474,6 +610,28 @@ const SingleVariant = () => {
         );
       }
 
+      if (item === "Gel uploaded" && entryData.gel_filename) {
+        return (
+          <div className="flex items-center gap-2">
+            <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+              <img
+                src={`https://d2dcurebucket.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
+                alt="Gel"
+                className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  setCurrentView('detail');
+                  setSelectedDetail(item);
+                }}
+                onError={(e) => {
+                  console.error('Error loading gel image');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
       return null;
     };
 
@@ -530,12 +688,18 @@ const SingleVariant = () => {
                         <EditIcon />
                       </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="Delete">
+                    <Tooltip color="danger" content={entryData.curated || entryData.approved_by_pi ? "Cannot delete after approval" : "Delete"}>
                       <span 
-                        className="text-lg text-danger cursor-pointer active:opacity-50"
+                        className={`text-lg ${
+                          entryData.curated || entryData.approved_by_pi
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-danger cursor-pointer active:opacity-50"
+                        }`}
                         onClick={() => {
-                          setCurrentView('detail');
-                          setSelectedDetail(item);
+                          if (!entryData.curated && !entryData.approved_by_pi) {
+                            setItemToDelete(item);
+                            setShowDeleteItemModal(true);
+                          }
                         }}
                       >
                         <DeleteIcon />
@@ -667,6 +831,19 @@ const SingleVariant = () => {
     return `${variant}`;
   };
 
+  // Add this near the other useMemo hooks
+  const isSubmitDisabled = useMemo(() => {
+    if (!entryData) return true;
+    const status = entryData.curated 
+      ? 'Curated'
+      : entryData.approved_by_pi
+        ? 'Approved by PI'
+        : entryData.submitted_for_curation 
+          ? 'Pending Approval'
+          : 'In Progress';
+    return status === 'Pending Approval' || status === 'Approved by PI' || status === 'Curated';
+  }, [entryData]);
+
   return (
     <>
       <NavBar />
@@ -712,8 +889,13 @@ const SingleVariant = () => {
                 )}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   <button
-                    className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6]"
-                    onClick={() => setShowSubmitModal(true)}
+                    className={`px-4 py-2 text-sm font-semibold rounded-xl ${
+                      isSubmitDisabled 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-[#06B7DB] text-white hover:bg-[#05a5c6]'
+                    }`}
+                    onClick={() => !isSubmitDisabled && setShowSubmitModal(true)}
+                    disabled={isSubmitDisabled}
                   >
                     Submit for Review
                   </button>
@@ -803,6 +985,19 @@ const SingleVariant = () => {
         onConfirm={handleDelete}
         title="Delete Variant"
         message={`Are you sure you want to delete ${getVariantDisplay(entryData)}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonColor="danger"
+      />
+      <ConfirmationModal
+        isOpen={showDeleteItemModal}
+        onClose={() => {
+          setShowDeleteItemModal(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={handleItemDelete}
+        title="Delete Entry Data"
+        message="Are you sure you want to delete data associated with this checklist item? This cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         confirmButtonColor="danger"

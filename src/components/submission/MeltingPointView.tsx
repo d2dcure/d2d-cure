@@ -131,7 +131,7 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
         <button 
           onClick={handleSave}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!tmMean || !tmStdDev || isSubmitting}
+          disabled={!tmMean || !tmStdDev || isSubmitting || entryData.curated}
         >
           {isSubmitting ? (
             <>
