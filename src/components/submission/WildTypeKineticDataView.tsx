@@ -347,7 +347,12 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({ entry
                     <TableCell>
                       <button
                         onClick={() => updateWTRawDataId(row.id)}
-                        className="text-[#06B7DB] hover:text-[#05a5c6]"
+                        className={`${
+                          entryData.curated
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-[#06B7DB] hover:text-[#05a5c6]"
+                        }`}
+                        disabled={entryData.curated}
                       >
                         Select
                       </button>

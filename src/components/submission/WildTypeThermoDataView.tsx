@@ -81,6 +81,11 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     }
   }, [entryData.WT_temp_raw_data_id]);
 
+  // Function to determine if the CSV is horizontal
+  const isHorizontalTemplate = (data: any[][]) => {
+    return !data[2]?.[1]; // Check if B3 is empty
+  };
+
   const fetchAndParseCSV = async (filename: string) => {
     try {
       const params = {
@@ -97,12 +102,17 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
       Papa.parse(csvFile, {
         complete: (result) => {
           const parsedData = result.data as any[][];
-
-          // Extract cells A5 through A12 for tempValues
-          const extractedTempValues = parsedData.slice(4, 12).map(row => row[0]);
-          setTempValues(extractedTempValues);
-
           setTempAssayData(parsedData);
+
+          if (isHorizontalTemplate(parsedData)) {
+            // Extract temperature values for horizontal template
+            const extractedTempValues = parsedData[1].slice(3, 15); // D2 to O2
+            setTempValues(extractedTempValues);
+          } else {
+            // Extract temperature values for vertical template
+            const extractedTempValues = parsedData.slice(4, 12).map(row => row[0]);
+            setTempValues(extractedTempValues);
+          }
         },
         header: false,
       });
@@ -167,6 +177,59 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
       }
     } catch (error) {
       console.error('Error saving WT ID:', error);
+    }
+  };
+
+  const renderThermoTable = (data: any[][]) => {
+    if (isHorizontalTemplate(data)) {
+      // Horizontal template logic
+      return (
+        <Table aria-label="Horizontal Temperature assay data table">
+          <TableHeader>
+            <TableColumn>Row</TableColumn>
+            <TableColumn>Temp (°C)</TableColumn>
+            <TableColumn>1</TableColumn>
+            <TableColumn>2</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'].map((row, index) => {
+              const temperature = data[1]?.[index + 3] || '—'; // D2, E2, ..., O2
+              return (
+                <TableRow key={row}>
+                  <TableCell>{row}</TableCell>
+                  <TableCell>{temperature}</TableCell>
+                  <TableCell>{data[4]?.[index + 3] || '—'}</TableCell>
+                  <TableCell>{data[5]?.[index + 3] || '—'}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      );
+    } else {
+      // Vertical template logic
+      return (
+        <Table aria-label="Vertical Temperature assay data table">
+          <TableHeader>
+            <TableColumn>Row</TableColumn>
+            <TableColumn>T (°C)</TableColumn>
+            <TableColumn>1</TableColumn>
+            <TableColumn>2</TableColumn>
+            <TableColumn>3</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {rowLabels.map((rowLabel, index) => (
+              <TableRow key={index}>
+                <TableCell className="whitespace-nowrap">{rowLabel}</TableCell>
+                <TableCell className="whitespace-nowrap">{tempValues[index]}</TableCell>
+                <TableCell>{tempAssayData[index + 4]?.[2] || ''}</TableCell>
+                <TableCell>{tempAssayData[index + 4]?.[3] || ''}</TableCell>
+                <TableCell>{tempAssayData[index + 4]?.[4] || ''}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      );
     }
   };
 
@@ -269,32 +332,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
 
             {tempAssayData.length > 0 && (
               <div className="overflow-x-auto">
-                <Table 
-                  aria-label="Temperature assay data table"
-                  classNames={{
-                    wrapper: "min-h-[400px]",
-                    table: "min-w-full",
-                  }}
-                >
-                  <TableHeader>
-                    <TableColumn>Row</TableColumn>
-                    <TableColumn>T (°C)</TableColumn>
-                    <TableColumn>1</TableColumn>
-                    <TableColumn>2</TableColumn>
-                    <TableColumn>3</TableColumn>
-                  </TableHeader>
-                  <TableBody>
-                    {rowLabels.map((rowLabel, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="whitespace-nowrap">{rowLabel}</TableCell>
-                        <TableCell className="whitespace-nowrap">{tempValues[index]}</TableCell>
-                        <TableCell>{tempAssayData[index + 4]?.[2] || ''}</TableCell>
-                        <TableCell>{tempAssayData[index + 4]?.[3] || ''}</TableCell>
-                        <TableCell>{tempAssayData[index + 4]?.[4] || ''}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {renderThermoTable(tempAssayData)}
               </div>
             )}
           </div>
@@ -324,7 +362,12 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
                     <TableCell>
                       <button
                         onClick={() => updateWTRawDataId(row.id)}
-                        className="text-[#06B7DB] hover:text-[#05a5c6]"
+                        className={`${
+                          entryData.curated
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-[#06B7DB] hover:text-[#05a5c6]"
+                        }`}
+                        disabled={entryData.curated}
                       >
                         Select
                       </button>
