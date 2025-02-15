@@ -5,14 +5,12 @@ import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
 import { AuthChecker } from '@/components/AuthChecker';
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import Link from 'next/link';
 import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
-import { Tooltip } from "@nextui-org/react";
 import confetti from 'canvas-confetti';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -518,7 +516,7 @@ const SingleVariant = () => {
     const getStatusStyle = (item: any) => {
       switch (item) {
         case "Protein induced":
-          return entryData.expressed === null
+          return entryData.expressed === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Expressed":
@@ -635,6 +633,26 @@ const SingleVariant = () => {
       return null;
     };
 
+    // Helper function to determine if an item should be accessible
+    const isItemAccessible = (item: string) => {
+      switch (item) {
+        case 'Protein induced':
+          return true;
+        
+        case 'Expressed':
+        case 'Gel uploaded':
+          return entryData.expressed === true;
+        
+        case 'Kinetic assay data uploaded':
+        case 'Thermostability assay data uploaded':
+        case 'Melting point values uploaded':
+          return entryData.yield_avg !== null;
+        
+        default:
+          return false;
+      }
+    };
+
     return (
       <>
         <Table 
@@ -654,61 +672,90 @@ const SingleVariant = () => {
             <TableColumn align="center">Actions</TableColumn>
           </TableHeader>
           <TableBody>
-            {checklistItems.map((item, index) => (
-              <TableRow key={index} className="h-[52px]">
-                <TableCell>
-                  <span className={getStatusStyle(item).className}>
-                    {getStatusStyle(item).text}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <button
-                    onClick={() => {
-                      setCurrentView('detail');
-                      setSelectedDetail(item);
-                    }}
-                    className="text-left hover:text-[#06B7DB] transition-colors duration-200"
-                  >
-                    {item}
-                  </button>
-                </TableCell>
-                <TableCell className="text-left font-medium text-gray-600">
-                  {renderAdditionalInfo(item)}
-                </TableCell>
-                <TableCell>
-                  <div className="relative flex items-center justify-center gap-2">
-                    <Tooltip content="Edit">
-                      <span 
-                        className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                        onClick={() => {
+            {checklistItems.map((item, index) => {
+              const accessible = isItemAccessible(item);
+              
+              return (
+                <TableRow 
+                  key={index} 
+                  className={`h-[52px] ${!accessible ? 'opacity-50' : ''}`}
+                >
+                  <TableCell>
+                    <span className={getStatusStyle(item).className}>
+                      {getStatusStyle(item).text}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => {
+                        if (accessible) {
                           setCurrentView('detail');
                           setSelectedDetail(item);
-                        }}
+                        }
+                      }}
+                      className={`text-left transition-colors duration-200 ${
+                        accessible 
+                          ? 'hover:text-[#06B7DB]' 
+                          : 'cursor-not-allowed'
+                      }`}
+                      disabled={!accessible}
+                    >
+                      {item}
+                    </button>
+                  </TableCell>
+                  <TableCell className="text-left font-medium text-gray-600">
+                    {renderAdditionalInfo(item)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="relative flex items-center justify-center gap-2">
+                      <Tooltip content={accessible ? "Edit" : "Complete prerequisites first"}>
+                        <span 
+                          className={`text-lg ${
+                            accessible 
+                              ? 'text-default-400 cursor-pointer active:opacity-50'
+                              : 'text-gray-300 cursor-not-allowed'
+                          }`}
+                          onClick={() => {
+                            if (accessible) {
+                              setCurrentView('detail');
+                              setSelectedDetail(item);
+                            }
+                          }}
+                        >
+                          <EditIcon />
+                        </span>
+                      </Tooltip>
+                      <Tooltip 
+                        color="danger" 
+                        content={
+                          !accessible 
+                            ? "Complete prerequisites first"
+                            : entryData.curated || entryData.approved_by_pi 
+                              ? "Cannot delete after approval" 
+                              : "Delete"
+                        }
                       >
-                        <EditIcon />
-                      </span>
-                    </Tooltip>
-                    <Tooltip color="danger" content={entryData.curated || entryData.approved_by_pi ? "Cannot delete after approval" : "Delete"}>
-                      <span 
-                        className={`text-lg ${
-                          entryData.curated || entryData.approved_by_pi
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "text-danger cursor-pointer active:opacity-50"
-                        }`}
-                        onClick={() => {
-                          if (!entryData.curated && !entryData.approved_by_pi) {
-                            setItemToDelete(item);
-                            setShowDeleteItemModal(true);
-                          }
-                        }}
-                      >
-                        <DeleteIcon />
-                      </span>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                        <span 
+                          className={`text-lg ${
+                            !accessible || entryData.curated || entryData.approved_by_pi
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-danger cursor-pointer active:opacity-50"
+                          }`}
+                          onClick={() => {
+                            if (accessible && !entryData.curated && !entryData.approved_by_pi) {
+                              setItemToDelete(item);
+                              setShowDeleteItemModal(true);
+                            }
+                          }}
+                        >
+                          <DeleteIcon />
+                        </span>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
 
@@ -844,6 +891,59 @@ const SingleVariant = () => {
     return status === 'Pending Approval' || status === 'Approved by PI' || status === 'Curated';
   }, [entryData]);
 
+  const handleCurateApprove = async () => {
+    try {
+      const response = await fetch('/api/curateData', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ids: [entryData.id],
+          status: user?.status 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      const updatedEntry = await response.json();
+      setEntryData((prev: any) => ({ ...prev, ...updatedEntry }));
+      showToast(
+        user?.status === 'ADMIN' ? 'Entry Curated' : 'Entry Approved',
+        'The entry has been successfully updated.',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showToast('Update Failed', 'Failed to update entry status. Please try again.', 'error');
+    }
+  };
+
+  // Add the handleRecall function near other handlers
+  const handleRecall = async () => {
+    try {
+      const response = await fetch('/api/updateCharacterizationDataCurated', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: entryData.id,
+          curated: false 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to recall entry');
+      }
+
+      const updatedEntry = await response.json();
+      setEntryData((prev: any) => ({ ...prev, ...updatedEntry }));
+      showToast('Success', 'Entry has been recalled successfully', 'success');
+    } catch (error) {
+      console.error('Error recalling entry:', error);
+      showToast('Error', 'Failed to recall entry. Please try again.', 'error');
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -888,6 +988,42 @@ const SingleVariant = () => {
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
+                  {user?.status && 
+                   (user.status === 'ADMIN' || user.status === 'professor') && 
+                   entryData?.submitted_for_curation === true && 
+                   !entryData?.curated && (
+                    <div className="col-span-2 grid grid-cols-2 gap-2">
+                      <button
+                        className="px-4 py-2 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors"
+                        onClick={handleCurateApprove}
+                      >
+                        {user.status === 'ADMIN' ? 'Curate' : 'Approve'}
+                      </button>
+
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <button
+                            className="w-full px-4 py-2 text-sm font-semibold rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                          >
+                            More Actions
+                          </button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="More Options"
+                          closeOnSelect={true}
+                          selectionMode="single"
+                        >
+                          <DropdownItem>
+                            Mark as &quot;Awaiting Replication&quot;
+                          </DropdownItem>
+                          <DropdownItem>
+                            Mark as &quot;Needs Revision&quot;
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
+                  )}
+                  
                   <button
                     className={`px-4 py-2 text-sm font-semibold rounded-xl ${
                       isSubmitDisabled 
@@ -910,6 +1046,14 @@ const SingleVariant = () => {
                   >
                     Delete Profile
                   </button>
+                  {user?.status === 'ADMIN' && entryData?.curated && (
+                    <button
+                      className="col-span-2 px-4 py-2 text-sm font-semibold border-2 rounded-xl transition-colors text-[#E91E63] border-[#E91E63] hover:bg-[#E91E63] hover:text-white"
+                      onClick={handleRecall}
+                    >
+                      Recall
+                    </button>
+                  )}
                 </div>
               </div>
 

@@ -57,13 +57,23 @@ export default async function handler(req: any, res: any) {
           approved_by_pi: true
         }
       }
+
+      // Update the entries
       await prismaProteins.characterizationData.updateMany({
         where: {
           id: { in: integerIds }
         },
         data: data
       });
-      res.status(200).json({ message: 'Records updated successfully' });
+
+      // Fetch and return the updated entry
+      const updatedEntry = await prismaProteins.characterizationData.findFirst({
+        where: {
+          id: integerIds[0]  // Since we're dealing with a single entry in this case
+        }
+      });
+
+      res.status(200).json(updatedEntry);
     } else {
       res.setHeader('Allow', ['DELETE', 'PUT']);
       res.status(405).json({ error: 'Method Not Allowed' });

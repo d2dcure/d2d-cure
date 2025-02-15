@@ -8,6 +8,7 @@ import { useDropzone } from "react-dropzone";
 import { Spinner } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import Toast from '@/components/Toast';
+import Image from 'next/image';
 
 interface GelUploadedViewProps {
   entryData: any;
@@ -237,9 +238,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4">
                       <div className="relative group">
-                        <img 
+                        <Image 
                           src={initialImage} 
                           alt="Selected gel" 
+                          width={64}
+                          height={64}
                           className="h-16 w-16 object-cover rounded cursor-pointer"
                         />
                         <div 
@@ -383,9 +386,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                       >
                         <DeleteIcon className="h-5 w-5 text-gray-600" />
                       </button>
-                      <img 
+                      <Image 
                         src={preview} 
                         alt="Preview" 
+                        width={400}
+                        height={300}
                         className="w-full h-full object-contain rounded-lg"
                       />
                     </div>
@@ -451,9 +456,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <img 
+                        <Image 
                           src={image.url} 
-                          alt="" 
+                          alt="Gel thumbnail" 
+                          width={64}
+                          height={64}
                           className="h-16 w-16 object-cover rounded cursor-pointer" 
                           onClick={() => {
                             const filename = image.key.split('/').pop() || 'Image';
@@ -552,10 +559,13 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
           >
             {/* Image Preview */}
             <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-4 relative min-h-[300px]">
-              <img
+              <Image
                 src={previewImage.url}
                 alt="Gel Image Preview"
+                width={800}
+                height={600}
                 className="max-w-full max-h-[40vh] lg:max-h-[80vh] object-contain rounded-lg shadow-md"
+                priority
               />
             </div>
 

@@ -36,7 +36,7 @@ const NotificationPopup = ({ show, onClose, title, message, icon, buttons }: Not
         clearTimeout(hideTimer);
       };
     }
-  }, [show]);
+  }, [show, onClose]);
 
   if (!show) return null;
 

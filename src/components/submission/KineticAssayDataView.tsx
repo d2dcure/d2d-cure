@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
@@ -8,6 +8,7 @@ import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
+import Image from 'next/image';
 
 interface KineticAssayDataViewProps {
   entryData: any;
@@ -52,6 +53,43 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   // Add these state variables at the top with other states
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
+  const fetchAndProcessCSV = useCallback(async (filename: string) => {
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `kinetic_assays/raw/${filename}`,
+        Expires: 60,
+      };
+
+      const url = await s3.getSignedUrlPromise('getObject', params);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const csvFile = new File([blob], filename, { type: 'text/csv' });
+
+      setFile(csvFile);
+
+      const fileContent = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsText(csvFile);
+      });
+
+      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+      const sanitizedData = processData(parsedData);
+      setKineticAssayData(sanitizedData);
+      await generateGraphFromFile(sanitizedData);
+
+    } catch (error) {
+      console.error('Error fetching and processing CSV file from S3:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (entryData.kinetic_raw_data_filename) {
+      fetchAndProcessCSV(entryData.kinetic_raw_data_filename);
+    }
+  }, [entryData.kinetic_raw_data_filename, fetchAndProcessCSV]);
+
   useEffect(() => {
     const fetchKineticRawDataEntryData = async () => {
       try {
@@ -76,44 +114,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     if (entryData.id) {
       fetchKineticRawDataEntryData();
     }
-  }, [entryData.id]);
-
-  const fetchAndProcessCSV = async (filename: string) => {
-    try {
-      // Generate signed URL using AWS SDK
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `kinetic_assays/raw/${filename}`,
-        Expires: 60, // URL expires in 60 seconds
-      };
-
-      const url = await s3.getSignedUrlPromise('getObject', params);
-
-      // Fetch the CSV file using the signed URL
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const csvFile = new File([blob], filename, { type: 'text/csv' });
-
-      setFile(csvFile);
-
-      // Read and parse the file
-      const fileContent = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsText(csvFile);
-      });
-
-      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
-      
-      // Use processData instead of direct sanitization
-      const sanitizedData = processData(parsedData);
-      setKineticAssayData(sanitizedData);
-      await generateGraphFromFile(sanitizedData);
-
-    } catch (error) {
-      console.error('Error fetching and processing CSV file from S3:', error);
-    }
-  };
+  }, [entryData.id, fetchAndProcessCSV]);
 
   const downloadCsvFile = async () => {
     if (!file) return;
@@ -200,6 +201,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
           const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
           
+          // Add this section to update the experiment details immediately
+          setKineticRawDataEntryData({
+            yield: parsedData[2]?.[6],         // G3
+            yield_units: parsedData[1]?.[6],   // G2
+            dilution: parsedData[2]?.[7],      // H3
+            purification_date: parsedData[2]?.[8],  // I3
+            assay_date: parsedData[2]?.[9],    // J3
+            user_name: user.user_name,
+            updated: new Date().toISOString(),
+          });
+
           // Use processData instead of direct sanitization
           const sanitizedData = processData(parsedData);
           setKineticAssayData(sanitizedData);
@@ -607,6 +619,15 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     return sanitizedData;
   };
 
+  // Add this function to handle base64 images
+  const getImageUrl = (base64String: string) => {
+    if (!base64String) return '';
+    if (base64String.startsWith('data:image')) {
+      return base64String;
+    }
+    return `data:image/png;base64,${base64String}`;
+  };
+
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
@@ -771,10 +792,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     </button>
                   </div>
                   {mentenImageUrl ? (
-                    <img 
-                      src={mentenImageUrl} 
-                      alt="Michaelis-Menten Plot" 
-                      className="w-full h-[300px] object-contain rounded-lg border border-gray-200"
+                    <Image 
+                      src={getImageUrl(mentenImageUrl)}
+                      alt="Michaelis-Menten Plot"
+                      width={400}
+                      height={300}
+                      className="w-full h-auto"
                     />
                   ) : (
                     <div className="w-full h-[300px] bg-gray-200 rounded-lg animate-pulse" />
@@ -786,10 +809,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     <div className="w-[76px]"></div>
                   </div>
                   {lineweaverImageUrl ? (
-                    <img 
-                      src={lineweaverImageUrl} 
-                      alt="Lineweaver-Burk Plot" 
-                      className="w-full h-[300px] object-contain rounded-lg border border-gray-200"
+                    <Image 
+                      src={getImageUrl(lineweaverImageUrl)}
+                      alt="Lineweaver-Burk Plot"
+                      width={400}
+                      height={300}
+                      className="w-full h-auto"
                     />
                   ) : (
                     <div className="w-full h-[300px] bg-gray-200 rounded-lg animate-pulse" />

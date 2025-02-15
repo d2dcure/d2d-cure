@@ -35,7 +35,7 @@ const LoginSuccessNotification = () => {
         clearTimeout(hideTimer);
       };
     }
-  }, [router.query.justLoggedIn]);
+  }, [router.query.justLoggedIn, router]);
 
     const handleClose = () => {
       setShowSuccessNotif(false);
