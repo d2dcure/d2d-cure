@@ -1,11 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import {Card, CardBody} from "@nextui-org/react";
 import Link from 'next/link';
+import { Tooltip } from "@nextui-org/tooltip";
+
+interface SequenceData {
+  id: number;
+  resnum: string;
+  Rosetta_resnum: number | null;
+  PDBresnum: string | null;
+  resid: string;
+}
 
 const BglBPage = () => {
+  const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
+  const [characterizationData, setCharacterizationData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch sequence data
+        const seqResponse = await fetch('/api/getSequenceData');
+        if (seqResponse.ok) {
+          const seqData = await seqResponse.json();
+          setSequenceData(seqData);
+        }
+
+        // Fetch characterization data
+        const charResponse = await fetch('/api/getCharacterizationData');
+        if (charResponse.ok) {
+          const charData = await charResponse.json();
+          setCharacterizationData(charData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Helper function to check if a residue has characterization data
+  const hasCharacterizationData = (rosettaNum: number | null) => {
+    if (!rosettaNum) return false;
+    return characterizationData.some(item => item.resnum === rosettaNum);
+  };
+
   return (
     <>
       <NavBar />
@@ -53,12 +95,6 @@ const BglBPage = () => {
                 <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (εBglB):</span>
                 <span className="text-sm text-gray-600">113,330 m−1 cm−1</span>
               </div>
-              <Link 
-                href="#"
-                className="inline-block mt-3 text-sm text-[#06B7DB] hover:underline"
-              >
-                View Full Sequence {'>'}
-              </Link>
             </div>
           </div>
           <div className="w-full lg:w-1/2 mt-8 lg:-mt-24 lg:-ml-32 flex justify-center lg:justify-start">
@@ -80,6 +116,63 @@ const BglBPage = () => {
             Our computational designs and kinetic measurements will utilize para-nitrophenyl-β-d-glucopyranose (pNPG) 
             as a colorimetric reporter substrate.
           </p>
+        </div>
+      </div>
+
+            {/* Sequence Section */}
+            <div className="px-6 md:px-12 lg:px-24 py-16">
+        <h2 className="mb-4 text-3xl md:text-4xl font-light">Full BglB Sequence</h2>
+        
+        <p className="mb-6 text-gray-600">
+          One-letter amino acid residue codes in plain type (not bold) were not resolved in the crystal structure used for our design study 
+          (<a href="http://www.rcsb.org/structure/2JIE" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">PDB #2JIE</a>). 
+          One-letter codes in blue have parameter data stored in our database. Hovering over any 1-letter code in the sequence will give that residue's sequence numbers/positions.
+        </p>
+
+        <div className="font-mono text-lg leading-loose break-words">
+          {sequenceData.map((residue, index) => {
+            const hasStructure = residue.PDBresnum !== null;
+            const hasData = hasCharacterizationData(residue.Rosetta_resnum);
+
+            return (
+              <React.Fragment key={residue.id}>
+                <Tooltip
+                  content={
+                    <div className="text-sm">
+                      {`${residue.resid}${residue.resnum}`}
+                      {residue.Rosetta_resnum && (
+                        <>
+                          <br />
+                          {`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
+                        </>
+                      )}
+                      {residue.PDBresnum && (
+                        <>
+                          <br />
+                          {`PDB: ${residue.resid}${residue.PDBresnum}`}
+                        </>
+                      )}
+                    </div>
+                  }
+                >
+                  <span 
+                    className={`
+                      ${hasData ? 'text-blue-500 cursor-pointer' : 'text-black'}
+                      ${hasStructure ? 'font-bold' : ''}
+                    `}
+                    onClick={() => {
+                      if (hasData && residue.Rosetta_resnum) {
+                        window.location.href = `/database/BglB_characterization?highlight=${residue.Rosetta_resnum}`;
+                      }
+                    }}
+                  >
+                    {residue.resid}
+                  </span>
+                </Tooltip>
+                {(index + 1) % 10 === 0 ? ' ' : ''}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 

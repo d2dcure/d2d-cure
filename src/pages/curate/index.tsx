@@ -4,7 +4,7 @@ import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import StatusChip from '@/components/StatusChip';
-import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip } from "@nextui-org/react";
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
@@ -162,8 +162,14 @@ const CuratePage = () => {
             case "actions":
                 return (
                     <Link
-                        href={data.resnum.toString() === "0" ? `/submit/wild_type/${encodeURIComponent(data.id)}` : `/submit/single_variant/${encodeURIComponent(data.id)}`}
+                        href={data.resid === "X" 
+                            ? `/submit/wild_type/${data.id}`
+                            : `/submit/single_variant/${data.id}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-[#06B7DB]"
+                        onPointerDown={(e) => e.stopPropagation()}
                     >
                         View
                     </Link>
@@ -650,6 +656,7 @@ const CuratePage = () => {
                                 aria-label="Data to Curate"
                                 isHeaderSticky
                                 selectionMode="multiple"
+                                selectionBehavior="toggle"
                                 selectedKeys={checkedItems}
                                 onSelectionChange={setCheckedItems}
                                 sortDescriptor={sortDescriptor}

@@ -13,6 +13,7 @@ import { Download, Share, Printer, BugIcon } from 'lucide-react';
 import Toast from '@/components/Toast';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useUser } from '@/components/UserProvider';
+import StatusChip from '@/components/StatusChip';
 
 const DataPageView = () => {
   const router = useRouter();
@@ -1192,8 +1193,19 @@ const DataPageView = () => {
           <div className="pt-3">
             <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
               <div>
-                <h1 className="text-4xl font-inter dark:text-white mb-2">
+                <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-4">
                   {getVariantDisplay(entryData1)}
+                  <StatusChip
+                    status={
+                      entryData1?.curated 
+                        ? 'approved'
+                        : entryData1?.approved_by_pi
+                          ? 'pi_approved'
+                          : entryData1?.submitted_for_curation 
+                            ? 'pending_approval'
+                            : 'in_progress'
+                    }
+                  />
                 </h1>
                 <p className="text-gray-600">
                   Characterization Data

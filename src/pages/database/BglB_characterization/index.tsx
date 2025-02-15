@@ -76,6 +76,7 @@ const DataPage = () => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+  const { highlight } = router.query;
 
   // Add this new state for tracking expanded rows
   const [expandedRows, setExpandedRows] = useState<ExpandedRows>({});
@@ -87,7 +88,7 @@ const DataPage = () => {
 
   // Add this new state for sorting
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "",
+    column: "variant",
     direction: "ascending"
   });
 
@@ -98,6 +99,54 @@ const DataPage = () => {
       setLastClickedRowId(savedLastClickedRow);
     }
   }, []);
+
+  // Update the scrolling effect
+  useEffect(() => {
+    if (highlight && characterizationData.length > 0) {
+      // Find all rows that match the highlighted residue number
+      const matchingRows = characterizationData.filter(
+        item => item.resnum === parseInt(highlight as string)
+      );
+
+      if (matchingRows.length > 0) {
+        // Try to find either the grouped row or individual row
+        const resid = matchingRows[0].resid;
+        const resnum = matchingRows[0].resnum;
+        
+        // Try different possible row IDs
+        const possibleElements = [
+          document.getElementById(`row-${matchingRows[0].id}`), // Individual row
+          document.getElementById(`group-${resid}${resnum}`),   // Grouped row
+          document.querySelector(`[data-resnum="${resnum}"]`)   // Fallback using data attribute
+        ];
+
+        // Use the first element that exists
+        const element = possibleElements.find(el => el !== null);
+        
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('bg-blue-100');
+          setTimeout(() => {
+            element.classList.remove('bg-blue-100');
+          }, 2000);
+        }
+      }
+    }
+  }, [highlight, characterizationData]);
+
+  // Add this effect to clear highlights on page load/refresh
+  useEffect(() => {
+    // Clear any existing highlights
+    const highlightedElements = document.querySelectorAll('.bg-blue-100');
+    highlightedElements.forEach(element => {
+      element.classList.remove('bg-blue-100');
+    });
+
+    // Clear the last clicked row from localStorage
+    localStorage.removeItem('lastClickedBglBRow');
+    setLastClickedRowId(null);
+    setHighlightedRowId(null);
+  }, []); // Empty dependency array means this runs once on mount
 
   // Define your columns
   const columns = [
@@ -711,31 +760,37 @@ const DataPage = () => {
     }
   };
 
-  // Modify the scrollToFirstMatch function
-  const scrollToFirstMatch = () => {
-    const firstMatch = displayData.find(data => {
-      const numberToCompare = useRosettaNumbering ? data.resnum.toString() : sequences.find(seq => seq.Rosetta_resnum === data.resnum)?.PDBresnum.toString();
-      return numberToCompare === searchTerm; // Check for exact match
+  // Update the handleSearch function
+  const handleSearch = () => {
+    if (!searchTerm) {
+      setSearchError("Please enter a search term");
+      return;
+    }
+
+    // Clear any previous search error
+    setSearchError(null);
+
+    // Find the first matching row
+    const matchingRow = characterizationData.find(item => {
+      const searchNum = parseInt(searchTerm);
+      return item.resnum === searchNum;
     });
 
-    if (firstMatch) {
-      const rowId = firstMatch.isChild ? `child-${firstMatch.id}` : `${firstMatch.resid}${firstMatch.resnum}${firstMatch.resmut}`;
-      const rowElement = document.querySelector(`[data-row-id="${rowId}"]`);
-      if (rowElement) {
-        rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setHighlightedRowId(rowId);
-        setSearchError(null); // Clear any previous error
-
-        // Remove highlight after a delay
+    if (matchingRow) {
+      // Find and scroll to the matching row
+      const element = document.getElementById(`row-${matchingRow.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the row temporarily
+        element.classList.add('bg-blue-100');
         setTimeout(() => {
-          setHighlightedRowId(null);
-        }, 3000); // Highlight for 3 seconds
+          element.classList.remove('bg-blue-100');
+        }, 2000);
       }
     } else {
-      setSearchError(`No matching record found for ${searchTerm}`);
+      setSearchError("No matching entries found");
     }
   };
-
 
   return (
     <ErrorChecker 
@@ -821,16 +876,26 @@ const DataPage = () => {
                         <div className="mb-6">
                           <h2 className="text-xl font-light mb-2">Color Key</h2>
                           
-                          <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
+                          <Link href="/about/bglb" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
                             View full BglB Sequence
                           </Link>
                           
                           {/* Color gradient bar */}
                           <div className="flex items-center gap-[2px] mb-2">
                             {[
-                              '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
-                              '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
-                              '#FAC498', '#F68932'
+                              '#36929A', // -4.75 and below
+                              '#4A9DA4', // -4.75 to -4.25
+                              '#5EA8AE', // -4.25 to -3.75
+                              '#72B2B8', // -3.75 to -3.25
+                              '#86BDC2', // -3.25 to -2.75
+                              '#9AC8CC', // -2.75 to -2.25
+                              '#AAD3D6', // -2.25 to -1.75
+                              '#C2DEE0', // -1.75 to -1.25
+                              '#D7E9EB', // -1.25 to -0.75
+                              '#EBF4F5', // -0.75 to -0.25
+                              '#FFFFFF', // -0.25 to 0.25 (neutral)
+                              '#FAC498', // 0.25 to 0.75
+                              '#F68932'  // 0.75 and above
                             ].map((color, index) => (
                               <div 
                                 key={index}
@@ -845,13 +910,13 @@ const DataPage = () => {
                           </div>
                           
                           {/* Scale numbers - Updated for better alignment */}
-                          <div className="relative w-full h-6 mb-2">
-                            {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
+                          <div className="relative w-full h-6 mb-2 ml-1">
+                            {['-5', '-4', '-3', '-2', '-1', '0', '1'].map((number, index) => (
                               <div
                                 key={index}
                                 className="absolute transform -translate-x-1/2 text-xs"
                                 style={{
-                                  left: `${(index) * (100 / 10)}%`,
+                                  left: `${(index) * (100 / 6.4)}%`,
                                   top: 0
                                 }}
                               >
@@ -974,7 +1039,7 @@ const DataPage = () => {
                         size="sm"
                         variant="flat"
                         className="ml-2"
-                        onClick={scrollToFirstMatch}
+                        onClick={handleSearch}
                       >
                         GO
                       </Button>
@@ -1225,7 +1290,8 @@ const DataPage = () => {
                         {(data) => (
                           <TableRow 
                             key={data.isChild ? `child-${data.id}` : expandData ? `row-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
-                            data-row-id={data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                            id={data.isAggregate ? `group-${data.resid}${data.resnum}` : `row-${data.id}`}
+                            data-resnum={data.resnum}
                             className={`
                               ${data.isChild ? "bg-default-50" : ""}
                               ${(!data.isAggregate || data.isChild) ? "cursor-pointer hover:bg-default-100/50" : ""}
@@ -1275,7 +1341,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{ 
-                                          backgroundColor: data.expressed ? '#D1D5DB' : '#D1D5DB',
+                                          backgroundColor: data.expressed ? '#D1D5DB' : '#FFFFFF',
                                           color: data.expressed ? '#000000' : '#000000',
                                           borderRadius: '4px',
                                           padding: '1px 6px',

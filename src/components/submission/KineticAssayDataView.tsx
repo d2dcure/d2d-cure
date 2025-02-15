@@ -200,6 +200,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
           const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
           
+          // Add this section to update the experiment details immediately
+          setKineticRawDataEntryData({
+            yield: parsedData[2]?.[6],         // G3
+            yield_units: parsedData[1]?.[6],   // G2
+            dilution: parsedData[2]?.[7],      // H3
+            purification_date: parsedData[2]?.[8],  // I3
+            assay_date: parsedData[2]?.[9],    // J3
+            user_name: user.user_name,
+            updated: new Date().toISOString(),
+          });
+
           // Use processData instead of direct sanitization
           const sanitizedData = processData(parsedData);
           setKineticAssayData(sanitizedData);
