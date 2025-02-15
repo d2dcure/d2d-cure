@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {Input} from "@nextui-org/input";
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
@@ -22,7 +22,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
   const expectedWTScore = -1089.697; // Example expected score
 
-  const validateScores = () => {
+  const validateScores = useCallback(() => {
     let isValid = true;
     const messages: ValidationMessage[] = [];
     const wtScore = parseFloat(WT);
@@ -77,14 +77,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
     setValidationMessages(messages);
     return isValid;
-  };
+  }, [WT, variant]);
 
-  // Add useEffect to validate on input change
   useEffect(() => {
     if (WT || variant) {
       validateScores();
     }
-  }, [WT, variant]);
+  }, [WT, variant, validateScores]);
 
   const updateRosettaScore = async () => {
     const isValid = validateScores();

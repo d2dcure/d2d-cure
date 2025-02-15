@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useUser } from '@/components/UserProvider';
 import { Avatar } from 'flowbite-react'; // Import Flowbite components
 import { signOut } from "firebase/auth";
@@ -154,9 +155,17 @@ const NavBar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Left side: Logo and Navigation links */}
           <div className="flex items-center space-x-8 w-full">
-            {/* Logo */}
+            {/* Logo - Updated to use Next.js Image */}
             <Link href="/" className="flex items-center space-x-3">
-              <img src="/resources/images/D2D_Logo.svg" className="h-12" alt="D2D Logo" />
+              <Image 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="D2D Logo" 
+                width={48}
+                height={48}
+                className="h-12"
+                priority
+                style={{ objectFit: 'contain' }}
+              />
             </Link>
 
             {/* Desktop Navigation */}

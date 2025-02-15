@@ -1,5 +1,6 @@
 import React from "react";
 import Link from 'next/link';
+import Image from 'next/image';
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Button, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu } from "@nextui-org/react";
 
 export default function App() {
@@ -9,7 +10,15 @@ export default function App() {
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
             <Link href="/" className="flex items-center">
-              <img src="/resources/images/D2D_Logo.svg" className="h-16 me-3 select-none" alt="logo" draggable="false" />
+              <Image 
+                src="/resources/images/D2D_Logo.svg" 
+                alt="logo" 
+                width={64}
+                height={64}
+                className="me-3 select-none" 
+                draggable={false}
+                priority
+              />
             </Link>
             <div className="mt-4 text-gray-500 dark:text-gray-400 space-y-2">
               <p>451 Health Sciences Dr.,<br />Davis, CA 95616</p>
@@ -75,11 +84,56 @@ export default function App() {
         </div>
         <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 px-2 sm:px-4">
-          <img src="/resources/images/CUREnet_logo.png" alt="CUREnet Logo" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
-          <img src="/resources/images/Rosetta_logo.png" alt="Rosetta Logo" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
-          <img src="/resources/images/NSF_logo.png" alt="NSF Logo" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
-          <img src="/resources/images/UC Davis_logo.png" alt="UC Davis Logo" className="h-6 sm:h-8 md:h-10 w-auto select-none" draggable="false" />
-          <img src="/resources/images/codelablogo.png" alt="CodeLab Logo" className="h-4 sm:h-6 md:h-8 w-auto select-none" draggable="false" />
+          <Image 
+            src="/resources/images/CUREnet_logo.png" 
+            alt="CUREnet Logo" 
+            width={120}
+            height={40}
+            style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
+            className="h-6 sm:h-8 md:h-10 w-auto select-none" 
+            draggable={false}
+            quality={100}
+          />
+          <Image 
+            src="/resources/images/Rosetta_logo.png" 
+            alt="Rosetta Logo" 
+            width={120}
+            height={40}
+            style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
+            className="h-6 sm:h-8 md:h-10 w-auto select-none" 
+            draggable={false}
+            quality={100}
+          />
+          <Image 
+            src="/resources/images/NSF_logo.png" 
+            alt="NSF Logo" 
+            width={120}
+            height={40}
+            style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
+            className="h-6 sm:h-8 md:h-10 w-auto select-none" 
+            draggable={false}
+            quality={100}
+          />
+          <Image 
+            src="/resources/images/UC Davis_logo.png" 
+            alt="UC Davis Logo" 
+            width={120}
+            height={40}
+            style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
+            className="h-6 sm:h-8 md:h-10 w-auto select-none" 
+            draggable={false}
+            quality={100}
+          />
+          <Image 
+            src="/resources/images/codelablogo.png" 
+            alt="CodeLab Logo" 
+            width={100}
+            height={32}
+            style={{ objectFit: 'contain', width: 'auto', height: '32px' }}
+            className="h-4 sm:h-6 md:h-8 w-auto select-none" 
+            draggable={false}
+            quality={100}
+          />
         </div>
         <div className="sm:flex sm:items-center sm:justify-between">
           <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <Link href="/" className="hover:underline">D2D CURE © 2018–2024 ~ The D2D CURE Program is supported by the National Science Foundation&apos;s Undergraduate Biology Education IUSE Program, award number 1827246. Website maintained by Jason William Labonte. </Link>. All Rights Reserved.

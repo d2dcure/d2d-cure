@@ -126,7 +126,7 @@ const BglBPage = () => {
         <p className="mb-6 text-gray-600">
           One-letter amino acid residue codes in plain type (not bold) were not resolved in the crystal structure used for our design study 
           (<a href="http://www.rcsb.org/structure/2JIE" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">PDB #2JIE</a>). 
-          One-letter codes in blue have parameter data stored in our database. Hovering over any 1-letter code in the sequence will give that residue's sequence numbers/positions.
+          One-letter codes in blue have parameter data stored in our database. Hovering over any 1-letter code in the sequence will give that residues sequence numbers/positions.
         </p>
 
         <div className="font-mono text-lg leading-loose break-words">

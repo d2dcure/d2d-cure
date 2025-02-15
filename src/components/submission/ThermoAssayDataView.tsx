@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
@@ -6,6 +6,7 @@ import s3 from '../../../s3config';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
+import Image from 'next/image';
 
 interface ThermoAssayDataViewProps {
   setCurrentView: (view: string) => void;
@@ -51,43 +52,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   // Messages about negative values, outliers, etc.
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchTempRawDataEntryData = async () => {
-      try {
-        const response = await axios.get('/api/getTempRawDataEntryData', {
-          params: { parent_id: entryData.id },
-        });
-        
-        if (response.status === 200) {
-          const data = response.data;
-          setCsvFilename(data.csv_filename);
-          setThermoRawDataEntryData(data);
-  
-          // If a CSV file is already uploaded, fetch and process it
-          if (data.csv_filename) {
-            await fetchAndProcessCSV(data.csv_filename);
-          }
-        } else if (response.status === 404) {
-          console.warn("No data found for the given parent_id.");
-          setThermoRawDataEntryData(null);
-        }
-      } catch (error) {
-        console.error('Error fetching TempRawData entry:', error);
-        setThermoRawDataEntryData(null);
-      }
-    };
-  
-    if (entryData.id) {
-      fetchTempRawDataEntryData();
-    }
-  }, [entryData.id]);
-
-  // ---------------
-  // 1. Grab CSV from S3 if already uploaded
-  // 2. Parse & detect template type
-  // 3. Extract relevant rows/cells, do sanitization, store in state
-  // ---------------
-  const fetchAndProcessCSV = async (filename: string) => {
+  const fetchAndProcessCSV = useCallback(async (filename: string) => {
     try {
       const params = {
         Bucket: 'd2dcurebucket',
@@ -107,44 +72,48 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
       });
 
       const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
-
       setOriginalData(parsedData);
 
-      // Detect template type: check B3 => parsedData[2][1]
-      // If "Row", we do vertical; else horizontal
       const isVertical = (parsedData?.[2]?.[1] === 'Row');
       setTemplateType(isVertical ? 'vertical' : 'horizontal');
 
       if (isVertical) {
-        // For vertical: use the existing logic
         extractVerticalData(parsedData);
       } else {
-        // For horizontal
         extractHorizontalData(parsedData);
       }
 
-      // After extraction, we have an unsanitized table in state (thermoData),
-      // so let's process & sanitize
       const sanitizedData = processData(parsedData, isVertical);
-      // Overwrite thermoData with sanitized portion
       if (isVertical) {
-        // For vertical, sanitized portion is rows 4..12 and cols 2..5
         const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
         setThermoData(sanitizedEditableData);
       } else {
-        // For horizontal, we have 2 data points per temperature,
-        // so we rebuild from sanitized data as well
-        const { dataRows, columnIndices } = getHorizontalDataRows(sanitizedData);
+        const { dataRows } = getHorizontalDataRows(sanitizedData);
         setThermoData(dataRows.map(row => row.dataCells));
       }
 
-      // Generate the graph with sanitized data
       const sanitizedCsv = Papa.unparse(sanitizedData);
       const sanitizedFile = new File([sanitizedCsv], filename, { type: 'text/csv' });
       await generateGraphFromFile(sanitizedFile);
+
     } catch (error) {
       console.error('Error fetching and processing CSV file from S3:', error);
     }
+  }, []);
+
+  useEffect(() => {
+    if (entryData.thermo_raw_data_filename) {
+      fetchAndProcessCSV(entryData.thermo_raw_data_filename);
+    }
+  }, [entryData.thermo_raw_data_filename, fetchAndProcessCSV]);
+
+  // Add this function to handle base64 images
+  const getImageUrl = (base64String: string) => {
+    if (!base64String) return '';
+    if (base64String.startsWith('data:image')) {
+      return base64String;
+    }
+    return `data:image/png;base64,${base64String}`;
   };
 
   // -----------------------------------------------------------
@@ -859,10 +828,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                   </button>
                 </div>
                 {graphImageUrl ? (
-                  <img 
-                    src={graphImageUrl} 
-                    alt="Temperature Stability Plot" 
-                    className="w-full h-[300px] object-contain rounded-lg border border-gray-200"
+                  <Image 
+                    src={getImageUrl(graphImageUrl)}
+                    alt="Temperature Plot"
+                    width={400}
+                    height={300}
+                    className="w-full max-w-[800px] max-h-[300px] mx-auto object-contain rounded-lg border border-gray-200"
                   />
                 ) : (
                   <div className="w-full h-[300px] bg-gray-200 rounded-lg animate-pulse" />
@@ -1085,11 +1056,13 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="h-[200px]">
             <CardBody className="text-4xl pt-8 font-light overflow-hidden">
-              <img 
+              <Image 
                 src="/resources/images/Microsoft_Excel-Logo.wine.svg"
-                className="pl-4 pt-2 w-14 h-12 select-none pointer-events-none" 
-                draggable="false"
-                alt="Excel logo" 
+                alt="Excel logo"
+                width={56}
+                height={48}
+                className="w-12 h-12 sm:w-14 sm:h-12 select-none pointer-events-none"
+                draggable={false}
               />
               <h1 className="text-lg pl-5 pt-2 font-regular">Temperature Assay Data</h1>
               <p className="text-xs pl-5 text-gray-500 -mt-1">(standard vertical temperature gradient)</p>
@@ -1108,11 +1081,13 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
           <Card className="h-[200px] ">
             <CardBody className="text-4xl pt-8 font-light overflow-hidden">
-              <img 
+              <Image 
                 src="/resources/images/Microsoft_Excel-Logo.wine.svg"
-                className="pl-4 pt-2 w-14 h-12 select-none pointer-events-none" 
-                draggable="false"
-                alt="Excel logo" 
+                alt="Excel logo"
+                width={56}
+                height={48}
+                className="w-12 h-12 sm:w-14 sm:h-12 select-none pointer-events-none"
+                draggable={false}
               />
               <h1 className="text-lg pl-5 pt-2 font-regular">Temperature Assay Data</h1>
               <p className="text-xs pl-5 text-gray-500 -mt-1">(alternate horizontal temperature gradient)</p>
