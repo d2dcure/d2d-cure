@@ -41,19 +41,19 @@ const Login = () => {
 
   const facts = [
     "Built by UC Davis students at CodeLab",
-    '"D2D helped me discover my passion for bioinformatics" - Student, 2022',
-    '"The perfect bridge between biology and coding" - Mentor',
-    '"I never thought I could code until D2D" - Student, 2023',
-    '"Amazing to see students grow in just 8 weeks" - Instructor',
-    '"D2D opened doors to my biotech career" - Alumni',
-    "Students analyze real cancer data",
-    "8-week hands-on lab experience",
-    "First D2D cohort launched Summer 2021",
-    "Partnership with UC Davis Genome Center",
-    "Students learn Python and wet lab skills",
-    "Weekly sessions in teaching lab",
-    "Mentored by UC Davis researchers",
-    "Projects presented at UC Davis symposium",
+    // '"D2D helped me discover my passion for bioinformatics" - Student, 2022',
+    // '"The perfect bridge between biology and coding" - Mentor',
+    // '"I never thought I could code until D2D" - Student, 2023',
+    // '"Amazing to see students grow in just 8 weeks" - Instructor',
+    // '"D2D opened doors to my biotech career" - Alumni',
+    // "Students analyze real cancer data",
+    // "8-week hands-on lab experience",
+    // "First D2D cohort launched Summer 2021",
+    // "Partnership with UC Davis Genome Center",
+    // "Students learn Python and wet lab skills",
+    // "Weekly sessions in teaching lab",
+    // "Mentored by UC Davis researchers",
+    // "Projects presented at UC Davis symposium",
   ];
 
   useEffect(() => {
@@ -61,38 +61,39 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    const loadGoogleScript = () => {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        console.log('Google script loaded');
-        window.google.accounts.id.initialize({
-          client_id: '908640937966-i4qfvag5cf18pee3e4op0as4d3lo8lad.apps.googleusercontent.com',
-          callback: handleGoogleSignIn,
-        });
-        window.google.accounts.id.renderButton(
-          document.getElementById('my-signin2'),
-          { 
-            type: "standard",
-            size: "large",
-            theme: "nuetral",
-            shape: "pill",
-            width: 380,
-            logo_alignment: "left"
-          }
-        );
-        window.google.accounts.id.prompt(); 
-      };
-      document.body.appendChild(script);
-    };
+    // Commenting out the Google script loading
+    // const loadGoogleScript = () => {
+    //   const script = document.createElement('script');
+    //   script.src = 'https://accounts.google.com/gsi/client';
+    //   script.async = true;
+    //   script.defer = true;
+    //   script.onload = () => {
+    //     console.log('Google script loaded');
+    //     window.google.accounts.id.initialize({
+    //       client_id: 'YOUR_CLIENT_ID',
+    //       callback: handleGoogleSignIn,
+    //     });
+    //     window.google.accounts.id.renderButton(
+    //       document.getElementById('my-signin2'),
+    //       { 
+    //         type: "standard",
+    //         size: "large",
+    //         theme: "nuetral",
+    //         shape: "pill",
+    //         width: 380,
+    //         logo_alignment: "left"
+    //       }
+    //     );
+    //     window.google.accounts.id.prompt(); 
+    //   };
+    //   document.body.appendChild(script);
+    // };
 
-    const handleGoogleSignIn = (response: { credential: string }) => {
-      console.log('Encoded JWT ID token: ' + response.credential);
-    };
+    // const handleGoogleSignIn = (response: { credential: string }) => {
+    //   console.log('Encoded JWT ID token: ' + response.credential);
+    // };
 
-    loadGoogleScript();
+    // loadGoogleScript();
   }, []);
 
   useEffect(() => {
@@ -259,12 +260,13 @@ const Login = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
+              {/* <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
+              </div> */}
             </div>
 
-            <div id="my-signin2" className="flex justify-center"></div>
+            {/* Commenting out the Google sign-in button */}
+            {/* <div id="my-signin2" className="flex justify-center"></div> */}
           </form>
         </div>
       </div>

@@ -495,9 +495,13 @@ const handleDeleteFirebase = async () => {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.reg_date}</TableCell>
                       <TableCell>
-                        <StatusChip
-                          status={user.approved ? "approved" : "pending_approval"}
-                        />
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            user.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {user.approved ? 'Approved' : 'Pending...'}
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))}
