@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
-import firebaseAdmin from "../../../firebaseAdmin"; 
 import { getAuth, deleteUser } from "firebase/auth";
 import { auth } from "firebase-admin";
 import {
