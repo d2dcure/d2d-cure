@@ -24,7 +24,7 @@ export default function App() {
                   <Link href="/about" className="hover:underline font-light">About us</Link>
                 </li>
                 <li>
-                  <Link href="/about#team" className="hover:underline font-light">Meet the team</Link>
+                  <Link href="/about#faculty" className="hover:underline font-light">Meet the team</Link>
                 </li>
               </ul>
             </div>
@@ -46,25 +46,19 @@ export default function App() {
               <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Resources</h2>
               <ul className="text-gray-500 dark:text-gray-400 font-medium">
                 <li className="mb-2">
-                  <Link href="/privacy-policy" className="hover:underline font-light">Privacy Policy</Link>
-                </li>
-                <li className="mb-2">
                   <Link href="/resources/StructuredFiles" className="hover:underline font-light">Structure and Sequence Files</Link>
                 </li>
                 <li className="mb-2">
                   <Link href="/resources/oligosearch" className="hover:underline font-light">Oligo Search</Link>
                 </li>
-                <li className="mb-2">
-                  <Link href="/resources/bglb" className="hover:underline font-light">Complete BgLb Sequence</Link>
+                <li className="mb-2 font-light">
+                  <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view" target="_blank"className="hover:underline">How data is calculated</Link>
                 </li>
                 <li className="mb-2 font-light">
-                  <Link href="/resources/data-calculation" className="hover:underline">How data is calculated</Link>
+                  <Link href="https://drive.google.com/file/d/19UbJHzJG3rzbA4Ln_9jC-ggBzXJmoia3/view" target="_blank" className="hover:underline">How to interpret data</Link>
                 </li>
                 <li className="mb-2 font-light">
-                  <Link href="/resources/data-interpretation" className="hover:underline">How to interpret data</Link>
-                </li>
-                <li className="mb-2 font-light">
-                  <Link href="/resources/calculator" className="hover:underline">Enzyme Rate Calculator</Link>
+                  <Link href="https://d2d-graph-applet.vercel.app/" target="_blank" className="hover:underline">Enzyme Rate Calculator</Link>
                 </li>
                 <li className="mb-2 font-light">
                   <Link href="/resources/publications" className="hover:underline">Publications</Link>

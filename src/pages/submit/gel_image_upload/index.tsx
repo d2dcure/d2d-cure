@@ -1,18 +1,16 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadFileToS3 } from "../../../utils/s3Utils";
-import { Spinner } from "@nextui-org/react";
-import { BiCheck, BiError } from "react-icons/bi";
+
 import { Button } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import GelUploadedView from '@/components/submission/GelUploadedView';
 import { useRouter } from 'next/router';
 import Toast from '@/components/Toast';
-import { Card, CardBody } from "@nextui-org/react";
+import Footer from '@/components/Footer';
 
 const DragAndDropUpload: React.FC = () => {
   const { user } = useUser();
@@ -256,6 +254,7 @@ const DragAndDropUpload: React.FC = () => {
           onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
         />
       </AuthChecker>
+      <Footer />
     </>
   );
 };
