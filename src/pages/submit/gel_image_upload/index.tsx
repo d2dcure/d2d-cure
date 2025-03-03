@@ -8,6 +8,7 @@ import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
 import Toast from '@/components/Toast';
+import Footer from '@/components/Footer';
 import s3 from "../../../../s3config";
 
 const DragAndDropUpload: React.FC = () => {
@@ -281,6 +282,7 @@ const DragAndDropUpload: React.FC = () => {
           onClose={() => setToastInfo(prev => ({ ...prev, show: false }))}
         />
       </AuthChecker>
+      <Footer />
     </>
   );
 };

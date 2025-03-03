@@ -35,9 +35,9 @@ const AboutD2D = () => {
           <div className="md:w-1/2">
             <h2 className="text-4xl font-light dark:text-white">Our Mission</h2>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-            The Design2Data Program involves students in an investigation of the sequence-structure-function relationship of proteins. Using the lens of protein biochemistry, students expand their knowledge and develop skills by engaging in a research workflow representative of cutting-edge biotechnology training in high demand by employers.            </p>
+            The Design2Data Program involves students in an investigation of the sequence-structure-function relationship of proteins. Using the lens of protein biochemistry, students expand their knowledge and develop skills by engaging in a research workflow representative of cutting-edge biotechnology training in high demand by employers.            </p>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-            A feature that makes D2D unique among other multi-institutional protein biochemistry CUREs is its connection to the protein modeling research community, RosettaCommons, which uses the student-generated data to improve functionally predictive enzyme-design algorithms.            </p>
+            A feature that makes D2D unique among other multi-institutional protein biochemistry CUREs is its connection to the protein modeling research community, RosettaCommons, which uses the student-generated data to improve functionally predictive enzyme-design algorithms.            </p>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
             Large, uniformly obtained measurements of biophysical properties covering a broad and diverse sequence space across a wide range of enzymes are needed to truly begin utilizing the power of modern computational tools for creating predictive models of enzyme function. </p>
           </div>
@@ -151,10 +151,8 @@ const AboutD2D = () => {
         </div>
       </div>
 
-
-
       {/* Faculty Section */}
-      <div className="px-6 md:px-12 lg:px-24 py-16">
+      <div id="faculty" className="px-6 md:px-12 lg:px-24 py-16">
         <h2 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet The Faculty</h2>
         
         <div className="flex w-full flex-col">
@@ -301,8 +299,6 @@ const AboutD2D = () => {
           </Tabs>
         </div>
       </div>
-
-
 
       {/* Network Map Section */}
       <div className="px-6 md:px-12 lg:px-24 py-16">
