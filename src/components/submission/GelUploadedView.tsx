@@ -8,6 +8,7 @@ import { useDropzone } from "react-dropzone";
 import { Spinner } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import Toast from '@/components/Toast';
+import Image from 'next/image';
 
 interface GelUploadedViewProps {
   entryData: any;
@@ -133,24 +134,38 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
 
     const newFileName = `${formData.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
     
-    const params = {
-      Bucket: 'd2dcurebucket',
-      Key: `gel-images/${newFileName}`,
-      Body: selectedFile,
-    };
-
     try {
+      // 1. Upload to S3
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `gel-images/${newFileName}`,
+        Body: selectedFile,
+      };
       await s3.upload(params).promise();
+
+      // 2. Update database
+      const response = await fetch('/api/updateCharacterizationDataGelFilename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: entryData.id, 
+          gel_filename: newFileName 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update database with new filename');
+      }
+
+      // 3. Get updated entry data from response
+      const updatedEntry = await response.json();
+
+      // 4. Update all local states with confirmed data
       setUploadedFileName(newFileName);
       setSelectedImage(`gel-images/${newFileName}`);
       setInitialImage(`https://${params.Bucket}.s3.amazonaws.com/gel-images/${newFileName}`);
-      await handleSave();
-      
-      // Update the entry data locally
-      updateEntryData({
-        ...entryData,
-        gel_filename: newFileName
-      });
+      updateEntryData(updatedEntry);
+      setView('choose');
 
       setToastInfo({
         show: true,
@@ -166,40 +181,6 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    const filenameToSave = selectedImage || uploadedFileName;
-
-    if (!filenameToSave) {
-      setError('Please select or upload an image before saving.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/updateCharacterizationDataGelFilename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: entryData.id, gel_filename: filenameToSave.split('/').pop() }),
-      });
-
-      if (response.ok) {
-        const updatedEntry = await response.json();
-        updateEntryData(updatedEntry);
-        setToastInfo({
-          show: true,
-          type: 'success',
-          message: 'Gel image updated successfully'
-        });
-        setView('choose');
-      } else {
-        console.error('Failed to update gel filename');
-        setError('Failed to save the selected image.');
-      }
-    } catch (error) {
-      console.error('Error saving gel filename:', error);
-      setError('An error occurred while saving the selected image.');
     }
   };
 
@@ -257,9 +238,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4">
                       <div className="relative group">
-                        <img 
+                        <Image 
                           src={initialImage} 
                           alt="Selected gel" 
+                          width={64}
+                          height={64}
                           className="h-16 w-16 object-cover rounded cursor-pointer"
                         />
                         <div 
@@ -286,16 +269,18 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                         {selectedImage?.split('/').pop()}
                       </span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        setInitialImage(null);
-                        setSelectedImage(null);
-                        updateEntryData({ ...entryData, gel_filename: null });
-                      }}
-                      className="text-red-600 hover:text-red-700 text-sm"
-                    >
-                      Remove
-                    </button>
+                    {!entryData.curated && (
+                      <button 
+                        onClick={() => {
+                          setInitialImage(null);
+                          setSelectedImage(null);
+                          updateEntryData({ ...entryData, gel_filename: null });
+                        }}
+                        className="text-red-600 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -303,9 +288,9 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => setView('upload')}
-                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
-                  hover:bg-blue-50/50 transition-all group text-left"
+                onClick={() => !entryData.curated && setView('upload')}
+                className={`p-6 border-2 border-dashed border-gray-200 rounded-xl transition-all group text-left ${entryData.curated ? 'cursor-not-allowed opacity-50' : 'hover:border-[#06B7DB] hover:bg-blue-50/50'}`}
+                disabled={entryData.curated}
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">
@@ -324,9 +309,9 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
               </button>
 
               <button
-                onClick={() => setView('select')}
-                className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-[#06B7DB] 
-                  hover:bg-blue-50/50 transition-all group text-left"
+                onClick={() => !entryData.curated && setView('select')}
+                className={`p-6 border-2 border-dashed border-gray-200 rounded-xl transition-all group text-left ${entryData.curated ? 'cursor-not-allowed opacity-50' : 'hover:border-[#06B7DB] hover:bg-blue-50/50'}`}
+                disabled={entryData.curated}
               >
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-lg bg-[#06B7DB]/10 text-[#06B7DB] group-hover:bg-[#06B7DB]/20">
@@ -401,9 +386,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                       >
                         <DeleteIcon className="h-5 w-5 text-gray-600" />
                       </button>
-                      <img 
+                      <Image 
                         src={preview} 
                         alt="Preview" 
+                        width={400}
+                        height={300}
                         className="w-full h-full object-contain rounded-lg"
                       />
                     </div>
@@ -469,9 +456,11 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <img 
+                        <Image 
                           src={image.url} 
-                          alt="" 
+                          alt="Gel thumbnail" 
+                          width={64}
+                          height={64}
                           className="h-16 w-16 object-cover rounded cursor-pointer" 
                           onClick={() => {
                             const filename = image.key.split('/').pop() || 'Image';
@@ -570,10 +559,13 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
           >
             {/* Image Preview */}
             <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-4 relative min-h-[300px]">
-              <img
+              <Image
                 src={previewImage.url}
                 alt="Gel Image Preview"
+                width={800}
+                height={600}
                 className="max-w-full max-h-[40vh] lg:max-h-[80vh] object-contain rounded-lg shadow-md"
+                priority
               />
             </div>
 

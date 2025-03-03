@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, Pagination } from "@nextui-org/react";
 import "../../../app/globals.css";
 import NavBar from '@/components/NavBar';
@@ -15,6 +15,17 @@ import { useRouter } from 'next/router';
 interface Institution {
   abbr: string;
   fullname: string;
+}
+
+// Add this interface near the top with the other interfaces
+interface ExpandedRows {
+  [key: string]: boolean;
+}
+
+// Add these new interfaces near the top of the file
+interface SortDescriptor {
+  column: string;
+  direction: "ascending" | "descending";
 }
 
 const capitalize = (str: string) => {
@@ -34,7 +45,7 @@ function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
-  const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
+  const [useRosettaNumbering, setUseRosettaNumbering] = useState(true);
   const [sequences, setSequences] = useState<any[]>([]);
   const [showNonCurated, setShowNonCurated] = useState(false); 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -65,6 +76,77 @@ const DataPage = () => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+  const { highlight } = router.query;
+
+  // Add this new state for tracking expanded rows
+  const [expandedRows, setExpandedRows] = useState<ExpandedRows>({});
+
+  // Add this to your state declarations at the top of the DataPage component
+  const [lastClickedRowId, setLastClickedRowId] = useState<string | null>(null);
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Add this new state for sorting
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "variant",
+    direction: "ascending"
+  });
+
+  // Add this useEffect to load the last clicked row from localStorage when the component mounts
+  useEffect(() => {
+    const savedLastClickedRow = localStorage.getItem('lastClickedBglBRow');
+    if (savedLastClickedRow) {
+      setLastClickedRowId(savedLastClickedRow);
+    }
+  }, []);
+
+  // Update the scrolling effect
+  useEffect(() => {
+    if (highlight && characterizationData.length > 0) {
+      // Find all rows that match the highlighted residue number
+      const matchingRows = characterizationData.filter(
+        item => item.resnum === parseInt(highlight as string)
+      );
+
+      if (matchingRows.length > 0) {
+        // Try to find either the grouped row or individual row
+        const resid = matchingRows[0].resid;
+        const resnum = matchingRows[0].resnum;
+        
+        // Try different possible row IDs
+        const possibleElements = [
+          document.getElementById(`row-${matchingRows[0].id}`), // Individual row
+          document.getElementById(`group-${resid}${resnum}`),   // Grouped row
+          document.querySelector(`[data-resnum="${resnum}"]`)   // Fallback using data attribute
+        ];
+
+        // Use the first element that exists
+        const element = possibleElements.find(el => el !== null);
+        
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('bg-blue-100');
+          setTimeout(() => {
+            element.classList.remove('bg-blue-100');
+          }, 2000);
+        }
+      }
+    }
+  }, [highlight, characterizationData]);
+
+  // Add this effect to clear highlights on page load/refresh
+  useEffect(() => {
+    // Clear any existing highlights
+    const highlightedElements = document.querySelectorAll('.bg-blue-100');
+    highlightedElements.forEach(element => {
+      element.classList.remove('bg-blue-100');
+    });
+
+    // Clear the last clicked row from localStorage
+    localStorage.removeItem('lastClickedBglBRow');
+    setLastClickedRowId(null);
+    setHighlightedRowId(null);
+  }, []); // Empty dependency array means this runs once on mount
 
   // Define your columns
   const columns = [
@@ -150,7 +232,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The catalytic rate constant, a.k.a. "turnover number".</p>
+              <p>The catalytic rate constant, a.k.a. &quot;turnover number&quot;.</p>
               <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
               <p>Click to sort by this column.</p>
             </div>
@@ -175,7 +257,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The specificity constant, a.k.a. "kinetic efficiency".</p>
+              <p>The specificity constant, a.k.a. &quot;kinetic efficiency&quot;.</p>
               <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
               <p>Click to sort by this column.</p>
             </div>
@@ -409,41 +491,70 @@ const DataPage = () => {
     }, 1000);
   };
 
-  const filteredData = characterizationData
-    .filter(data => 
-      data.curated || 
-      (showNonCurated && !data.curated && data.submitted_for_curation) 
-    )
-    .filter(data => !selectedInstitution || data.institution === selectedInstitution)
-    .filter(data => {
-      if (!searchTerm.trim()) return true;
-  
-      // Determine the correct number to use based on the useRosettaNumbering state
-      let numberToCompare = data.resnum.toString(); // Default to Rosetta numbering
-  
-      if (!useRosettaNumbering) {
-        // If Rosetta numbering is off, find the corresponding PDB number
-        const sequenceEntry = sequences.find(seq => seq.Rosetta_resnum === data.resnum);
-        if (sequenceEntry) {
-          numberToCompare = sequenceEntry.PDBresnum.toString();
+  // Modify the filteredData useMemo to include sorting
+  const filteredData = useMemo(() => {
+    let data = characterizationData
+      .filter(data => 
+        data.curated || 
+        (showNonCurated && !data.curated && data.submitted_for_curation)
+      )
+      .filter(data => !selectedInstitution || data.institution === selectedInstitution);
+
+    // Apply sorting if a column is selected
+    if (sortDescriptor.column) {
+      data = [...data].sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortDescriptor.column) {
+          case "variant":
+            // Sort by resnum
+            aValue = parseInt(a.resnum) || 0;
+            bValue = parseInt(b.resnum) || 0;
+            break;
+          case "yield":
+            aValue = a.yield_avg || 0;
+            bValue = b.yield_avg || 0;
+            break;
+          case "km":
+            aValue = a.KM_avg || 0;
+            bValue = b.KM_avg || 0;
+            break;
+          case "kcat":
+            aValue = a.kcat_avg || 0;
+            bValue = b.kcat_avg || 0;
+            break;
+          case "kcat_km":
+            aValue = a.kcat_over_KM || 0;
+            bValue = b.kcat_over_KM || 0;
+            break;
+          case "t50":
+            aValue = a.T50 || 0;
+            bValue = b.T50 || 0;
+            break;
+          case "tm":
+            aValue = a.Tm || 0;
+            bValue = b.Tm || 0;
+            break;
+          case "rosetta":
+            aValue = a.Rosetta_score || 0;
+            bValue = b.Rosetta_score || 0;
+            break;
+          default:
+            return 0;
         }
-      }
-      // Now compare the correct number with the search term
-      return numberToCompare.includes(searchTerm.trim());
-    })
-    .sort((a, b) => {
-      // Convert resnum to numbers for comparison, assuming they are stored as strings
-      const resnumA = a.resnum === 'X' ? -1 : parseInt(a.resnum, 10);
-      const resnumB = b.resnum === 'X' ? -1 : parseInt(b.resnum, 10);
-  
-      // First, sort by resnum in ascending order
-      if (resnumA !== resnumB) {
-        return resnumA - resnumB;
-      }
-  
-      // If resnum is the same, sort by resmut in ascending order
-      return a.resmut.localeCompare(b.resmut);
-    });
+
+        const compareResult = aValue - bValue;
+        return sortDescriptor.direction === "ascending" ? compareResult : -compareResult;
+      });
+    }
+
+    return data;
+  }, [
+    characterizationData,
+    showNonCurated,
+    selectedInstitution,
+    sortDescriptor // Add this dependency
+  ]);
 
     const getVariantDisplay = (resid: any, resnum: any, resmut: any) => {
       if (resid === 'X') {
@@ -471,33 +582,36 @@ const DataPage = () => {
       return `${data.resid}${data.resnum}${data.resmut}`;
     };
     
-    let displayData = []; // This will be the data we actually render. Needed for averaged/collapsed view
+    let displayData = [];
     if (expandData) {
-      displayData = filteredData; // Use the data as-is for expanded view
+      displayData = filteredData;
     } else {
-      const groupedData:any = {};
+      const groupedData: any = {};
       filteredData.forEach(data => {
         const key = getGroupKey(data);
         if (!groupedData[key]) {
-          groupedData[key] = []; 
+          groupedData[key] = [];
         }
         groupedData[key].push(data);
       });
-    
-      // NOTE: we are mutating the original data. So if you want to access NON NUMERICAL COLUMNS from here on out (like expressed, which is a boolean), define them here or it won't work 
-      displayData = Object.values(groupedData).map((group: any) => {
+
+      // Create display data with nested structure
+      Object.entries(groupedData).forEach(([key, group]: [string, any]) => {
         const averageRow: any = {
           resid: group[0].resid,
           resnum: group[0].resnum,
           resmut: group[0].resmut,
           isAggregate: group.length > 1,
-          count: group.length, 
-          expressed: group.some((item: any) => item.expressed)
+          count: group.length,
+          expressed: group.some((item: any) => item.expressed),
+          groupKey: key, // Add groupKey for tracking expansion
+          children: group // Store original rows as children
         };
-      
+
+        // Calculate averages as before
         const sums: any = {};
         const counts: any = {};
-      
+        
         group.forEach((item: any) => {
           Object.keys(item).forEach(key => {
             if (typeof item[key] === 'number') {
@@ -505,19 +619,27 @@ const DataPage = () => {
                 sums[key] = 0;
                 counts[key] = 0;
               }
-              if (item[key] !== null) { 
+              if (item[key] !== null) {
                 sums[key] += item[key];
                 counts[key]++;
               }
             }
           });
         });
-      
+
         Object.keys(sums).forEach(key => {
-          averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null; 
+          averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null;
         });
-      
-        return averageRow;
+
+        displayData.push(averageRow);
+        
+        // Add child rows if this group is expanded
+        if (expandedRows[key]) {
+          group.forEach((childRow: any) => {
+            childRow.isChild = true; // Mark as child row for styling
+            displayData.push(childRow);
+          });
+        }
       });
     }
 
@@ -614,6 +736,62 @@ const DataPage = () => {
     document.body.removeChild(link);
   };
 
+  // Modify the handleRowClick function
+  const handleRowClick = (row: any) => {
+    // Generate a unique identifier for the row
+    const rowId = row.isChild ? `child-${row.id}` : `${row.resid}${row.resnum}${row.resmut}`;
+    
+    // Save to both state and localStorage
+    setLastClickedRowId(rowId);
+    localStorage.setItem('lastClickedBglBRow', rowId);
+
+    if (expandData) {
+      // If in expanded view, open detail page in new tab
+      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+    } else if (row.isAggregate) {
+      // If it's an aggregate row, toggle expansion
+      setExpandedRows(prev => ({
+        ...prev,
+        [row.groupKey]: !prev[row.groupKey]
+      }));
+    } else {
+      // If it's any individual row (including child rows), open detail page in new tab
+      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+    }
+  };
+
+  // Update the handleSearch function
+  const handleSearch = () => {
+    if (!searchTerm) {
+      setSearchError("Please enter a search term");
+      return;
+    }
+
+    // Clear any previous search error
+    setSearchError(null);
+
+    // Find the first matching row
+    const matchingRow = characterizationData.find(item => {
+      const searchNum = parseInt(searchTerm);
+      return item.resnum === searchNum;
+    });
+
+    if (matchingRow) {
+      // Find and scroll to the matching row
+      const element = document.getElementById(`row-${matchingRow.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the row temporarily
+        element.classList.add('bg-blue-100');
+        setTimeout(() => {
+          element.classList.remove('bg-blue-100');
+        }, 2000);
+      }
+    } else {
+      setSearchError("No matching entries found");
+    }
+  };
+
   return (
     <ErrorChecker 
       isError={isError} 
@@ -627,6 +805,13 @@ const DataPage = () => {
           <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-md border border-gray-200 
             text-gray-600 px-3 py-1.5 rounded-lg shadow-sm z-50 animate-fade-in text-xs">
             Scrolling to {scrollDirection}
+          </div>
+        )}
+
+        {/* Error message display */}
+        {searchError && (
+          <div className="fixed top-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
+            {searchError}
           </div>
         )}
 
@@ -691,16 +876,26 @@ const DataPage = () => {
                         <div className="mb-6">
                           <h2 className="text-xl font-light mb-2">Color Key</h2>
                           
-                          <Link href="#" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
+                          <Link href="/about/bglb" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
                             View full BglB Sequence
                           </Link>
                           
                           {/* Color gradient bar */}
                           <div className="flex items-center gap-[2px] mb-2">
                             {[
-                              '#36929A', '#4A9DA4', '#5EA8AE', '#72B2B8', '#86BDC2', 
-                              '#9AC8CC', '#AAD3D6', '#C2DEE0', '#D7E9EB', '#EBF4F5',
-                              '#FAC498', '#F68932'
+                              '#36929A', // -4.75 and below
+                              '#4A9DA4', // -4.75 to -4.25
+                              '#5EA8AE', // -4.25 to -3.75
+                              '#72B2B8', // -3.75 to -3.25
+                              '#86BDC2', // -3.25 to -2.75
+                              '#9AC8CC', // -2.75 to -2.25
+                              '#AAD3D6', // -2.25 to -1.75
+                              '#C2DEE0', // -1.75 to -1.25
+                              '#D7E9EB', // -1.25 to -0.75
+                              '#EBF4F5', // -0.75 to -0.25
+                              '#FFFFFF', // -0.25 to 0.25 (neutral)
+                              '#FAC498', // 0.25 to 0.75
+                              '#F68932'  // 0.75 and above
                             ].map((color, index) => (
                               <div 
                                 key={index}
@@ -715,13 +910,13 @@ const DataPage = () => {
                           </div>
                           
                           {/* Scale numbers - Updated for better alignment */}
-                          <div className="relative w-full h-6 mb-2">
-                            {['-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5'].map((number, index) => (
+                          <div className="relative w-full h-6 mb-2 ml-1">
+                            {['-5', '-4', '-3', '-2', '-1', '0', '1'].map((number, index) => (
                               <div
                                 key={index}
                                 className="absolute transform -translate-x-1/2 text-xs"
                                 style={{
-                                  left: `${(index) * (100 / 10)}%`,
+                                  left: `${(index) * (100 / 6.4)}%`,
                                   top: 0
                                 }}
                               >
@@ -808,6 +1003,7 @@ const DataPage = () => {
                     {/* Left side - Search, controls, and total records */}
                     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
                       <Input
+                        type="text"
                         isClearable
                         classNames={{
                           base: "w-full sm:w-[200px] md:w-[300px]",
@@ -816,7 +1012,11 @@ const DataPage = () => {
                         size="sm"
                         value={searchTerm}
                         onClear={() => setSearchTerm("")}
-                        onValueChange={(value) => setSearchTerm(value)}
+                        onChange={(e) => {
+                          // This ensures only digits are typed
+                          const input = e.target as HTMLInputElement;
+                          setSearchTerm(input.value.replace(/\D/g, ""));
+                        }}
                         startContent={
                           <svg 
                             aria-hidden="true" 
@@ -835,6 +1035,14 @@ const DataPage = () => {
                           </svg>
                         }
                       />
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="ml-2"
+                        onClick={handleSearch}
+                      >
+                        GO
+                      </Button>
                       
                       {/* Controls container - two columns layout */}
                       <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
@@ -1056,16 +1264,24 @@ const DataPage = () => {
                     <Table
                       isHeaderSticky
                       aria-label="BglB Variant Characterization Data"
+                      sortDescriptor={sortDescriptor}
+                      onSortChange={(descriptor) => {
+                        setSortDescriptor(descriptor as SortDescriptor);
+                      }}
                       classNames={{
                         th: "text-default-500 bg-default-100/50 font-medium py-3 px-4",
-                        tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm  hover:rounded-lg", // Subtle hover effect
+                        tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm hover:rounded-lg",
                       }}
                     >
                       <TableHeader>
                         {columns
                           .filter(column => visibleColumns.has(column.uid))
                           .map(column => (
-                            <TableColumn key={column.uid}>
+                            <TableColumn 
+                              key={column.uid}
+                              allowsSorting={true}
+                              className="cursor-pointer"
+                            >
                               {column.renderHeader ? column.renderHeader() : column.name}
                             </TableColumn>
                           ))}
@@ -1073,13 +1289,22 @@ const DataPage = () => {
                       <TableBody items={paginatedData}>
                         {(data) => (
                           <TableRow 
-                            key={`${data.resid}${data.resnum}${data.resmut}`}
-                            className={expandData ? "cursor-pointer hover:bg-default-100/50" : ""}
-                            onClick={() => {
-                              if (expandData) {
-                                router.push(`/database/BglB_characterization/${data.id}`);
+                            key={data.isChild ? `child-${data.id}` : expandData ? `row-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                            id={data.isAggregate ? `group-${data.resid}${data.resnum}` : `row-${data.id}`}
+                            data-resnum={data.resnum}
+                            className={`
+                              ${data.isChild ? "bg-default-50" : ""}
+                              ${(!data.isAggregate || data.isChild) ? "cursor-pointer hover:bg-default-100/50" : ""}
+                              ${(data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`) === lastClickedRowId 
+                                ? "bg-[#06B7DB]/10 hover:bg-[#06B7DB]/20" 
+                                : ""
                               }
-                            }}
+                              ${highlightedRowId === (data.isChild ? `child-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`) 
+                                ? "bg-yellow-200" 
+                                : ""
+                              }
+                            `}
+                            onClick={() => handleRowClick(data)}
                           >
                             {columns
                               .filter(column => visibleColumns.has(column.uid))
@@ -1089,21 +1314,26 @@ const DataPage = () => {
                                   case "variant":
                                     cell = (
                                       <TableCell key={column.uid}>
-                                        <span className={expandData ? "text-[#06B7DB]" : ""}>
-                                          {getVariantDisplay(data.resid, data.resnum, data.resmut)}
-                                        </span>
-                                        {data.isAggregate && (
-                                          <span 
-                                            title={`Average of ${data.count} separate experiments. Click to expand`} 
-                                            className="inline-flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer ml-1" 
-                                            onClick={(e) => {
-                                              e.stopPropagation(); // Prevent row click
-                                              setExpandData(true);
-                                            }}
-                                          >
-                                            <HiChevronRight className="w-4 h-4 -ml-1 translate-y-[1px]" />
+                                        <div className={`
+                                          flex items-center gap-2
+                                          ${data.isChild ? "pl-8" : ""} // Add indent for child rows
+                                        `}>
+                                          {data.isAggregate && (
+                                            <HiChevronRight 
+                                              className={`w-4 h-4 transition-transform ${
+                                                expandedRows[data.groupKey] ? "rotate-90" : ""
+                                              }`}
+                                            />
+                                          )}
+                                          <span className={(!data.isAggregate || data.isChild) ? "text-[#06B7DB]" : ""}>
+                                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
                                           </span>
-                                        )}
+                                          {data.isAggregate && (
+                                            <span className="text-gray-500 text-sm">
+                                              ({data.count})
+                                            </span>
+                                          )}
+                                        </div>
                                       </TableCell>
                                     );
                                     break;
@@ -1111,7 +1341,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{ 
-                                          backgroundColor: data.expressed ? '#D1D5DB' : '#D1D5DB',
+                                          backgroundColor: data.expressed ? '#D1D5DB' : '#FFFFFF',
                                           color: data.expressed ? '#000000' : '#000000',
                                           borderRadius: '4px',
                                           padding: '1px 6px',

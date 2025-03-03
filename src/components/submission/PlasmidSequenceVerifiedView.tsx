@@ -102,6 +102,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: entryData.id,
+          plasmid_verified: true,
           ab1_filename: newFileName,
         }),
       });
@@ -286,7 +287,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
           <button 
             onClick={updatePlasmid}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!plasmidFile || isSubmitting}
+            disabled={!plasmidFile || isSubmitting || entryData.curated}
           >
             {isSubmitting ? (
               <>

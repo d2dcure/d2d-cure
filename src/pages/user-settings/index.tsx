@@ -82,7 +82,7 @@ const ProfileSettings = () => {
                           <div className="w-full space-y-3">
                             <div>
                               <p className="text-gray-500 text-sm">Username</p>
-                              <p className="text-black">{user?.username || 'Username'}</p>
+                              <p className="text-black">{user?.user_name || 'Username'}</p>
                             </div>
 
                             <div>
@@ -130,8 +130,9 @@ const ProfileSettings = () => {
                             type="text"
                             radius="sm"
                             placeholder="Your Username"
-                            value={user?.username || ''}
+                            value={user?.user_name || ''}
                             className="w-full"
+                            isDisabled
                           />
                         </div>
                         <div>
@@ -140,8 +141,9 @@ const ProfileSettings = () => {
                             type="text"
                             radius="sm"
                             placeholder="Your Full Name"
-                            value={user?.user_name || ''}
+                            value={user?.given_name || ''}
                             className="w-full"
+                            isDisabled
                           />
                         </div>
                         <div>
@@ -167,22 +169,6 @@ const ProfileSettings = () => {
                           />
                         </div>
                       </div>
-
-                      
-                      <div className="flex justify-end space-x-2">
-                            <Button 
-                              variant="bordered"
-                              className="border-[#06B7DB] text-[#06B7DB]"
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              type="submit"
-                              className="bg-[#06B7DB] text-white"
-                            >
-                              Update Profile
-                            </Button>
-                          </div>
                     </form>
                   </CardBody>
                 </Card>

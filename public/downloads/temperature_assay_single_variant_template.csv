@@ -1,0 +1,13 @@
+,,slopes of absorbance at  ,,,,Date Purified,Date Assayed
+,,420 nm over time,,(1/min),,,
+T (°C),Row,Column,,,,,
+,,1st,2nd,3rd,,,
+50.0,A,,,,,1. Record the dates of purification and analysis above.  ,
+48.3,B,,,,,2. Supply six more temperatures in the range between 30 °C and 50 °C.,
+45.7,C,,,,,3. Enter the slopes for each well in the correct row and column above.,
+42.4,D,,,,,4. Select the units used by your instrument for slope from the dropdown.,
+37.7,E,,,,,5. Be sure to save the file as a .CSV file.,
+33.6,F,,,,,6. Ensure that Excel saved cells with scientific notation as numbers, not zeros.,
+31.3,G,,,,,,
+30.0,H,,,,,,
+,,,,,,,

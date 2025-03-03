@@ -33,7 +33,7 @@ const LogoutSuccessNotification = () => {
         clearTimeout(hideTimer);
       };
     }
-  }, [router.query.justLoggedOut]);
+  }, [router.query.justLoggedOut, router]);
 
   const handleClose = () => {
     setShowSuccessNotif(false);

@@ -1,23 +1,18 @@
-﻿import { PrismaClient } from './prisma/generated/client_proteins';
+﻿// prismaProteinsClient.ts
+import { PrismaClient } from './prisma/generated/client_proteins';
 
-const prismaProteins = new PrismaClient();
+const prismaProteinsClientSingleton = () => new PrismaClient();
+
+type PrismaProteinsClientSingleton = ReturnType<typeof prismaProteinsClientSingleton>;
+
+const globalForPrismaProteins = globalThis as unknown as {
+  prismaProteins: PrismaProteinsClientSingleton | undefined;
+};
+
+const prismaProteins = globalForPrismaProteins.prismaProteins ?? prismaProteinsClientSingleton();
 
 export default prismaProteins;
 
-
-// import { PrismaClient } from './prisma/generated/client_proteins'
-
-// declare global {
-//     var prismaProteins: any;
-//   }
-
-// if (process.env.NODE_ENV === 'production') {
-//   prismaProteins = new PrismaClient();
-// } else {
-//   if (!global.prismaProteins) {
-//     global.prismaProteins = new PrismaClient();
-//   }
-//   prismaProteins = global.prismaProteins;
-// }
-
-// export default prismaProteins;
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrismaProteins.prismaProteins = prismaProteins;
+}

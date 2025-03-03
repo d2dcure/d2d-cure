@@ -8,6 +8,8 @@ import "../app/globals.css";
 import LoginSuccessNotification from '@/components/LoginSuccessNotification';
 import LogoutSuccessNotification from '@/components/LogoutSuccessNotification';
 import { useRouter } from 'next/router';
+import '@/styles/nprogress.css';
+import { LoadingBar } from '@/components/LoadingBar';
 
 const FlowbiteInit = dynamic(
   () => import('@/components/FlowbiteInit'),
@@ -28,6 +30,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <AuthStateListener />
       <LoginSuccessNotification />
       <LogoutSuccessNotification />
+      <LoadingBar />
       <Component {...pageProps} />
       <FlowbiteInit />
     </UserProvider>

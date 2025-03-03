@@ -5,7 +5,7 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { parent_id, T50, T50_SD, T50_k, T50_k_SD } = req.body;
+  const { parent_id, T50, T50_SD, T50_k, T50_k_SD, temp_raw_data_id } = req.body;
 
   try {
     const updatedCharacterizationData = await prismaProteins.characterizationData.update({
@@ -15,6 +15,7 @@ export default async function handler(req: any, res: any) {
         T50_SD: T50_SD,
         T50_k: T50_k,
         T50_k_SD: T50_k_SD,
+        temp_raw_data_id: temp_raw_data_id,
       },
     });
 

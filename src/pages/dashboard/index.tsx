@@ -32,6 +32,7 @@ interface GelImage {
   institution: string;
   userName: string;
   fileDate: string;
+  variant: string;
 }
 
 const Dashboard = () => {
@@ -118,57 +119,47 @@ const Dashboard = () => {
 
           const batchPromises = batch.map(async (file) => {
             try {
-              const cacheKey = `metadata-${file.Key}`;
-              const cachedMetadata = sessionStorage.getItem(cacheKey);
+              // Get just the filename without the 'gel-images/' prefix and file extension
+              const filename = file.Key.split('/').pop()?.split('.')[0] || '';
               
-              let metadata;
-              if (cachedMetadata) {
-                metadata = JSON.parse(cachedMetadata);
-              } else {
-                metadata = await s3.headObject({
-                  Bucket: params.Bucket,
-                  Key: file.Key
-                }).promise();
-                sessionStorage.setItem(cacheKey, JSON.stringify(metadata));
-              }
-              
-              const pathParts = file.Key.split('/');
-              const formattedFilename = pathParts[pathParts.length - 2];
-              const [institution, userName, ...dateParts] = formattedFilename.split('-');
-              const fileDate = dateParts.join('-').split('.')[0];
-              
-              // Only return the image if it belongs to the current user
-              if (userName === user?.user_name) {
-                return {
-                  key: file.Key,
-                  url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                  filename: formattedFilename,
-                  institution: institution || 'Unknown',
-                  userName: userName || 'Unknown',
-                  fileDate: fileDate || 'Unknown'
-                };
+              // Parse filename parts: institution-variant-username-date
+              const parts = filename.split('-');
+              if (parts.length >= 4) {  // Ensure we have all parts
+                const [institution, variant, userName, date] = parts;
+
+                // Only return images where userName matches current user
+                if (userName === user?.user_name) {
+                  return {
+                    key: file.Key,
+                    url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
+                    filename: filename + file.Key.split('.').pop(),  // Add back file extension
+                    institution,
+                    userName,
+                    fileDate: date,
+                    variant
+                  };
+                }
               }
               return null;
             } catch (err) {
-              console.error(`Error fetching metadata for ${file.Key}:`, err);
+              console.error(`Error processing file ${file.Key}:`, err);
               return null;
             }
           });
 
           const batchResults = await Promise.all(batchPromises);
           processedImages.push(...batchResults.filter((img): img is GelImage => img !== null));
-          
-          if (processedImages.length > 0) {
-            const sortedImages = [...processedImages].sort((a, b) => 
-              new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime()
-            );
-            setGelImages(sortedImages);
-          }
         }
+
+        // Sort by date, newest first
+        const sortedImages = [...processedImages].sort((a, b) => 
+          new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime()
+        );
+        setGelImages(sortedImages);
       }
     } catch (err) {
       console.error('Error fetching gel images:', err);
-      showToast('Failed to fetch gel images', 'Please try again later');
+      showToast('Error', 'Failed to fetch gel images', 'error');
     }
   };
 
@@ -433,9 +424,11 @@ const Dashboard = () => {
                               status={
                                 data.curated 
                                   ? 'approved'
-                                  : data.submitted_for_curation 
-                                    ? 'pending_approval'
-                                    : 'in_progress'
+                                  : data.approved_by_pi
+                                    ? 'pi_approved'
+                                    : data.submitted_for_curation 
+                                      ? 'pending_approval'
+                                      : 'in_progress'
                               } 
                             />
                           </TableCell>
@@ -460,7 +453,7 @@ const Dashboard = () => {
               {/* Gel Image Uploads Table */}
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
+                  <h3 className="text-xl text-gray-500">My Gel Image Uploads</h3>
                   <div className="flex gap-2">
                     <Link href="/submit/gel_image_upload/all" passHref>
                       <Button variant="bordered" className="border-[#06B7DB] text-[#06B7DB]">
@@ -477,13 +470,11 @@ const Dashboard = () => {
                     aria-label="Gel Image Uploads Loading"
                     classNames={{
                       base: "max-h-[400px]",
-                      table: "min-h-[100px]",
                       wrapper: "max-h-[400px]"
                     }}
                   >
                     <TableHeader>
                       <TableColumn>PREVIEW</TableColumn>
-                      <TableColumn>DATE</TableColumn>
                       <TableColumn>FILENAME</TableColumn>
                       <TableColumn>INSTITUTION</TableColumn>
                       <TableColumn>Actions</TableColumn>
@@ -491,19 +482,16 @@ const Dashboard = () => {
                     <TableBody>
                       <TableRow>
                         <TableCell>
-                          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                          <Spinner size="sm" />
                         </TableCell>
                         <TableCell>
-                          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                          <Spinner size="sm" />
                         </TableCell>
                         <TableCell>
-                          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                          <Spinner size="sm" />
                         </TableCell>
                         <TableCell>
-                          <div className="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                          <Spinner size="sm" />
                         </TableCell>
                       </TableRow>
                     </TableBody>
@@ -543,29 +531,26 @@ const Dashboard = () => {
                     aria-label="Gel Image Uploads"
                     classNames={{
                       base: "max-h-[400px]",
-                      table: "min-h-[100px]",
                       wrapper: "max-h-[400px]"
                     }}
                   >
                     <TableHeader>
                       <TableColumn>PREVIEW</TableColumn>
-                      <TableColumn>DATE</TableColumn>
                       <TableColumn>FILENAME</TableColumn>
                       <TableColumn>INSTITUTION</TableColumn>
                       <TableColumn>Actions</TableColumn>
                     </TableHeader>
                     <TableBody>
                       {gelImages.map((image, index) => (
-                        <TableRow key={index}>
+                        <TableRow key={image.key}>
                           <TableCell>
                             <img
                               src={image.url}
                               alt={`Gel Image ${index + 1}`}
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-12 h-12 object-cover rounded-lg"
                             />
                           </TableCell>
-                          <TableCell>{image.fileDate}</TableCell>
-                          <TableCell>{image.filename}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{image.filename}</TableCell>
                           <TableCell>{image.institution}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -821,14 +806,21 @@ const Dashboard = () => {
                   </div>
 
                   <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                    <label className="text-sm font-medium text-gray-600">Date</label>
-                    <p className="font-medium mt-1 text-gray-800">{selectedImageData.fileDate}</p>
+                    <label className="text-sm font-medium text-gray-600">Variant</label>
+                    <p className="font-medium mt-1 text-gray-800">{selectedImageData.variant}</p>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                  <label className="text-sm font-medium text-gray-600">Uploaded By</label>
-                  <p className="font-medium mt-1 text-gray-800">{selectedImageData.userName}</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                    <label className="text-sm font-medium text-gray-600">Date</label>
+                    <p className="font-medium mt-1 text-gray-800">{selectedImageData.fileDate}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                    <label className="text-sm font-medium text-gray-600">Uploaded By</label>
+                    <p className="font-medium mt-1 text-gray-800">{selectedImageData.userName}</p>
+                  </div>
                 </div>
 
                 <div className="pt-4 space-y-3">

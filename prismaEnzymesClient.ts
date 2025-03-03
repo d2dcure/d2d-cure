@@ -1,22 +1,18 @@
-﻿import { PrismaClient } from './prisma/generated/client_enzymes';
+﻿// prismaEnzymesClient.ts
+import { PrismaClient } from './prisma/generated/client_enzymes';
 
-const prismaEnzymes = new PrismaClient();
+const prismaEnzymesClientSingleton = () => new PrismaClient();
+
+type PrismaEnzymesClientSingleton = ReturnType<typeof prismaEnzymesClientSingleton>;
+
+const globalForPrismaEnzymes = globalThis as unknown as {
+  prismaEnzymes: PrismaEnzymesClientSingleton | undefined;
+};
+
+const prismaEnzymes = globalForPrismaEnzymes.prismaEnzymes ?? prismaEnzymesClientSingleton();
 
 export default prismaEnzymes;
 
-// import { PrismaClient } from './prisma/generated/client_enzymes'
-
-// declare global {
-//     var prismaEnzymes: any;
-//   }
-
-// if (process.env.NODE_ENV === 'production') {
-//   prismaEnzymes = new PrismaClient();
-// } else {
-//   if (!global.prismaEnzymes) {
-//     global.prismaEnzymes = new PrismaClient();
-//   }
-//   prismaEnzymes = global.prismaEnzymes;
-// }
-
-// export default prismaEnzymes;
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrismaEnzymes.prismaEnzymes = prismaEnzymes;
+}

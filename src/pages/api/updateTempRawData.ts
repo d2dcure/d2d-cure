@@ -72,7 +72,7 @@ export default async function handler(req:any, res:any) {
       });
     }
 
-    res.status(200).json({ message: 'TempRawData updated successfully' });
+    res.status(200).json({ message: 'TempRawData updated successfully', tempRawDataId: tempRawData.id });
   } catch (error) {
     console.error('Error updating TempRawData:', error);
     res.status(500).json({ error: 'Failed to update TempRawData', details: error });

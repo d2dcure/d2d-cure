@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
@@ -8,6 +8,7 @@ import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
+import Image from 'next/image';
 
 interface KineticAssayDataViewProps {
   entryData: any;
@@ -49,6 +50,46 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   const [approvedByStudent, setApprovedByStudent] = useState(false);
 
+  // Add these state variables at the top with other states
+  const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
+
+  const fetchAndProcessCSV = useCallback(async (filename: string) => {
+    try {
+      const params = {
+        Bucket: 'd2dcurebucket',
+        Key: `kinetic_assays/raw/${filename}`,
+        Expires: 60,
+      };
+
+      const url = await s3.getSignedUrlPromise('getObject', params);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const csvFile = new File([blob], filename, { type: 'text/csv' });
+
+      setFile(csvFile);
+
+      const fileContent = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsText(csvFile);
+      });
+
+      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+      const sanitizedData = processData(parsedData);
+      setKineticAssayData(sanitizedData);
+      await generateGraphFromFile(sanitizedData);
+
+    } catch (error) {
+      console.error('Error fetching and processing CSV file from S3:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (entryData.kinetic_raw_data_filename) {
+      fetchAndProcessCSV(entryData.kinetic_raw_data_filename);
+    }
+  }, [entryData.kinetic_raw_data_filename, fetchAndProcessCSV]);
+
   useEffect(() => {
     const fetchKineticRawDataEntryData = async () => {
       try {
@@ -73,41 +114,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     if (entryData.id) {
       fetchKineticRawDataEntryData();
     }
-  }, [entryData.id]);
-
-  const fetchAndProcessCSV = async (filename: string) => {
-    try {
-      // Generate signed URL using AWS SDK
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `kinetic_assays/raw/${filename}`,
-        Expires: 60, // URL expires in 60 seconds
-      };
-
-      const url = await s3.getSignedUrlPromise('getObject', params);
-
-      // Fetch the CSV file using the signed URL
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const csvFile = new File([blob], filename, { type: 'text/csv' });
-
-      setFile(csvFile);
-
-      // Parse the CSV file
-      Papa.parse(csvFile, {
-        complete: (result) => {
-          console.log('Parsed Result:', result);
-          setKineticAssayData(result.data as any[][]);
-        },
-        header: false,
-      });
-
-      // Generate graphs from the file
-      await generateGraphFromFile(csvFile);
-    } catch (error) {
-      console.error('Error fetching and processing CSV file from S3:', error);
-    }
-  };
+  }, [entryData.id, fetchAndProcessCSV]);
 
   const downloadCsvFile = async () => {
     if (!file) return;
@@ -134,37 +141,105 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
   };
 
+  const detectOutliersMAD = (rowData: string[]) => {
+    // Filter out empty/null values and convert to numbers
+    const validNumbers = rowData
+      .map(cell => parseFloat(cell))
+      .filter(num => !isNaN(num));
+
+    if (validNumbers.length === 0) return rowData;
+
+    // Calculate mean and standard deviation
+    const mean = validNumbers.reduce((a, b) => a + b, 0) / validNumbers.length;
+    const sd = Math.sqrt(validNumbers.reduce((sq, n) => sq + Math.pow(n - mean, 2), 0) / (validNumbers.length - 1));
+    const relativeSD = (sd / mean) * 100; // as percentage
+
+    // Only check for outliers if relative SD is above threshold (e.g. 20%)
+    const PRECISION_THRESHOLD = 20;
+    if (relativeSD <= PRECISION_THRESHOLD) {
+      return rowData;
+    }
+
+    // Calculate median and MAD
+    const sortedNums = [...validNumbers].sort((a, b) => a - b);
+    const median = sortedNums[Math.floor(sortedNums.length / 2)];
+    const absoluteDeviations = validNumbers.map(num => Math.abs(num - median));
+    const sortedDeviations = [...absoluteDeviations].sort((a, b) => a - b);
+    const mad = sortedDeviations[Math.floor(sortedDeviations.length / 2)];
+
+    // Check each value against MAD threshold
+    return rowData.map(cell => {
+      const value = parseFloat(cell);
+      if (isNaN(value)) return cell;
+      
+      if (value < (median - 3 * mad) || value > (median + 3 * mad)) {
+        return ''; // Remove outlier
+      }
+      return cell;
+    });
+  };
+
   const handleFile = async (file: File) => {
     if (file) {
       const fileType = file.name.split('.').pop()?.toLowerCase();
       if (fileType !== 'csv') {
         setFileError('Only .csv files are allowed');
         setFile(null);
-      } else if (file.size > 500000) { // 500kB
+      } else if (file.size > 500000) {
         setFileError('File must be smaller than 500 kB');
         setFile(null);
       } else {
         setFileError('');
         setFile(file);
 
-        // Wait for Papa parse to complete before generating graph
-        await new Promise<void>((resolve) => {
-          Papa.parse(file, {
-            complete: (result) => {
-              console.log('Parsed Result:', result);
-              setKineticAssayData(result.data as any[][]);
-              resolve();
-            },
-            header: false,
-          });
-        });
-
-        // Generate graph immediately after parsing
         try {
-          await generateGraphFromFile(file);
+          const fileContent = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsText(file);
+          });
+
+          const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+          
+          // Add this section to update the experiment details immediately
+          setKineticRawDataEntryData({
+            yield: parsedData[2]?.[6],         // G3
+            yield_units: parsedData[1]?.[6],   // G2
+            dilution: parsedData[2]?.[7],      // H3
+            purification_date: parsedData[2]?.[8],  // I3
+            assay_date: parsedData[2]?.[9],    // J3
+            user_name: user.user_name,
+            updated: new Date().toISOString(),
+          });
+
+          // Use processData instead of direct sanitization
+          const sanitizedData = processData(parsedData);
+          setKineticAssayData(sanitizedData);
+
+          // Generate graph with sanitized data
+          const sanitizedCsv = Papa.unparse(sanitizedData);
+          const sanitizedFile = new File([sanitizedCsv], file.name, { type: 'text/csv' });
+          
+          const formData = new FormData();
+          formData.append('file', sanitizedFile);
+          formData.append(
+            'variant-name',
+            `${entryData.resid}${entryData.resnum}${entryData.resmut}`
+          );
+
+          const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true,
+          });
+
+          const responseData = response.data;
+          setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
+          setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
+          setKineticConstants(responseData);
+
         } catch (error) {
-          console.error('Error generating graphs:', error);
-          setFileError('Failed to generate graphs from file');
+          console.error('Error processing file:', error);
+          setFileError('Failed to process file');
         }
       }
     }
@@ -189,9 +264,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     if (file) handleFile(file);
   };
 
-  const generateGraphFromFile = async (selectedFile: File) => {
+  const generateGraphFromFile = async (sanitizedData: any[][]) => {
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    const sanitizedCsv = Papa.unparse(sanitizedData);
+    const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
+
+    formData.append('file', sanitizedFile);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -206,7 +284,6 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const responseData = response.data;
       setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
       setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
-
       setKineticConstants({
         kcat: responseData.kcat,
         kcat_SD: responseData.kcat_SD,
@@ -216,15 +293,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         kcat_over_KM_SD: responseData.kcat_over_KM_SD,
       });
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error generating graphs:', error);
+      throw error;
     }
   };
 
   const generateGraphFromTable = async () => {
-    // Convert the kineticAssayData back to CSV
-    const csvContent = Papa.unparse(kineticAssayData);
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const editedFile = new File([blob], 'edited_data.csv', { type: 'text/csv' });
+    const sanitizedData = processData(kineticAssayData);
+    setKineticAssayData(sanitizedData);
+
+    const csvContent = Papa.unparse(sanitizedData);
+    const editedFile = new File([csvContent], 'edited_data.csv', { type: 'text/csv' });
 
     const formData = new FormData();
     formData.append('file', editedFile);
@@ -236,21 +315,13 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     try {
       const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true, // fix
+        withCredentials: true,
       });
 
       const responseData = response.data;
       setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
       setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
-
-      setKineticConstants({
-        kcat: responseData.kcat,
-        kcat_SD: responseData.kcat_SD,
-        KM: responseData.KM,
-        KM_SD: responseData.KM_SD,
-        kcat_over_KM: responseData.kcat_over_KM,
-        kcat_over_KM_SD: responseData.kcat_over_KM_SD,
-      });
+      setKineticConstants(responseData);
     } catch (error) {
       console.error('Error generating graph from table data:', error);
     }
@@ -326,17 +397,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const mentenPlotFilename = generateFilename('', '', 'png');
       const lineweaverPlotFilename = generateFilename('', '-LB', 'png');
 
-      // Upload CSV file to S3
-      let csvFileToUpload;
-      if (file) {
-        // If the user uploaded a file, use it
-        csvFileToUpload = new File([file], csvFilename, { type: 'text/csv' });
-      } else {
-        // If the user edited the table, create a new CSV file from the table data
-        const csvContent = Papa.unparse(kineticAssayData);
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        csvFileToUpload = new File([blob], csvFilename, { type: 'text/csv' });
-      }
+      // Always create CSV from current table data
+      const csvContent = Papa.unparse(kineticAssayData);
+      const csvFileToUpload = new File([new Blob([csvContent])], csvFilename, { type: 'text/csv' });
 
       // Upload CSV to S3
       await s3
@@ -431,6 +494,138 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const updatedData = [...kineticAssayData];
     updatedData[rowIndex][colIndex] = event.target.value;
     setKineticAssayData(updatedData);
+  };
+
+  // Modify the data processing to track sanitization
+  const processData = (data: unknown) => {
+    let messages: string[] = [];
+    
+    if (!Array.isArray(data)) {
+      console.error('Invalid data format');
+      return [];
+    }
+    
+    const typedData = data as any[][];
+    
+    // Check for empty rows
+    let hasEmptyRows = false;
+    for (let rowIndex = 4; rowIndex <= 11; rowIndex++) {
+      const row = typedData[rowIndex];
+      if (!row || 
+          ((!row[2] || row[2] === '') && 
+           (!row[3] || row[3] === '') && 
+           (!row[4] || row[4] === ''))) {
+        hasEmptyRows = true;
+        break;
+      }
+    }
+    
+    if (hasEmptyRows) {
+      messages.push("Warning: Data is missing at least one entire row. Please ensure all required data is included.");
+    }
+
+    // Handle negatives
+    let hasNegatives = false;
+    const noNegativesData = typedData.map((row: any[], rowIndex: number) => {
+      if (rowIndex >= 4 && rowIndex <= 11) {
+        return row.map((cell: any, colIndex: number) => {
+          if (colIndex >= 2 && colIndex <= 4) {
+            const value = parseFloat(cell);
+            if (!isNaN(value) && value < 0) {
+              hasNegatives = true;
+              if (cell.includes('E') || cell.includes('e')) {
+                return '0.00E+00';
+              }
+              return '0';
+            }
+            return cell;
+          }
+          return cell;
+        });
+      }
+      return row;
+    });
+
+    if (hasNegatives) {
+      messages.push("Negative values were detected and converted to zero");
+    }
+
+    // Process outliers
+    let hasOutliers = false;
+    const sanitizedData = noNegativesData.map((row: any[], rowIndex: number) => {
+      if (rowIndex >= 4 && rowIndex <= 11) {
+        const rowValues = [row[2], row[3], row[4]];
+        const processedValues = detectOutliersMAD(rowValues);
+        // Check if any values were removed (converted to empty string)
+        if (processedValues.some((val, idx) => val === '' && rowValues[idx] !== '')) {
+          hasOutliers = true;
+        }
+        return [
+          ...row.slice(0, 2),
+          ...processedValues,
+          ...row.slice(5)
+        ];
+      }
+      return row;
+    });
+
+    if (hasOutliers) {
+      messages.push("Outliers were detected and removed using the MAD method");
+    }
+
+    // Check for precision issues and impossible rates
+    let previousRowAvg = Infinity;
+    let previousRowSD = 0;
+    
+    for (let rowIndex = 4; rowIndex <= 11; rowIndex++) {
+      const rowValues = sanitizedData[rowIndex].slice(2, 5)
+        .map(val => {
+          const num = parseFloat(val);
+          return isNaN(num) ? null : num;
+        })
+        .filter((val): val is number => val !== null && val !== undefined);
+        
+      if (rowValues.length > 0) {
+        // Calculate statistics
+        const rowAvg = rowValues.reduce((a, b) => a + b, 0) / rowValues.length;
+        const rowSD = Math.sqrt(
+          rowValues.reduce((sq, n) => sq + Math.pow(n - rowAvg, 2), 0) / 
+          (rowValues.length - 1)
+        );
+        const rowRelSD = (rowSD / rowAvg) * 100;
+
+        // Check precision
+        if (rowRelSD > 20) { // Using 20 as the precision threshold
+          messages.push(
+            `Warning: Row ${['A','B','C','D','E','F','G','H'][rowIndex-4]} has poor precision ` +
+            `(relative SD: ${rowRelSD.toFixed(1)}%)`
+          );
+        }
+
+        // Check for impossible rates (higher rates at lower concentrations)
+        if (rowAvg - rowSD > previousRowAvg + previousRowSD && previousRowAvg !== Infinity) {
+          messages.push(
+            `Error: Row ${['A','B','C','D','E','F','G','H'][rowIndex-4]} shows higher activity than the previous row, ` +
+            `which is physically impossible. This may be due to noise in the measurements.`
+          );
+        }
+
+        previousRowAvg = rowAvg;
+        previousRowSD = rowSD;
+      }
+    }
+
+    setSanitizationMessages(messages);
+    return sanitizedData;
+  };
+
+  // Add this function to handle base64 images
+  const getImageUrl = (base64String: string) => {
+    if (!base64String) return '';
+    if (base64String.startsWith('data:image')) {
+      return base64String;
+    }
+    return `data:image/png;base64,${base64String}`;
   };
 
   return (
@@ -597,10 +792,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     </button>
                   </div>
                   {mentenImageUrl ? (
-                    <img 
-                      src={mentenImageUrl} 
-                      alt="Michaelis-Menten Plot" 
-                      className="w-full h-[300px] object-contain rounded-lg border border-gray-200"
+                    <Image 
+                      src={getImageUrl(mentenImageUrl)}
+                      alt="Michaelis-Menten Plot"
+                      width={400}
+                      height={300}
+                      className="w-full h-auto"
                     />
                   ) : (
                     <div className="w-full h-[300px] bg-gray-200 rounded-lg animate-pulse" />
@@ -612,10 +809,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     <div className="w-[76px]"></div>
                   </div>
                   {lineweaverImageUrl ? (
-                    <img 
-                      src={lineweaverImageUrl} 
-                      alt="Lineweaver-Burk Plot" 
-                      className="w-full h-[300px] object-contain rounded-lg border border-gray-200"
+                    <Image 
+                      src={getImageUrl(lineweaverImageUrl)}
+                      alt="Lineweaver-Burk Plot"
+                      width={400}
+                      height={300}
+                      className="w-full h-auto"
                     />
                   ) : (
                     <div className="w-full h-[300px] bg-gray-200 rounded-lg animate-pulse" />
@@ -625,6 +824,31 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Raw Data</h3>
+                
+                {sanitizationMessages.length > 0 && (
+                  <div className="mb-4 space-y-2">
+                    {sanitizationMessages.map((message, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center p-4 rounded-lg bg-blue-50 border border-blue-200"
+                      >
+                        <svg
+                          className="w-5 h-5 text-blue-500 mr-3"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm text-blue-700">{message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <Table 
                   aria-label="Kinetic assay data table"
                   classNames={{
@@ -750,7 +974,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
             <div className="flex items-center gap-2 mb-4">
               <Checkbox
-                isSelected={approvedByStudent}
+                isSelected={kineticRawDataEntryData?.approved_by_student}
                 onValueChange={setApprovedByStudent}
                 size="sm"
               >
@@ -768,7 +992,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         <button 
           onClick={handleSave}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!kineticAssayData.length || isSubmitting}
+          disabled={!kineticAssayData.length || isSubmitting || entryData.curated}
         >
           {isSubmitting ? (
             <>
@@ -825,7 +1049,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
             <CardFooter>
               <Button 
                 variant="bordered" 
-                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
+                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.csv'} 
                 className="w-full h-11 font-regular border-2 hover:bg-[#06B7DB] group transition-all"
                 style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
               >

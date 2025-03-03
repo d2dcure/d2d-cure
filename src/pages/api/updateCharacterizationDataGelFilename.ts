@@ -5,10 +5,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const { id, gel_filename } = req.body;
 
-    if (!id || !gel_filename) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-
     try {
       // Update the gel_filename in CharacterizationData table
       const updatedEntry = await prismaProteins.characterizationData.update({

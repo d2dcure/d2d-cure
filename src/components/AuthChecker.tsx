@@ -107,7 +107,7 @@ export const AuthChecker = (
                 clearTimeout(loadingTimer);
             };
         }
-    }, [loading, showLoading]);
+    }, [loading, showLoading, loadingMessages.length]);
 
     useEffect(() => {
         if (user && !loading && !showLoading) {
