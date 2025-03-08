@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
-import s3 from '../../../s3config'; 
-import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
-import { Checkbox } from "@nextui-org/checkbox";
+import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
+import { Button } from '@nextui-org/button';
+import { Checkbox } from '@nextui-org/checkbox';
 import Image from 'next/image';
 
 interface ThermoAssayDataViewProps {
@@ -14,7 +13,11 @@ interface ThermoAssayDataViewProps {
   updateEntryData: (newData: any) => void;
 }
 
-const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentView, entryData, updateEntryData }) => {
+const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
+  setCurrentView,
+  entryData,
+  updateEntryData
+}) => {
   const { user } = useUser();
 
   const [thermoRawDataEntryData, setThermoRawDataEntryData] = useState<any>(null);
@@ -22,12 +25,8 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   // 2D array that we keep as the "original" entire CSV structure
   const [originalData, setOriginalData] = useState<string[][]>([]);
 
-  // The user-editable portion (just the numeric data cells) 
-  // This can have 8 or 12 rows depending on vertical vs. horizontal
-  // and either 3 or 2 columns for data
+  // The user-editable portion (just the numeric data cells)
   const [thermoData, setThermoData] = useState<string[][]>([]);
-
-  // The temperature values for each row
   const [tempValues, setTempValues] = useState<any[]>([]);
 
   // "vertical" or "horizontal"
@@ -36,7 +35,10 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   // Graph image from backend
   const [graphImageUrl, setGraphImageUrl] = useState<string | null>(null);
 
+  // Name of the CSV in S3
   const [csvFilename, setCsvFilename] = useState<string | null>(null);
+
+  // T50, etc.
   const [calculatedValues, setCalculatedValues] = useState({
     T50: null,
     T50_SD: null,
@@ -49,31 +51,192 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedByStudent, setApprovedByStudent] = useState(false);
 
-  // Messages about negative values, outliers, etc.
+  // For warnings about negatives/outliers
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
+  // -------------------------------
+  // 1) HELPER: Download from S3
+  //    GET /api/s3?folder=temperature_assays/raw&download=<filename>
+  // -------------------------------
+  async function fetchFileFromS3(folder: string, fileName: string): Promise<Blob> {
+    // Ask our Next.js API route for a presigned download URL
+    const resp = await fetch(`/api/s3?folder=${folder}&download=${fileName}`);
+    if (!resp.ok) {
+      throw new Error('Failed to get presigned download URL');
+    }
+    const { presignedUrl } = await resp.json(); // { presignedUrl, fileKey }
+
+    // Then fetch the actual file from that presignedUrl
+    const fileResp = await fetch(presignedUrl);
+    if (!fileResp.ok) {
+      throw new Error('Failed to download file from S3');
+    }
+    return fileResp.blob();
+  }
+
+  // -------------------------------
+  // 2) HELPER: Upload a File (Base64) to S3
+  //    POST /api/s3?folder=<folder>
+  // -------------------------------
+  async function uploadFileToS3(folder: string, newFileName: string, fileBase64: string) {
+    const resp = await fetch(`/api/s3?folder=${folder}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newFileName, fileBase64 }),
+    });
+    if (!resp.ok) {
+      throw new Error('Failed to upload file to S3');
+    }
+    return resp.json(); // { message, objectKey, url }
+  }
+
+  // Utility: Convert any Blob to base64
+  async function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string; // e.g. data:<type>;base64,<...>
+        const base64 = dataUrl.split(',')[1] || '';
+        resolve(base64);
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // A small helper to unify "data:image/png;base64,stuff"
+  const getImageUrl = (base64String: string) => {
+    if (!base64String) return '';
+    if (base64String.startsWith('data:image')) {
+      return base64String;
+    }
+    return `data:image/png;base64,${base64String}`;
+  };
+
+  // -------------------------------------------------------------------
+  //   1) Download & Process the CSV from S3 => parse it => set state
+  // -------------------------------------------------------------------
   const fetchAndProcessCSV = useCallback(async (filename: string) => {
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `temperature_assays/raw/${filename}`,
-        Expires: 60,
-      };
+      // 1. Download CSV from S3 as a Blob
+      const blob = await fetchFileFromS3('temperature_assays/raw', filename);
 
-      const url = await s3.getSignedUrlPromise('getObject', params);
-      const response = await fetch(url);
-      const blob = await response.blob();
+      // 2. Convert Blob to File, parse with Papa
       const csvFile = new File([blob], filename, { type: 'text/csv' });
-
-      const fileContent = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsText(csvFile);
-      });
-
+      const fileContent = await fileToText(csvFile);
       const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+
+      // 3. Store in state
+      setCsvFilename(filename);
       setOriginalData(parsedData);
 
+      // 4. Detect template type
+      const isVertical = parsedData?.[2]?.[1] === 'Row';
+      setTemplateType(isVertical ? 'vertical' : 'horizontal');
+
+      // 5. Extract data from the CSV => setThermoData
+      if (isVertical) {
+        extractVerticalData(parsedData);
+      } else {
+        extractHorizontalData(parsedData);
+      }
+
+      // 6. Sanitize the data (negatives, outliers)
+      const sanitizedData = processData(parsedData, isVertical);
+
+      // Based on template, re-slice to create `thermoData`
+      if (isVertical) {
+        const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
+        setThermoData(sanitizedEditableData);
+      } else {
+        const { dataRows } = getHorizontalDataRows(sanitizedData);
+        setThermoData(dataRows.map(row => row.dataCells));
+      }
+
+      // 7. Generate graph from the sanitized CSV
+      const sanitizedCsv = Papa.unparse(sanitizedData);
+      const sanitizedFile = new File([sanitizedCsv], filename, { type: 'text/csv' });
+      await generateGraphFromFile(sanitizedFile);
+
+      // 8. Set `thermoRawDataEntryData` from partial CSV (like slope_units, etc.)
+      if (isVertical) {
+        setThermoRawDataEntryData({
+          slope_units: parsedData[1]?.[4],
+          purification_date: parsedData[2]?.[6],
+          assay_date: parsedData[2]?.[7],
+          user_name: user?.user_name,
+          updated: new Date().toISOString(),
+        });
+      } else {
+        setThermoRawDataEntryData({
+          slope_units: parsedData[5]?.[1],
+          purification_date: parsedData[7]?.[1],
+          assay_date: parsedData[8]?.[1],
+          user_name: user?.user_name,
+          updated: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching and processing CSV file from S3:', error);
+    }
+  }, [user]);
+
+  // If there's an existing CSV, load & parse it
+  useEffect(() => {
+    async function fetchTempRawDataEntryData() {
+      if (!entryData.id) return;
+      const response = await axios.get('/api/getTempRawDataEntryData', {
+        params: { parent_id: entryData.id }
+      });
+      if (response.status === 200) {
+        const data = response.data;
+        setThermoRawDataEntryData(data);
+  
+        if (data.csv_filename && data.csv_filename !== entryData.temp_raw_data_filename) {
+          await fetchAndProcessCSV(data.csv_filename);
+        }
+      }
+    }
+  
+    fetchTempRawDataEntryData();
+  }, [entryData.id]);
+
+  // Helper: convert File -> text
+  async function fileToText(file: File): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  // -------------------------------------------------------------------
+  //   2) If user drags/drops a local CSV file => parse & show
+  // -------------------------------------------------------------------
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    const fileType = file.name.split('.').pop()?.toLowerCase();
+    if (fileType !== 'csv') {
+      setFileError('Only .csv files are allowed');
+      setCsvFilename(null);
+      return;
+    } else if (file.size > 500000) {
+      setFileError('File must be smaller than 500 kB');
+      setCsvFilename(null);
+      return;
+    }
+
+    setFileError('');
+    setCsvFilename(file.name);
+
+    try {
+      const fileContent = await fileToText(file);
+      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+
+      setOriginalData(parsedData);
+
+      // Determine template type
       const isVertical = (parsedData?.[2]?.[1] === 'Row');
       setTemplateType(isVertical ? 'vertical' : 'horizontal');
 
@@ -83,7 +246,9 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         extractHorizontalData(parsedData);
       }
 
+      // Then sanitize
       const sanitizedData = processData(parsedData, isVertical);
+
       if (isVertical) {
         const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
         setThermoData(sanitizedEditableData);
@@ -92,294 +257,159 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         setThermoData(dataRows.map(row => row.dataCells));
       }
 
+      // Generate plot from sanitized CSV
       const sanitizedCsv = Papa.unparse(sanitizedData);
-      const sanitizedFile = new File([sanitizedCsv], filename, { type: 'text/csv' });
+      const sanitizedFile = new File([sanitizedCsv], file.name, { type: 'text/csv' });
       await generateGraphFromFile(sanitizedFile);
 
-    } catch (error) {
-      console.error('Error fetching and processing CSV file from S3:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (entryData.thermo_raw_data_filename) {
-      fetchAndProcessCSV(entryData.thermo_raw_data_filename);
-    }
-  }, [entryData.thermo_raw_data_filename, fetchAndProcessCSV]);
-
-  // Add this function to handle base64 images
-  const getImageUrl = (base64String: string) => {
-    if (!base64String) return '';
-    if (base64String.startsWith('data:image')) {
-      return base64String;
-    }
-    return `data:image/png;base64,${base64String}`;
-  };
-
-  // -----------------------------------------------------------
-  //   Handle direct user drag-drop upload & parse
-  // -----------------------------------------------------------
-  const handleFile = async (file: File) => {
-    if (file) {
-      const fileType = file.name.split('.').pop()?.toLowerCase();
-      if (fileType !== 'csv') {
-        setFileError('Only .csv files are allowed');
-        setCsvFilename(null);
-      } else if (file.size > 500000) {
-        setFileError('File must be smaller than 500 kB');
-        setCsvFilename(null);
+      // Set `thermoRawDataEntryData` from partial data
+      if (isVertical) {
+        setThermoRawDataEntryData({
+          slope_units: parsedData[1]?.[4],
+          purification_date: parsedData[2]?.[6],
+          assay_date: parsedData[2]?.[7],
+          user_name: user?.user_name,
+          updated: new Date().toISOString(),
+        });
       } else {
-        setFileError('');
-        setCsvFilename(file.name);
-        
-        try {
-          const fileContent = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.readAsText(file);
-          });
-
-          const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
-          
-          setOriginalData(parsedData);
-
-          // Detect template type
-          const isVertical = (parsedData?.[2]?.[1] === 'Row');
-          setTemplateType(isVertical ? 'vertical' : 'horizontal');
-
-          // Extract the relevant rows/columns
-          if (isVertical) {
-            extractVerticalData(parsedData);
-          } else {
-            extractHorizontalData(parsedData);
-          }
-
-          // Then sanitize
-          const sanitizedData = processData(parsedData, isVertical);
-
-          // For vertical, re-slice the sanitized portion
-          if (isVertical) {
-            const sanitizedEditableData = sanitizedData.slice(4, 12).map(row => row.slice(2, 5));
-            setThermoData(sanitizedEditableData);
-          } else {
-            const { dataRows } = getHorizontalDataRows(sanitizedData);
-            setThermoData(dataRows.map(row => row.dataCells));
-          }
-
-          // Generate plot from sanitized CSV
-          const sanitizedCsv = Papa.unparse(sanitizedData);
-          const sanitizedFile = new File([sanitizedCsv], file.name, { type: 'text/csv' });
-          await generateGraphFromFile(sanitizedFile);
-
-          // Set thermoRawDataEntryData with relevant data from parsedData
-
-          console.log(parsedData)
-          setThermoRawDataEntryData({
-            slope_units: isVertical ? parsedData[1]?.[4] : parsedData[5]?.[1],
-            purification_date: isVertical ? parsedData[2]?.[6] : parsedData[7]?.[1],
-            assay_date: isVertical ? parsedData[2]?.[7] : parsedData[8]?.[1],
-            user_name: user.user_name,
-            updated: new Date().toISOString(),
-          });
-
-        } catch (error) {
-          console.error('Error processing file:', error);
-          setFileError('Failed to process file');
-        }
+        setThermoRawDataEntryData({
+          slope_units: parsedData[5]?.[1],
+          purification_date: parsedData[7]?.[1],
+          assay_date: parsedData[8]?.[1],
+          user_name: user?.user_name,
+          updated: new Date().toISOString(),
+        });
       }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      setFileError('Failed to process file');
     }
   };
 
-  // Helper to handle drag-drop
+  // Drag-drop event handlers
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-
     const file = e.dataTransfer.files?.[0];
     if (file) handleFile(file);
   };
 
-  // -----------------------------------------------------------
-  //   Utility: parse vertical data from the CSV 
-  //   (extract the 8 temperatures, columns 0 for temp, 2..4 for data)
-  // -----------------------------------------------------------
-  function extractVerticalData(parsedData: any[][]) {
-    // Temperatures are rows 4..11 (8 total) in col 0
-    const extractedTemperatures = parsedData.slice(4, 12).map((row) => parseFloat(row[0]));
-    setTempValues(extractedTemperatures);
+  // -------------------------------------------------------------------
+  //   3) Download CSV from S3
+  // -------------------------------------------------------------------
+  const downloadCsvFile = async () => {
+    if (!csvFilename) return;
+    try {
+      const blob = await fetchFileFromS3('temperature_assays/raw', csvFilename);
 
-    // The editable data is rows 4..11, columns 2..4 => 3 columns
-    const editableData = parsedData.slice(4, 12).map(row => row.slice(2, 5));
-    setThermoData(editableData);
-  }
+      // Trigger a browser download for the Blob
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = csvFilename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating download link:', error);
+      alert('Failed to download file. Please try again.');
+    }
+  };
 
-  // -----------------------------------------------------------
-  //   Utility: parse horizontal data from the CSV 
-  //   (temperatures in row=1 => col=3..14, each has 2 data points
-  //    in row=4 => col=3..14 and row=5 => col=3..14)
-  // -----------------------------------------------------------
-  function extractHorizontalData(parsedData: any[][]) {
-    const { tempArray, dataRows } = getHorizontalDataRows(parsedData);
+  // -------------------------------------------------------------------
+  //   4) Graph Generation (upload CSV to Flask & get plot)
+  // -------------------------------------------------------------------
+  async function generateGraphFromFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
 
-    // The array of temperature values for each column 
-    setTempValues(tempArray.map(t => t?.temp ?? ''));
-    // The user-editable data (2 columns for each temperature)
-    setThermoData(dataRows.map(row => row.dataCells));
-  }
-
-  // This helper extracts the horizontal info so we can 
-  // store in state or re-sanitize easily.
-  function getHorizontalDataRows(parsedData: any[][]) {
-    // The user said temperatures are in row=1 (2 in Excel) from col=3..14 => D..O
-    // We can read until we hit an empty cell or up to col=14
-    const tempRowIndex = 1;  // row=2 in Excel
-    const firstTempCol = 3;  // col=D in Excel
-    const maxTempCols = 15;  // col=O in Excel is index=14; slice up to 15
-    let tempArray: { temp?: number, colIndex: number }[] = [];
-
-    // Gather columns that are not empty
-    for (let c = firstTempCol; c < maxTempCols && c < (parsedData[tempRowIndex]?.length ?? 0); c++) {
-      if (parsedData[tempRowIndex][c] !== '' && parsedData[tempRowIndex][c] != null) {
-        tempArray.push({
-          temp: parseFloat(parsedData[tempRowIndex][c]),
-          colIndex: c
-        });
-      }
+    if (entryData.resid && entryData.resnum && entryData.resmut) {
+      formData.append('variant-name', `${entryData.resid}${entryData.resnum}${entryData.resmut}`);
     }
 
-    // For each temperature column colIndex, 
-    // data #1 is row=4 => index=3 in zero-based? Actually we want D5 => row=4 => index=4. 
-    // But be mindful: "D5" => row=5 => 1-based => so zero-based is row=4. 
-    // The user said the two data points are at row=5..6 => zero-based 4..5
-    // so let's define them:
-    const firstDataRow = 4; // row=5 in Excel
-    const secondDataRow = 5; // row=6 in Excel
+    try {
+      const response = await axios.post(
+        'https://d2dcure-ed1280e9442d.herokuapp.com/plot_temperature',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          responseType: 'json',
+        }
+      );
 
-    let dataRows = tempArray.map((t, idx) => {
-      const col = t.colIndex;
-      // read the two data cells
-      const val1 = parsedData[firstDataRow]?.[col] ?? '';
-      const val2 = parsedData[secondDataRow]?.[col] ?? '';
-      // We might store them in an array like [val1, val2].
-      // We'll also store the temperature for convenience
-      return {
-        temperature: t.temp,
-        dataCells: [String(val1), String(val2)],
-      };
-    });
+      if (response.status !== 200) {
+        console.error('Failed to generate graph:', response.statusText);
+        return;
+      }
 
-    return { tempArray, dataRows, columnIndices: tempArray.map(t => t.colIndex) };
+      const { T50, T50_SD, k, k_SD, image } = response.data;
+      setGraphImageUrl(`data:image/png;base64,${image}`);
+      setCalculatedValues({ T50, T50_SD, k, k_SD });
+    } catch (error) {
+      console.error('Error generating temperature plot:', error);
+    }
   }
 
-  // -----------------------------------------------------------
-  //   Generating the plot from the "edited" data
-  //   (Essentially rebuild the CSV from originalData + user's edits
-  //    then POST to python backend)
-  // -----------------------------------------------------------
+  // For the user pressing "Regenerate" after editing cells
   const generateGraphFromEditedData = async () => {
     const updatedData = rebuildCsvFromEdits();
-
-    // Convert updated data to CSV format and send it to backend
     const csvData = Papa.unparse(updatedData);
-    const file = new File([csvData], 'edited_data.csv');
+    const file = new File([csvData], 'edited_data.csv', { type: 'text/csv' });
     await generateGraphFromFile(file);
   };
 
-  // Actually calls the Flask endpoint with the CSV
-  const generateGraphFromFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-  
-    if (entryData.resid && entryData.resnum && entryData.resmut) {
-      formData.append(
-        'variant-name',
-        `${entryData.resid}${entryData.resnum}${entryData.resmut}`
-      );
-    }
-  
-    try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_temperature', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'json',
-      });
-  
-      if (response.status !== 200) {
-        console.error("Failed to generate graph:", response.statusText);
-        return;
-      }
-  
-      const { T50, T50_SD, k, k_SD, image } = response.data;
-      const imageUrl = `data:image/png;base64,${image}`;
-
-      setGraphImageUrl(imageUrl);
-      setCalculatedValues({ T50, T50_SD, k, k_SD });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
-
-  // -----------------------------------------------------------
-  //   Reconstruct the CSV from original + user edits
-  //   so we can submit or regenerate the plot
-  // -----------------------------------------------------------
-  function rebuildCsvFromEdits() {
-    // We create a clone of the original data
-    const updatedData = originalData.map((row) => [...row]);
-
+  // -------------------------------------------------------------------
+  //   5) Rebuild CSV from user-edits in thermoData
+  // -------------------------------------------------------------------
+  function rebuildCsvFromEdits(): string[][] {
+    const updatedData = originalData.map(row => [...row]);
     if (!templateType) return updatedData;
 
     if (templateType === 'vertical') {
-      // For vertical, user edits are in rows 4..11 (8 total),
-      // columns 2..4 => 3 columns
-      // so we place thermoData[rowIndex][colIndex] into updatedData[rowIndex+4][colIndex+2]
+      // For vertical, user edits are in rows 4..11 => columns 2..4
       for (let rowIndex = 0; rowIndex < thermoData.length; rowIndex++) {
         for (let colIndex = 0; colIndex < thermoData[rowIndex].length; colIndex++) {
           updatedData[rowIndex + 4][colIndex + 2] = thermoData[rowIndex][colIndex];
         }
       }
     } else {
-      // Horizontal: we have up to 12 "rows" in thermoData, each row has 2 columns
-      // The temperature columns are col=3..14 from row=1
-      // The data for each temperature col c is in row=4..5 => 4 for the first cell, 5 for the second
-      // So we have to match rowIndex => which column c in original
-      // We re-derive which columns were used
+      // For horizontal, columns are determined by getHorizontalDataRows
       const { tempArray } = getHorizontalDataRows(originalData);
-      // Just be sure it is the same length as thermoData
       for (let rowIndex = 0; rowIndex < thermoData.length; rowIndex++) {
         const col = tempArray[rowIndex]?.colIndex;
         if (col == null) continue;
-        // first data is row=4 => updatedData[4][col], second is row=5 => updatedData[5][col]
+        // row=4 => first data, row=5 => second
         updatedData[4][col] = thermoData[rowIndex][0];
-        updatedData[5][col] = thermoData[rowIndex][1];
+        if (thermoData[rowIndex].length > 1) {
+          updatedData[5][col] = thermoData[rowIndex][1];
+        }
       }
     }
 
     return updatedData;
   }
 
-  // -----------------------------------------------------------
-  //   Fired when the user edits a cell in the table
-  // -----------------------------------------------------------
+  // -------------------------------------------------------------------
+  //   6) The user can edit cells in the table => update thermoData
+  // -------------------------------------------------------------------
   const handleCellChange = (rowIndex: number, cellIndex: number, newValue: string) => {
     const updatedData = [...thermoData];
     updatedData[rowIndex][cellIndex] = newValue;
     setThermoData(updatedData);
   };
 
-  // -----------------------------------------------------------
-  //   On "Submit", we:
-  //   1. Rebuild CSV & upload to S3
-  //   2. Upload plot to S3
-  //   3. Update the DB with CSV/plot filenames, T50, etc.
-  // -----------------------------------------------------------
+  // -------------------------------------------------------------------
+  //   7) handleSaveData: finalize => upload CSV & plot => update DB
+  // -------------------------------------------------------------------
   const handleSaveData = async () => {
     setIsSubmitting(true);
     try {
-      const variant = entryData.resid + entryData.resnum + entryData.resmut;
-  
-      // We need slope_units, purification_date, assay_date from different cells 
-      // depending on vertical vs horizontal
+      const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
+
+      // We need slope_units, purification_date, assay_date 
+      // from different rows depending on template
       let slopeUnits = '';
       let purificationDate = '';
       let assayDate = '';
@@ -389,53 +419,53 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         purificationDate = originalData[2]?.[6] ?? '';
         assayDate = originalData[2]?.[7] ?? '';
       } else {
-        // Horizontal
+        slopeUnits = originalData[5]?.[1] ?? '';
         purificationDate = originalData[7]?.[1] ?? '';
         assayDate = originalData[8]?.[1] ?? '';
-        slopeUnits = originalData[5]?.[1] ?? ''; 
       }
 
-      // Rebuild CSV with user's current edits
+      // 1) Rebuild CSV from user edits
       const updatedData = rebuildCsvFromEdits();
       const csvContent = Papa.unparse(updatedData);
 
-      // Create final filenames
-      const csvFilename = `${user.user_name}-BglB-${variant}-${entryData.id}-temp_assay.csv`;
-      const plotFilename = `${user.user_name}-BglB-${variant}-${entryData.id}-temp_assay.png`;
+      // 2) Create final filenames
+      const baseFileName = `${user?.user_name || 'unknown'}-BglB-${variant}-${entryData.id}-temp_assay`;
+      const newCsvFilename = `${baseFileName}.csv`;
+      const newPlotFilename = `${baseFileName}.png`;
 
-      // Upload CSV file to S3
-      const csvFileToUpload = new File([new Blob([csvContent])], csvFilename, { type: 'text/csv' });
-      await uploadToS3(csvFileToUpload, `temperature_assays/raw/${csvFilename}`);
-  
-      // Upload graph file to S3 (if we have a graph)
+      // 3) Upload CSV to S3 => convert to base64 first
+      const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+      const csvBase64 = await blobToBase64(csvBlob);
+      await uploadFileToS3('temperature_assays/raw', newCsvFilename, csvBase64);
+
+      // 4) If we have a graph, upload that too
       if (graphImageUrl) {
         const graphBlob = await fetch(graphImageUrl).then(res => res.blob());
-        const graphFileToUpload = new File([graphBlob], plotFilename, { type: 'image/png' });
-        await uploadToS3(graphFileToUpload, `temperature_assays/plots/${plotFilename}`);
+        const graphBase64 = await blobToBase64(graphBlob);
+        await uploadFileToS3('temperature_assays/plots', newPlotFilename, graphBase64);
       }
-  
-      // Update the DB for the raw data
+
+      // 5) Update DB for the raw data
       await axios.post('/api/updateTempRawData', {
-        user_name: user.user_name,
+        user_name: user?.user_name,
         variant,
         slope_units: slopeUnits,
         purification_date: purificationDate,
         assay_date: assayDate,
-        csv_filename: csvFilename,
-        plot_filename: plotFilename,
+        csv_filename: newCsvFilename,
+        plot_filename: newPlotFilename,
         parent_id: entryData.id,
-        approved_by_student: approvedByStudent,
+        approved_by_student: approvedByStudent
       });
-  
-      // Then update T50 etc.
+
+      // 6) Then update T50, etc.
       const { T50, T50_SD, k, k_SD } = calculatedValues;
-  
       const response = await axios.post('/api/updateCharacterizationDataThermoStuff', {
         parent_id: entryData.id,
         T50,
         T50_SD,
         T50_k: k,
-        T50_k_SD: k_SD,
+        T50_k_SD: k_SD
       });
 
       if (response.status === 200) {
@@ -446,7 +476,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         console.error('Error updating CharacterizationData:', response.data);
         alert('Error updating CharacterizationData');
       }
-  
+
       setCurrentView('checklist');
     } catch (error) {
       console.error('Error saving data:', error);
@@ -456,217 +486,190 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
     }
   };
 
-  // Helper function to upload file to S3
-  const uploadToS3 = async (file: File, s3Path: string) => {
-    try {
-      await s3
-        .upload({
-          Bucket: 'd2dcurebucket',
-          Key: s3Path,
-          Body: file,
-          ContentType: file.type,
-        })
-        .promise();
-    } catch (error) {
-      console.error(`Error uploading to S3: ${error}`);
-      throw new Error('Failed to upload file to S3');
-    }
-  };
+  // -------------------------------------------------------------------
+  //   8) Helper for reading horizontal data (temperatures in row=1 => col=3..14)
+  // -------------------------------------------------------------------
+  function getHorizontalDataRows(parsedData: any[][]) {
+    const tempRowIndex = 1;
+    const firstTempCol = 3;
+    const maxTempCols = 15;
+    let tempArray: { temp?: number; colIndex: number }[] = [];
 
-  // -----------------------------------------------------------
-  //  Download the existing CSV from S3
-  // -----------------------------------------------------------
-  const downloadCsvFile = async () => {
-    if (!csvFilename) return;
-    try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `temperature_assays/raw/${csvFilename}`,
-        Expires: 60,
+    for (let c = firstTempCol; c < maxTempCols && c < (parsedData[tempRowIndex]?.length ?? 0); c++) {
+      if (parsedData[tempRowIndex][c] !== '' && parsedData[tempRowIndex][c] != null) {
+        tempArray.push({
+          temp: parseFloat(parsedData[tempRowIndex][c]),
+          colIndex: c
+        });
+      }
+    }
+
+    const firstDataRow = 4; 
+    const secondDataRow = 5; 
+
+    let dataRows = tempArray.map((t) => {
+      const col = t.colIndex;
+      const val1 = parsedData[firstDataRow]?.[col] ?? '';
+      const val2 = parsedData[secondDataRow]?.[col] ?? '';
+      return {
+        temperature: t.temp,
+        dataCells: [String(val1), String(val2)]
       };
-      const url = await s3.getSignedUrlPromise('getObject', params);
+    });
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = csvFilename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error generating download link:', error);
-      alert('Failed to download file. Please try again.');
-    }
-  };
+    return { tempArray, dataRows };
+  }
 
-  // -----------------------------------------------------------
-  //   The sanitization function 
-  //   (Same logic for negatives, outliers, etc.)
-  //   We do an if (templateType==='vertical') for row slicing or else for horizontal
-  //   Or we can simply run the same logic if all the data is in "parsedData".
-  //   Then inside we skip rows or do additional checks.
-  // -----------------------------------------------------------
-  const processData = (data: unknown, isVertical: boolean) => {
+  // -------------------------------------------------------------------
+  //   9) Extract vertical data
+  // -------------------------------------------------------------------
+  function extractVerticalData(parsedData: any[][]) {
+    // rows 4..11 => col=0 is temp
+    const extractedTemperatures = parsedData.slice(4, 12).map(row => parseFloat(row[0]));
+    setTempValues(extractedTemperatures);
+    const editableData = parsedData.slice(4, 12).map(row => row.slice(2, 5));
+    setThermoData(editableData);
+  }
+
+  // -------------------------------------------------------------------
+  //   10) Extract horizontal data
+  // -------------------------------------------------------------------
+  function extractHorizontalData(parsedData: any[][]) {
+    const { tempArray, dataRows } = getHorizontalDataRows(parsedData);
+    setTempValues(tempArray.map(t => t.temp ?? ''));
+    setThermoData(dataRows.map(row => row.dataCells));
+  }
+
+  // -------------------------------------------------------------------
+  //   11) Data sanitization
+  // -------------------------------------------------------------------
+  function processData(parsedData: any[][], isVertical: boolean) {
     let messages: string[] = [];
-    
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(parsedData)) {
       console.error('Invalid data format');
-      return [];
+      return parsedData;
     }
-    
-    const typedData = data as any[][];
-
-    // We apply the same outlier detection, negative-value checks, etc.
-    // The difference: for vertical, the relevant numeric cells are rows 4..11 => columns 2..4
-    // For horizontal, they're row=4..5 => columns 3..14, repeated across columns.
-    // We'll do a *global pass*, focusing specifically on rows or columns in either template.
 
     let hasNegatives = false;
     let hasOutliers = false;
     let hasEmptyRows = false;
 
-    // Because we want to give consistent warnings, we do an inclusive approach.
-    // For vertical: we expect 8 rows of data from row=4..11
-    // For horizontal: 2 rows of data, columns 3..14, repeated. We'll handle that carefully below.
-
-    // We'll define which row/col ranges are "expected" for data.
+    // Row/col ranges differ
     let rowRange: number[] = [];
     let colRange: number[] = [];
+
     if (isVertical) {
-      rowRange = [4,5,6,7,8,9,10,11]; // 8 rows
-      colRange = [2,3,4];            // 3 columns
+      rowRange = [4, 5, 6, 7, 8, 9, 10, 11]; // 8 rows
+      colRange = [2, 3, 4]; // 3 columns
     } else {
-      rowRange = [4,5];             // horizontal has 2 "data" rows
+      rowRange = [4, 5]; // 2 rows
       colRange = [];
-      // We'll pick columns from D..O => 3..14 
-      // but only up to however many columns have data
+      // Build colRange from row=1 => col=3..14 if not empty
       for (let c = 3; c <= 14; c++) {
-        // optional check if typedData[1][c] is not empty => we have a temp => so we keep c
-        if (typedData[1] && typedData[1][c] !== '' && typedData[1][c] != null) {
+        if (parsedData[1] && parsedData[1][c] !== '' && parsedData[1][c] != null) {
           colRange.push(c);
         }
       }
     }
 
-    // We'll flatten out these relevant cells, detect negatives/outliers, etc.
-    // You could do row-by-row checks if needed. We'll just do a simpler approach:
-    // (1) Replace negative with zero
-    // (2) Attempt outlier detection for each row or each column? 
-    //     The original code did row-based checks for vertical. 
-    // For horizontal, we'll do it for each "column" set, because each temperature is a column.
-
-    // Let's define a small helper that processes a list of numeric strings with the same logic:
-    function sanitizeRowOrColumn(numericCells: string[]): string[] {
-      // Convert negatives, detect outliers, etc. 
-      let replacedNegatives = numericCells.map(val => {
+    function sanitizeRowOrColumn(values: string[]): string[] {
+      // 1) Convert negatives => 0
+      const replacedNegatives = values.map(val => {
         const num = parseFloat(val);
         if (!isNaN(num) && num < 0) {
           hasNegatives = true;
-          return '0'; 
+          return '0';
         }
         return val;
       });
-      // Then outlier detection
-      let processed = detectOutliersMAD(replacedNegatives);
-      if (processed.some((val, idx) => val === '' && replacedNegatives[idx] !== '')) {
+      // 2) Outlier detection
+      const processed = detectOutliersMAD(replacedNegatives);
+      if (processed.some((v, idx) => v === '' && replacedNegatives[idx] !== '')) {
         hasOutliers = true;
       }
       return processed;
     }
 
-    // For vertical, we do row-based:
     if (isVertical) {
-      rowRange.forEach(rowIdx => {
-        const rowSlice = typedData[rowIdx].slice(2, 5); // col 2..4
-        // if row is entirely empty => track it
+      rowRange.forEach((r) => {
+        const rowSlice = parsedData[r].slice(2, 5);
         const isEmptyRow = rowSlice.every(cell => cell === '' || cell == null);
         if (isEmptyRow) hasEmptyRows = true;
 
         const sanitizedSlice = sanitizeRowOrColumn(rowSlice);
-        // put it back
-        for (let i = 0; i < 3; i++) {
-          typedData[rowIdx][i+2] = sanitizedSlice[i];
+        for (let i = 0; i < sanitizedSlice.length; i++) {
+          parsedData[r][i+2] = sanitizedSlice[i];
         }
       });
     } else {
-      // For horizontal, we do column-based (since each col is a temperature):
-      // data rows => 4 and 5
-      colRange.forEach(colIdx => {
-        // We'll gather [ typedData[4][colIdx], typedData[5][colIdx] ]
-        const cells = [typedData[4][colIdx], typedData[5][colIdx]];
+      colRange.forEach((c) => {
+        const cells = [parsedData[4][c], parsedData[5][c]];
         const isEmpty = cells.every(x => x === '' || x == null);
         if (isEmpty) hasEmptyRows = true;
 
         const sanitized = sanitizeRowOrColumn(cells);
-        typedData[4][colIdx] = sanitized[0];
-        typedData[5][colIdx] = sanitized[1];
+        parsedData[4][c] = sanitized[0];
+        if (cells.length > 1) {
+          parsedData[5][c] = sanitized[1];
+        }
       });
     }
 
     if (hasEmptyRows) {
-      messages.push("Warning: Some rows/columns are completely empty. Please ensure data is provided.");
+      messages.push('Warning: Some rows/columns are completely empty. Please ensure data is provided.');
     }
     if (hasNegatives) {
-      messages.push("Negative values were detected and converted to zero.");
+      messages.push('Negative values were detected and converted to zero.');
     }
     if (hasOutliers) {
-      messages.push("Outliers were detected and removed using the MAD method.");
+      messages.push('Outliers were detected and removed using the MAD method.');
     }
-
-    // We won't replicate the "unexpected increase at higher temperature" check here,
-    // but you can add it if needed. We'll just reuse the original approach if you want.
 
     setSanitizationMessages(messages);
+    return parsedData;
+  }
 
-    return typedData;
-  };
+  // Outlier detection (MAD)
+  function detectOutliersMAD(values: string[]) {
+    const nums = values.map(v => parseFloat(v)).filter(n => !isNaN(n));
+    if (nums.length === 0) return values;
 
-  // The outlier detection helper
-  function detectOutliersMAD(rowData: string[]) {
-    const validNumbers = rowData
-      .map(cell => parseFloat(cell))
-      .filter(num => !isNaN(num));
-
-    if (validNumbers.length === 0) return rowData;
-
-    const meanVal = validNumbers.reduce((a, b) => a + b, 0) / validNumbers.length;
-    const sd = Math.sqrt(validNumbers.reduce((sq, n) => sq + Math.pow(n - meanVal, 2), 0) / (validNumbers.length - 1));
-    const relativeSD = (sd / meanVal) * 100;
-
-    // If rel SD < threshold, don't remove outliers
-    const PRECISION_THRESHOLD = 20;
-    if (relativeSD <= PRECISION_THRESHOLD) {
-      return rowData;
+    const meanVal = nums.reduce((a, b) => a + b, 0) / nums.length;
+    const sd = Math.sqrt(nums.reduce((sq, n) => sq + Math.pow(n - meanVal, 2), 0) / (nums.length - 1));
+    const relSD = (sd / meanVal) * 100;
+    const THRESHOLD = 20;
+    if (relSD <= THRESHOLD) {
+      return values; // no outlier removal
     }
 
-    // Otherwise use median + MAD
-    const sortedNums = [...validNumbers].sort((a, b) => a - b);
+    // If above threshold, do median + MAD approach
+    const sortedNums = [...nums].sort((a, b) => a - b);
     const median = sortedNums[Math.floor(sortedNums.length / 2)];
-    const absDeviations = validNumbers.map(num => Math.abs(num - median));
-    const sortedDev = [...absDeviations].sort((a, b) => a - b);
+    const absDev = nums.map(n => Math.abs(n - median));
+    const sortedDev = absDev.sort((a, b) => a - b);
     const mad = sortedDev[Math.floor(sortedDev.length / 2)];
 
     // Mark outliers as ''
-    return rowData.map(cell => {
-      const value = parseFloat(cell);
-      if (isNaN(value)) return cell;
-      if (value < (median - 3 * mad) || value > (median + 3 * mad)) {
+    return values.map((v) => {
+      const val = parseFloat(v);
+      if (isNaN(val)) return v;
+      if (val < (median - 3 * mad) || val > (median + 3 * mad)) {
         return '';
       }
-      return cell;
+      return v;
     });
   }
 
-  // -----------------------------------------------------------
+  // -------------------------------------------------------------------
   //   Render
-  // -----------------------------------------------------------
-  // We'll define row labels for vertical vs horizontal
-  const verticalRowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-  const horizontalRowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+  // -------------------------------------------------------------------
+  const verticalRowLabels = ['A','B','C','D','E','F','G','H'];
+  const horizontalRowLabels = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
-        <button 
+        <button
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
@@ -677,12 +680,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         </button>
         <div className="flex items-center gap-3 mb-3">
           <h2 className="text-xl font-bold text-gray-800">Thermostability Assay Data Upload</h2>
-          <span className={`text-xs font-medium rounded-full px-3 py-1 ${
-            entryData.T50 
-              ? "text-green-700 bg-green-100" 
-              : "text-yellow-700 bg-yellow-100"
-          }`}>
-            {entryData.T50 ? "Complete" : "Incomplete"}
+          <span
+            className={`text-xs font-medium rounded-full px-3 py-1 ${
+              entryData.T50 ? 'text-green-700 bg-green-100' : 'text-yellow-700 bg-yellow-100'
+            }`}
+          >
+            {entryData.T50 ? 'Complete' : 'Incomplete'}
           </span>
         </div>
         <p className="text-sm text-gray-600">
@@ -692,7 +695,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
       <CardBody className="px-6 py-6 space-y-6">
         <div className="space-y-6">
-          {/* File Upload Section */}
+          {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Upload CSV File
@@ -701,13 +704,21 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
               <div className="mb-4">
                 <div className="flex items-center justify-between bg-white p-2 rounded-md shadow-sm border border-gray-200">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <svg className="w-5 h-5 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg
+                      className="w-5 h-5 text-[#06B7DB]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
                     </svg>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {csvFilename}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{csvFilename}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -716,7 +727,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                       className="text-xs font-medium text-[#06B7DB] bg-[#06B7DB]/10 px-3 py-1.5 rounded-full hover:bg-[#06B7DB]/20 transition-colors inline-flex items-center gap-1"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
                       </svg>
                       Download
                     </button>
@@ -747,9 +763,20 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                   transition-colors relative
                   ${isDragging ? 'bg-[#06B7DB]/5' : 'bg-gray-50'}
                 `}
-                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(false);
+                }}
                 onDrop={handleDrop}
               >
                 <div className="text-center">
@@ -761,7 +788,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                     aria-hidden="true"
                   >
                     <path
-                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
                       strokeWidth={2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -780,9 +807,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                         accept=".csv"
                       />
                     </label>
-                    <p className="text-sm text-gray-500">
-                      or drag and drop
-                    </p>
+                    <p className="text-sm text-gray-500">or drag and drop</p>
                   </div>
                 </div>
               </div>
@@ -791,16 +816,21 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
             {fileError && (
               <div className="mt-2 text-sm flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded-md">
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
                 {fileError}
               </div>
             )}
           </div>
 
+          {/* If we have parsed data, show the UI */}
           {thermoData.length > 0 && (
             <>
-              {/* Horizontal Rule */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className="w-full border-t border-gray-200"></div>
@@ -812,7 +842,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                 </div>
               </div>
 
-              {/* Plot */}
+              {/* The single plot */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium">Temperature Stability Plot</h3>
@@ -828,7 +858,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                   </button>
                 </div>
                 {graphImageUrl ? (
-                  <Image 
+                  <Image
                     src={getImageUrl(graphImageUrl)}
                     alt="Temperature Plot"
                     width={400}
@@ -843,12 +873,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
               {/* Raw Data Table */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Raw Data</h3>
-                
                 {sanitizationMessages.length > 0 && (
                   <div className="mb-4 space-y-2">
-                    {sanitizationMessages.map((message, index) => (
+                    {sanitizationMessages.map((message, idx) => (
                       <div
-                        key={index}
+                        key={idx}
                         className="flex items-center p-4 rounded-lg bg-blue-50 border border-blue-200"
                       >
                         <svg
@@ -868,7 +897,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                   </div>
                 )}
 
-                {/* Table differs if vertical or horizontal */}
+                {/* Vertical vs. Horizontal table */}
                 {templateType === 'vertical' && (
                   <table className="min-w-full border-collapse border border-gray-200 rounded-lg overflow-hidden">
                     <thead className="bg-gray-100">
@@ -883,8 +912,12 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                     <tbody className="bg-white divide-y divide-gray-200">
                       {verticalRowLabels.map((rowLabel, index) => (
                         <tr key={index} className="hover:bg-gray-50">
-                          <td className="border border-gray-200 px-4 py-2 text-sm text-gray-700">{rowLabel}</td>
-                          <td className="border border-gray-200 px-4 py-2 text-sm text-gray-700">{tempValues[index]}</td>
+                          <td className="border border-gray-200 px-4 py-2 text-sm text-gray-700">
+                            {rowLabel}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-sm text-gray-700">
+                            {tempValues[index]}
+                          </td>
                           {thermoData[index]?.map((val, colIdx) => (
                             <td key={colIdx} className="border border-gray-200 px-4 py-2">
                               <input
@@ -937,7 +970,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                 )}
               </div>
 
-              {/* Experiment Details Section */}
+              {/* Experiment details */}
               {thermoRawDataEntryData && (
                 <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-4">
@@ -961,7 +994,6 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                         </div>
                       </div>
                     </div>
-
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
                         <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -970,14 +1002,14 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                         <div>
                           <span className="text-sm text-gray-500">Dates</span>
                           <p className="text-sm font-medium text-gray-900">
-                            {thermoRawDataEntryData.purification_date ? (
-                              <>Purified: {new Date(thermoRawDataEntryData.purification_date).toLocaleDateString()}</>
-                            ) : 'Purification date not set'}
+                            {thermoRawDataEntryData.purification_date
+                              ? <>Purified: {new Date(thermoRawDataEntryData.purification_date).toLocaleDateString()}</>
+                              : 'Purification date not set'}
                           </p>
                           <p className="text-sm font-medium text-gray-900">
-                            {thermoRawDataEntryData.assay_date ? (
-                              <>Assayed: {new Date(thermoRawDataEntryData.assay_date).toLocaleDateString()}</>
-                            ) : 'Assay date not set'}
+                            {thermoRawDataEntryData.assay_date
+                              ? <>Assayed: {new Date(thermoRawDataEntryData.assay_date).toLocaleDateString()}</>
+                              : 'Assay date not set'}
                           </p>
                         </div>
                       </div>
@@ -991,7 +1023,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
                     <div>
                       <span className="text-sm text-gray-500">Last Update</span>
                       <p className="text-sm font-medium text-gray-900">
-                        {thermoRawDataEntryData.user_name || 'Unknown user'} on {' '}
+                        {thermoRawDataEntryData.user_name || 'Unknown user'} on{' '}
                         {new Date(thermoRawDataEntryData.updated).toLocaleDateString()}
                       </p>
                     </div>
@@ -1017,16 +1049,32 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
       {/* Submit Button */}
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
-        <button 
+        <button
           onClick={handleSaveData}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!thermoData.length || isSubmitting}
         >
           {isSubmitting ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               Saving...
             </>
@@ -1034,13 +1082,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
             'Submit'
           )}
         </button>
-        
-        <span className="text-xs text-gray-500">
-          Data file and plots required
-        </span>
+
+        <span className="text-xs text-gray-500">Data file and plots required</span>
       </CardFooter>
 
-      {/* Template download links */}
+      {/* Template downloads */}
       <div className="px-6 pb-6">
         <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -1056,7 +1102,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="h-[200px]">
             <CardBody className="text-4xl pt-8 font-light overflow-hidden">
-              <Image 
+              <Image
                 src="/resources/images/Microsoft_Excel-Logo.wine.svg"
                 alt="Excel logo"
                 width={56}
@@ -1068,11 +1114,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
               <p className="text-xs pl-5 text-gray-500 -mt-1">(standard vertical temperature gradient)</p>
             </CardBody>
             <CardFooter>
-              <Button 
-                variant="bordered" 
-                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template.csv'} 
+              <Button
+                variant="bordered"
+                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template.csv')}
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
-                style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
+                style={{ borderColor: '#06B7DB', color: '#06B7DB' }}
               >
                 <span className="group-hover:text-white">Download Template</span>
               </Button>
@@ -1081,7 +1127,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
 
           <Card className="h-[200px] ">
             <CardBody className="text-4xl pt-8 font-light overflow-hidden">
-              <Image 
+              <Image
                 src="/resources/images/Microsoft_Excel-Logo.wine.svg"
                 alt="Excel logo"
                 width={56}
@@ -1093,11 +1139,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({ setCurrentVie
               <p className="text-xs pl-5 text-gray-500 -mt-1">(alternate horizontal temperature gradient)</p>
             </CardBody>
             <CardFooter>
-              <Button 
-                variant="bordered" 
-                onPress={() => window.location.href = '/downloads/temperature_assay_single_variant_template_horizontal.csv'} 
+              <Button
+                variant="bordered"
+                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template_horizontal.csv')}
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
-                style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
+                style={{ borderColor: '#06B7DB', color: '#06B7DB' }}
               >
                 <span className="group-hover:text-white">Download Template</span>
               </Button>

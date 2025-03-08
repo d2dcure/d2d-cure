@@ -3,7 +3,6 @@ import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
 import { useRouter } from 'next/router';
-import s3 from '../../../s3config'; 
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
@@ -53,93 +52,183 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   // Add these state variables at the top with other states
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
-  const fetchAndProcessCSV = useCallback(async (filename: string) => {
+
+
+   // -------------------------------
+  // 1) HELPER: Download a File from S3 by name
+  //    We'll fetch a presigned URL from /api/s3, then fetch the file from that.
+  // -------------------------------
+  async function fetchFileFromS3(folder: string, filename: string): Promise<Blob> {
+    // 1. Get the presigned URL
+    const resp = await fetch(`/api/s3?folder=${folder}&download=${filename}`);
+    if (!resp.ok) {
+      throw new Error('Failed to get presigned download URL');
+    }
+    const { presignedUrl } = await resp.json(); // { presignedUrl, fileKey }
+
+    // 2. Fetch the actual file from that presigned URL
+    const fileResp = await fetch(presignedUrl);
+    if (!fileResp.ok) {
+      throw new Error('Failed to download file from S3');
+    }
+    return fileResp.blob();
+  }
+
+   // -------------------------------
+  // 2) HELPER: Upload a File (as base64) to S3
+  //    Calls POST /api/s3 with newFileName, fileBase64
+  // -------------------------------
+  async function uploadFileToS3(folder: string, newFileName: string, fileBase64: string) {
+    const resp = await fetch(`/api/s3?folder=${folder}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newFileName, fileBase64 }),
+    });
+    if (!resp.ok) {
+      throw new Error('Failed to upload file to S3');
+    }
+    return resp.json(); // { message, objectKey, url }
+  }
+
+
+  const generateGraphFromFile = async (sanitizedData: any[][]) => {
+    const formData = new FormData();
+    const sanitizedCsv = Papa.unparse(sanitizedData);
+    const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
+
+    formData.append('file', sanitizedFile);
+    formData.append(
+      'variant-name',
+      `${entryData.resid}${entryData.resnum}${entryData.resmut}`
+    );
+
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `kinetic_assays/raw/${filename}`,
-        Expires: 60,
-      };
-
-      const url = await s3.getSignedUrlPromise('getObject', params);
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const csvFile = new File([blob], filename, { type: 'text/csv' });
-
-      setFile(csvFile);
-
-      const fileContent = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsText(csvFile);
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
       });
 
-      const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
-      const sanitizedData = processData(parsedData);
-      setKineticAssayData(sanitizedData);
-      await generateGraphFromFile(sanitizedData);
-
+      const responseData = response.data;
+      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
+      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
+      setKineticConstants({
+        kcat: responseData.kcat,
+        kcat_SD: responseData.kcat_SD,
+        KM: responseData.KM,
+        KM_SD: responseData.KM_SD,
+        kcat_over_KM: responseData.kcat_over_KM,
+        kcat_over_KM_SD: responseData.kcat_over_KM_SD,
+      });
     } catch (error) {
-      console.error('Error fetching and processing CSV file from S3:', error);
+      console.error('Error generating graphs:', error);
+      throw error;
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    if (entryData.kinetic_raw_data_filename) {
-      fetchAndProcessCSV(entryData.kinetic_raw_data_filename);
+  const generateGraphFromTable = async () => {
+    const sanitizedData = processData(kineticAssayData);
+    setKineticAssayData(sanitizedData);
+
+    const csvContent = Papa.unparse(sanitizedData);
+    const editedFile = new File([csvContent], 'edited_data.csv', { type: 'text/csv' });
+
+    const formData = new FormData();
+    formData.append('file', editedFile);
+    formData.append(
+      'variant-name',
+      `${entryData.resid}${entryData.resnum}${entryData.resmut}`
+    );
+
+    try {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      });
+
+      const responseData = response.data;
+      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
+      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
+      setKineticConstants(responseData);
+    } catch (error) {
+      console.error('Error generating graph from table data:', error);
     }
-  }, [entryData.kinetic_raw_data_filename, fetchAndProcessCSV]);
+  };
 
-  useEffect(() => {
-    const fetchKineticRawDataEntryData = async () => {
+   // A) FETCH AND PROCESS CSV
+   const fetchAndProcessCSV = useCallback(
+    async (filename: string) => {
       try {
-        const response = await axios.get('/api/getKineticRawDataEntryData', {
-          params: { parent_id: entryData.id },
+        // 1. Download the CSV file from S3 as a Blob
+        const blob = await fetchFileFromS3('kinetic_assays/raw', filename);
+
+        // 2. Convert blob to File
+        const csvFile = new File([blob], filename, { type: 'text/csv' });
+        setFile(csvFile);
+
+        // 3. Convert file to string
+        const fileContent = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsText(csvFile);
         });
-        if (response.status === 200) {
-          const data = response.data;
-          setKineticRawDataEntryData(data);
 
-          console.log(data.csv_filename)
-          if (data.csv_filename) {
-            // Fetch the CSV file from S3 and process it
-            await fetchAndProcessCSV(data.csv_filename);
-          }
-        }
+        // 4. Parse CSV
+        const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
+        const sanitizedData = processData(parsedData);
+        setKineticAssayData(sanitizedData);
+
+        // 5. Generate or re-generate your images from the CSV
+        await generateGraphFromFile(sanitizedData);
       } catch (error) {
-        console.error('Error fetching KineticRawData entry:', error);
+        console.error('Error fetching and processing CSV file from S3:', error);
       }
-    };
+    },
+    [generateGraphFromFile],
+  );
 
-    if (entryData.id) {
-      fetchKineticRawDataEntryData();
+
+  useEffect(() => {
+    async function fetchKineticRawDataEntryData() {
+      if (!entryData.id) return;
+      const response = await axios.get('/api/getKineticRawDataEntryData', {
+        params: { parent_id: entryData.id }
+      });
+      if (response.status === 200) {
+        const data = response.data;
+        setKineticRawDataEntryData(data);
+  
+        // The key check: only call fetchAndProcessCSV if we have a csv_filename
+        // AND it isn't the same as entryData.kinetic_raw_data_filename we already processed
+        if (data.csv_filename && data.csv_filename !== entryData.kinetic_raw_data_filename) {
+          await fetchAndProcessCSV(data.csv_filename);
+        }
+      }
     }
-  }, [entryData.id, fetchAndProcessCSV]);
+  
+    fetchKineticRawDataEntryData();
+  }, [entryData.id]);
+
 
   const downloadCsvFile = async () => {
     if (!file) return;
-
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `kinetic_assays/raw/${file.name}`,
-        Expires: 60,
-      };
+      const blob = await fetchFileFromS3('kinetic_assays/raw', file.name);
 
-      const url = await s3.getSignedUrlPromise('getObject', params);
-
-      // Create a temporary anchor element to trigger the download
+      // Trigger a browser download for the Blob
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = file.name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error generating download link:', error);
       alert('Failed to download file. Please try again.');
     }
   };
+
 
   const detectOutliersMAD = (rowData: string[]) => {
     // Filter out empty/null values and convert to numbers
@@ -264,68 +353,6 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     if (file) handleFile(file);
   };
 
-  const generateGraphFromFile = async (sanitizedData: any[][]) => {
-    const formData = new FormData();
-    const sanitizedCsv = Papa.unparse(sanitizedData);
-    const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
-
-    formData.append('file', sanitizedFile);
-    formData.append(
-      'variant-name',
-      `${entryData.resid}${entryData.resnum}${entryData.resmut}`
-    );
-
-    try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
-      });
-
-      const responseData = response.data;
-      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
-      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
-      setKineticConstants({
-        kcat: responseData.kcat,
-        kcat_SD: responseData.kcat_SD,
-        KM: responseData.KM,
-        KM_SD: responseData.KM_SD,
-        kcat_over_KM: responseData.kcat_over_KM,
-        kcat_over_KM_SD: responseData.kcat_over_KM_SD,
-      });
-    } catch (error) {
-      console.error('Error generating graphs:', error);
-      throw error;
-    }
-  };
-
-  const generateGraphFromTable = async () => {
-    const sanitizedData = processData(kineticAssayData);
-    setKineticAssayData(sanitizedData);
-
-    const csvContent = Papa.unparse(sanitizedData);
-    const editedFile = new File([csvContent], 'edited_data.csv', { type: 'text/csv' });
-
-    const formData = new FormData();
-    formData.append('file', editedFile);
-    formData.append(
-      'variant-name',
-      `${entryData.resid}${entryData.resnum}${entryData.resmut}`
-    );
-
-    try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
-      });
-
-      const responseData = response.data;
-      setMentenImageUrl(`data:image/png;base64,${responseData.menten_plot}`);
-      setLineweaverImageUrl(`data:image/png;base64,${responseData.lineweaver_plot}`);
-      setKineticConstants(responseData);
-    } catch (error) {
-      console.error('Error generating graph from table data:', error);
-    }
-  };
 
   const generateFilename = (baseName: string, suffix: string = '', extension: string) => {
     const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
@@ -347,10 +374,24 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     return new Blob(byteArrays, { type: contentType });
   };
 
+  async function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string; // data:<type>;base64,xxxx
+        const base64 = dataUrl.split(',')[1] || '';
+        resolve(base64);
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(blob);
+    });
+  }
+  
+
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      // Collect necessary data
+      // 1. Collect necessary data
       const user_name = user.user_name;
       const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
       const slope_units = kineticAssayData[1][4];
@@ -366,11 +407,10 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         assay_date = null;
       }
       const parent_id = entryData.id;
-
+  
       // Kinetic constants
       const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
-
-      // Prepare data to send
+  
       const dataToSend = {
         user_name,
         variant,
@@ -391,67 +431,49 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         plot_filename: '',
         approved_by_student: approvedByStudent,
       };
-
-      // Generate filenames
+  
+      // 2. Generate filenames
       const csvFilename = generateFilename('', '', 'csv');
       const mentenPlotFilename = generateFilename('', '', 'png');
       const lineweaverPlotFilename = generateFilename('', '-LB', 'png');
-
-      // Always create CSV from current table data
+  
+      // 3. Convert current table data to CSV, then to base64
       const csvContent = Papa.unparse(kineticAssayData);
-      const csvFileToUpload = new File([new Blob([csvContent])], csvFilename, { type: 'text/csv' });
-
-      // Upload CSV to S3
-      await s3
-        .upload({
-          Bucket: 'd2dcurebucket',
-          Key: `kinetic_assays/raw/${csvFilename}`,
-          Body: csvFileToUpload,
-          ContentType: 'text/csv',
-        })
-        .promise();
-
+      const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+      const csvBase64 = await blobToBase64(csvBlob);
+  
+      // 4. Upload CSV to S3 (folder = "kinetic_assays/raw")
+      await uploadFileToS3('kinetic_assays/raw', csvFilename, csvBase64);
+  
+      // 5. Check if plots are available
       if (!mentenImageUrl || !lineweaverImageUrl) {
         alert('Plots are not available for upload.');
         return;
       }
-
-      // Convert Base64 plots to Blobs
-      const mentenPlotBlob = base64ToBlob(mentenImageUrl.split(',')[1], 'image/png');
-      const lineweaverPlotBlob = base64ToBlob(lineweaverImageUrl.split(',')[1], 'image/png');
-
-      // Upload Menten plot to S3
-      await s3
-        .upload({
-          Bucket: 'd2dcurebucket',
-          Key: `kinetic_assays/plots/${mentenPlotFilename}`,
-          Body: mentenPlotBlob,
-          ContentType: 'image/png',
-        })
-        .promise();
-
-      // Upload Lineweaver plot to S3
-      await s3
-        .upload({
-          Bucket: 'd2dcurebucket',
-          Key: `temp/${lineweaverPlotFilename}`,
-          Body: lineweaverPlotBlob,
-          ContentType: 'image/png',
-        })
-        .promise();
-
-      // Update the filenames in dataToSend
+  
+      // 6. Convert base64-encoded plots to pure base64 (remove dataURL prefix),
+      //    then upload to S3
+      const mentenB64 = mentenImageUrl.split(',')[1] || '';
+      const lineweaverB64 = lineweaverImageUrl.split(',')[1] || '';
+  
+      // Menten plot => "kinetic_assays/plots"
+      await uploadFileToS3('kinetic_assays/plots', mentenPlotFilename, mentenB64);
+  
+      // Lineweaver plot => "temp"
+      await uploadFileToS3('temp', lineweaverPlotFilename, lineweaverB64);
+  
+      // 7. Update filenames in dataToSend
       dataToSend.csv_filename = csvFilename;
       dataToSend.plot_filename = mentenPlotFilename;
-
-      // First, save to KineticRawData
+  
+      // 8. Save to KineticRawData
       const response1 = await axios.post('/api/updateKineticRawData', dataToSend);
-
+  
       if (response1.status === 200) {
         const raw_data_id = response1.data.kineticRawDataId;
         setKineticRawDataEntryData(response1.data);
-
-        // Now update CharacterizationData
+  
+        // 9. Update CharacterizationData
         const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {
           parent_id,
           kcat,
@@ -463,7 +485,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           raw_data_id,
           yield: yield_value,
         });
-
+  
         if (response2.status === 200) {
           // Success
           console.log('Data saved successfully');

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
 import "../../../app/globals.css";
-import s3 from '../../../../s3config';
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
@@ -47,12 +46,27 @@ const DataPageView = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [errorType, setErrorType] = useState<'api' | 'validation' | 'general' | 'auth' | 'custom'>('api');
 
+  /**
+ * Helper: gets a presigned URL by calling /api/s3?folder=<folder>&download=<fileName>
+ */
+async function getPresignedUrl(folder: string, fileName: string): Promise<string> {
+  // e.g. /api/s3?folder=kinetic_assays/raw&download=someFile.csv
+  const endpoint = `/api/s3?folder=${encodeURIComponent(folder)}&download=${encodeURIComponent(fileName)}`;
+  const presignedResp = await fetch(endpoint);
+  if (!presignedResp.ok) {
+    throw new Error(`Failed to get presigned URL for ${fileName} in folder ${folder}: ${presignedResp.statusText}`);
+  }
+  const { presignedUrl } = await presignedResp.json(); // { presignedUrl, fileKey }
+  return presignedUrl; // e.g. https://<bucket>.s3.amazonaws.com/... with a temporary signature
+}
+
+
   // Fetch gel image when gel_filename changes
   useEffect(() => {
     const fetchGelImage = async () => {
       if (entryData1?.gel_filename) {
         try {
-          const url = `https://d2dcurebucket.s3.amazonaws.com/gel-images/${entryData1.gel_filename}`;
+          const url = `https://d2dcurebucketprod.s3.amazonaws.com/gel-images/${entryData1.gel_filename}`;
           setGelImageUrl(url);
         } catch (err) {
           console.error('Error fetching gel image:', err);
@@ -69,14 +83,8 @@ const DataPageView = () => {
       if (entryData2?.csv_filename) {
         try {
           // Fetch and parse CSV for table
-          const params = {
-            Bucket: 'd2dcurebucket',
-            Key: `kinetic_assays/raw/${entryData2.csv_filename}`,
-            Expires: 60,
-          };
-
-          const url = await s3.getSignedUrlPromise('getObject', params);
-          const response = await fetch(url);
+          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
+          const response = await fetch(presignedUrl);
           const blob = await response.blob();
           const csvFile = new File([blob], entryData2.csv_filename, { type: 'text/csv' });
 
@@ -91,7 +99,7 @@ const DataPageView = () => {
 
           // Set plot image URLs directly from S3
           if (entryData2.plot_filename) {
-            const mentenUrl = `https://d2dcurebucket.s3.amazonaws.com/kinetic_assays/plots/${entryData2.plot_filename}`;            
+            const mentenUrl = `https://d2dcurebucketprod.s3.amazonaws.com/kinetic_assays/plots/${entryData2.plot_filename}`;            
             setMentenImageUrl(mentenUrl);
           }
         } catch (err) {
@@ -108,14 +116,8 @@ const DataPageView = () => {
       if (entryData3?.csv_filename) {
         try {
           // Fetch and parse CSV for table
-          const params = {
-            Bucket: 'd2dcurebucket',
-            Key: `temperature_assays/raw/${entryData3.csv_filename}`,
-            Expires: 60,
-          };
-
-          const url = await s3.getSignedUrlPromise('getObject', params);
-          const response = await fetch(url);
+          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
+          const response = await fetch(presignedUrl);
           const blob = await response.blob();
           const csvFile = new File([blob], entryData3.csv_filename, { type: 'text/csv' });
 
@@ -130,7 +132,7 @@ const DataPageView = () => {
 
           // Set plot image URL directly from S3
           if (entryData3.plot_filename) {
-            const plotUrl = `https://d2dcurebucket.s3.amazonaws.com/temperature_assays/plots/${entryData3.plot_filename}`;
+            const plotUrl = `https://d2dcurebucketprod.s3.amazonaws.com/temperature_assays/plots/${entryData3.plot_filename}`;
             setThermoImageUrl(plotUrl);
           }
         } catch (err) {
@@ -211,20 +213,8 @@ const DataPageView = () => {
       if (entryData11?.csv_filename) {
         try {
           // Fetch and parse CSV for table
-          const params = {
-            Bucket: 'd2dcurebucket',
-            Key: `kinetic_assays/raw/${entryData11.csv_filename}`,
-            Expires: 60,
-          };
-
-          const url = await s3.getSignedUrlPromise('getObject', params);
-          console.log("Generated S3 URL for WT Kinetic CSV:", url);
-
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch CSV: ${response.status}`);
-          }
-
+          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
+          const response = await fetch(presignedUrl);
           const blob = await response.blob();
           const csvFile = new File([blob], entryData11.csv_filename, { type: 'text/csv' });
 
@@ -240,7 +230,7 @@ const DataPageView = () => {
 
           // Set plot image URL
           if (entryData11.plot_filename) {
-            const mentenUrl = `https://d2dcurebucket.s3.amazonaws.com/kinetic_assays/plots/${entryData11.plot_filename}`;
+            const mentenUrl = `https://d2dcurebucketprod.s3.amazonaws.com/kinetic_assays/plots/${entryData11.plot_filename}`;
             console.log("Setting WT Kinetic plot URL:", mentenUrl);
             setWtMentenImageUrl(mentenUrl);
           }
@@ -262,20 +252,8 @@ const DataPageView = () => {
 
       if (entryData12?.csv_filename) {
         try {
-          const params = {
-            Bucket: 'd2dcurebucket',
-            Key: `temperature_assays/raw/${entryData12.csv_filename}`,
-            Expires: 60,
-          };
-
-          const url = await s3.getSignedUrlPromise('getObject', params);
-          console.log("Generated S3 URL for WT Thermo CSV:", url);
-
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch CSV: ${response.status}`);
-          }
-
+          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
+          const response = await fetch(presignedUrl);
           const blob = await response.blob();
           const csvFile = new File([blob], entryData12.csv_filename, { type: 'text/csv' });
 
@@ -291,7 +269,7 @@ const DataPageView = () => {
 
           // Set plot image URL
           if (entryData12.plot_filename) {
-            const plotUrl = `https://d2dcurebucket.s3.amazonaws.com/temperature_assays/plots/${entryData12.plot_filename}`;
+            const plotUrl = `https://d2dcurebucketprod.s3.amazonaws.com/temperature_assays/plots/${entryData12.plot_filename}`;
             console.log("Setting WT Thermo plot URL:", plotUrl);
             setWtThermoImageUrl(plotUrl);
           }
@@ -306,14 +284,9 @@ const DataPageView = () => {
 
   const handleDownloadCSV = async (filename: string, directory: string) => {
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `${directory}/${filename}`,
-        Expires: 60,
-      };
+      const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
 
-      const url = await s3.getSignedUrlPromise('getObject', params);
-      window.open(url, '_blank');
+      window.open(presignedUrl, '_blank');
     } catch (error) {
       console.error('Error downloading CSV:', error);
     }
@@ -321,14 +294,9 @@ const DataPageView = () => {
 
   const handleAB1Download = async (filename: string) => {
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `sequencing/${filename}`,
-        Expires: 60,
-      };
+      const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
 
-      const url = await s3.getSignedUrlPromise('getObject', params);
-      window.open(url, '_blank');
+      window.open(presignedUrl, '_blank');
     } catch (error) {
       console.error('Error downloading AB1:', error);
     }

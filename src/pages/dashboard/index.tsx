@@ -1,23 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Card, CardBody, Chip, Avatar, Tooltip, Input, Modal, ModalContent, ModalBody, Spinner, Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Avatar,
+  Tooltip,
+  Input,
+  Modal,
+  ModalContent,
+  ModalBody,
+  Spinner,
+  Popover,
+  PopoverTrigger,
+  PopoverContent
+} from '@nextui-org/react';
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { CardFooter } from "@nextui-org/react";
+import { CardFooter } from '@nextui-org/react';
 import { useUser } from '@/components/UserProvider';
-import { useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from '@nextui-org/react';
 import { AuthChecker } from '@/components/AuthChecker';
-import { RiSparklingFill } from "react-icons/ri";
+import { RiSparklingFill } from 'react-icons/ri';
 import StatusChip from '@/components/StatusChip';
 import { ErrorChecker } from '@/components/ErrorChecker';
-import s3 from '../../../s3config';
-import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
+
+/** Helper: List objects by calling GET /api/s3?folder=gel-images */
+async function listS3Objects(folder: string) {
+  // e.g. /api/s3?folder=gel-images
+  const res = await fetch(`/api/s3?folder=${folder}`);
+  if (!res.ok) {
+    throw new Error(`Failed to list objects in folder=${folder}: ${res.statusText}`);
+  }
+  const data = await res.json(); // { objects: [ { key, url }, ... ] }
+  return data.objects || [];
+}
+
+/** Helper: Delete an object by calling DELETE /api/s3?folder=gel-images with { key } in JSON body */
+async function deleteS3Object(folder: string, key: string) {
+  const res = await fetch(`/api/s3?folder=${folder}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key })
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete object key=${key}: ${res.statusText}`);
+  }
+  return res.json(); // { message, deletedKey }
+}
 
 interface CharacterizationData {
   curated: boolean;
   submitted_for_curation: boolean;
+  approved_by_pi: boolean;
   id: string;
   comments?: string;
   resid?: string;
@@ -37,11 +82,11 @@ interface GelImage {
 
 const Dashboard = () => {
   const { user } = useUser();
-  const [activeIndex, setActiveIndex] = useState(null);
-  const {isOpen, onOpen, onClose} = useDisclosure();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [characterizationData, setCharacterizationData] = useState<CharacterizationData[]>([]);
   const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [gelImages, setGelImages] = useState<GelImage[]>([]);
   const [selectedImageData, setSelectedImageData] = useState<GelImage | null>(null);
@@ -52,7 +97,7 @@ const Dashboard = () => {
     type?: 'success' | 'error' | 'info' | 'warning';
   }>({
     show: false,
-    title: '',
+    title: ''
   });
   const [confirmationModal, setConfirmationModal] = useState<{
     show: boolean;
@@ -67,270 +112,200 @@ const Dashboard = () => {
       onOpen();
       return;
     }
-
     if (user.user_name) {
       fetchCharacterizationData(user.user_name);
       fetchGelImages();
     }
   }, [user]);
 
-  const fetchCharacterizationData = async (userName: string) => {
+  async function fetchCharacterizationData(userName: string) {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/getCharacterizationDataForUser?userName=${userName}`);
-      
       if (!response.ok) {
-        throw new Error(`GET /api/getCharacterizationDataForUser ${response.status} - Failed to fetch characterization data`);
+        throw new Error(
+          `GET /api/getCharacterizationDataForUser ${response.status} - Failed to fetch characterization data`
+        );
       }
-
       const data = await response.json();
-      
       if (!Array.isArray(data)) {
         throw new Error('GET /api/getCharacterizationDataForUser - Invalid data format: Expected array');
       }
-
       setCharacterizationData(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching characterization data:', error);
       setIsError(true);
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch characterization data');
+      setErrorMessage(error?.message || 'Failed to fetch characterization data');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const fetchGelImages = async () => {
-    const params = {
-      Bucket: 'd2dcurebucket',
-      Prefix: 'gel-images/',
-    };
+  async function fetchGelImages() {
     try {
-      const data = await s3.listObjectsV2(params).promise();
-      if (data && data.Contents) {
-        const batchSize = 10;
-        const processedImages: GelImage[] = [];
-        
-        for (let i = 0; i < data.Contents.length; i += batchSize) {
-          const batch = data.Contents.slice(i, i + batchSize)
-            .filter((file): file is Required<typeof file> => 
-              file.Key !== undefined && 
-              !file.Key.endsWith('/')
-            );
+      setIsLoading(true);
+      // 1) get list of objects from /api/s3?folder=gel-images
+      const objects = await listS3Objects('gel-images');
+      // objects: [ { key, url }, { key, url }, ...]
 
-          const batchPromises = batch.map(async (file) => {
-            try {
-              // Get just the filename without the 'gel-images/' prefix and file extension
-              const filename = file.Key.split('/').pop()?.split('.')[0] || '';
-              
-              // Parse filename parts: institution-variant-username-date
-              const parts = filename.split('-');
-              if (parts.length >= 4) {  // Ensure we have all parts
-                const [institution, variant, userName, date] = parts;
+      const processedImages: GelImage[] = [];
 
-                // Only return images where userName matches current user
-                if (userName === user?.user_name) {
-                  return {
-                    key: file.Key,
-                    url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                    filename: filename + file.Key.split('.').pop(),  // Add back file extension
-                    institution,
-                    userName,
-                    fileDate: date,
-                    variant
-                  };
-                }
-              }
-              return null;
-            } catch (err) {
-              console.error(`Error processing file ${file.Key}:`, err);
-              return null;
-            }
-          });
+      // We replicate your existing logic: parse the filename (institution-variant-username-date)
+      // ignoring subfolders, etc. Also filter only userName === current user?
+      for (const obj of objects) {
+        if (!obj.key) continue;
 
-          const batchResults = await Promise.all(batchPromises);
-          processedImages.push(...batchResults.filter((img): img is GelImage => img !== null));
+        // "key" might be "gel-images/institution-variant-userName-date.ext"
+        const filenameFull = obj.key.split('/').pop() || ''; // "institution-variant-userName-date.ext"
+        const [institution, variant, userName, dateAndExt] = filenameFull.split('-');
+        if (!institution || !variant || !userName || !dateAndExt) {
+          // If the naming doesn't match exactly 4 parts, skip
+          continue;
         }
+        // e.g. dateAndExt => "2023.???" 
+        // We'll do a naive approach
+        const splitted = dateAndExt.split('.');
+        const dateStr = splitted[0];
+        const extension = splitted[1] || '';
 
-        // Sort by date, newest first
-        const sortedImages = [...processedImages].sort((a, b) => 
-          new Date(b.fileDate).getTime() - new Date(a.fileDate).getTime()
-        );
-        setGelImages(sortedImages);
+        // Only return images for current user
+        if (userName === user?.user_name) {
+          processedImages.push({
+            key: obj.key,
+            url: obj.url, // from the listing
+            filename: filenameFull, // or `filenameFull` + extension
+            institution,
+            userName,
+            fileDate: dateStr,
+            variant
+          });
+        }
       }
-    } catch (err) {
+
+      // Sort by date descending
+      const sortedImages = [...processedImages].sort((a, b) => {
+        // parse a.fileDate => might not be an actual date, do a string compare or parse
+        // If it's something like "2023-03-01", we can parse. If "030123", also parse or fallback
+        // We'll do a fallback to string compare
+        const dateA = Date.parse(a.fileDate) || 0;
+        const dateB = Date.parse(b.fileDate) || 0;
+        return dateB - dateA; // newest first
+      });
+
+      setGelImages(sortedImages);
+    } catch (err: any) {
       console.error('Error fetching gel images:', err);
       showToast('Error', 'Failed to fetch gel images', 'error');
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }
 
-  const toggleAccordion = (index:any) => {
+  function toggleAccordion(index: number) {
     setActiveIndex(activeIndex === index ? null : index);
-  };
+  }
 
-
-  const renderStatus = (data:any) => {
-    const statusConfig = {
-      Curated: {
-        color: "success",
-        bgColor: "bg-success-50",
-        textColor: "text-success-600",
-      },
-      Submitted: {
-        color: "warning",
-        bgColor: "bg-warning-50",
-        textColor: "text-warning-600",
-      },
-      "Not Submitted": {
-        color: "danger",
-        bgColor: "bg-danger-50",
-        textColor: "text-danger-600",
-      }
-    };
-
-    const status = data.curated ? 'Curated' : data.submitted_for_curation ? 'Submitted' : 'Not Submitted';
-    const config = statusConfig[status];
-
-    return (
-      <Chip
-        className={`${config.bgColor} ${config.textColor}`}
-        variant="flat"
-        size="sm"
-      >
-        {status}
-      </Chip>
-    );
-  };
-
-  const renderVariant = (data:any) => `${data.resid}${data.resnum}${data.resmut}`;
-  
-  const faqs = [
-    {
-      question: "What is D2D Cure and how does it work?",
-      answer: "D2D Cure (Design2Data) is a research platform that connects students and researchers in investigating protein sequence-structure-function relationships. Through the lens of protein biochemistry, users can submit enzyme variants, analyze data, and contribute to improving functionally predictive enzyme-design algorithms in collaboration with RosettaCommons.",
-    },
-    {
-      question: "How do I submit characterization data?",
-      answer: "To submit characterization data, navigate to the submission section where you can input variant details, upload gel images, and provide experimental results. The platform supports various data types including kinetic measurements, thermal stability data, and expression verification through SDS-PAGE gels.",
-    },
-    {
-      question: "What happens after I submit my data?",
-      answer: "After submission, your data goes through a curation process. First, it's marked as 'Submitted for Curation'. Once reviewed and approved by PIs and administrators, it becomes 'Curated' and contributes to the research database. You can track the status of your submissions in your dashboard.",
-    },
-    {
-      question: "How can I collaborate with team members?",
-      answer: "D2D Cure supports team collaboration through its teammate system. You can add up to three teammates to your characterization entries, allowing for collaborative data submission and analysis. Team members can be selected from your institution's registered users.",
-    },
-    {
-      question: "How do I manage my gel images?",
-      answer: "You can upload, view, and manage gel images through the dashboard's gel image section. The platform supports image preview, deletion, and organization by date and institution. Images are automatically associated with your user account and can be linked to specific variant characterizations.",
-    }
-  ];
-
-  const ResearchInsight = () => {
-    const curatedCount = characterizationData.filter(d => d.curated).length;
-    const reviewCount = characterizationData.filter(d => !d.curated && d.submitted_for_curation).length;
-    const readyCount = characterizationData.filter(d => !d.submitted_for_curation).length;
-
-    let message ="";
-    
-    if (characterizationData.length === 0) {
-      message += "No variants have been submitted. Would you like to begin your research submission?";
-    } else {
-      message += `You have successfully contributed ${characterizationData.length} variants to the research database. `;
-      
-      if (curatedCount > 0) {
-        message += `\n\n✅ ${curatedCount} submissions have completed the curation process`;
-      }
-      if (reviewCount > 0) {
-        message += `\n\n🔍 ${reviewCount} submissions are pending review`;
-      }
-      if (readyCount > 0) {
-        message += `\n\n💡 ${readyCount} variants are prepared for submission`;
-      }
-    }
-
-    return (
-      <div className="text-gray-600 leading-relaxed whitespace-pre-line">
-        {message}
-      </div>
-    );
-  };
-
-  const showToast = (title: string, message?: string, type: 'success' | 'error' | 'info' | 'warning' = 'error') => {
+  function showToast(title: string, message?: string, type: 'success' | 'error' | 'info' | 'warning' = 'error') {
     setToastConfig({
       show: true,
       title,
       message,
-      type,
+      type
     });
-  };
+  }
 
-  const handleDeleteImage = async (imageKey: string) => {
+  async function handleDeleteImage(imageKey: string) {
+    // show confirmation
     setConfirmationModal({
       show: true,
       imageKey
     });
-  };
+  }
 
-  const handleConfirmDelete = async () => {
+  async function handleConfirmDelete() {
     const imageKey = confirmationModal.imageKey;
     if (!imageKey) return;
 
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: imageKey
-      };
+      // 1) call DELETE /api/s3?folder=gel-images with { key: imageKey }
+      await deleteS3Object('gel-images', imageKey);
 
-      await s3.deleteObject(params).promise();
-      
-      setGelImages(prevImages => prevImages.filter(img => img.key !== imageKey));
-      
+      // 2) remove from state
+      setGelImages((prev) => prev.filter((img) => img.key !== imageKey));
+
       if (selectedImageData?.key === imageKey) {
         setSelectedImageData(null);
       }
 
       showToast('Image deleted successfully', undefined, 'success');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting image:', err);
       showToast('Failed to delete image', 'Please try again later');
     } finally {
       setConfirmationModal({ show: false, imageKey: null });
     }
-  };
+  }
 
-  const handlePrevImage = () => {
+  function handlePrevImage() {
     if (!selectedImageData) return;
-    const currentIndex = gelImages.findIndex(img => img.key === selectedImageData.key);
+    const currentIndex = gelImages.findIndex((img) => img.key === selectedImageData.key);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : gelImages.length - 1;
     setSelectedImageData(gelImages[prevIndex]);
-  };
+  }
 
-  const handleNextImage = () => {
+  function handleNextImage() {
     if (!selectedImageData) return;
-    const currentIndex = gelImages.findIndex(img => img.key === selectedImageData.key);
+    const currentIndex = gelImages.findIndex((img) => img.key === selectedImageData.key);
     const nextIndex = currentIndex < gelImages.length - 1 ? currentIndex + 1 : 0;
     setSelectedImageData(gelImages[nextIndex]);
-  };
+  }
+
+  const faqs = [
+    {
+      question: 'What is D2D Cure and how does it work?',
+      answer:
+        'D2D Cure (Design2Data) is a research platform that connects students and researchers in investigating protein sequence-structure-function relationships...'
+    },
+    {
+      question: 'How do I submit characterization data?',
+      answer:
+        'To submit characterization data, navigate to the submission section...'
+    },
+    {
+      question: 'What happens after I submit my data?',
+      answer:
+        "After submission, your data goes through a curation process. First, it's marked as 'Submitted for Curation'..."
+    },
+    {
+      question: 'How can I collaborate with team members?',
+      answer:
+        'D2D Cure supports team collaboration through its teammate system...'
+    },
+    {
+      question: 'How do I manage my gel images?',
+      answer:
+        'You can upload, view, and manage gel images through the dashboard...'
+    }
+  ];
 
   return (
     <>
       <NavBar />
       <AuthChecker minimumStatus="student">
-        <ErrorChecker 
-          isError={isError} 
-          errorMessage={errorMessage}
-          errorType="api"
-        >
+        <ErrorChecker isError={isError} errorMessage={errorMessage} errorType="api">
           <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
             {/* Welcome Section */}
             <div className="flex items-center space-x-4 mb-16">
               {user?.user_name && (
                 <>
                   <div>
-                    <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">{(user?.status)}</Chip>
+                    <Chip className="bg-[#E6F1FE] mb-2 text-[#06B7DB]" variant="flat">
+                      {user?.status}
+                    </Chip>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-4xl">Welcome, <span className="text-[#06B7DB]">{user?.user_name}</span>!</h1>
+                      <h1 className="text-4xl">
+                        Welcome, <span className="text-[#06B7DB]">{user.user_name}</span>!
+                      </h1>
                     </div>
                   </div>
                 </>
@@ -338,31 +313,41 @@ const Dashboard = () => {
             </div>
 
             {/* Action Cards Section */}
-            <div className={`grid gap-6 mb-20 ${user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+            <div
+              className={`grid gap-6 mb-20 ${
+                user?.status === 'ADMIN' || user?.status === 'PROFESSOR'
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              }`}
+            >
               {[
                 {
-                  title: "Single Variant",
-                  link: "/submit",
-                  linkText: "Submit Data",
+                  title: 'Single Variant',
+                  link: '/submit',
+                  linkText: 'Submit Data'
                 },
                 {
-                  title: "Wild Type",
-                  link: "/submit",
-                  linkText: "Submit Data",
+                  title: 'Wild Type',
+                  link: '/submit',
+                  linkText: 'Submit Data'
                 },
                 {
-                  title: "Gel Image",
-                  link: "/submit/gel_image_upload",
-                  linkText: "Upload Image",
+                  title: 'Gel Image',
+                  link: '/submit/gel_image_upload',
+                  linkText: 'Upload Image'
                 },
-                ...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR' ? [{
-                  title: "Curate",
-                  link: "/curate",
-                  linkText: "Curate Data",
-                }] : [])
+                ...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR'
+                  ? [
+                      {
+                        title: 'Curate',
+                        link: '/curate',
+                        linkText: 'Curate Data'
+                      }
+                    ]
+                  : [])
               ].map((item, index) => (
                 <Link href={item.link} key={index}>
-                  <Card 
+                  <Card
                     isPressable
                     className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
                   >
@@ -395,12 +380,7 @@ const Dashboard = () => {
                     </Button>
                   </Link>
                 </div>
-                <Table 
-                  aria-label="Variant Profiles"
-                  classNames={{
-                    table: "min-h-[100px]",
-                  }}
-                >
+                <Table aria-label="Variant Profiles" classNames={{ table: 'min-h-[100px]' }}>
                   <TableHeader>
                     <TableColumn>STATUS</TableColumn>
                     <TableColumn>Enzyme</TableColumn>
@@ -410,31 +390,29 @@ const Dashboard = () => {
                     <TableColumn>Actions</TableColumn>
                   </TableHeader>
                   <TableBody>
-                    {characterizationData.map((data: any, index: any) => {
+                    {characterizationData.map((data, index) => {
                       const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-                      const viewUrl = 
-                        variant === "WT" 
-                          ? `/submit/wild_type/${data.id}` 
-                          : `/submit/single_variant/${data.id}`;
+                      const viewUrl =
+                        variant === 'WT' ? `/submit/wild_type/${data.id}` : `/submit/single_variant/${data.id}`;
 
                       return (
                         <TableRow key={index}>
                           <TableCell>
-                            <StatusChip 
+                            <StatusChip
                               status={
-                                data.curated 
+                                data.curated
                                   ? 'approved'
                                   : data.approved_by_pi
-                                    ? 'pi_approved'
-                                    : data.submitted_for_curation 
-                                      ? 'pending_approval'
-                                      : 'in_progress'
-                              } 
+                                  ? 'pi_approved'
+                                  : data.submitted_for_curation
+                                  ? 'pending_approval'
+                                  : 'in_progress'
+                              }
                             />
                           </TableCell>
                           <TableCell>BglB</TableCell>
                           <TableCell>{variant}</TableCell>
-                          <TableCell>{data.id}</TableCell> 
+                          <TableCell>{data.id}</TableCell>
                           <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
                             {data.comments || 'No comments'}
                           </TableCell>
@@ -461,16 +439,18 @@ const Dashboard = () => {
                       </Button>
                     </Link>
                     <Link href="/submit/gel_image_upload" passHref>
-                      <Button color="primary" className="bg-[#06B7DB]">Upload New Image</Button>
+                      <Button color="primary" className="bg-[#06B7DB]">
+                        Upload New Image
+                      </Button>
                     </Link>
                   </div>
                 </div>
                 {isLoading ? (
-                  <Table 
+                  <Table
                     aria-label="Gel Image Uploads Loading"
                     classNames={{
-                      base: "max-h-[400px]",
-                      wrapper: "max-h-[400px]"
+                      base: 'max-h-[400px]',
+                      wrapper: 'max-h-[400px]'
                     }}
                   >
                     <TableHeader>
@@ -500,17 +480,17 @@ const Dashboard = () => {
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <svg 
-                          className="h-5 w-5 text-gray-600" 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
+                        <svg
+                          className="h-5 w-5 text-gray-600"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
                           strokeLinejoin="round"
                         >
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
                           <line x1="12" y1="18" x2="12" y2="12" />
                           <line x1="9" y1="15" x2="15" y2="15" />
@@ -519,7 +499,10 @@ const Dashboard = () => {
                       <div className="ml-3">
                         <p className="text-sm text-gray-600">
                           You haven&apos;t uploaded any gel images yet.{' '}
-                          <Link href="/submit/gel_image_upload" className="font-medium text-[#06B7DB] hover:text-[#06B7DB]/80">
+                          <Link
+                            href="/submit/gel_image_upload"
+                            className="font-medium text-[#06B7DB] hover:text-[#06B7DB]/80"
+                          >
                             Upload your first image
                           </Link>
                         </p>
@@ -527,11 +510,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ) : (
-                  <Table 
+                  <Table
                     aria-label="Gel Image Uploads"
                     classNames={{
-                      base: "max-h-[400px]",
-                      wrapper: "max-h-[400px]"
+                      base: 'max-h-[400px]',
+                      wrapper: 'max-h-[400px]'
                     }}
                   >
                     <TableHeader>
@@ -554,11 +537,7 @@ const Dashboard = () => {
                           <TableCell>{image.institution}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                isIconOnly
-                                variant="light"
-                                onClick={() => setSelectedImageData(image)}
-                              >
+                              <Button isIconOnly variant="light" onClick={() => setSelectedImageData(image)}>
                                 <EyeIcon className="h-5 w-5" />
                               </Button>
                               <Button
@@ -583,19 +562,17 @@ const Dashboard = () => {
             <section className="py-10">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mb-10">
-                  <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">FAQs</Chip>
-                  <h2 className="text-4xl text-gray-900 leading-[3.25rem]">
-                    Frequently Asked Questions
-                  </h2>
+                  <Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">
+                    FAQs
+                  </Chip>
+                  <h2 className="text-4xl text-gray-900 leading-[3.25rem]">Frequently Asked Questions</h2>
                 </div>
 
                 <div className="space-y-4">
                   {faqs.map((faq, index) => (
                     <div
                       key={index}
-                      className={`accordion py-6 px-6 border border-solid border-gray-200 rounded-2xl transition-all duration-500 ${
-                        activeIndex === index ? '' : ''
-                      }`}
+                      className={`accordion py-6 px-6 border border-solid border-gray-200 rounded-2xl transition-all duration-500`}
                     >
                       <button
                         className="accordion-toggle flex items-center justify-between leading-8 text-gray-900 w-full text-left font-medium"
@@ -603,9 +580,7 @@ const Dashboard = () => {
                       >
                         <h5 className="text-lg hover:text-[#06B7DB]">{faq.question}</h5>
                         <svg
-                          className={`transition-transform duration-500 ${
-                            activeIndex === index ? 'rotate-180' : ''
-                          }`}
+                          className={`transition-transform duration-500 ${activeIndex === index ? 'rotate-180' : ''}`}
                           width="22"
                           height="22"
                           viewBox="0 0 22 22"
@@ -627,9 +602,7 @@ const Dashboard = () => {
                           activeIndex === index ? 'max-h-64' : 'max-h-0'
                         }`}
                       >
-                        <p className="text-base text-gray-600 leading-6 mt-4">
-                          {faq.answer}
-                        </p>
+                        <p className="text-base text-gray-600 leading-6 mt-4">{faq.answer}</p>
                       </div>
                     </div>
                   ))}
@@ -640,6 +613,7 @@ const Dashboard = () => {
         </ErrorChecker>
       </AuthChecker>
       <Footer />
+
       {/* Floating star icon with insights */}
       <Popover placement="top-end">
         <PopoverTrigger>
@@ -657,31 +631,36 @@ const Dashboard = () => {
             </div>
             <div className="text-sm text-gray-600">
               You have successfully contributed {characterizationData.length} variants to the research database.
-              
-              {characterizationData.filter(d => d.curated).length > 0 && (
+              {characterizationData.filter((d) => d.curated).length > 0 && (
                 <div className="mt-2">
-                  ✓ {characterizationData.filter(d => d.curated).length} submissions have completed the curation process
+                  ✓ {characterizationData.filter((d) => d.curated).length} submissions have completed the curation
+                  process
                 </div>
               )}
-              
-              {characterizationData.filter(d => !d.curated && d.submitted_for_curation).length > 0 && (
+
+              {characterizationData.filter((d) => !d.curated && d.submitted_for_curation).length > 0 && (
                 <div className="mt-2">
-                  🔍 {characterizationData.filter(d => !d.curated && d.submitted_for_curation).length} submissions are pending review
+                  🔍{' '}
+                  {characterizationData.filter((d) => !d.curated && d.submitted_for_curation).length} submissions are
+                  pending review
                 </div>
               )}
-              
-              {characterizationData.filter(d => !d.submitted_for_curation).length > 0 && (
+
+              {characterizationData.filter((d) => !d.submitted_for_curation).length > 0 && (
                 <div className="mt-2">
-                  💡 {characterizationData.filter(d => !d.submitted_for_curation).length} variants are prepared for submission
+                  💡{' '}
+                  {characterizationData.filter((d) => !d.submitted_for_curation).length} variants are prepared for
+                  submission
                 </div>
               )}
             </div>
           </div>
         </PopoverContent>
       </Popover>
+
       <Toast
         show={toastConfig.show}
-        onClose={() => setToastConfig(prev => ({ ...prev, show: false }))}
+        onClose={() => setToastConfig((prev) => ({ ...prev, show: false }))}
         title={toastConfig.title}
         message={toastConfig.message}
         type={toastConfig.type}
@@ -698,11 +677,11 @@ const Dashboard = () => {
       />
 
       {selectedImageData && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={() => setSelectedImageData(null)}
         >
-          <div 
+          <div
             className="bg-white rounded-xl flex flex-col lg:flex-row w-full max-w-[95vw] lg:max-w-6xl 
               max-h-[95vh] overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
@@ -716,7 +695,12 @@ const Dashboard = () => {
                 handlePrevImage();
               }}
             >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 group-hover:scale-110 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -729,7 +713,12 @@ const Dashboard = () => {
                 handleNextImage();
               }}
             >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 group-hover:scale-110 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -741,7 +730,7 @@ const Dashboard = () => {
                 alt="Gel Image Preview"
                 className="max-w-full max-h-[40vh] lg:max-h-[80vh] object-contain rounded-lg shadow-md"
               />
-              
+
               {/* Mobile navigation buttons */}
               <div className="flex lg:hidden items-center justify-between w-full absolute top-1/2 -translate-y-1/2 px-2">
                 <button
@@ -767,17 +756,21 @@ const Dashboard = () => {
                   </svg>
                 </button>
               </div>
-              
+
               {/* Image counter overlay */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md text-white 
-                px-4 py-1.5 rounded-full text-sm font-medium tracking-wide">
-                Image {gelImages.findIndex(img => img.key === selectedImageData.key) + 1} of {gelImages.length}
+              <div
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md text-white 
+                px-4 py-1.5 rounded-full text-sm font-medium tracking-wide"
+              >
+                Image {gelImages.findIndex((img) => img.key === selectedImageData.key) + 1} of {gelImages.length}
               </div>
             </div>
 
             {/* Right side - Info Card */}
-            <div className="w-full lg:w-[400px] p-4 sm:p-6 lg:p-8 border-t lg:border-t-0 lg:border-l border-gray-200 
-              overflow-y-auto max-h-[60vh] lg:max-h-[80vh]">
+            <div
+              className="w-full lg:w-[400px] p-4 sm:p-6 lg:p-8 border-t lg:border-t-0 lg:border-l border-gray-200 
+              overflow-y-auto max-h-[60vh] lg:max-h-[80vh]"
+            >
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-xl lg:text-2xl font-semibold text-gray-800">Image Details</h3>
@@ -832,12 +825,16 @@ const Dashboard = () => {
                       rounded-lg hover:bg-[#05a5c6] transition-colors font-medium"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
                     </svg>
                     Download Image
                   </a>
-                  
+
                   {user?.user_name === selectedImageData.userName && (
                     <>
                       <button
@@ -850,8 +847,7 @@ const Dashboard = () => {
                       </button>
                       <div className="flex items-center gap-2 text-sm text-gray-500 px-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         As the uploader, you can delete this image
                       </div>

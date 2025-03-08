@@ -2,10 +2,14 @@
 
 import AWS from 'aws-sdk';
 
+// Load environment variables
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
 AWS.config.update({
-  region: 'us-east-2', 
-  accessKeyId: 'AKIAWWE2IXR2NTIXBBZ3',
-  secretAccessKey: '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'
+  region: 'us-east-2',
+  accessKeyId: accessKeyId,
+  secretAccessKey: secretAccessKey
 });
 
 const s3 = new AWS.S3();

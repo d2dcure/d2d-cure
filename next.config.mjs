@@ -4,7 +4,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'd2dcurebucket.s3.amazonaws.com',
+        hostname: 'd2dcurebucketprod.s3.amazonaws.com',
         port: '',
         pathname: '/**',
       },

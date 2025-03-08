@@ -3,7 +3,6 @@ import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
-import s3 from '../../../../../s3config';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Input, Pagination, Select, SelectItem } from "@nextui-org/react";
 import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
@@ -76,55 +75,49 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
   useEffect(() => {
     const fetchGelImages = async () => {
       setIsLoading(true);
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Prefix: 'gel-images/',
-      };
 
       try {
-        const data = await s3.listObjectsV2(params).promise();
-        if (data.Contents) {
-          const processedImages = await Promise.all(
-            data.Contents
-              .filter((file): file is Required<typeof file> => 
-                file.Key !== undefined && 
-                !file.Key.endsWith('/')
-              )
-              .map(async (file) => {
-                try {
-                  const fullFilename = file.Key.replace('gel-images/', '');
-                  const filename = fullFilename.split('.')[0];
-                  const parts = filename.split('-');
-                  
-                  if (parts.length >= 6) {
-                    const dateStartIndex = parts.length - 3;
-                    const institution = parts.slice(0, parts.length - 5).join('-');
-                    const variant = parts[parts.length - 5];
-                    const userName = parts[parts.length - 4];
-                    const date = parts.slice(dateStartIndex).join('-');
-                    
-                    const gelImage: GelImage = {
-                      key: file.Key,
-                      url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-                      filename: fullFilename,
-                      institution,
-                      variant,
-                      userName,
-                      fileDate: date
-                    };
-                    return gelImage;
-                  }
-                  return null;
-                } catch (err) {
-                  console.error(`Error processing file ${file.Key}:`, err);
-                  return null;
-                }
-              })
-          );
-
-          const validImages = processedImages.filter((img): img is GelImage => img !== null);
-          setGelImages(validImages);
+        const response = await fetch('/api/s3?folder=gel-images');
+        if (!response.ok) {
+          throw new Error('Failed to fetch gel images');
         }
+
+        const data = await response.json();
+        const processedImages = await Promise.all(
+          data.objects.map(async (file: { key: string, url: string }) => {
+            try {
+              const fullFilename = file.key.replace('gel-images/', '');
+              const filename = fullFilename.split('.')[0];
+              const parts = filename.split('-');
+
+              if (parts.length >= 6) {
+                const dateStartIndex = parts.length - 3;
+                const institution = parts.slice(0, parts.length - 5).join('-');
+                const variant = parts[parts.length - 5];
+                const userName = parts[parts.length - 4];
+                const date = parts.slice(dateStartIndex).join('-');
+
+                const gelImage: GelImage = {
+                  key: file.key,
+                  url: file.url,
+                  filename: fullFilename,
+                  institution,
+                  variant,
+                  userName,
+                  fileDate: date
+                };
+                return gelImage;
+              }
+              return null;
+            } catch (err) {
+              console.error(`Error processing file ${file.key}:`, err);
+              return null;
+            }
+          })
+        );
+
+        const validImages = processedImages.filter((img): img is GelImage => img !== null);
+        setGelImages(validImages);
       } catch (err) {
         console.error('Error fetching gel images:', err);
         setError('Failed to fetch gel images. Please try again later.');
@@ -203,14 +196,20 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
     if (!imageKey) return;
 
     try {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: imageKey
-      };
+      const response = await fetch('/api/s3', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: imageKey }),
+      });
 
-      await s3.deleteObject(params).promise();
+      if (!response.ok) {
+        throw new Error('Failed to delete image');
+      }
+
       setGelImages(prevImages => prevImages.filter(img => img.key !== imageKey));
-      
+
       if (selectedImageData?.key === imageKey) {
         setSelectedImageData(null);
       }

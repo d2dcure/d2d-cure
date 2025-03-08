@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
-import s3 from '../../../../s3config';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
 import { AuthChecker } from '@/components/AuthChecker';
@@ -613,7 +612,7 @@ const SingleVariant = () => {
           <div className="flex items-center gap-2">
             <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
               <img
-                src={`https://d2dcurebucket.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
+                src={`https://d2dcurebucketprod.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
                 alt="Gel"
                 className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {

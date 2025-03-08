@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import s3 from '../../../s3config';
 import { useUser } from '@/components/UserProvider';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import { useRouter } from 'next/router';
@@ -72,117 +71,132 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
     }
   }, [user]);
 
-  useEffect(() => {
-    const fetchGelImages = async () => {
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Prefix: `gel-images/${entryData.institution}`,
-      };
-      try {
-        const data = await s3.listObjectsV2(params).promise();
-        if (data && data.Contents) {
-          setGelImages(
-            data.Contents.map((file) => ({
-              key: file.Key,
-              url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-            }))
-          );
+    // Fetch S3 objects via API route
+    useEffect(() => {
+      const fetchGelImages = async () => {
+        const folder = `gel-images/${entryData.institution}`;
+        try {
+          const res = await fetch(`/api/s3?folder=${folder}`);
+          if (!res.ok) {
+            throw new Error('Failed to list objects');
+          }
+          const data = await res.json(); // { objects: [{key, url}, ...] }
+          setGelImages(data.objects);
+  
           if (entryData.gel_filename) {
-            const initial = data.Contents.find(
-              (file:any) => file.Key.split('/').pop() === entryData.gel_filename
+            // Try to find the image that matches the current gel_filename
+            const matching = data.objects.find((obj: any) =>
+              obj.key.split('/').pop() === entryData.gel_filename
             );
-            if (initial && initial.Key) {
-              setInitialImage(`https://${params.Bucket}.s3.amazonaws.com/${initial.Key}`);
-              setSelectedImage(initial.Key); // Preselect current image if it exists
+            if (matching) {
+              setInitialImage(matching.url);
+              setSelectedImage(matching.key);
             }
           }
+        } catch (err: any) {
+          console.error('Error listing gel images:', err);
+          setError('Failed to fetch gel images.');
         }
+      };
+  
+      fetchGelImages();
+    }, [entryData.institution, entryData.gel_filename]);
+  
+    // Dropzone for selecting file
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        setSelectedFile(file);
+        setPreview(URL.createObjectURL(file));
+      }
+    }, []);
+  
+    const { getRootProps, getInputProps } = useDropzone({
+      onDrop,
+      accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.gif'] }
+    });
+  
+    // Upload file via API route
+    const handleUpload = async () => {
+      if (!selectedFile) return;
+  
+      setUploading(true);
+      try {
+        // 1) Convert file to base64 (for demonstration only; for large files, consider a pre-signed URL approach)
+        const base64 = await fileToBase64(selectedFile);
+  
+        // 2) Generate your desired key name
+        const dateObj = new Date(formData.date);
+        const formattedDate = dateObj
+          .toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
+          .replace(/\//g, '-');
+  
+        const newFileName = `${formData.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
+  
+        // 3) POST to /api/s3 with folder & base64
+        const folder = 'gel-images'; // or "gel-images/" + ...
+        const res = await fetch(`/api/s3?folder=${folder}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            newFileName,
+            fileBase64: base64,
+          })
+        });
+        if (!res.ok) {
+          throw new Error('Failed to upload');
+        }
+        const { objectKey, url } = await res.json(); // e.g. { objectKey: "...", url: "..." }
+  
+        // 4) Update DB with new filename
+        const response = await fetch('/api/updateCharacterizationDataGelFilename', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            id: entryData.id,
+            gel_filename: newFileName
+          })
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update database with new filename');
+        }
+        const updatedEntry = await response.json();
+  
+        // 5) Update local state
+        setSelectedImage(objectKey);
+        setInitialImage(url);
+        updateEntryData(updatedEntry);
+        setView('choose');
+        setToastInfo({
+          show: true,
+          type: 'success',
+          message: 'File uploaded and linked successfully'
+        });
       } catch (err) {
-        console.error('Error fetching gel images:', err);
-        setError('Failed to fetch gel images.');
+        console.error('Error uploading file:', err);
+        setToastInfo({
+          show: true,
+          type: 'error',
+          message: 'Failed to upload file'
+        });
+      } finally {
+        setUploading(false);
       }
     };
-
-    fetchGelImages();
-  }, [entryData.institution, entryData.gel_filename]);
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpg', '.jpeg', '.png', '.gif']
-    }
-  });
-
-  const handleUpload = async () => {
-    if (!selectedFile) return;
-
-    setUploading(true);
-    const dateObj = new Date(formData.date);
-    const formattedDate = dateObj.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: '2-digit'
-    }).replace(/\//g, '-');
-
-    const newFileName = `${formData.institution}-${entryData.resid}${entryData.resnum}${entryData.resmut}-${formData.userName}-${formattedDate}.${selectedFile.type.split('/')[1]}`;
-    
-    try {
-      // 1. Upload to S3
-      const params = {
-        Bucket: 'd2dcurebucket',
-        Key: `gel-images/${newFileName}`,
-        Body: selectedFile,
-      };
-      await s3.upload(params).promise();
-
-      // 2. Update database
-      const response = await fetch('/api/updateCharacterizationDataGelFilename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id: entryData.id, 
-          gel_filename: newFileName 
-        }),
+  
+    // Helper to convert File -> base64
+    async function fileToBase64(file: File): Promise<string> {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string; // "data:image/png;base64,...."
+          const base64 = result.split(',')[1];    // remove the "data:image/png;base64,"
+          resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update database with new filename');
-      }
-
-      // 3. Get updated entry data from response
-      const updatedEntry = await response.json();
-
-      // 4. Update all local states with confirmed data
-      setUploadedFileName(newFileName);
-      setSelectedImage(`gel-images/${newFileName}`);
-      setInitialImage(`https://${params.Bucket}.s3.amazonaws.com/gel-images/${newFileName}`);
-      updateEntryData(updatedEntry);
-      setView('choose');
-
-      setToastInfo({
-        show: true,
-        type: 'success',
-        message: 'File uploaded and linked successfully'
-      });
-    } catch (err) {
-      console.error('Error uploading file:', err);
-      setToastInfo({
-        show: true,
-        type: 'error',
-        message: 'Failed to upload file'
-      });
-    } finally {
-      setUploading(false);
     }
-  };
 
   return (
     <Card className="bg-white">
