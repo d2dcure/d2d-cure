@@ -164,6 +164,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
           if (response11.ok) {
             const data11 = await response11.json();
             setEntryData11(data11);
+            console.log("BOOOOGA: " + entryData11)
           }
         }
 
@@ -205,82 +206,88 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
   useEffect(() => {
     const fetchWtKineticData = async () => {
+      if (!entryData11 || !entryData11.csv_filename) {
+        console.warn('entryData11 is not ready yet');
+        return;
+      }
+
       console.log("Attempting to fetch WT Kinetic data with:", {
-        csv_filename: entryData11?.csv_filename,
-        plot_filename: entryData11?.plot_filename
+        csv_filename: entryData11.csv_filename,
+        plot_filename: entryData11.plot_filename
       });
 
-      if (entryData11?.csv_filename) {
-        try {
-          // Fetch and parse CSV for table
-          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
-          const response = await fetch(presignedUrl);
-          const blob = await response.blob();
-          const csvFile = new File([blob], entryData11.csv_filename, { type: 'text/csv' });
+      try {
+        // Fetch and parse CSV for table
+        const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData11.csv_filename);
+        const response = await fetch(presignedUrl);
+        const blob = await response.blob();
+        const csvFile = new File([blob], entryData11.csv_filename, { type: 'text/csv' });
 
-          Papa.parse(csvFile, {
-            complete: (result) => {
-              console.log("Parsed WT Kinetic CSV data:", result.data);
-              const parsedData = result.data as string[][];
-              setWtKineticData(parsedData);
-            },
-            header: false,
-            skipEmptyLines: true,
-          });
+        Papa.parse(csvFile, {
+          complete: (result) => {
+            console.log("Parsed WT Kinetic CSV data:", result.data);
+            const parsedData = result.data as string[][];
+            setWtKineticData(parsedData);
+          },
+          header: false,
+          skipEmptyLines: true,
+        });
 
-          // Set plot image URL
-          if (entryData11.plot_filename) {
-            const mentenUrl = `https://d2dcurebucketprod.s3.amazonaws.com/kinetic_assays/plots/${entryData11.plot_filename}`;
-            console.log("Setting WT Kinetic plot URL:", mentenUrl);
-            setWtMentenImageUrl(mentenUrl);
-          }
-        } catch (err) {
-          console.error('Error fetching WT kinetic data:', err);
+        // Set plot image URL
+        if (entryData11.plot_filename) {
+          const mentenUrl = `https://d2dcurebucketprod.s3.amazonaws.com/kinetic_assays/plots/${entryData11.plot_filename}`;
+          console.log("Setting WT Kinetic plot URL:", mentenUrl);
+          setWtMentenImageUrl(mentenUrl);
         }
+      } catch (err) {
+        console.error('Error fetching WT kinetic data:', err);
       }
     };
 
     fetchWtKineticData();
-  }, [entryData11?.csv_filename, entryData11?.plot_filename]);
+  }, [entryData11]);
 
   useEffect(() => {
     const fetchWtThermoData = async () => {
+      if (!entryData12 || !entryData12.csv_filename) {
+        console.warn('entryData12 is not ready yet');
+        return;
+      }
+
       console.log("Attempting to fetch WT Thermo data with:", {
-        csv_filename: entryData12?.csv_filename,
-        plot_filename: entryData12?.plot_filename
+        csv_filename: entryData12.csv_filename,
+        plot_filename: entryData12.plot_filename
       });
 
-      if (entryData12?.csv_filename) {
-        try {
-          const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
-          const response = await fetch(presignedUrl);
-          const blob = await response.blob();
-          const csvFile = new File([blob], entryData12.csv_filename, { type: 'text/csv' });
+      try {
+        const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData12.csv_filename);
+        const response = await fetch(presignedUrl);
+        const blob = await response.blob();
+        const csvFile = new File([blob], entryData12.csv_filename, { type: 'text/csv' });
 
-          Papa.parse(csvFile, {
-            complete: (result) => {
-              console.log("Parsed WT Thermo CSV data:", result.data);
-              const parsedData = result.data as string[][];
-              setWtThermoData(parsedData);
-            },
-            header: false,
-            skipEmptyLines: true,
-          });
+        Papa.parse(csvFile, {
+          complete: (result) => {
+            console.log("Parsed WT Thermo CSV data:", result.data);
+            const parsedData = result.data as string[][];
+            setWtThermoData(parsedData);
+          },
+          header: false,
+          skipEmptyLines: true,
+        });
 
-          // Set plot image URL
-          if (entryData12.plot_filename) {
-            const plotUrl = `https://d2dcurebucketprod.s3.amazonaws.com/temperature_assays/plots/${entryData12.plot_filename}`;
-            console.log("Setting WT Thermo plot URL:", plotUrl);
-            setWtThermoImageUrl(plotUrl);
-          }
-        } catch (err) {
-          console.error('Error fetching WT thermo data:', err);
+        // Set plot image URL
+        if (entryData12.plot_filename) {
+          const plotUrl = `https://d2dcurebucketprod.s3.amazonaws.com/temperature_assays/plots/${entryData12.plot_filename}`;
+          console.log("Setting WT Thermo plot URL:", plotUrl);
+          setWtThermoImageUrl(plotUrl);
         }
+      } catch (err) {
+        console.error('Error fetching WT thermo data:', err);
       }
     };
 
     fetchWtThermoData();
-  }, [entryData12?.csv_filename, entryData12?.plot_filename]);
+  }, [entryData12]);
 
   const handleDownloadCSV = async (filename: string, directory: string) => {
     try {
@@ -294,7 +301,14 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
   const handleAB1Download = async (filename: string) => {
     try {
-      const presignedUrl = await getPresignedUrl('kinetic_assays/raw', entryData2.csv_filename);
+      if (!filename) {
+        console.error('AB1 filename is undefined or null');
+        return;
+      }
+
+      console.log('Downloading AB1 file:', filename);
+
+      const presignedUrl = await getPresignedUrl('sequencing', filename);
 
       window.open(presignedUrl, '_blank');
     } catch (error) {
@@ -391,15 +405,17 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                   </button>
                 )}
                 {entryData1?.ab1_filename && (
-                  <button
-                    onClick={() => handleDownloadCSV(entryData1.ab1_filename, 'sequencing')}
-                    className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span>Sequencing Data (AB1)</span>
-                  </button>
+                    <button
+                      onClick={() => handleAB1Download(entryData1.ab1_filename)}
+                      className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
+                    >
+                      {entryData1.ab1_filename}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

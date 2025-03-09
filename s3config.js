@@ -7,7 +7,7 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
 AWS.config.update({
-  region: 'us-east-2',
+  region: 'us-east-1',
   accessKeyId: accessKeyId,
   secretAccessKey: secretAccessKey
 });
