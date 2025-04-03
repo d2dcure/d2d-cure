@@ -29,6 +29,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   const [comment, setComment] = useState<string>(entryData.comments || '');
   const [saving, setSaving] = useState<boolean>(false);
   const [newComment, setNewComment] = useState<string>('');
+  const [editMode, setEditMode] = useState<boolean>(false);
 
   const foundOligo = oligosData.find(
     (oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -38,6 +39,8 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
 
   useEffect(() => {
     setComment(entryData.comments || '');
+    setEditMode(false);
+    setNewComment('');
   }, [entryData.comments]);
 
   useEffect(() => {
@@ -80,6 +83,16 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
     });
   };
 
+  const handleEditComment = () => {
+    setNewComment(comment);
+    setEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setNewComment('');
+    setEditMode(false);
+  };
+
   const handleSaveComment = async () => {
     if (!newComment.trim()) return;
     setSaving(true);
@@ -102,6 +115,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
 
       setComment(newComment);
       setNewComment('');
+      setEditMode(false);
     } catch (error) {
       console.error('Error saving comment:', error);
       alert('Failed to save comment.');
@@ -270,50 +284,72 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
       {/* Section 3: Comment */}
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
-          <span className="font-medium text-sm">Latest Comment</span>
-          {comment ? (
+          <span className="font-medium text-sm">Comment</span>
+          {comment && !editMode ? (
             <div className="mt-2">
               <div className="bg-white rounded-lg p-3 relative">
-                <p className="text-sm">{comment}</p>
+                <p className="text-sm whitespace-pre-wrap">{comment}</p>
                 <div className="text-[11px] text-gray-400 mt-2">
                   Last updated by {entryData.creator} • {formatTimestamp(new Date())}
                 </div>
               </div>
+              <Button
+                color="primary"
+                size="sm"
+                variant="light"
+                className="mt-2 text-[#06B7DB]"
+                onClick={handleEditComment}
+              >
+                Edit Comment
+              </Button>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 italic mt-1">No comment added yet</p>
-          )}
-
-          <div className="mt-3 space-y-2">
-            <div className="relative">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Update comment..."
-                maxLength={100}
-                minRows={1}
-                maxRows={3}
-                classNames={{
-                  input: "resize-none py-1 text-sm min-h-0",
-                  base: "w-full min-h-0",
-                  inputWrapper: "min-h-0 bg-white"
-                }}
-              />
-              <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
-                {newComment.length}/100
-              </span>
+            <div className="mt-3 space-y-2">
+              {!comment && !editMode && (
+                <p className="text-sm text-gray-400 italic">No comment added yet</p>
+              )}
+              <div className="relative">
+                <Textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={editMode ? "Edit comment..." : "Add a comment..."}
+                  maxLength={250}
+                  minRows={2}
+                  maxRows={4}
+                  classNames={{
+                    input: "resize-none py-1 text-sm min-h-0",
+                    base: "w-full min-h-0",
+                    inputWrapper: "min-h-0 bg-white"
+                  }}
+                />
+                <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">
+                  {newComment.length}/250
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  color="primary"
+                  size="sm"
+                  className="flex-1 bg-[#06B7DB]"
+                  onClick={handleSaveComment}
+                  isLoading={saving}
+                  isDisabled={!newComment.trim()}
+                >
+                  {saving ? 'Saving...' : editMode ? 'Save Changes' : 'Add Comment'}
+                </Button>
+                {editMode && (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="flex-1"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
-            <Button
-              color="primary"
-              size="sm"
-              className="w-full bg-[#06B7DB]"
-              onClick={handleSaveComment}
-              isLoading={saving}
-              isDisabled={!newComment.trim()}
-            >
-              {saving ? 'Saving...' : 'Send Comment'}
-            </Button>
-          </div>
+          )}
         </div>
       </div>
     </div>

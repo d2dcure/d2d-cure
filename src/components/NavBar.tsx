@@ -24,6 +24,7 @@ const NavBar = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   // Add new state for nested dropdowns
   const [activeNestedDropdown, setActiveNestedDropdown] = useState<string | null>(null);
@@ -40,6 +41,17 @@ const NavBar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Add new useEffect to load profile image from S3
+  useEffect(() => {
+    if (user?.image_filename) {
+      // Construct the S3 URL for the profile image
+      const imageUrl = `https://d2dcurebucketprod.s3.amazonaws.com/profile-pics/${user.image_filename}`;
+      setProfileImageUrl(imageUrl);
+    } else {
+      setProfileImageUrl(null);
+    }
+  }, [user]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -304,9 +316,13 @@ const NavBar = () => {
                 <div className="p-1 cursor-pointer rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
                   <Avatar
                     alt="User profile"
-                    img={user.profilePic || undefined}
+                    img={profileImageUrl || undefined}
                     rounded={true}
                     className="w-10 h-10"
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/resources/images/sample.jpg';
+                    }}
                   />
                 </div>
 

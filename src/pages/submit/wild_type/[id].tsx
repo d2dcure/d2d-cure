@@ -953,7 +953,7 @@ const SingleVariant = () => {
               <Breadcrumbs className="mb-2">
                 <BreadcrumbItem>Home</BreadcrumbItem>
                 <BreadcrumbItem>Submit</BreadcrumbItem>
-                <BreadcrumbItem>Single Variant</BreadcrumbItem>
+                <BreadcrumbItem>Wild Type</BreadcrumbItem>
                 <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
               </Breadcrumbs>
             )}

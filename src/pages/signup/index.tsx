@@ -22,6 +22,7 @@ const SignUpPage = () => {
   const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -34,7 +35,7 @@ const SignUpPage = () => {
     };
 
     const fetchProfessors = async () => {
-      const response = await fetch('api/getAllProfessors');
+      const response = await fetch('/api/getAllProfessors');
       const data = await response.json();
       const sortedData = data.sort((a:any, b:any) => a.institution.localeCompare(b.institution));
       setProfessors(sortedData);
@@ -55,23 +56,29 @@ const SignUpPage = () => {
       email,
       password
     }
-    fetch(`/api/createUser`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newUser),
-    }).then((response) => {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          console.log("Successfully created new user.")
-          router.push('/')
-        })
-        // Might want to catch case where createUser succeeds but firebase fails
-    }).catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+    try {
+      const response = await fetch(`/api/createUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create user in database');
+      }
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("Successfully created new user.");
+      router.push('/');
+    } catch (error:any) {
+      setIsSubmitting(false);
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error("Error creating user:", errorCode, errorMessage);
+      throw error; // Re-throw to be caught by the handleSubmit function
+    }
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -81,9 +88,30 @@ const SignUpPage = () => {
       return; // Stop submission
     }
     setPasswordError('');
+    // Set submitting state to true
+    setIsSubmitting(true);
+    
+    console.log("Form submission values:", {
+      username,
+      givenName,
+      title,
+      pi,
+      institution, // Check if this has a value
+      userType,
+      email,
+      password
+    });
+    
     // Proceed with form submission logic
     console.log('Form submitted successfully!');
-    await handleSignUp(email, password);
+    try {
+      await handleSignUp(email, password);
+      // Note: No need to reset isSubmitting here since we're redirecting on success
+    } catch (error) {
+      console.error("Error during signup:", error);
+      setError("Failed to create account. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   if (userType === "") {
@@ -99,11 +127,13 @@ const SignUpPage = () => {
         <div className="w-full md:w-[600px] flex justify-center items-center bg-white p-4 md:p-12 rounded-2xl">
           <div className="w-full max-w-[380px] mx-auto">
             <div className="mb-8">
-              <img 
-                src="/resources/images/D2D_Logo.svg" 
-                alt="D2D Logo" 
-                className="h-7 mb-6"
-              />
+              <Link href="/">
+                <img 
+                  src="/resources/images/D2D_Logo.svg" 
+                  alt="D2D Logo" 
+                  className="h-7 mb-6 cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
               <h1 className="text-2xl font-semibold mb-2">Create an account</h1>
               <p className="text-sm text-gray-600">
                 Already a member?{' '}
@@ -273,15 +303,21 @@ const SignUpPage = () => {
                     Institution
                   </label>
                   <Select
-                    placeholder="Select institution"
+                    id="institution"
+                    placeholder="Select your Institution"
+                    selectedKeys={institution ? [institution] : []}
+                    onChange={(e) => setInstitution(e.target.value)}
                     variant="bordered"
-                    selectedKeys={new Set([institution])}
-                    onSelectionChange={(value) => setInstitution(Array.from(value).join(''))}
-                    className="w-full"
+                    size="md"
+                    className="w-full text-base"
+                    required
+                    classNames={{
+                      listboxWrapper: "max-h-[300px] overflow-y-auto custom-scrollbar",
+                    }}
                   >
-                    {institutions.map((institution) => (
-                      <SelectItem key={institution.abbr} textValue={institution.fullname}>
-                        {institution.fullname}
+                    {institutions.map((inst: any) => (
+                      <SelectItem key={inst.fullname} value={inst.fullname}>
+                        {inst.fullname}
                       </SelectItem>
                     ))}
                   </Select>
@@ -364,9 +400,10 @@ const SignUpPage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6"
+                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting}
               >
-                Create account
+                {isSubmitting ? "Creating..." : "Create account"}
               </button>
 
               {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -466,21 +503,30 @@ const SignUpPage = () => {
                   Primary Investigator (your professor)
                 </label>
                 <Select
+                  id="pi"
                   placeholder="Select your PI"
-                  variant="bordered"
-                  selectedKeys={new Set([pi])}
-                  onSelectionChange={(value) => {
-                    const selectedPI = Array.from(value).join('');
-                    setpi(selectedPI);
-                    setInstitution(
-                      professors.find((professor) => professor.given_name === selectedPI)?.institution || ''
-                    );
+                  selectedKeys={pi ? [pi] : []}
+                  onChange={(e) => {
+                    const piValue = e.target.value;
+                    setpi(piValue);
+                    
+                    // Find the selected professor and get their institution directly
+                    const selectedProf = professors.find(prof => prof.user_name === piValue);
+                    if (selectedProf && selectedProf.institution) {
+                      setInstitution(selectedProf.institution);
+                    }
                   }}
-                  className="w-full"
+                  variant="bordered"
+                  size="md"
+                  className="w-full text-base"
+                  required
+                  classNames={{
+                    listboxWrapper: "max-h-[300px] overflow-y-auto custom-scrollbar",
+                  }}
                 >
-                  {professors.map((professor) => (
-                    <SelectItem key={professor.given_name} textValue={professor.given_name}>
-                      {professor.given_name} ({professor.institution})
+                  {professors.map((prof: any) => (
+                    <SelectItem key={prof.user_name} value={prof.user_name}>
+                      {`${prof.user_name} (${prof.institution})`}
                     </SelectItem>
                   ))}
                 </Select>
@@ -544,9 +590,10 @@ const SignUpPage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6"
+                className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting}
               >
-                Create account
+                {isSubmitting ? "Creating..." : "Create account"}
               </button>
 
               {error && <p className="text-red-500 text-sm text-center">{error}</p>}

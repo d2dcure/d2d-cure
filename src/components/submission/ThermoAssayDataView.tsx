@@ -185,15 +185,27 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
   useEffect(() => {
     async function fetchTempRawDataEntryData() {
       if (!entryData.id) return;
-      const response = await axios.get('/api/getTempRawDataEntryData', {
-        params: { parent_id: entryData.id }
-      });
-      if (response.status === 200) {
-        const data = response.data;
-        setThermoRawDataEntryData(data);
-  
-        if (data.csv_filename && data.csv_filename !== entryData.temp_raw_data_filename) {
-          await fetchAndProcessCSV(data.csv_filename);
+      try {
+        const response = await axios.get('/api/getTempRawDataEntryData', {
+          params: { parent_id: entryData.id }
+        });
+        if (response.status === 200) {
+          const data = response.data;
+          setThermoRawDataEntryData(data);
+    
+          if (data.csv_filename && data.csv_filename !== entryData.temp_raw_data_filename) {
+            await fetchAndProcessCSV(data.csv_filename);
+          }
+        }
+      } catch (error) {
+        // If it's a 404, this just means there's no data yet, which is expected for first-time users
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          console.log('No temperature data found for this entry yet - this is normal for new entries');
+          // Set state to default/empty values if needed
+          setThermoRawDataEntryData(null);
+        } else {
+          // Log other errors but don't show them to the user
+          console.error('Error fetching temperature data:', error);
         }
       }
     }
@@ -446,7 +458,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
       }
 
       // 5) Update DB for the raw data
-      await axios.post('/api/updateTempRawData', {
+      const response = await axios.post('/api/updateTempRawData', {
         user_name: user?.user_name,
         variant,
         slope_units: slopeUnits,
@@ -458,23 +470,31 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
         approved_by_student: approvedByStudent
       });
 
-      // 6) Then update T50, etc.
-      const { T50, T50_SD, k, k_SD } = calculatedValues;
-      const response = await axios.post('/api/updateCharacterizationDataThermoStuff', {
-        parent_id: entryData.id,
-        T50,
-        T50_SD,
-        T50_k: k,
-        T50_k_SD: k_SD
-      });
-
+      // 6) Then update T50, etc. - now with temp_raw_data_id
       if (response.status === 200) {
-        alert('Data saved successfully!');
-        const updatedEntry = response.data;
-        updateEntryData(updatedEntry);
+        const { tempRawDataId } = response.data;
+        const { T50, T50_SD, k, k_SD } = calculatedValues;
+        
+        const updateResponse = await axios.post('/api/updateCharacterizationDataThermoStuff', {
+          parent_id: entryData.id,
+          T50,
+          T50_SD,
+          T50_k: k,
+          T50_k_SD: k_SD,
+          temp_raw_data_id: tempRawDataId
+        });
+
+        if (updateResponse.status === 200) {
+          alert('Data saved successfully!');
+          const updatedEntry = updateResponse.data;
+          updateEntryData(updatedEntry);
+        } else {
+          console.error('Error updating CharacterizationData:', updateResponse.data);
+          alert('Error updating CharacterizationData');
+        }
       } else {
-        console.error('Error updating CharacterizationData:', response.data);
-        alert('Error updating CharacterizationData');
+        console.error('Error updating TempRawData:', response.data);
+        alert('Error updating TempRawData');
       }
 
       setCurrentView('checklist');
@@ -1116,7 +1136,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
             <CardFooter>
               <Button
                 variant="bordered"
-                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template.csv')}
+                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template.xlsx')}
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
                 style={{ borderColor: '#06B7DB', color: '#06B7DB' }}
               >
@@ -1141,7 +1161,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
             <CardFooter>
               <Button
                 variant="bordered"
-                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template_horizontal.csv')}
+                onPress={() => (window.location.href = '/downloads/temperature_assay_single_variant_template_horizontal.xlsx')}
                 className="w-full h-[45px] font-regular border-[2px] hover:bg-[#06B7DB] group"
                 style={{ borderColor: '#06B7DB', color: '#06B7DB' }}
               >

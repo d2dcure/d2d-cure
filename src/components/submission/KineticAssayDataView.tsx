@@ -1071,7 +1071,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
             <CardFooter>
               <Button 
                 variant="bordered" 
-                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.csv'} 
+                onPress={() => window.location.href = '/downloads/kinetic_assay_single_variant_template.xlsx'} 
                 className="w-full h-11 font-regular border-2 hover:bg-[#06B7DB] group transition-all"
                 style={{ borderColor: "#06B7DB", color: "#06B7DB" }}
               >

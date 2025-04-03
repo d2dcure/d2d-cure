@@ -33,6 +33,9 @@ const SubmitPage = () => {
   const [charData, setCharData] = useState<any[]>([]);
   const [newEntry, setNewEntry] = useState<any>();
 
+  // Add this new state to store the related data
+  const [actualData, setActualData] = useState<Record<number, any>>({});
+
 
   const handleSubmitSingleVar = () => {
     setError('');
@@ -155,6 +158,35 @@ const SubmitPage = () => {
     fetchSequences(); 
     fetchEnzymes(); 
   }, []);
+
+  // Add this new useEffect to fetch related data when matchedData changes
+  useEffect(() => {
+    const fetchActualData = async () => {
+      if (matchedData.length === 0) return;
+      
+      try {
+        const ids = matchedData.map(item => item.id);
+        const response = await fetch('/api/getCharDataForSubmitPage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch related data');
+        }
+        
+        const data = await response.json();
+        setActualData(data);
+      } catch (error) {
+        console.error('Error fetching related data:', error);
+      }
+    };
+    
+    fetchActualData();
+  }, [matchedData]);
 
   return (
     <div>
@@ -294,7 +326,7 @@ const SubmitPage = () => {
                         <div className="mt-8">
                           <div className="flex justify-between items-center mb-4">
                             <span className="text-small text-default-400">
-                              {matchedData.length} records found
+                              The {`${resid}${resnum}${resmut}`} BglB variant has been studied {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button. 
                             </span>
                           </div>
 
@@ -310,6 +342,8 @@ const SubmitPage = () => {
                               <TableColumn>VARIANT</TableColumn>
                               <TableColumn>CREATOR</TableColumn>
                               <TableColumn>ID</TableColumn>
+                              <TableColumn>KINETIC DATA</TableColumn>
+                              <TableColumn>TEMPERATURE DATA</TableColumn>
                               <TableColumn>COMMENTS</TableColumn>
                               <TableColumn>ACTIONS</TableColumn>
                             </TableHeader>
@@ -333,6 +367,16 @@ const SubmitPage = () => {
                                   <TableCell>{`${item.resid}${item.resnum}${item.resmut}`}</TableCell>
                                   <TableCell>{item.creator || 'Unknown'}</TableCell>
                                   <TableCell>{item.id}</TableCell>
+                                  <TableCell>
+                                  {actualData[item.id]?.kineticData?.length > 0 ? 
+                                    `updated ${new Date(actualData[item.id].kineticData[0].updated).toLocaleDateString()}` : 
+                                    ''}
+                                  </TableCell>
+                                  <TableCell>
+                                  {actualData[item.id]?.kineticData?.length > 0 ? 
+                                    `updated ${new Date(actualData[item.id].tempData[0].updated).toLocaleDateString()}` : 
+                                    ''}
+                                  </TableCell>
                                   <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
                                     {item.comments || 'No comments'}
                                   </TableCell>
@@ -399,7 +443,7 @@ const SubmitPage = () => {
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-small text-default-400">
-                            {matchedData.length} records found
+                          Data for the wild-type BglB enzyme have been collected {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button.
                           </span>
                         </div>
 
@@ -416,6 +460,8 @@ const SubmitPage = () => {
                             <TableColumn>VARIANT</TableColumn>
                             <TableColumn>CREATOR</TableColumn>
                             <TableColumn>ID</TableColumn>
+                            <TableColumn>KINETIC DATA</TableColumn>
+                            <TableColumn>TEMPERATURE DATA</TableColumn>
                             <TableColumn>COMMENTS</TableColumn>
                             <TableColumn>ACTIONS</TableColumn>
                           </TableHeader>
@@ -439,6 +485,16 @@ const SubmitPage = () => {
                                 <TableCell>{`WT`}</TableCell>
                                 <TableCell>{item.creator || 'Unknown'}</TableCell>
                                 <TableCell>{item.id}</TableCell>
+                                <TableCell>
+                                  {actualData[item.id]?.kineticData?.length > 0 ? 
+                                    `updated ${new Date(actualData[item.id].kineticData[0].updated).toLocaleDateString()}` : 
+                                    ''}
+                                </TableCell>
+                                <TableCell>
+                                  {actualData[item.id]?.tempData?.length > 0 ? 
+                                    `updated ${new Date(actualData[item.id].tempData[0].updated).toLocaleDateString()}` : 
+                                    ''}
+                                </TableCell>
                                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[300px]">
                                   {item.comments || 'No comments'}
                                 </TableCell>

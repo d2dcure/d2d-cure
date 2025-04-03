@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, Pagination } from "@nextui-org/react";
 import "../../../app/globals.css";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Checkbox, Select, SelectItem, Input, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Popover, PopoverTrigger, PopoverContent, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
+import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns, FaShareAlt } from 'react-icons/fa';
 import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
@@ -45,7 +45,7 @@ function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
-  const [useRosettaNumbering, setUseRosettaNumbering] = useState(true);
+  const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
   const [sequences, setSequences] = useState<any[]>([]);
   const [showNonCurated, setShowNonCurated] = useState(false); 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -91,6 +91,9 @@ const DataPage = () => {
     column: "variant",
     direction: "ascending"
   });
+
+  // Add this new ref to track URL-sourced updates
+  const sortFromUrl = useRef(false);
 
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
@@ -167,6 +170,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             Variant
@@ -192,6 +196,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             Yield, c<sub>E</sub> (mg/mL)
@@ -217,9 +222,10 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
-            <span className="italic">K</span><sub>M</sub> (mM)
+            <span className="italic">K</span><sub>M</sub> (mᴍ)
           </div>
         </Tooltip>
       )
@@ -242,6 +248,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             <span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)
@@ -267,9 +274,10 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mM<sup>−1</sup>min<sup>−1</sup>)
+            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
           </div>
         </Tooltip>
       )
@@ -291,6 +299,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             <span className="italic">T</span><sub>50</sub> (°C)
@@ -315,6 +324,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             <span className="italic">T</span><sub>m</sub> (°C)
@@ -340,6 +350,7 @@ const DataPage = () => {
             base: "py-3 px-6 shadow-sm",
             content: "text-[11px] text-gray-600"
           }}
+          placement="bottom"
         >
           <div className="cursor-help">
             Rosetta score change
@@ -354,6 +365,13 @@ const DataPage = () => {
     setSearchTerm('');
     setShowNonCurated(false);
     setExpandData(false);
+    setUseRosettaNumbering(true);
+    setShowColors(true);
+    setSortDescriptor({
+      column: "variant",
+      direction: "ascending"
+    });
+    setRowsPerPage(0); // "all"
   };
 
   useEffect(() => {
@@ -685,34 +703,48 @@ const DataPage = () => {
     // Only include curated data
     const curatedData = characterizationData.filter(data => data.curated);
     
-    // Define headers for CSV
+    // Sort data by resnum (not resid)
+    const sortedData = [...curatedData].sort((a, b) => {
+      // First, handle the WT (resid == 'X') cases
+      if (a.resid === 'X' && b.resid !== 'X') return -1;
+      if (a.resid !== 'X' && b.resid === 'X') return 1;
+      
+      // If both are WT or neither is WT, sort numerically by resnum
+      return parseInt(a.resnum) - parseInt(b.resnum);
+    });
+    
+    // Define headers for CSV with plain text alternatives for special characters
     const headers = [
       'Variant',
-      'Yield, cE (mg/mL)',
-      'KM (mM)',
+      'Expressed',
+      'Yield (mg/mL)',
+      'KM (mᴍ)',
       'KM SD',
-      'kcat (min⁻¹)',
+      'kcat (min^-1)',  // Changed from min⁻¹
       'kcat SD',
-      'kcat/KM (mM⁻¹min⁻¹)',
-      'T50 (°C)',
+      'kcat/KM (mᴍ^-1min^-1)',  // Changed from mM⁻¹min⁻¹
+      'kcat/KM SD',
+      'T50 (degrees C)',  // Changed from °C
       'T50 SD',
-      'Tm (°C)',
+      'Tm (degrees C)',  // Changed from °C
       'Tm SD',
       'Rosetta score change',
       'Institution'
     ];
 
     // Transform data into CSV rows
-    const csvRows = curatedData.map(data => {
+    const csvRows = sortedData.map(data => {
       const variant = getVariantDisplay(data.resid, data.resnum, data.resmut);
       return [
         variant,
-        data.yield_avg || '',
+        data.expressed ? 'yes' : 'no',
+        (data.yield_avg !== null && !isNaN(data.yield_avg)) ? data.yield_avg : (data.expressed ? 'not reported' : ''),
         data.KM_avg || '',
         data.KM_SD || '',
         data.kcat_avg || '',
         data.kcat_SD || '',
         data.kcat_over_KM || '',
+        data.kcat_over_KM_SD || '',
         data.T50 || '',
         data.T50_SD || '',
         data.Tm || '',
@@ -769,27 +801,164 @@ const DataPage = () => {
 
     // Clear any previous search error
     setSearchError(null);
+    
+    const searchNum = parseInt(searchTerm);
+    
+    // Find all matching rows
+    const matchingRows = characterizationData.filter(item => item.resnum === searchNum);
 
-    // Find the first matching row
-    const matchingRow = characterizationData.find(item => {
-      const searchNum = parseInt(searchTerm);
-      return item.resnum === searchNum;
-    });
-
-    if (matchingRow) {
-      // Find and scroll to the matching row
-      const element = document.getElementById(`row-${matchingRow.id}`);
+    if (matchingRows.length > 0) {
+      // Get the first matching row
+      const firstMatch = matchingRows[0];
+      
+      // Create the potential group key for grouped rows
+      const groupKey = `${firstMatch.resid}${firstMatch.resnum}${firstMatch.resmut}`;
+      
+      // Try different possible element selectors (in order of preference)
+      let element = null;
+      
+      // First try: direct row ID
+      element = document.getElementById(`row-${firstMatch.id}`);
+      
+      // Second try: group row
+      if (!element) {
+        element = document.getElementById(`group-${firstMatch.resid}${firstMatch.resnum}`);
+      }
+      
+      // Third try: any row with this resnum (using data attribute)
+      if (!element) {
+        element = document.querySelector(`[data-resnum="${searchNum}"]`);
+      }
+      
       if (element) {
+        // If we found an element, scroll to it
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
         // Highlight the row temporarily
         element.classList.add('bg-blue-100');
         setTimeout(() => {
           element.classList.remove('bg-blue-100');
         }, 2000);
+      } else {
+        setSearchError(`Found matches for residue ${searchNum} but couldn't scroll to them`);
       }
     } else {
       setSearchError("No matching entries found");
     }
+  };
+
+  // Add this function to render formatted column names
+  const getFormattedColumnName = (column: any) => {
+    switch (column.uid) {
+      case "km":
+        return <><span className="italic">K</span><sub>M</sub> (mᴍ)</>;
+      case "kcat":
+        return <><span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)</>;
+      case "kcat_km":
+        return <><span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+      case "t50":
+        return <><span className="italic">T</span><sub>50</sub> (°C)</>;
+      case "tm":
+        return <><span className="italic">T</span><sub>m</sub> (°C)</>;
+      case "rosetta":
+        return <>Rosetta score change</>;
+      default:
+        return capitalize(column.name);
+    }
+  };
+
+  // 1. Add an effect to initialize filters from URL on page load
+  useEffect(() => {
+    // Wait for router to be ready
+    if (!router.isReady) return;
+    
+    const { 
+      institution, 
+      curated, 
+      expand, 
+      numbering, 
+      sort,
+      sortDir,
+      showColors: colorParam,
+      perPage,
+      // other params you want to support
+    } = router.query;
+    
+    // Set initial filter states based on URL params
+    if (institution) setSelectedInstitution(institution as string);
+    if (curated !== undefined) setShowNonCurated(curated === '1');
+    if (expand !== undefined) setExpandData(expand === '1');
+    if (numbering !== undefined) setUseRosettaNumbering(numbering === '1');
+    if (colorParam !== undefined) setShowColors(colorParam === '1');
+    if (perPage) setRowsPerPage(perPage === 'all' ? 0 : Number(perPage));
+    
+    // Handle sorting - set the flag before updating state
+    if (sort) {
+      sortFromUrl.current = true;
+      setSortDescriptor({
+        column: sort as string,
+        direction: (sortDir as "ascending" | "descending") || "ascending"
+      });
+    }
+    
+  }, [router.isReady, router.query]);
+
+  // 2. Add an effect to update URL when filters change
+  useEffect(() => {
+    // Only update after initial load
+    if (!router.isReady) return;
+    
+    // Don't update URL if this sort change came from the URL
+    if (sortFromUrl.current) {
+      sortFromUrl.current = false;
+      return;
+    }
+    
+    // Create a query object with current filter state
+    const query: Record<string, string> = {
+      // Only include params that differ from defaults
+      ...(selectedInstitution ? { institution: selectedInstitution } : {}),
+      ...(showNonCurated !== false ? { curated: showNonCurated ? '1' : '0' } : {}),
+      ...(expandData !== false ? { expand: expandData ? '1' : '0' } : {}),
+      ...(useRosettaNumbering !== true ? { numbering: useRosettaNumbering ? '1' : '0' } : {}),
+      ...(showColors !== true ? { showColors: showColors ? '1' : '0' } : {}),
+      ...(sortDescriptor.column !== "variant" ? { sort: sortDescriptor.column } : {}),
+      ...(sortDescriptor.direction !== "ascending" ? { sortDir: sortDescriptor.direction } : {}),
+      ...(rowsPerPage !== 0 ? { perPage: rowsPerPage.toString() } : { perPage: 'all' }),
+      
+      // Preserve any highlight parameter if it exists
+      ...(router.query.highlight ? { highlight: router.query.highlight as string } : {})
+    };
+    
+    // Update URL without full page reload
+    router.push(
+      {
+        pathname: router.pathname,
+        query
+      }, 
+      undefined, 
+      { shallow: true }
+    );
+    
+  }, [
+    router.isReady,
+    selectedInstitution, 
+    showNonCurated, 
+    expandData, 
+    useRosettaNumbering,
+    showColors,
+    sortDescriptor,
+    rowsPerPage
+    // Add any other filter dependencies
+  ]);
+
+  // Add this function
+  const copyCurrentUrlToClipboard = () => {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      // Show a success notification
+      alert("URL with current filters copied to clipboard!");
+    });
   };
 
   return (
@@ -873,7 +1042,7 @@ const DataPage = () => {
                     <div className="bg-gray-50 lg:bg-transparent rounded-lg shadow-sm lg:shadow-none pr-6 mb-6">
                       <div className="flex flex-col gap-4">
                         {/* Color Key section */}
-                        <div className="mb-6">
+                        <div>
                           <h2 className="text-xl font-light mb-2">Color Key</h2>
                           
                           <Link href="/about/bglb" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
@@ -926,20 +1095,14 @@ const DataPage = () => {
                           </div>
                           
                           {/* Labels */}
-                          <div className="flex justify-between text-sm text-gray-600 mb-8">
-                            <div>Underperform<br/>WT</div>
-                            <div className="text-right">Outperform<br/>WT</div>
+                          <div className="flex justify-between text-sm text-gray-600">
+                            <div>Underperforms</div>
+                            <div className="text-right">Outperforms</div>
                           </div>
                         </div>
 
                         {/* Variant Analysis section */}
-                        <div className="mb-6">
-                          <h2 className="text-xl font-light mb-2">Variant Analysis</h2>
-                          
-                          <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view?usp=sharing" target="_blank" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
-                            How is the data calculated?
-                          </Link>
-                          
+                        <div className="mb-6">             
                           <div className="text-gray-600">
                             <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
                               <div className="text-sm space-y-3">
@@ -978,13 +1141,16 @@ const DataPage = () => {
                             </button>
                           </div>
 
+                          <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view?usp=sharing" target="_blank" className="text-[#06B7DB] hover:underline mb-4 block text-sm">
+                            How were these data calculated?
+                          </Link>
+
                           <Button 
-                            className="mt-6 w-full border-2 border-[#06B7DB] text-sm text-[#06B7DB]"
-                            variant="bordered"
-                            size="sm"
+                            className="mt-6 w-full bg-[#06B7DB] text-white hover:bg-[#05a6c7] transition-colors px-2 py-6"
+                            size="md"
                             onClick={downloadCSV}
                           >
-                            Download CSV file
+                            Download curated data as <br></br> comma-delimited file
                           </Button>
                         </div>
 
@@ -1008,7 +1174,7 @@ const DataPage = () => {
                         classNames={{
                           base: "w-full sm:w-[200px] md:w-[300px]",
                         }}
-                        placeholder="Search for residue number..."
+                        placeholder="Jump to residue number..."
                         size="sm"
                         value={searchTerm}
                         onClear={() => setSearchTerm("")}
@@ -1049,8 +1215,7 @@ const DataPage = () => {
                         {/* Columns dropdown */}
                         <Dropdown 
                           className="w-full" 
-                          shouldBlockScroll={false} 
-                          shouldCloseOnInteractOutside={() => false}
+                          shouldBlockScroll={false}
                         >
                           <DropdownTrigger>
                             <Button 
@@ -1071,8 +1236,8 @@ const DataPage = () => {
                             onSelectionChange={(keys) => setVisibleColumns(new Set(Array.from(keys).map(String)))}
                           >
                             {columns.map((column) => (
-                              <DropdownItem key={column.uid} className="capitalize">
-                                {capitalize(column.name)}
+                              <DropdownItem key={column.uid}>
+                                {getFormattedColumnName(column)}
                               </DropdownItem>
                             ))}
                           </DropdownMenu>
@@ -1081,8 +1246,7 @@ const DataPage = () => {
                         {/* Filter dropdown */}
                         <Dropdown 
                           className="w-full" 
-                          shouldBlockScroll={false} 
-                          shouldCloseOnInteractOutside={() => false}
+                          shouldBlockScroll={false}
                         >
                           <DropdownTrigger>
                             <Button 
@@ -1161,6 +1325,9 @@ const DataPage = () => {
                                   selectedKeys={selectedInstitution ? [selectedInstitution] : []}
                                   onChange={(e) => setSelectedInstitution(e.target.value)}
                                   className="w-full text-sm"
+                                  classNames={{
+                                    listboxWrapper: "max-h-[200px] overflow-y-auto custom-scrollbar",
+                                  }}
                                 >
                                   {[
                                     <SelectItem key="" value="">All</SelectItem>,
@@ -1206,7 +1373,7 @@ const DataPage = () => {
                             <DropdownItem className="p-0 mb-4">
                               <div className="space-y-1">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-600">Overall Data</span>
+                                  <span className="text-sm text-gray-600">Data To Show</span>
                                   <Button 
                                     size="sm" 
                                     variant="light" 
@@ -1239,11 +1406,13 @@ const DataPage = () => {
                     </div>
 
                     {/* Right side - Rows per page */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-default-400 hidden sm:inline">Rows per page:</span>
+                      <span className="text-default-400 sm:hidden">Per page:</span>
                       <Select
                         size="sm"
-                        defaultSelectedKeys={["all"]}
-                        className="w-[80px]"
+                        selectedKeys={[rowsPerPage === 0 ? "all" : rowsPerPage.toString()]}
+                        className="w-20 sm:w-24"
                         onChange={(e) => {
                           const value = e.target.value;
                           setRowsPerPage(value === "all" ? 0 : Number(value));
@@ -1251,16 +1420,18 @@ const DataPage = () => {
                           scrollToPosition('top');
                         }}
                       >
-                        <SelectItem key="20" value="20">20</SelectItem>
-                        <SelectItem key="30" value="30">30</SelectItem>
+                        <SelectItem key="25" value="25">25</SelectItem>
                         <SelectItem key="50" value="50">50</SelectItem>
+                        <SelectItem key="100" value="100">100</SelectItem>
+                        <SelectItem key="250" value="250">250</SelectItem>
+                        <SelectItem key="500" value="500">500</SelectItem>
                         <SelectItem key="all" value="all">All</SelectItem>
                       </Select>
                     </div>
                   </div>
 
                   {/* Add id to table for scrolling */}
-                  <div id="characterization-table">
+                  <div id="characterization-table" className="relative">
                     <Table
                       isHeaderSticky
                       aria-label="BglB Variant Characterization Data"
@@ -1269,8 +1440,29 @@ const DataPage = () => {
                         setSortDescriptor(descriptor as SortDescriptor);
                       }}
                       classNames={{
-                        th: "text-default-500 bg-default-100/50 font-medium py-3 px-4",
+                        th: [
+                          "text-default-500", 
+                          "bg-white", // Solid background to prevent see-through
+                          "font-medium", 
+                          "py-3 px-4",
+                          "before:content-['']",
+                          "before:absolute",
+                          "before:left-0",
+                          "before:top-0",
+                          "before:w-full",
+                          "before:h-full",
+                          "before:bg-default-100/50",
+                          "before:z-[-1]",
+                        ].join(" "),
+                        base: "overflow-visible",
+                        thead: "z-40",
+                        wrapper: "overflow-visible",
                         tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm hover:rounded-lg",
+                      }}
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10
                       }}
                     >
                       <TableHeader>
@@ -1512,7 +1704,7 @@ const DataPage = () => {
                       <span className="text-default-400 sm:hidden">Per page:</span>
                       <Select
                         size="sm"
-                        defaultSelectedKeys={["all"]}
+                        selectedKeys={[rowsPerPage === 0 ? "all" : rowsPerPage.toString()]}
                         className="w-20 sm:w-24"
                         onChange={(e) => {
                           const value = e.target.value;
@@ -1521,13 +1713,25 @@ const DataPage = () => {
                           scrollToPosition('top');
                         }}
                       >
-                        <SelectItem key="20" value="20">20</SelectItem>
-                        <SelectItem key="30" value="30">30</SelectItem>
+                        <SelectItem key="25" value="25">25</SelectItem>
                         <SelectItem key="50" value="50">50</SelectItem>
+                        <SelectItem key="100" value="100">100</SelectItem>
+                        <SelectItem key="250" value="250">250</SelectItem>
+                        <SelectItem key="500" value="500">500</SelectItem>
                         <SelectItem key="all" value="all">All</SelectItem>
                       </Select>
                     </div>
                   </div>
+
+                  {/* Share button */}
+                  <Button
+                    className="ml-2"
+                    size="sm"
+                    variant="flat"
+                    onClick={copyCurrentUrlToClipboard}
+                  >
+                    <FaShareAlt className="mr-1"/> Share View
+                  </Button>
                 </div>
               </div>
             </div>

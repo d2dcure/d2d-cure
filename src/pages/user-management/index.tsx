@@ -177,11 +177,17 @@ const list = useAsyncList<User>({
       return <p>Loading</p>
   }
 
-  //filter users based on university name
-const filteredUsers: any[] = [];
-  for(let i = 0; i<allUsers.length; i++){
-    if(user.institution == allUsers[i].institution){
-      filteredUsers.push(allUsers[i]);
+  //filter users based on university name unless user is ADMIN
+  const filteredUsers: any[] = [];
+  if (user?.status === "ADMIN") {
+    // Show all users for admin users
+    filteredUsers.push(...allUsers);
+  } else {
+    // For non-admin users, only show users from their institution
+    for(let i = 0; i<allUsers.length; i++){
+      if(user.institution == allUsers[i].institution){
+        filteredUsers.push(allUsers[i]);
+      }
     }
   }
   console.log("Filtered Users", filteredUsers);

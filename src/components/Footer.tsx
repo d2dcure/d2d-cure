@@ -61,7 +61,7 @@ export default function App() {
                   <Link href="/resources/oligosearch" className="hover:underline font-light">Oligo Search</Link>
                 </li>
                 <li className="mb-2 font-light">
-                  <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view" target="_blank"className="hover:underline">How data is calculated</Link>
+                  <Link href="https://drive.google.com/file/d/1XPG4w6FJ39NvvSYzZtZu9nnQaG2__ApX/view" target="_blank"className="hover:underline">How data are calculated</Link>
                 </li>
                 <li className="mb-2 font-light">
                   <Link href="https://drive.google.com/file/d/19UbJHzJG3rzbA4Ln_9jC-ggBzXJmoia3/view" target="_blank" className="hover:underline">How to interpret data</Link>
@@ -130,7 +130,9 @@ export default function App() {
           />
         </div>
         <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <Link href="/" className="hover:underline">D2D CURE © 2018–2024 ~ The D2D CURE Program is supported by the National Science Foundation&apos;s Undergraduate Biology Education IUSE Program, award number 1827246. Website maintained by Jason William Labonte. </Link>. All Rights Reserved.
+          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+            <Link href="/" className="hover:underline">D2D CURE © 2018–{new Date().getFullYear()} </Link> ~ The D2D CURE Program is supported by <Link href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1827246" target="_blank" className="hover:underline text-[#06B7DB]" rel="noopener noreferrer">the National Science Foundation&apos;s Undergraduate Biology Education IUSE Program, award number 1827246</Link>.<br />
+            Website maintained by <a href="mailto:webmaster@d2dcure.com?subject=D2D%20Cure%20Website%20Issues" className="hover:underline text-[#06B7DB]">Jason William Labonte</a>. All Rights Reserved.
           </span>
           <div className="flex mt-4 sm:justify-center sm:mt-0">
           </div>
