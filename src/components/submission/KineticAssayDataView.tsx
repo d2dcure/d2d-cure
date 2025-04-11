@@ -871,6 +871,11 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                   </div>
                 )}
 
+                {/* Add table title */}
+                <h4 className="text-md font-semibold text-gray-800 mb-4 text-center">
+                  slope of {entryData.resid}{entryData.resnum}{entryData.resmut} A<sub>420 nm</sub> (10<sup>−3</sup> min<sup>−1</sup>)
+                </h4>
+
                 <Table 
                   aria-label="Kinetic assay data table"
                   classNames={{
@@ -955,6 +960,28 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                           </p>
                         </div>
                       </div>
+                      
+                      {/* New: Kinetic Constants */}
+                      <div className="flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <div>
+                          <span className="text-sm text-gray-500">Kinetic Constants</span>
+                          <p className="text-sm font-medium text-gray-900">
+                            k<sub>cat</sub> = {kineticConstants.kcat !== null ? Number(kineticConstants.kcat).toFixed(5) : 'N/A'}
+                            {kineticConstants.kcat_SD !== null && <> ± {Number(kineticConstants.kcat_SD).toFixed(5)}</>} min <sup>-1</sup>
+                          </p>
+                          <p className="text-sm font-medium text-gray-900">
+                            K<sub>M</sub>: {kineticConstants.KM !== null ? Number(kineticConstants.KM).toFixed(4) : 'N/A'} 
+                            {kineticConstants.KM_SD !== null && <> ± {Number(kineticConstants.KM_SD).toFixed(4)}</>} mᴍ
+                          </p>
+                          <p className="text-sm font-medium text-gray-900">
+                            k<sub>cat</sub>/K<sub>M</sub>: {kineticConstants.kcat_over_KM !== null ? Number(kineticConstants.kcat_over_KM).toFixed(4) : 'N/A'} 
+                            {kineticConstants.kcat_over_KM_SD !== null && <> ± {Number(kineticConstants.kcat_over_KM_SD).toFixed(4)}</>} mᴍ<sup>-1</sup> min<sup>-1</sup>
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -1001,7 +1028,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                 size="sm"
               >
                 <span className="text-sm text-gray-600">
-                  I approve this data and agree to attach my name to it
+                 I agree to have my name attached to the data being submitted.
                 </span>
               </Checkbox>
             </div>

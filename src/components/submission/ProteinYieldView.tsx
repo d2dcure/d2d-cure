@@ -165,16 +165,23 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView
             />
             <Select
               label="Units"
-              value={selectedUnit}
+              selectedKeys={selectedUnit ? [selectedUnit] : []}
               onChange={(e) => setSelectedUnit(e.target.value)}
               className="w-32"
             >
               <SelectItem key="mg/mL" value="mg/mL">mg/mL</SelectItem>
-              <SelectItem key="A280*" value="A280*">A280*</SelectItem>
+              <SelectItem key="A280*" value="A280*">A_280*</SelectItem>
               <SelectItem key="mM" value="mM">mM</SelectItem>
               <SelectItem key="M" value="M">M</SelectItem>
             </Select>
           </div>
+          
+          {/* Add the new informational text for A280 */}
+          {selectedUnit === 'A280*' && (
+            <div className="text-xs text-gray-600 italic">
+              *If used, raw A<sub>280</sub> values should be preadjusted for a path length of 1 cm.
+            </div>
+          )}
 
           {/* Current value display */}
           {kineticRawDataEntryData && kineticRawDataEntryData.yield !== null && (

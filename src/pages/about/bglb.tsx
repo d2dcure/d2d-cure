@@ -73,26 +73,32 @@ const BglBPage = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
-                <span className="text-sm text-gray-600">Paenibacillus polymyxa</span>
+                <span className="text-sm text-gray-600 italic">Paenibacillus polymyxa</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
-                <span className="text-sm text-gray-600">3.2.1.21</span>
+                <a href="http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC3/2/1/21.html" className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">3.2.1.21</a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">UniProt Number:</span>
-                <span className="text-sm text-gray-600">P22505</span>
+                <a href="https://www.uniprot.org/uniprotkb/P22505" className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">P22505</a>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">PCB Entries:</span>
-                <span className="text-sm text-gray-600">2JIE 2O9P 2O9R 2O9T 2Z1S</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">PDB Entries:</span>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <a href="https://www.rcsb.org/structure/2JIE" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2JIE</a>
+                  <a href="https://www.rcsb.org/structure/2O9P" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9P</a>
+                  <a href="https://www.rcsb.org/structure/2O9R" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9R</a>
+                  <a href="https://www.rcsb.org/structure/2O9T" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9T</a>
+                  <a href="https://www.rcsb.org/structure/2Z1S" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2Z1S</a>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Molar Mass:</span>
                 <span className="text-sm text-gray-600">51,573 Da</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (εBglB):</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (ε<sub>BglB</sub>):</span>
                 <span className="text-sm text-gray-600">113,330 m−1 cm−1</span>
               </div>
             </div>
@@ -113,7 +119,7 @@ const BglBPage = () => {
             It is an essential enzyme for the degradation of cellulose by bacteria and fungi.
           </p>
           <p className="text-gray-600">
-            Our computational designs and kinetic measurements will utilize para-nitrophenyl-β-d-glucopyranose (pNPG) 
+            Our computational designs and kinetic measurements will utilize para-nitrophenyl-β-ᴅ-glucopyranose (pNPG) 
             as a colorimetric reporter substrate.
           </p>
         </div>
@@ -193,7 +199,7 @@ const BglBPage = () => {
             },
             {
               title: "Publications",
-              link: "#",
+              link: "/resources/publications",
               linkText: "View Publications"
             }
           ].map((item, index) => (

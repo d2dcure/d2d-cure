@@ -21,7 +21,7 @@ import ProteinModeledView from '@/components/submission/ProteinModeledView';
 import OligonucleotideOrderedView from '@/components/submission/OligonucleotideOrderedView';
 import PlasmidSequenceVerifiedView from '@/components/submission/PlasmidSequenceVerifiedView';
 import ProteinInducedView from '@/components/submission/ProteinInducedView';
-import ExpressedView from '@/components/submission/ExpressedView';
+import ProteinYieldView from '@/components/submission/ProteinYieldView';
 import KineticAssayDataView from '@/components/submission/KineticAssayDataView';
 import WildTypeKineticDataView from '@/components/submission/WildTypeKineticDataView';
 import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
@@ -71,7 +71,7 @@ const SingleVariant = () => {
     'Oligonucleotide ordered',
     'Plasmid sequence verified',
     'Protein induced',
-    'Expressed',
+    'Protein yield',
     'Kinetic assay data uploaded',
     'Wild type kinetic data uploaded',
     'Thermostability assay data uploaded',
@@ -122,7 +122,7 @@ const SingleVariant = () => {
       try {
         const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
         if (!response.ok) {
-          showToast('No Data Found', 'No KineticRawData entry found for this parent_id', 'warning');
+          // Silently set data to null - this is expected for new entries
           setEntryData2(null);
           return;
         }
@@ -186,7 +186,7 @@ const SingleVariant = () => {
       return 'Protein induced';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
-      return 'Expressed';
+      return 'Protein yield';
     }
     if (oldData.KM_avg === null && newData.KM_avg !== null) {
       return 'Kinetic assay data uploaded';
@@ -475,7 +475,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Expressed':
+        case 'Protein yield':
           // First update KineticRawData
           response = await fetch('/api/updateKineticRawDataYield', {
             method: 'POST',
@@ -710,7 +710,7 @@ const SingleVariant = () => {
           return entryData.expressed === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Expressed":
+        case "Protein yield":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
@@ -753,7 +753,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Expressed" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
+      if (item === "Protein yield" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
@@ -865,7 +865,7 @@ const SingleVariant = () => {
         case 'Plasmid sequence verified':
           return entryData.oligo_ordered === true;
         
-        case 'Expressed':
+        case 'Protein yield':
         case 'Gel uploaded':
           return entryData.expressed === true;
         
@@ -1007,7 +1007,7 @@ const SingleVariant = () => {
       "Oligonucleotide ordered",
       "Plasmid sequence verified",
       'Protein induced',
-      'Expressed',
+      'Protein yield',
       "Kinetic assay data uploaded",
       "Wild type kinetic data uploaded",
       "Thermostability assay data uploaded",
@@ -1030,8 +1030,8 @@ const SingleVariant = () => {
           return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case 'Protein induced':
           return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case 'Expressed':
-          return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case 'Protein yield':
+          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded":
           return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Wild type kinetic data uploaded":
@@ -1235,7 +1235,7 @@ const SingleVariant = () => {
                     onClick={() => setShowDeleteModal(true)}
                     disabled={entryData.curated}
                   >
-                    Delete Profile
+                    Delete Dataset
                   </button>
                   {user?.status === 'ADMIN' && entryData?.curated && (
                     <button
@@ -1318,7 +1318,7 @@ const SingleVariant = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        title="Delete Variant"
+        title="Delete Dataset"
         message={`Are you sure you want to delete ${getVariantDisplay(entryData)}? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"

@@ -893,6 +893,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
               {/* Raw Data Table */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Raw Data</h3>
+                
                 {sanitizationMessages.length > 0 && (
                   <div className="mb-4 space-y-2">
                     {sanitizationMessages.map((message, idx) => (
@@ -916,6 +917,11 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
                     ))}
                   </div>
                 )}
+                
+                {/* Bigger, more prominent table title - now after warnings */}
+                <h4 className="text-md font-semibold text-gray-800 mb-4 text-center">
+                  slope of {entryData.resid}{entryData.resnum}{entryData.resmut} A<sub>420 nm</sub> (min<sup>−1</sup>)
+                </h4>
 
                 {/* Vertical vs. Horizontal table */}
                 {templateType === 'vertical' && (
@@ -1036,6 +1042,28 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
                     </div>
                   </div>
 
+                  {/* Add new Thermal Stability Constants section */}
+                  <div className="space-y-4 col-span-2 pt-3 border-t border-gray-200 mt-4">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <div>
+                        <span className="text-sm text-gray-500">Thermostability Constants</span>
+                        <p className="text-sm font-medium text-gray-900">
+                          T<sub>50</sub> = {calculatedValues.T50 !== null ? Number(calculatedValues.T50).toFixed(1) : 'N/A'} 
+                          {calculatedValues.T50_SD !== null && <> ± {Number(calculatedValues.T50_SD).toFixed(1)}</>} °C
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          k = {calculatedValues.k !== null ? Number(calculatedValues.k).toFixed(2) : 'N/A'}
+                        </p>
+                        <p className="text-xs italic text-gray-500 mt-1">
+                          More-negative k values indicate faster transition from active to inactive enzyme.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
                     <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1058,7 +1086,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
                   size="sm"
                 >
                   <span className="text-sm text-gray-600">
-                    I approve this data and agree to attach my name to it
+                   I agree to have my name attached to the data being submitted.
                   </span>
                 </Checkbox>
               </div>

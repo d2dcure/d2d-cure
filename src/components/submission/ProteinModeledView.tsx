@@ -50,7 +50,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       const delta = variantScore - wtScore;
       if (delta < -20 || delta > 20) {
         messages.push({
-          type: 'error',
+          type: 'warning',
           message: 'Variants rarely express if the change in score is greater than 20. Please review the values.',
           field: 'variant'
         });
@@ -87,7 +87,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
   const updateRosettaScore = async () => {
     const isValid = validateScores();
-    if (!isValid) return;
+    
+    const hasBlockingValidation = validationMessages.some(msg => 
+      msg.type === 'error' || 
+      (msg.type === 'warning' && !msg.message.includes('Variants rarely express if the change in score is greater than 20'))
+    );
+    
+    if (hasBlockingValidation) return;
 
     setIsSubmitting(true);
     try {
@@ -222,7 +228,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           <button 
             onClick={updateRosettaScore}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!WT || !variant || validationMessages.length > 0 || isSubmitting || entryData.curated}
+            disabled={!WT || !variant || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
           >
             {isSubmitting ? (
               <>

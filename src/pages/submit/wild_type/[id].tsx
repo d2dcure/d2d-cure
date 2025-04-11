@@ -17,7 +17,7 @@ import { EntryAccessChecker } from '@/components/EntryAccessChecker';
 
 // Each checklist item's logic is encapsulated within its own component, to make debugging/making changes easier  
 import ProteinInducedView from '@/components/submission/ProteinInducedView';
-import ExpressedView from '@/components/submission/ExpressedView';
+import ProteinYieldView from '@/components/submission/ProteinYieldView';
 import KineticAssayDataView from '@/components/submission/KineticAssayDataView';
 import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
@@ -59,7 +59,7 @@ const SingleVariant = () => {
 
   const checklistItems = [
     'Protein induced',
-    'Expressed',
+    'Protein yield',
     'Kinetic assay data uploaded',
     'Thermostability assay data uploaded',
     'Melting point values uploaded',
@@ -101,26 +101,30 @@ const SingleVariant = () => {
     fetchEntryData();
   }, [id]);
 
-  // Fetch entryData2 using entryData.id
-  useEffect(() => {
-    const fetchEntryData2 = async () => {
-      if (!entryData.id) return;
-      try {
-        const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
-        if (!response.ok) {
-          showToast('No Data Found', 'No KineticRawData entry found for this parent_id', 'warning');
-          setEntryData2(null);
-          return;
-        }
-        const data = await response.json();
-        setEntryData2(data);
-      } catch (error) {
-        showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
+  // Extract the fetchEntryData2 function from the useEffect so it can be called independently
+  const fetchEntryData2 = async (entryId: number) => {
+    if (!entryId) return;
+    try {
+      const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryId}`);
+      if (!response.ok) {
+        // Silently set data to null - this is expected for new entries
         setEntryData2(null);
+        return;
       }
-    };
+      const data = await response.json();
+      setEntryData2(data);
+    } catch (error) {
+      // Only show toast for unexpected errors (network issues, etc.)
+      showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
+      setEntryData2(null);
+    }
+  };
 
-    fetchEntryData2();
+  // Update the useEffect to use the extracted function
+  useEffect(() => {
+    if (entryData.id) {
+      fetchEntryData2(entryData.id);
+    }
   }, [entryData.id]);
 
   // Mapping function to convert enum to display value (for yield_units in KineticRawData)
@@ -158,7 +162,7 @@ const SingleVariant = () => {
       return 'Protein induced';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
-      return 'Expressed';
+      return 'Protein yield';
     }
     if (oldData.KM_avg === null && newData.KM_avg !== null) {
       return 'Kinetic assay data uploaded';
@@ -186,6 +190,11 @@ const SingleVariant = () => {
     }
 
     setEntryData(updatedData);
+
+    // If yield data was updated, refresh the entryData2
+    if (newData.yield_avg !== undefined && updatedData.id) {
+      fetchEntryData2(updatedData.id);
+    }
 
     // Check if all items are complete after update
     if (checkAllComplete(updatedData)) {
@@ -371,7 +380,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Expressed':
+        case 'Protein yield':
           // First update KineticRawData
           response = await fetch('/api/updateKineticRawDataYield', {
             method: 'POST',
@@ -518,7 +527,7 @@ const SingleVariant = () => {
           return entryData.expressed === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Expressed":
+        case "Protein yield":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
@@ -544,7 +553,7 @@ const SingleVariant = () => {
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Expressed" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
+      if (item === "Protein yield" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
@@ -638,7 +647,7 @@ const SingleVariant = () => {
         case 'Protein induced':
           return true;
         
-        case 'Expressed':
+        case 'Protein yield':
         case 'Gel uploaded':
           return entryData.expressed === true;
         
@@ -775,7 +784,7 @@ const SingleVariant = () => {
   const renderDetailView = () => {
     const checklistItems = [
       'Protein induced',
-      'Expressed',
+      'Protein yield',
       "Kinetic assay data uploaded",
       "Thermostability assay data uploaded",
       "Melting point values uploaded",
@@ -790,8 +799,8 @@ const SingleVariant = () => {
       switch (selectedDetail) {
         case 'Protein induced':
           return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case 'Expressed':
-          return <ExpressedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case 'Protein yield':
+          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded":
           return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Thermostability assay data uploaded":
@@ -951,9 +960,15 @@ const SingleVariant = () => {
           <div className="max-w-7xl mx-auto">
             {!loading && entryData && (
               <Breadcrumbs className="mb-2">
-                <BreadcrumbItem>Home</BreadcrumbItem>
-                <BreadcrumbItem>Submit</BreadcrumbItem>
-                <BreadcrumbItem>Wild Type</BreadcrumbItem>
+                <BreadcrumbItem>
+                  <Link href="/">Home</Link>
+                </BreadcrumbItem>
+                <BreadcrumbItem>
+                  <Link href="/submit">Submit</Link>
+                </BreadcrumbItem>
+                <BreadcrumbItem>
+                  <Link href="/submit">Wild Type</Link>
+                </BreadcrumbItem>
                 <BreadcrumbItem>{getBreadcrumbDisplay(entryData)}</BreadcrumbItem>
               </Breadcrumbs>
             )}
@@ -1043,7 +1058,7 @@ const SingleVariant = () => {
                     onClick={() => setShowDeleteModal(true)}
                     disabled={entryData.curated}
                   >
-                    Delete Profile
+                    Delete Dataset
                   </button>
                   {user?.status === 'ADMIN' && entryData?.curated && (
                     <button
@@ -1126,7 +1141,7 @@ const SingleVariant = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        title="Delete Variant"
+        title="Delete Dataset"
         message={`Are you sure you want to delete ${getVariantDisplay(entryData)}? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"

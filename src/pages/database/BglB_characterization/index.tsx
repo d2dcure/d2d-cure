@@ -95,6 +95,9 @@ const DataPage = () => {
   // Add this new ref to track URL-sourced updates
   const sortFromUrl = useRef(false);
 
+  // Add this new state for publications
+  const [publications, setPublications] = useState<any[]>([]);
+
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
     const savedLastClickedRow = localStorage.getItem('lastClickedBglBRow');
@@ -357,6 +360,30 @@ const DataPage = () => {
           </div>
         </Tooltip>
       )
+    },
+    { 
+      name: "References", 
+      uid: "refs", 
+      sortable: false,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relevant publications for this variant.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help">
+            Refs
+          </div>
+        </Tooltip>
+      )
     }
   ];
 
@@ -396,10 +423,11 @@ const DataPage = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [institutionsRes, characterizationRes, sequencesRes] = await Promise.all([
+        const [institutionsRes, characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
           fetch('/api/getInstitutions'),
           fetch('/api/getCharacterizationData'),
-          fetch('/api/getSequenceData')
+          fetch('/api/getSequenceData'),
+          fetch('/api/getPublications')
         ]);
 
         // Check each response individually
@@ -412,11 +440,15 @@ const DataPage = () => {
         if (!sequencesRes.ok) {
           throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
         }
+        if (!publicationsRes.ok) {
+          throw new Error(`GET /api/getPublications ${publicationsRes.status} - Failed to fetch publications`);
+        }
 
-        const [institutionsData, characterizationData, sequencesData] = await Promise.all([
+        const [institutionsData, characterizationData, sequencesData, publicationsData] = await Promise.all([
           institutionsRes.json(),
           characterizationRes.json(),
-          sequencesRes.json()
+          sequencesRes.json(),
+          publicationsRes.json()
         ]);
 
         // Validate data formats
@@ -429,6 +461,9 @@ const DataPage = () => {
         if (!Array.isArray(sequencesData)) {
           throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
         }
+        if (!Array.isArray(publicationsData)) {
+          throw new Error('GET /api/getPublications - Invalid data format: Expected array');
+        }
 
         const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
           a.fullname.localeCompare(b.fullname)
@@ -436,6 +471,7 @@ const DataPage = () => {
         setInstitutions(sortedInstitutions);
         setCharacterizationData(characterizationData);
         setSequences(sequencesData);
+        setPublications(publicationsData);
 
         // For color coding 
         const WT_row = characterizationData.find((row:any) => row.id === 1);
@@ -627,23 +663,21 @@ const DataPage = () => {
         };
 
         // Calculate averages as before
-        const sums: any = {};
-        const counts: any = {};
+        const sums: Record<string, number> = {};
+        const counts: Record<string, number> = {};
         
-        group.forEach((item: any) => {
-          Object.keys(item).forEach(key => {
-            if (typeof item[key] === 'number') {
-              if (!sums[key]) {
-                sums[key] = 0;
-                counts[key] = 0;
-              }
-              if (item[key] !== null) {
-                sums[key] += item[key];
-                counts[key]++;
-              }
+      group.forEach((item: any) => {
+        Object.keys(item).forEach(k => {
+          if (typeof item[k] === 'number' && item[k] !== null && !isNaN(item[k])) {
+            if (!sums.hasOwnProperty(k)) {
+              sums[k] = 0;
+              counts[k] = 0;
             }
-          });
+            sums[k] += item[k];
+            counts[k] += 1;
+          }
         });
+      });
 
         Object.keys(sums).forEach(key => {
           averageRow[key] = counts[key] > 0 ? sums[key] / counts[key] : null;
@@ -961,6 +995,24 @@ const DataPage = () => {
     });
   };
 
+  // Add this useEffect to update visible columns when expandData changes
+  useEffect(() => {
+    setVisibleColumns(prevColumns => {
+      const newColumns = new Set(prevColumns);
+      
+      if (expandData) {
+        // If showing all data, add the refs column
+        newColumns.add("refs");
+      } else {
+        // If showing only averages, remove the refs column
+        newColumns.delete("refs");
+      }
+      
+      return newColumns;
+    });
+  }, [expandData]);
+
+  console.log(publications)
   return (
     <ErrorChecker 
       isError={isError} 
@@ -1481,7 +1533,13 @@ const DataPage = () => {
                       <TableBody items={paginatedData}>
                         {(data) => (
                           <TableRow 
-                            key={data.isChild ? `child-${data.id}` : expandData ? `row-${data.id}` : `${data.resid}${data.resnum}${data.resmut}`}
+                          key={
+                            data.isChild
+                              ? `child-${data.id}`
+                              : expandData
+                                ? `row-${data.id}`
+                                : `group-${data.groupKey}`
+                          }
                             id={data.isAggregate ? `group-${data.resid}${data.resnum}` : `row-${data.id}`}
                             data-resnum={data.resnum}
                             className={`
@@ -1537,9 +1595,9 @@ const DataPage = () => {
                                           color: data.expressed ? '#000000' : '#000000',
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '40px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
@@ -1555,9 +1613,9 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
@@ -1573,9 +1631,9 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
@@ -1591,13 +1649,15 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues.WT_log_kcat_over_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? roundTo(data.kcat_over_KM, 2) : '—'}
+                                          {data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
+                                            `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` 
+                                            : '—'}
                                         </div>
                                       </TableCell>
                                     );
@@ -1609,9 +1669,9 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues.WT_T50) / WTValues.WT_T50 : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
@@ -1627,13 +1687,13 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues.WT_Tm) / WTValues.WT_Tm : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 2)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 2) : ''}` : '—'}
+                                          {data.Tm !== null && !isNaN(data.Tm) ? `${roundTo(data.Tm, 1)} ± ${data.Tm_SD !== null && !isNaN(data.Tm_SD) ? roundTo(data.Tm_SD, 1) : '0.0'}` : '—'}
                                         </div>
                                       </TableCell>
                                     );
@@ -1645,13 +1705,59 @@ const DataPage = () => {
                                           backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
-                                          textAlign: 'center',
+                                          textAlign: 'right',
                                           width: '100px',
-                                          margin: '0 auto',
+                                          marginLeft: 'auto',
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? roundTo(data.Rosetta_score, 2) : '—'}
+                                          {data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? roundTo(data.Rosetta_score, 1) : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "refs":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div className="flex gap-1 items-center">
+                                          {(() => {
+                                            // Filter out null, empty references, and treat both "0" and 0 as empty
+                                            const validRefs = [data.reference1, data.reference2, data.reference3]
+                                              .filter(ref => ref !== null && ref !== undefined && ref !== "" && ref !== "0" && ref !== 0);
+                                            
+                                            if (validRefs.length === 0) return "—";
+                                            
+                                            return validRefs.map((ref, index) => {
+                                              // Find the publication that matches this reference ID
+                                              const publication = publications.find(pub => pub.id === Number(ref));
+                                              
+                                              // If we found a matching publication with a link
+                                              if (publication?.link) {
+                                                return (
+                                                  <React.Fragment key={`ref-${data.id}-${ref}`}>
+                                                    {index > 0 && ", "}
+                                                    <a 
+                                                      href={publication.link} 
+                                                      target="_blank" 
+                                                      rel="noopener noreferrer"
+                                                      className="text-[#06B7DB] hover:underline hover:text-[#0594B7]"
+                                                      onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
+                                                    >
+                                                      {ref}
+                                                    </a>
+                                                  </React.Fragment>
+                                                );
+                                              } else {
+                                                // If we can't find a matching publication or it has no link, just show the number
+                                                return (
+                                                  <React.Fragment key={`ref-${data.id}-${ref}`}>
+                                                    {index > 0 && ", "}
+                                                    <span>{ref}</span>
+                                                  </React.Fragment>
+                                                );
+                                              }
+                                            });
+                                          })()}
                                         </div>
                                       </TableCell>
                                     );
