@@ -373,7 +373,7 @@ const SubmitPage = () => {
                                     ''}
                                   </TableCell>
                                   <TableCell>
-                                  {actualData[item.id]?.kineticData?.length > 0 ? 
+                                  {actualData[item.id]?.tempData?.length > 0 ? 
                                     `updated ${new Date(actualData[item.id].tempData[0].updated).toLocaleDateString()}` : 
                                     ''}
                                   </TableCell>
