@@ -14,6 +14,7 @@ const SignUpPage = () => {
   const [username, setUsername] = useState('');
   const [givenName, setGivenName] = useState('');
   const [institution, setInstitution] = useState('');
+  const [institutionAbbr, setInstitutionAbbr] = useState('');
   const [title, setTitle] = useState('');
   const [pi, setpi] = useState('');
   const [email, setEmail] = useState('');
@@ -51,12 +52,17 @@ const SignUpPage = () => {
       given_name: givenName,
       title: title,
       pi: pi,
-      institution,
+      institution: institutionAbbr,
       status: userType,
       email,
       password
     }
     try {
+      // First create the user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("Successfully created new user in Firebase.");
+      
+      // Only if Firebase creation succeeds, create the user in the database
       const response = await fetch(`/api/createUser`, {
         method: 'POST',
         headers: {
@@ -66,11 +72,15 @@ const SignUpPage = () => {
       });
       
       if (!response.ok) {
+        // If database creation fails, we should delete the Firebase user
+        try {
+          await userCredential.user.delete();
+        } catch (deleteError) {
+          console.error("Failed to clean up Firebase user after database error:", deleteError);
+        }
         throw new Error('Failed to create user in database');
       }
       
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("Successfully created new user.");
       router.push('/');
     } catch (error:any) {
       setIsSubmitting(false);
@@ -90,6 +100,7 @@ const SignUpPage = () => {
     setPasswordError('');
     // Set submitting state to true
     setIsSubmitting(true);
+    setError(''); // Clear any existing errors
     
     console.log("Form submission values:", {
       username,
@@ -107,9 +118,20 @@ const SignUpPage = () => {
     try {
       await handleSignUp(email, password);
       // Note: No need to reset isSubmitting here since we're redirecting on success
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during signup:", error);
-      setError("Failed to create account. Please try again.");
+      
+      // Provide specific error messages based on Firebase error codes
+      if (error.code === 'auth/email-already-in-use') {
+        setError("This email address is already registered. Please sign in or use a different email.");
+      } else if (error.code === 'auth/invalid-email') {
+        setError("Please enter a valid email address.");
+      } else if (error.code === 'auth/weak-password') {
+        setError("Please choose a stronger password. It should be at least 6 characters long.");
+      } else {
+        setError("Failed to create account. Please try again.");
+      }
+      
       setIsSubmitting(false);
     }
   };
@@ -306,7 +328,16 @@ const SignUpPage = () => {
                     id="institution"
                     placeholder="Select your Institution"
                     selectedKeys={institution ? [institution] : []}
-                    onChange={(e) => setInstitution(e.target.value)}
+                    onChange={(e) => {
+                      const fullName = e.target.value;
+                      setInstitution(fullName);
+                      
+                      // Find the corresponding abbreviation
+                      const selected = institutions.find(inst => inst.fullname === fullName);
+                      if (selected) {
+                        setInstitutionAbbr(selected.abbr);
+                      }
+                    }}
                     variant="bordered"
                     size="md"
                     className="w-full text-base"
