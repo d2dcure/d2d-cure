@@ -13,7 +13,7 @@ import {
   TableCell
 } from "@nextui-org/table";
 import { useAsyncList } from "@react-stately/data";
-import { Button, Link, Checkbox, Input} from "@nextui-org/react";
+import { Button, Link, Checkbox, Input, Pagination } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
@@ -30,6 +30,14 @@ function UserManagement() {
   const [scrollDirection, setScrollDirection] = useState<'top' | 'bottom' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [sortField, setSortField] = useState('id');
+  const [sortDirection, setSortDirection] = useState('asc');
+
   interface Column {
     name: string;
     uid: string;
@@ -61,20 +69,21 @@ interface User {
   approved: boolean;
 }
 
-// `column` is constrained to the keys of `User`
+// Fix the useAsyncList hook to work with the paginated API response
 const list = useAsyncList<User>({
   async load({ signal }) {
     const res = await fetch('/api/getAllUsers', { signal });
-    const data: User[] = await res.json();
-    return { items: data };
+    const response = await res.json();
+    // Extract the users array from the paginated response
+    return { items: response.users || [] };
   },
 
   async sort({ items, sortDescriptor }) {
-    const column = sortDescriptor.column as keyof User; // Explicitly define the type of `column`
-  
+    const column = sortDescriptor.column as keyof User;
+    
     // Ensure column is defined before sorting
     if (typeof column === 'undefined') {
-      return { items }; // If column is undefined, return items without sorting
+      return { items };
     }
   
     // Sorting logic
@@ -103,37 +112,42 @@ const list = useAsyncList<User>({
 
 
   useEffect(() => {
-    const fetchInstitutions = async () => {
+    const fetchData = async () => {
+      setError(null); // Clear any previous errors
+      setIsLoading(true);
+      
       try {
-        const response = await fetch('/api/getInstitutions');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch institutions: ${response.statusText}`);
+        // Fetch institutions
+        const institutionsResponse = await fetch('/api/getInstitutions');
+        if (!institutionsResponse.ok) {
+          throw new Error(`Failed to fetch institutions: ${institutionsResponse.statusText}`);
         }
-        const data = await response.json();
-        setInstitutionsList(data);
+        const institutionsData = await institutionsResponse.json();
+        setInstitutionsList(institutionsData);
+        
+        // Fetch users
+        const institutionParam = user?.status === "ADMIN" ? '' : `&institution=${encodeURIComponent(user.institution)}`;
+        const url = `/api/getAllUsers?page=${page}&pageSize=${pageSize}${institutionParam}&sortField=${sortField}&sortDirection=${sortDirection}`;
+        
+        const usersResponse = await fetch(url);
+        if (!usersResponse.ok) {
+          throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
+        }
+        const usersData = await usersResponse.json();
+        setAllUsers(usersData.users);
+        setTotalPages(usersData.pagination.pages);
+        setTotalUsers(usersData.pagination.total);
+        
       } catch (err) {
-        console.error('Error fetching institutions:', err);
-        setError('Failed to load institutions. Please try again later.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const fetchAllUsers = async () => {
-      try {
-        const response = await fetch('/api/getAllUsers');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch users: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setAllUsers(data);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setError('Failed to load users. Please try again later.');
-      }
-    };
-
-    fetchInstitutions();
-    fetchAllUsers();
-  }, []);
+    fetchData();
+  }, [page, pageSize, user, sortField, sortDirection]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -194,11 +208,13 @@ const list = useAsyncList<User>({
 
     // Sorting function
 const sortTable = (key: string) => {
-  let direction = 'ascending';
-  if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-    direction = 'descending';
+  let direction = 'asc';
+  if (sortField === key && sortDirection === 'asc') {
+    direction = 'desc';
   }
-  setSortConfig({ key, direction });
+  setSortField(key);
+  setSortDirection(direction);
+  setPage(1); // Reset to first page when sorting changes
 };
   
 const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -210,16 +226,16 @@ const sortedUsers = [...filteredUsers].sort((a, b) => {
     const isNumeric = !isNaN(valueA) && !isNaN(valueB);
     if (isNumeric) {
       // Numerical comparison
-      return sortConfig.direction === 'ascending'
+      return sortConfig.direction === 'asc'
         ? valueA - valueB
         : valueB - valueA;
     } else {
       // String comparison (case-sensitive)
       if (valueA < valueB) {
-        return sortConfig.direction === 'ascending' ? -1 : 1;
+        return sortConfig.direction === 'asc' ? -1 : 1;
       }
       if (valueA > valueB) {
-        return sortConfig.direction === 'ascending' ? 1 : -1;
+        return sortConfig.direction === 'asc' ? 1 : -1;
       }
     }
   }
@@ -340,8 +356,8 @@ const handleDeleteFirebase = async () => {
 
       // Handle null or undefined values
       if ((valueA == null && valueB == null) || (valueA == "" && valueB == "")) return 0; // Both are null/undefined
-      if (valueA == null || valueA== "") return sortConfig.direction === 'ascending' ? 1 : -1; // Null/undefined goes last
-      if (valueB == null || valueB == "") return sortConfig.direction === 'ascending' ? -1 : 1; // Null/undefined goes last
+      if (valueA == null || valueA== "") return sortConfig.direction === 'asc' ? 1 : -1; // Null/undefined goes last
+      if (valueB == null || valueB == "") return sortConfig.direction === 'asc' ? -1 : 1; // Null/undefined goes last
 
       const valueAStr = valueA.toString().toLowerCase(); // Convert to string and lowercase
       const valueBStr = valueB.toString().toLowerCase(); // Convert to string and lowercase
@@ -349,31 +365,29 @@ const handleDeleteFirebase = async () => {
       // Check if values are numerical
       const isNumeric = !isNaN(valueA) && !isNaN(valueB);
       if (isNumeric) {
-        return sortConfig.direction === 'ascending'
+        return sortConfig.direction === 'asc'
           ? valueA - valueB
           : valueB - valueA;
       } else {
         // String comparison
         if (valueAStr < valueBStr) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
+          return sortConfig.direction === 'asc' ? -1 : 1;
         }
         if (valueAStr > valueBStr) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
+          return sortConfig.direction === 'asc' ? 1 : -1;
         }
       }
     }
     return 0;
   });
 
-
   return (
     <AuthChecker minimumStatus="professor">
       <NavBar />
       <div className="px-3 md:px-4 lg:px-15 py-4 lg:py-10 mb-10 bg-white">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600">{error}</p>
-          </div>
+          <div></div>
+          // optionally display error as UI here. For now im not 
         )}
 
         <div className="max-w-7xl mx-auto">
@@ -451,67 +465,102 @@ const handleDeleteFirebase = async () => {
                   wrapper: "min-h-[400px]",
                 }}
               >
-<TableHeader>
-  <TableColumn width="40">Check</TableColumn>
-        <TableColumn
-          width="40"
-          key="user_name"
-          onClick={() => sortTable("user_name")}
-          allowsSorting
-        >
-          Username
-        </TableColumn>
+                <TableHeader>
+                  <TableColumn width="40">Check</TableColumn>
+                  <TableColumn
+                    width="40"
+                    key="user_name"
+                    onClick={() => sortTable("user_name")}
+                    allowsSorting
+                  >
+                    Username
+                  </TableColumn>
 
-        <TableColumn
-          width="40"
-          key="given_name"
-          allowsSorting
-          onClick={() => sortTable("given_name")}
-        >
-          Given Name
-        </TableColumn>
+                  <TableColumn
+                    width="40"
+                    key="given_name"
+                    allowsSorting
+                    onClick={() => sortTable("given_name")}
+                  >
+                    Given Name
+                  </TableColumn>
 
-        <TableColumn width="40" key="title"
-          onClick={() => sortTable("title")} allowsSorting>Title</TableColumn>
+                  <TableColumn width="40" key="title"
+                    onClick={() => sortTable("title")} allowsSorting>Title</TableColumn>
 
-        <TableColumn width="40" key = "institution" onClick={() => sortTable("institution")} allowsSorting>Institution</TableColumn>
-        <TableColumn width="40" key = "status" onClick={() => sortTable("status")} allowsSorting>Status/Role</TableColumn>
-        <TableColumn width="40" key = "pi" onClick={() => sortTable("pi")} allowsSorting>PI</TableColumn>
-        <TableColumn width="40" key = "email" onClick={() => sortTable("email")} allowsSorting>Email</TableColumn>
-        <TableColumn width="40" key = "registered_date" onClick={() => sortTable("registered_date")} allowsSorting>Registered Date</TableColumn>
-        <TableColumn width="40" key = "approved" onClick={() => sortTable("approved")} allowsSorting>Approved</TableColumn>
-      </TableHeader>
+                  <TableColumn width="40" key = "institution" onClick={() => sortTable("institution")} allowsSorting>Institution</TableColumn>
+                  <TableColumn width="40" key = "status" onClick={() => sortTable("status")} allowsSorting>Status/Role</TableColumn>
+                  <TableColumn width="40" key = "pi" onClick={() => sortTable("pi")} allowsSorting>PI</TableColumn>
+                  <TableColumn width="40" key = "email" onClick={() => sortTable("email")} allowsSorting>Email</TableColumn>
+                  <TableColumn width="40" key = "registered_date" onClick={() => sortTable("registered_date")} allowsSorting>Registered Date</TableColumn>
+                  <TableColumn width="40" key = "approved" onClick={() => sortTable("approved")} allowsSorting>Approved</TableColumn>
+                </TableHeader>
 
                 <TableBody>
-                  {filteredAndSortedUsers.map(user => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <Checkbox
-                          isSelected={checkedUsers[user.id] || false}
-                          onChange={() => handleCheckboxChange(user.id)}
-                        />
-                      </TableCell>
-                      <TableCell>{user.user_name}</TableCell>
-                      <TableCell>{user.given_name}</TableCell>
-                      <TableCell>{user.title}</TableCell>
-                      <TableCell>{user.institution}</TableCell>
-                      <TableCell>{user.status}</TableCell>
-                      <TableCell>{user.pi}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.reg_date}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            user.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {user.approved ? 'Approved' : 'Pending...'}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {(() => {
+                    if (isLoading) {
+                      return (
+                        <TableRow key="loading-row">
+                          {Array(10).fill(0).map((_, index) => (
+                            <TableCell key={`loading-cell-${index}`} className={index === 0 ? "text-center" : ""}>
+                              {index === 0 ? "Loading users..." : ""}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      );
+                    }
+                    
+                    if (filteredAndSortedUsers.length === 0) {
+                      return (
+                        <TableRow key="empty-row">
+                          {Array(10).fill(0).map((_, index) => (
+                            <TableCell key={`empty-cell-${index}`} className={index === 0 ? "text-center" : ""}>
+                              {index === 0 ? "No users found." : ""}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      );
+                    }
+                    
+                    return filteredAndSortedUsers.map(user => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <Checkbox
+                            isSelected={checkedUsers[user.id] || false}
+                            onChange={() => handleCheckboxChange(user.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{user.user_name}</TableCell>
+                        <TableCell>{user.given_name}</TableCell>
+                        <TableCell>{user.title}</TableCell>
+                        <TableCell>{user.institution}</TableCell>
+                        <TableCell>{user.status}</TableCell>
+                        <TableCell>{user.pi}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.reg_date}</TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              user.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {user.approved ? 'Approved' : 'Pending...'}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  })()}
                 </TableBody>
               </Table>
+            </div>
+
+            <div className="flex justify-center mt-4">
+              <Pagination
+                total={totalPages}
+                initialPage={1}
+                page={page}
+                onChange={setPage}
+              />
             </div>
           </div>
         </div>
