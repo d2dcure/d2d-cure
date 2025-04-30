@@ -401,7 +401,11 @@ const handleDeleteFirebase = async () => {
             <h1 className="mb-4 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
               User Management
             </h1>
-            <p className="text-gray-500 mb-8">Members of labs at {user.institution}</p>
+            <p className="text-gray-500 mb-8">
+              {user?.status === "ADMIN" 
+                ? "Members of labs across all institutions" 
+                : `Members of labs at ${user.institution}`}
+            </p>
 
 <div className="flex justify-between items-center gap-4 mb-4">
     <Input
