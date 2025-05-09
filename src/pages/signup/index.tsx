@@ -544,7 +544,9 @@ const SignUpPage = () => {
                     // Find the selected professor and get their institution directly
                     const selectedProf = professors.find(prof => prof.user_name === piValue);
                     if (selectedProf && selectedProf.institution) {
+                      // Update both institution variables - this is the key fix
                       setInstitution(selectedProf.institution);
+                      setInstitutionAbbr(selectedProf.institution);
                     }
                   }}
                   variant="bordered"
