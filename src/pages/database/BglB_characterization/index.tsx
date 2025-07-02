@@ -1166,7 +1166,7 @@ const DataPage = () => {
                                 {showFullText && (
                                   <>
                                     <p>
-                                      log 1/KM is used so that larger values are &quot;better&quot;.
+                                      log 1/<i>K</i><sub>M</sub> is used so that larger values are &ldquo;better&rdquo;.
                                     </p>
                                     
                                     <p>
