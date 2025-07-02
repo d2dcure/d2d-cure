@@ -202,7 +202,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            Yield, c<sub>E</sub> (mg/mL)
+            Yield, <i>c</i><sub>E</sub> (mg/mL)
           </div>
         </Tooltip>
       )
@@ -241,7 +241,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The catalytic rate constant, a.k.a. &quot;turnover number&quot;.</p>
+              <p>The catalytic rate constant, a.k.a. &ldquo;turnover number&rdquo;.</p>
               <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
               <p>Click to sort by this column.</p>
             </div>
@@ -254,7 +254,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)
+            <span className="italic">k</span><sub>cat</sub> (min<sup>&minus;1</sup>)
           </div>
         </Tooltip>
       )
@@ -267,7 +267,7 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The specificity constant, a.k.a. &quot;kinetic efficiency&quot;.</p>
+              <p>The specificity constant, a.k.a. &ldquo;kinetic efficiency&rdquo;.</p>
               <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
               <p>Click to sort by this column.</p>
             </div>
@@ -280,7 +280,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
+            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>&minus;1</sup>min<sup>&minus;1</sup>)
           </div>
         </Tooltip>
       )
@@ -1159,7 +1159,7 @@ const DataPage = () => {
                             <div className={`space-y-2 ${!showFullText ? "line-clamp-2" : ""}`}>
                               <div className="text-sm space-y-3">
                                 <p>
-                                  For kinetic constants, the table is color-coded by relative log values of 1/KM, kcat, and kcat/KM compared to WT.
+                                  For kinetic constants, the table is color-coded by relative log values of 1/<i>K</i><sub>M</sub>, <i>k</i><sub>cat</sub>, and <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> compared to WT.
                                   {!showFullText && "..."}
                                 </p>
                                 
@@ -1170,7 +1170,7 @@ const DataPage = () => {
                                     </p>
                                     
                                     <p>
-                                      For T50 and TM values and Rosetta scores, a linear scale is used.
+                                      For <i>T</i><sub>50</sub> and <i>T</i><sub>m</sub> values and Rosetta scores, a linear scale is used.
                                     </p>
                                     
                                     <p>
