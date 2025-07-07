@@ -55,7 +55,7 @@ export default function App() {
               <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Resources</h2>
               <ul className="text-gray-500 dark:text-gray-400 font-medium">
                 <li className="mb-2">
-                  <Link href="/resources/StructuredFiles" className="hover:underline font-light">Structure and Sequence Files</Link>
+                  <Link href="/resources/StructureFiles" className="hover:underline font-light">Structure and Sequence Files</Link>
                 </li>
                 <li className="mb-2">
                   <Link href="/resources/oligosearch" className="hover:underline font-light">Oligo Search</Link>
