@@ -1,4 +1,44 @@
-<!DOCTYPE html>
+//import React from 'react';
+import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+//import {Card, CardBody, CardFooter} from "@nextui-org/react";
+//import {Button} from "@nextui-org/react";
+//import Link from 'next/link';
+//import { MdEmail } from "react-icons/md";
+//import { FaLinkedin } from "react-icons/fa";
+//import { Tabs, Tab } from "@nextui-org/react";
+
+const HowParamsAreCalculated = () => {
+	return (
+		<>
+			<NavBar />
+
+			<div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
+    			<div className="col-span-1 items-center">
+      				<Breadcrumbs className="mb-4">
+        				<BreadcrumbItem href="/">Home</BreadcrumbItem>
+        				<BreadcrumbItem>Resources</BreadcrumbItem>
+						<BreadcrumbItem>Kinetics Calculations</BreadcrumbItem>
+      				</Breadcrumbs>
+      				<div className="pt-6">
+        				<h1 className="mb-2 text-5xl md:text-5xl lg:text-6xl font-inter dark:text-white">
+          					Kinetics Calculations
+        				</h1>
+      				</div>
+    			</div>
+  			</div>
+
+			{/* Introduction */}			
+
+		    <Footer />
+    	</>
+	);
+};
+
+export default HowParamsAreCalculated;
+
+/*<!DOCTYPE html>
 <html lang="en-US">
 	<head>
 		<title>D2D CURE | Data | Kinetics Calculations</title>
@@ -348,3 +388,4 @@
         </footer>
 	</body>
 </html>
+*/
