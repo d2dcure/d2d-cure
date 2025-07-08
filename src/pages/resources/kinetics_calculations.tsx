@@ -385,6 +385,7 @@ const HowParamsAreCalculated = () => {
 					For this reason, when using a specific activity listed on a reagent bottle,
 					always be sure to confirm under which conditions that value was determined!
 				</p>
+			</div>
                 
 		    <Footer />
 		</>
