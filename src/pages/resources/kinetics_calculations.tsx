@@ -257,12 +257,137 @@ const HowParamsAreCalculated = () => {
 					must have both a big <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> value (fast catalysis) and
 					a small <abbr title="Michaelis constant"><i>K</i><sub>M</sub> value (good substrate binding).
 				</p>
-	
-							
 			</div>
 
-		    	<Footer />
-    		</>
+			{/* Appendix: Other Advanced Kinetics Terms */}			
+			<div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
+				<h2 className="text-4xl font-light dark:text-white">Appendix: Other Advanced Kinetics Terms</h2>
+				<h3>Activity &amp; Specific Activity</h3>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">		
+					There are two other terms used by enzyme kineticists related to enzyme assays that can be defined here: 
+					&ldquo;enzyme activity&rdquo; and &ldquo;specific activity&rdquo;.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The <strong>activity</strong> of an enzyme is 
+					a measure of the <em>number of molecules</em> of substrate consumed (<i>n</i><sub>S</sub>) or 
+					product released (<i>n</i><sub>P</sub>) over time,
+                	(rather than <em>concentration</em>, <i>c</i>, over time). 
+					Properly speaking, it is thus a kind of rate, 
+					though not defined in the usual sense, 
+					and it makes sense that a rate would be used to describe how active an enzyme is, 
+					but this alternate definition that uses number instead of concentration might seem confusing at first. 
+					Enzyme activity is usually reported in <strong>enzyme units</strong> (U), 
+					which are defined as <abbr title=micormoles>μmol</abbr>/<abbr>min</abbr>.
+				</p>
+                <p className="mt-4 text-gray-600 dark:text-gray-300">
+					Since molar concentration is moles per volume, 
+					one can simply calculate the activity of an enzyme from its rate/velocity
+					by multiplying the rate of product formation (<i>v</i>)
+                	times the total volume (<abbr title="total volume"><i>V</i><sub>total</sub></abbr>) of the reaction mixture and 
+					adjusting for a change in units:
+				</p>
+				
+				<figure class=center>
+					<img 
+						src=./equations/eq2.png 
+						alt="Activity is equal to rate times total volume."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+            		For example, if our total assay volume is 100&nbsp;<abbr title=microliters>μL</abbr> 
+					and we have a rate of 200&nbsp;<abbr title="millimolar per minute">m<span style="font-variant: small-caps">m</span>/min</abbr>:
+				</p>
+            
+            	<figure class=center>
+					<img 
+						src=./equations/eq2ex.png 
+						alt="Activity is equal to rate times total volume, that is, to 0.2 enzyme units."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Activity depends on the amount of enzyme present, 
+					and so a more useful value for comparisons, <strong>specific activity</strong>, is calculated,
+                	which is a ratio of the enzyme’s activity over its mass, 
+					usually expressed in units of <abbr title="enzyme units per milligram">U/mg</abbr>.
+                	So, we need to know the <em>mass</em> of the enzyme for each specific experiment,
+                	which we can find if we know both the concentration (in mass per volume, <em>not</em> molar) 
+					and the volume of enzyme added to the reaction mixture.
+				</p>
+
+            	<figure class=center>
+					<img 
+						src=./equations/eq3.png 
+						alt="Specific activity is equal to activity over the concentration of BglB times its volume."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+            		For example, if we have 25&nbsp;<abbr title=microliters>μL</abbr> of 
+					a 1.00&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr> enzyme solution, then:
+				</p>
+
+            	<figure class=center>
+					<img 
+						src=./equations/eq3ex.png 
+						alt="Specific activity is equal to activity over the concentration of BglB times its volume."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Specific activities are very often listed on reagent bottles, 
+					when one orders an enzyme from a biochemical company. 
+					They allow a biochemist to quickly determine how much enzyme to add to a reaction 
+					to achieve the desired rate of reaction.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					If we know the molar mass of our enzyme, 
+					we can also use the specific activity to determine the turnover numbers of enzymes,
+					including <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>. 
+					<abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> can be calculated 
+					by multiplying the specific activity times the molar mass of the enzyme and converting units. 
+                	For example, if our specific activity is 8&nbsp;<abbr title="enzyme units per milligram">U/mg</abbr>:
+				</p>
+
+            	<figure class=center>
+					<img 
+						src=./equations/eq4.png 
+						alt="The observed rate constant is equal to the specific activity times the molar mass."
+					>
+				</figure>
+            
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Alternatively, one can also calculate <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> 
+					from <em>activities</em> (instead of <em>specific</em> activities) in the following manner, 
+					by dividing the activity by the number of enzyme molecules present:
+				</p>
+            
+            	<figure class=center>
+					<img 
+						src=./equations/eq4alt.png 
+						alt="The observed rate constant is equal to the activity divided by number of enzyme molecules."
+					>
+				</figure>
+				
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Remember, to use <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>
+					to calculate the <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
+					one would need to know the maxiumum possible <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>
+					for that enzyme, 
+					which would be when that enzyme was fully saturated by substrate molecules. 
+					So, activities and specific activities are useful for determining a specific rate
+					from given conditions, 
+					but not for determining the maximum possible rate ((<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>))
+					that an enzyme can achieve at saturating conditions.
+					In other words, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> can be calculated from specific activity 
+					if and only if the enzyme assay to determine the specific activity was performed at saturating conditions. 
+					For this reason, when using a specific activity listed on a reagent bottle,
+					always be sure to confirm under which conditions that value was determined!
+				</p>
+                
+		    <Footer />
+		</>
 	);
 };
 
@@ -286,10 +411,6 @@ export default HowParamsAreCalculated;
 	
 	<body>
    	<main>
-   
-                
-     
-            
             <p><abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>
                 values can be determined a number of ways. From either plots of rate <i>vs.</i> substrate concentration
                 or plots of observed rate constants (<abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>, see below) <i>vs.</i> substrate concentration,
@@ -298,8 +419,6 @@ export default HowParamsAreCalculated;
             
             <p>Alternatively, one can use the <a href=https://en.wikipedia.org/wiki/Lineweaver%E2%80%93Burk_plot>Lineweaver–Burk method</a>,
                 which is described in the next section.</p>
-            
-
             
             <h3>Lineweaver–Burk Method</h3>
             
@@ -312,36 +431,6 @@ export default HowParamsAreCalculated;
             <h3>Other Advanced Kinetics Terms & Methods</h3>
             <h4>Activity &amp; Specific Activity</h4>
             
-            <p>There are two other terms used by enzyme kineticists related to enzyme assays that can be defined here: &ldquo;enzyme activity&rdquo; and &ldquo;specific activity&rdquo;.</p>
-            
-            <p>The <strong>activity</strong> of an enzyme is a measure of the <em>number of molecules</em> of substrate consumed or product released over time,
-                (rather than <em>concentration</em> over time). 
-                Enzyme activity is usually reported in <strong>enzyme units</strong> (U), which are equivalent to μmol/min.</p>
-                
-            <p>In our case, it is simply calculated by multiplying the rate of <abbr title=para-nitrophenol>PNP</abbr> production
-                times the volume (<abbr title=volume><i>V</i></abbr>) of the reaction mixture and adjusting for a change in
-                units.</p>
-
-            <figure class=center><img src=./equations/eq2.png alt="Activity is equal to rate times total volume."></figure>
-
-            <p>For example, if our assay volume is 100 μL and we have a rate of 200 m<span style="font-variant: small-caps">m</span>/min:</p>
-            
-            <figure class=center><img src=./equations/eq2ex.png alt="Activity is equal to rate times total volume."></figure>
-
-            <p>Activity depends on the amount of enzyme present, and so <strong>specific activity</strong> is calculated,
-                which is a ratio of the enzyme’s activity over its mass, usually expressed in units of U/mg.
-                So, we need to know the mass of the enzyme for each specific experiment,
-                which we can find if we know the concentration (in mass per volume, <em>not</em> molar) and the volume of enzyme added to the reaction mixture.</p>
-
-            <figure class=center><img src=./equations/eq3.png alt="Specific activity is equal to activity over the concentration of BglB times its volume."></figure>
-
-            <p>For example, if we have 25&nbsp;μL of a 1.00&nbsp;mg/mL enzyme solution, then:</p>
-
-            <figure class=center><img src=./equations/eq3ex.png alt="Specific activity is equal to activity over the concentration of BglB times its volume."></figure>
-
-            <p>If we know the molar mass of our enzyme, we can use the specific activity to determine the turnover numbers of enzymes,
-                including <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, as described next.</p>
-
             <h4>Alternative Ways to Determine Turnover Numbers &amp; Rate Constants</h4>
 
             <p>The <strong>observed rate constant</strong>, <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
@@ -359,16 +448,7 @@ export default HowParamsAreCalculated;
                 
             <figure class=center><img src=./equations/eq4simple.png alt="The observed rate constant is equal to the rate divided by intial molar enzyme concentration."></figure>
                 
-            <p>One can also calculate <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> from activities in the following manner, by dividing
-                the activity by the number of enzyme molecules present:</p>
-            
-            <figure class=center><img src=./equations/eq4alt.png alt="The observed rate constant is equal to the activity divided by number of enzyme molecules."></figure>
-                
-            <p>Alternatively, <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> can be calculated by multiplying the specific activity times the molar mass of the enzyme and converting units.
-                For example, if our specific activity is 8&nbsp;U/mg:</p>
-
-            <figure class=center><img src=./equations/eq4.png alt="The observed rate constant is equal to the specific activity times the molar mass."></figure>
-            
+           
             <p>What is nice about this value is that <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
                 like the catalytic rate constant <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, is a turnover number.
                 The units of any turnover number are inverse time. Like <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
