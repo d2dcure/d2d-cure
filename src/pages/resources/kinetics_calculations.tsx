@@ -57,7 +57,7 @@ const HowParamsAreCalculated = () => {
     					Using the &beta;-glucosidase B (BglB) enzyme as an example, 
 					because we are actually observing the release of <i>p</i>-nitrophenol 
 					(<abbr title=para-nitrophenol>PNP</abbr>) from the substrate as the enzyme performs its reaction, 
-					the initial rate, or <strong>initial &ldquo;velocity&rdquo;</strong>, that we are determining is 
+					the initial rate, or <strong>initial &ldquo;velocity&rdquo;</strong> (<i>v</i>), that we are determining is 
 					&delta;[<abbr title=para-nitrophenol>PNP</abbr>]/&delta;<abbr title=time><i>t</i></abbr>.
 				</p>
 				<p className="mt-4 text-gray-600 dark:text-gray-300">
@@ -104,7 +104,7 @@ const HowParamsAreCalculated = () => {
 				<figure class=center>
 					<img 
 						src=./equations/eq1.png 
-						alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
+						alt="Initial velocity/rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
 					>
 				</figure>
 
@@ -125,9 +125,140 @@ const HowParamsAreCalculated = () => {
             			<figure class=center>
 					<img 
 						src=./equations/eq1ex.png 
-						alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
+						alt="Inital velocity/rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
 					>
 				</figure>
+			</div>
+
+			{/* The Michaelis–Menten Equation */}			
+			<div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
+				<h2 className="text-4xl font-light dark:text-white">The Michaelis–Menten Equation</h2>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Two scientists, Leonor Michaelis and Maud Menten, 
+					found an equation that relates the initial velocity/rate (<i>v</i>) of an enzyme reaction, 
+					which we just determined above, 
+                			to the concentration of that enzyme&rsquo;s substrate, 
+					and that equation is called the <strong>Michaelis–Menten equation</strong>:</p>
+            			</p>
+
+				<figure class=center>
+					<img 
+						src=./equations/eq0.png 
+						alt="The initial velocity/rate is equal to the maximum velocity times the substrate concentration divided by the sum of the Michaelis constant and the substrate concentration."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+            				&hellip;where [S] is the molar substrate concentration.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr><sup><a href=#note3>3</a></sup> 
+					in the equation is <strong>maximum velocity</strong>.
+                			It is the fastest rate that the enzyme can obtain under <strong>saturating conditions</strong>,
+                			when we have far more substrate molecules than enzyme molecules, 
+					such as at the beginning of a reaction.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The constant <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> in the equation 
+					is called the <strong>Michaelis constant</strong>.
+                			It has units of molar concentration 
+					and represents the molarity of substrate for which the reaction rate is <em>half</em> of its maximal value.
+                			It is an indication of how well an enzyme binds to a substrate, with <em>lower</em> values corresponding to tighter binding. 
+					Think of it like this: 
+					If an enzyme only needs a small concentration of substrate to react moderately quickly, 
+					this likely means that the enzyme is really good at binding substrate molecules quickly.
+				</p>
+           			<p className="mt-4 text-gray-600 dark:text-gray-300">
+					There is another very important value that is not actually given in the Michaelis–Menten equation.
+                			The <strong>catalytic rate constant</strong>, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
+                			is the maximum number of product molecules released per molecule of enzyme per unit of time. 
+					(For example, if 10 enzymes could create 100 product molecules in one second, 
+					the <i>k</i><sub>cat</sub> for that enzyme would be 100/10/(1&nbsp;s) = 10&nbsp;s<sup>&minus;1</sup>.)
+                			It is also called a &ldquo;turnover number&rdquo; 
+					because it gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time.
+                			<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is an indication of how good the enzyme is at performing the reaction,
+                			with bigger values corresponding to faster enzymes.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					More properly, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> 
+					is the <strong>rate constant</strong> of the chemical reaction 
+					of the enzyme&ndash;substrate complex reacting to produce product and free enzyme. 
+					(That&rsquo;s why its symbol is a lowercase <i>k</i>.) 
+				</p>
+
+				<figure class=center>
+					<img 
+						src=./equations/rxn.png 
+						alt="E + S goes to ES, which goes to E + P."
+					>
+				</figure>	
+						
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					It is a <strong>first-order rate constant</strong>,
+                			which&mdash;if you remember second-semester General Chemistry&mdash;means that 
+					the rate of the reaction depends primarily on <em>one</em> thing,
+                			in this case, the enzyme&ndash;substrate (ES)) concentration.
+					<em>If</em>, however, the reaction is performed under saturating conditions&mdash;such as 
+					at the beginning of a reaction&mdash;we have so much S 
+					that we assume that all of the enzyme is bound up with substrate to make ES.
+					We assume that, at the beginning, [E] = [ES].
+				</p>
+                		<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Just like any other first-order rate constant in second-semester chemistry, 
+                			<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> can be used 
+					in a <strong>rate law</strong> to give the rate of a reaction
+                			from the concentration of reactant on which that rate constant depends, 
+					which again, is enzyme.
+					In this case, at saturating conditions, that rate law would be:
+				</p>
+
+				<figure class=center>
+					<img 
+						src=./equations/eq6.png 
+						alt="Rate/velocity is equal to the catalytic rate constant times enzyme molarity."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The <em>maximum rate</em> (<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>) 
+					of the reaction will happen at the initial moments of the reaction, 
+					when the ES concentration is greatest and [ES] effectively is equal to the initial [E] ([E]<sub>0</sub>). 
+					So, at saturating conditions:
+				</p>
+
+				<figure class=center>
+					<img 
+						src=./equations/eq6a.png 
+						alt="Maximum rate is equal to the catalytic rate constant times initial enzyme molarity."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+            				<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is traditionally calculated 
+					from <abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr><sup><a href=#note3>3</a></sup>
+                			by simply dividing that maximum rate by the initial enzyme concentration: 
+					<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>&nbsp;=&nbsp;<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>⁄[E]<sub>0</sub>. 
+					(<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr> can be determined from the Michaelis–Menten equation 
+					given above.)
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and 
+					<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> values 
+					are sometimes refered to as the <strong>kinetic parameters</strong> of an enzyme. 
+					Before we go into the practicality of how one can calculate these values 
+					using the Michaelis–Menten equation and its variations, 
+					there is a third value/parameter of importance in enzyme kinetics, 
+					the enzyme's <strong>specificty constant</strong>.
+                			This is simply <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>.
+                			The specificity constant is an indicator of how <em>efficient</em> the enzyme is.
+                			Enzymes with high <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> are efficient at what they do;
+                			they have a good balance of binding substrates and turning them over quickly.
+					Mathematically, the best possible <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub> value
+					must have both a big <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> value (fast catalysis) and
+					a small <abbr title="Michaelis constant"><i>K</i><sub>M</sub> value (good substrate binding).
+				</p>
+	
+							
 			</div>
 
 		    	<Footer />
@@ -155,57 +286,9 @@ export default HowParamsAreCalculated;
 	
 	<body>
    	<main>
-            
-                        <h3>The Michaelis–Menten Equation</h3>
-            
-            <p>Two scientists, Leonor Michaelis and Maud Menten found an equation that relates the rate of an enzyme reaction, which we just determined above,
-                to the concentration of that enzyme&rsquo;s substrate, and that equation is called the <strong>Michaelis–Menten equation</strong>:</p>
-            
-            <figure class=center><img src=./equations/eq0.png alt="The rate is equal to the maximum velocity times the substrate concentration 
-                divided by the sum of the Michaelis constant and the substrate concentration."></figure>
+   
                 
-            <p>&hellip;where [S] is the molar substrate concentration.</p>
-                
-            <p><abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr><sup><a href=#note3>3</a></sup> in the equation is <strong>maximum velocity</strong>.
-                It is the fastest rate that the enzyme can obtain under <strong>saturating conditions</strong>,
-                when we have far more substrate molecules than enzyme molecules.</p>
-            
-            <p>The constant <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> in the equation is called the <strong>Michaelis constant</strong>.
-                It has units of molar concentration and represents the molarity of substrate for which the reaction rate is half of its maximal value.
-                It is an indication of how well an enzyme binds to a substrate, with <em>lower</em> values corresponding to tighter binding.</p>
-            
-            <p>There is another very important value that is not actually given in the Michaelis–Menten equation.
-                The <strong>catalytic rate constant</strong>, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
-                is the maximum number of product molecules released per molecule of enzyme per unit of time.
-                It is also called a &ldquo;turnover number&rdquo; because it gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time.
-                <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is an indication of how good the enzyme is at performing the reaction,
-                with bigger values corresponding to faster enzymes.</p>
-            
-            <p>Properly, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is the rate constant of the chemical reaction of the enzyme&ndash;substrate complex
-                reacting to produce product and free enzyme.</p>
-                
-            <figure class=center><img src=./equations/rxn.png alt="E + S goes to ES, which goes to E + P."></figure>
-                
-            <p>It is a <strong>first-order rate constant</strong>,
-                which&mdash;if you remember second-semester General Chemistry&mdash;means that the rate of the reaction depends primarily on one thing,
-                in this case, enzyme concentration, <em>if</em> the reaction is performed under saturating conditions.
-                Under saturating conditions, we have so much S, that we assume that all of the enzyme is bound up with substrate to make ES.</p>
-                
-            <p>Just like any other first-order rate constant in chemistry,
-                <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> can be used in a <strong>rate law</strong> to give the rate of a reaction
-                from the concentration of reactant on which that rate constant depends, which again, is enzyme.
-                In this case, at saturating conditions, that rate law would be:</p>
-                
-            <figure class=center><img src=./equations/eq6.png alt="Rate is equal to the catalytic rate constant times enzyme molarity."></figure>
-            
-            <p>The maximum rate of the reaction will happen at the initial moments of the reaction, when the ES concentration is greatest,
-                and [ES] effectively is equal to the initial [E]. So, at saturating conditions:</p>
-            
-            <figure class=center><img src=./equations/eq6a.png alt="Maximum rate is equal to the catalytic rate constant times initial enzyme molarity."></figure>
-                
-            <p><abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is traditionally calculated from <abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr><sup><a href=#note3>3</a></sup>
-                by dividing that maximum rate by the initial enzyme concentration: <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> =
-                <abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>⁄[E]<sub>0</sub>.</p>
+     
             
             <p><abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>
                 values can be determined a number of ways. From either plots of rate <i>vs.</i> substrate concentration
@@ -216,11 +299,7 @@ export default HowParamsAreCalculated;
             <p>Alternatively, one can use the <a href=https://en.wikipedia.org/wiki/Lineweaver%E2%80%93Burk_plot>Lineweaver–Burk method</a>,
                 which is described in the next section.</p>
             
-            <p>Before we explain that, however, there is a third value of importance in enzyme kinetics, the enzyme's <strong>specificty constant</strong>.
-                This is simply <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>.
-                The specificity constant is an indicator of how efficient the enzyme is.
-                Enzymes with high <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> are efficient at what they do;
-                they have a good balance of binding substrates and turning them over quickly.</p>
+
             
             <h3>Lineweaver–Burk Method</h3>
             
