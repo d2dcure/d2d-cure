@@ -15,24 +15,123 @@ const HowParamsAreCalculated = () => {
 			<NavBar />
 
 			<div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
-    			<div className="col-span-1 items-center">
-      				<Breadcrumbs className="mb-4">
-        				<BreadcrumbItem href="/">Home</BreadcrumbItem>
-        				<BreadcrumbItem>Resources</BreadcrumbItem>
-						<BreadcrumbItem>Kinetics Calculations</BreadcrumbItem>
-      				</Breadcrumbs>
-      				<div className="pt-6">
-        				<h1 className="mb-2 text-5xl md:text-5xl lg:text-6xl font-inter dark:text-white">
-          					Kinetics Calculations
-        				</h1>
-      				</div>
-    			</div>
+	    			<div className="col-span-1 items-center">
+	      				<Breadcrumbs className="mb-4">
+	        				<BreadcrumbItem href="/">Home</BreadcrumbItem>
+	        				<BreadcrumbItem>Resources</BreadcrumbItem>
+							<BreadcrumbItem>Kinetics Calculations</BreadcrumbItem>
+	      				</Breadcrumbs>
+	      				<div className="pt-6">
+	        				<h1 className="mb-2 text-5xl md:text-5xl lg:text-6xl font-inter dark:text-white">
+	          					Kinetics Calculations
+	        				</h1>
+	      				</div>
+	    			</div>
   			</div>
 
 			{/* Introduction */}			
+			<div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Kinetics is all about measuring rates.
+				    	In chemistry, a <strong>reaction rate</strong> is defined as a change in concentration (<i>c</i>) over a change in time (<i>t></i>).
+				    	Thus, rate can be defined mathematically as &Delta;<i>c</i>/&Delta;<i>t</i> for a range of time or 
+				    	&delta;<i>c</i>/&delta;<i>t</i> for an instant of time. 
+				    	In enzyme kinetics, things are no different; 
+					we are concerned with the change in concentration of products (&delta;<i>c</i><sub>P</sub>) or subtrates (&delta;<i>c</i><sub>S</sub>) as an ezyme reaction progresses. 
+					(If we are dealing with molar concentrations, 
+					the convention is to use square brackets to indicate concentration, 
+					such as &delta;[P]> or &delta;[S].)
+			    	</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+        				Since we cannot see the actual molecules reacting inside an enzyme, 
+					we must observe them indirectly, using an <strong>enzyme assay</strong>. 
+					This assay often involves monitoring the change in color as a reaction progresses. 
+					We then use the change in color to calculate the change in concentration.
+				</p>
+			</div>
 
-		    <Footer />
-    	</>
+			{/* Initial Velocity & the Beer–Lambert Law */}			
+			<div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
+				<h2 className="text-4xl font-light dark:text-white">Initial Velocity &amp; the Beer–Lambert Law</h2>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+    					Using the &beta;-glucosidase B (BglB) enzyme as an example, 
+					because we are actually observing the release of <i>p</i>-nitrophenol 
+					(<abbr title=para-nitrophenol>PNP</abbr>) from the substrate as the enzyme performs its reaction, 
+					the initial rate, or <strong>initial &ldquo;velocity&rdquo;</strong>, that we are determining is 
+					&delta;[<abbr title=para-nitrophenol>PNP</abbr>]/&delta;<abbr title=time><i>t</i></abbr>.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The initial rate/velocity is imporant&mdash;as opposed to the overall rate&mdash;
+					because we need to have as close to an instanteous rate (&delta;<i>c</i><sub>P</sub>/&delta;<i>t</i>, 
+					not &Delta;<i>c</i><sub>P</sub>/&Delta;<i>t</i>) as possible.
+			        	We measure (or calculate) the initial velocity at the <em>beginning</em> of a reaction, 
+					because at the start of an enzyme reaction there should be so much substrate 
+					that every enzyme effectively instantly replaces any product molecule with a new substrate as soon as it &ldquo;turns over&rdquo;. 
+    	        			This results in a concentration of product <i>versus</i> time curve with a steep, straight slope at the beginning of the reaction, 
+					before the slope curves off (slows down) as the enzyme runs out of substrate to convert.
+				</p>
+				
+				<figure class=center>
+					<img 
+						src=./sample_plots/steepest_slope.png 
+						alt="Rate is equal to the change in concentration over the change in time, which is represented by the curves shown. The rate is fastest where the curve is steepest."
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					We cannot measure this initial velocity directly, 
+					but it can be calculated from the <strong>steepest slope</strong> of 
+					<strong>absorbance</strong> (<i>A</i>) of light over time at the <em>beginning</em> of a reaction, 
+					because concentration is directly proportional to absorbance. 
+					In our specific example case, we measure the slope of absorbance at 
+					420&nbsp;<abbr title=nanometers>nm</abbr> 
+					(the frequence of light best absorbed by <abbr title=para-nitrophenol>PNP</abbr>) 
+					over minutes of the reaction. 
+					This works because of the <a href=http://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law>Beer–Lambert law</a>, 
+					which is a mathematical relationship between absorbance and concentration. 
+					As an equation, the law is 
+					<abbr title=absorbance><i>A</i></abbr> = <abbr title="extinction coefficient">&epsilon;</abbr><i>l</i><i>c</i>,
+    	        			where <abbr title="extinction coefficient">&epsilon;</abbr> is the extinction coefficient in
+    	        			<abbr title="inverse millimolar">m<span style="font-variant: small-caps">m</span><sup>&minus;1</sup></abbr>&nbsp;<abbr title="inverse centimeters">cm<sup>&minus;1</sup></abbr>,
+    	        			<abbr title=length><i>l</i></abbr> is the path length in <abbr title=centimeters>cm</abbr>,
+			    	        and <abbr title=concentration><i>c</i></abbr> is the concentration in <abbr title=millimolar>m<span style="font-variant: small-caps">m</span></abbr>.
+    	        			Rearranging the Beer–Lambert law and using bracket notation ([<abbr title=para-nitrophenol>PNP</abbr>] =
+    	        			<abbr title=concentration><i>c</i></abbr><sub><abbr title=para-nitrophenol>PNP</abbr></sub> =
+    	        			<abbr title=absorbance><i>A</i></abbr><sub>420&nbsp;nm</sub>/<abbr title="extinction coefficient">&epsilon;</abbr><sub><abbr title=para-nitrophenol>PNP</abbr></sub><abbr title=length><i>l</i></abbr>),
+    	        			we can calculate the rate of <abbr title=para-nitrophenol>PNP</abbr> release from the steepest slope<sup><a href=#note1>1</a></sup> as follows:</p>
+				</p>					
+				
+				<figure class=center>
+					<img 
+						src=./equations/eq1.png 
+						alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
+					>
+				</figure>
+
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					In short, we simply need to divide the steepest slope from our absorbance versus time curves by the extinction coefficient, 
+					which is a constant unique to each enzyme, 
+					to obtain the initial velocity. 
+            				Since absorbance, being the logarithm of the <em>ratio</em> of light transmitted and light received, 
+					has no units,<sup><a href=#note2>2</a></sup> 
+                			using the above equation provides a rate in units of m<span style="font-variant: small-caps">m</span>&nbsp;<abbr title=para-nitrophenol>PNP</abbr>/min, 
+					if the provided slope is in inverse minutes.
+				</p>
+                		<p className="mt-4 text-gray-600 dark:text-gray-300">
+					For example, if we measure an intitial steepest slope of <abbr title=absorbance><i>A</i></abbr><sub>420&nbsp;nm</sub>
+                			of 1.80 min<sup>&minus;1</sup>:
+				</p>
+
+            			<figure class=center>
+					<img 
+						src=./equations/eq1ex.png 
+						alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
+					>
+				</figure>
+			</div>
+
+		    	<Footer />
+    		</>
 	);
 };
 
@@ -55,83 +154,9 @@ export default HowParamsAreCalculated;
 	</head>
 	
 	<body>
-    	<header>
-            <div class=title>
-                <a href=/>
-                    <img src=/D2D_header.png height=160px>
-            	</a>
-            </div>
-            <nav>
-                <div class=dropmenu>
-                    <a class=nav-link href=/database>Database </a>
-                    <div class=dropmenu-content>
-                        <div class=content-inner>
-                            <a href=/data?protein=BglB>BglB Characterization</a><br>
-                        </div>
-                    </div>
-                </div>
-                <div class=dropmenu>
-                    <a class=nav-link href=/resources>Resources </a>
-                    <div class=dropmenu-content>
-                        <div class=content-inner>
-                            <a href=/resources#structures>Structure Files</a><br>
-                            <a href=/resources/oligo_search/>Oligo Search</a><br>
-                            <a href=/resources/publications/>Publications</a><br>
-                        </div>
-                    </div>
-                </div>
-                <div class=dropmenu>
-                    <a class=nav-link href=/about>About </a>
-                    <div class=dropmenu-content>
-                        <a href=/about#D2D>D2D CURE</a><br>
-                        <a href=/stats>Network Statistics</a><br>
-                        <a href=/about#BglB>BglB</a><br>
-                    </div>
-                </div>
-                <a href=/login>Login&nbsp;<img src=/icons/User_logged_out.png alt="login icon" width=18px height=18px></a>
-            </nav>
-    	</header>
-    	
-    	<main>
-            <h2>Kinetics Calculations</h2>
-
-            <p>Kinetics is all about measuring rates. In chemistry, a <strong>reaction rate</strong> is defined as change in concentration over change in time.
-                In enzyme kinetics, things are no different; we are concerned with the change in concentration of products or subtrates as an ezyme reaction progresses.</p>
-                
-            <p>Since we cannot see the actual molecules reacting inside an enzyme, we must observe them indirectly, using an <strong>enzyme assay</strong>.
-                This assay often involves monitoring the change in color as a reaction progresses.</p>
+   	<main>
             
-            <h3>Initial Velocity &amp; the Beer–Lambert Law</h3>
-            
-    	    <p>In our case, because we are actually observing the release of <i>p</i>-nitrophenol
-    	        (<abbr title=para-nitrophenol>PNP</abbr>) from the substrate as the enzyme
-    	        performs its reaction, the initial rate, or <strong>initial velocity</strong>, that we are determining
-    	        is &delta;[<abbr title=para-nitrophenol>PNP</abbr>]/&delta;<abbr title=time><i>t</i></abbr>.</p>
-
-            <p>We cannot measure this directly, but it can be calculated from the <strong>steepest slope</strong> of absorbance over time at the beginning of a reaction.
-    	        In our case, we measure the slope of absorbance at 420&nbsp;nm over minutes of the reaction.
-    	        Then, we use the <a href=http://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law>Beer–Lambert law</a>,
-    	        which is <abbr title=absorbance><i>A</i></abbr> = <abbr title="extinction coefficient">&epsilon;</abbr><i>l</i><i>c</i>,
-    	        where <abbr title="extinction coefficient">&epsilon;</abbr> is the extinction coefficient in
-    	        m<span style="font-variant: small-caps">m</span><sup>&minus;1</sup> cm<sup>&minus;1</sup>,
-    	        <abbr title=length><i>l</i></abbr> is the path length in cm,
-    	        and <abbr title=concentration><i>c</i></abbr> is the concentration in m<span style="font-variant: small-caps">m</span>.
-    	        Rearranging the Beer–Lambert law ([<abbr title=para-nitrophenol>PNP</abbr>] =
-    	        <abbr title=concentration><i>c</i></abbr><sub><abbr title=para-nitrophenol>PNP</abbr></sub> =
-    	        <abbr title=absorbance><i>A</i></abbr><sub>420&nbsp;nm</sub>/<abbr title="extinction coefficient">&epsilon;</abbr><sub><abbr title=para-nitrophenol>PNP</abbr></sub><abbr title=length><i>l</i></abbr>),
-    	        we can calculate the rate of <abbr title=para-nitrophenol>PNP</abbr> release from the steepest slope<sup><a href=#note1>1</a></sup> as follows:</p>
-
-            <figure class=center><img src=./equations/eq1.png alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"></figure>
-
-            <p>Since absorbance, being the logarithm of the ratio of light transmitted and light received, has no units,<sup><a href=#note2>2</a></sup>
-                using the above equation provides a rate in units of m<span style="font-variant: small-caps">m</span> <abbr title=para-nitrophenol>PNP</abbr>/min, if the provided slope is in inverse minutes.</p>
-                
-            <p>For example, if we measure an intitial steepest slope of <abbr title=absorbance><i>A</i></abbr><sub>420&nbsp;nm</sub>
-                of 1.80 min<sup>&minus;1</sup>:</p>
-
-            <figure class=center><img src=./equations/eq1ex.png alt="Rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"></figure>
-
-            <h3>The Michaelis–Menten Equation</h3>
+                        <h3>The Michaelis–Menten Equation</h3>
             
             <p>Two scientists, Leonor Michaelis and Maud Menten found an equation that relates the rate of an enzyme reaction, which we just determined above,
                 to the concentration of that enzyme&rsquo;s substrate, and that equation is called the <strong>Michaelis–Menten equation</strong>:</p>
@@ -317,75 +342,6 @@ export default HowParamsAreCalculated;
 
         </main>
 		
-		<footer>
-                        <hr>
-            D2D CURE &copy; 2018&ndash;2025 ~ 
-            The D2D CURE Program is supported by the
-            <a href="http://www.nsf.gov/awardsearch/showAward?AWD_ID=1827246">National Science Foundation's Undergraduate Biology Education IUSE Program, award number 1827246</a>.
-            <address>Website maintained by <a href="mailto:webmaster@d2dcure.com?subject=D2DCure%20Website%20Issues">Jason William Labonte</a>. Page updated: 2022.02.05</address>
-            <a href=http://www.nsf.gov/ target=_blank title="Logo of the National Science Foundation"><img src=/images/NSF_logo.png alt="Logo of the NSF" height=36px></a>&nbsp;&#32;&nbsp;
-            <a href=http://serc.carleton.edu/curenet/ target=_blank title="Logo of CUREnet"><img src=/images/CUREnet_logo.png alt="Logo of CUREnet" height=36px></a>&nbsp;&#32;&nbsp;
-            <a href=http://www.ucdavis.edu/ target=_blank title="Logo of the University of California, Davis"><img src="/images/UC Davis_logo.png" alt="Logo of UC Davis" height=36px></a>&nbsp;&#32;&nbsp;
-            <a href=http://www.rosettacommons.org/ target=_blank title="Logo of the RosettaCommons"><img src=/people/Rosetta_logo.png alt="Logo of the RosettaCommons" height=36px></a>&nbsp;&#32;&nbsp;
-            <span id="siteseal"><script async type="text/javascript" src="https://seal.starfieldtech.com/getSeal?sealID=1Fg6afsputuP5L0Y6uqRnIMTPqJUKBfoyRnlHgMU1ieNioMXFHJTtT7chvO0"></script></span>
-            <details>
-                <summary>Participating Institutions</summary>
-                <a href=http://www.jhu.edu/ target=_blank title="Logo of Johns Hopkins University"><img src="/images/JHU_logo.png" alt="JHU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.hamline.edu/ target=_blank title="Logo of Hamline University"><img src="/images/Hamline_logo.png" alt="Hamline" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.tmcc.edu/ target=_blank title="Logo of Truckee Meadows Community College"><img src="/images/TMCC_logo.png" alt="TMCC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.fiu.edu/ target=_blank title="Logo of Florida International University"><img src="/images/FIU_logo.png" alt="FIU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.uga.edu/ target=_blank title="Logo of University of Georgia"><img src="/images/UGA_logo.png" alt="UGA" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.lewisu.edu/ target=_blank title="Logo of Lewis University"><img src="/images/Lewis_logo.png" alt="Lewis" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.capitalcc.edu/ target=_blank title="Logo of Capital Community College"><img src="/images/CCC_logo.png" alt="CCC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.miracosta.edu/ target=_blank title="Logo of MiraCosta College"><img src="/images/MiraCosta_logo.png" alt="MiraCosta" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.augustana.edu/ target=_blank title="Logo of Augustana College"><img src="/images/Augustana_logo.png" alt="Augustana" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.unlv.edu/ target=_blank title="Logo of University of Nevada, Las Vegas"><img src="/images/UNLV_logo.png" alt="UNLV" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.crown.edu/ target=_blank title="Logo of Crown College"><img src="/images/Crown_logo.png" alt="Crown" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://wayne.edu/ target=_blank title="Logo of Wayne State University"><img src="/images/Wayne_logo.png" alt="Wayne" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.jccc.edu/ target=_blank title="Logo of Johnson County Community College"><img src="/images/JCCC_logo.png" alt="JCCC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.mercy.edu/ target=_blank title="Logo of Mercy College"><img src="/images/Mercy_logo.png" alt="Mercy" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.taylor.edu/ target=_blank title="Logo of Taylor University"><img src="/images/Taylor_logo.png" alt="Taylor" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.mjc.edu/ target=_blank title="Logo of Modesto Junior College"><img src="/images/MJC_logo.png" alt="MJC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.cnm.edu/ target=_blank title="Logo of Central New Mexico Community College"><img src="/images/CNM_logo.png" alt="CNM" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.css.edu/ target=_blank title="Logo of The College of St. Scholastica"><img src="/images/CSS_logo.png" alt="CSS" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.duny.edu/ target=_blank title="Logo of Dominican University New York"><img src="/images/DUNY_logo.png" alt="DUNY" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.unh.edu/ target=_blank title="Logo of University of New Hampshire"><img src="/images/UNH_logo.png" alt="UNH" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.colostate.edu/ target=_blank title="Logo of Colorado State University"><img src="/images/CSU_logo.png" alt="CSU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.luc.edu/ target=_blank title="Logo of Loyola University Chicago"><img src="/images/LUC_logo.png" alt="LUC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.campbell.edu/ target=_blank title="Logo of Campbell University"><img src="/images/Campbell_logo.png" alt="Campbell" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.geneseo.edu/ target=_blank title="Logo of State University of New York at Geneseo"><img src="/images/SUNY Geneseo_logo.png" alt="SUNY Geneseo" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://kwc.edu/ target=_blank title="Logo of Kentucky Wesleyan College"><img src="/images/KWC_logo.png" alt="KWC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.uah.edu/ target=_blank title="Logo of University of Alabama, Huntsville"><img src="/images/UAH_logo.png" alt="UAH" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.saddleback.edu/ target=_blank title="Logo of Saddleback College"><img src="/images/Saddleback_logo.png" alt="Saddleback" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.yale.edu/ target=_blank title="Logo of Yale University"><img src="/images/Yale_logo.png" alt="Yale" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.umw.edu/ target=_blank title="Logo of University of Mary Washington"><img src="/images/UMW_logo.png" alt="UMW" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.vsu.edu/ target=_blank title="Logo of Virginia State University"><img src="/images/VSU_logo.png" alt="VSU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.unf.edu/ target=_blank title="Logo of University of North Florida"><img src="/images/UNF_logo.png" alt="UNF" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://lasierra.edu/ target=_blank title="Logo of La Sierra University"><img src="/images/La Sierra_logo.png" alt="La Sierra" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.fresnostate.edu/ target=_blank title="Logo of California State University, Fresno"><img src="/images/CSU Fresno_logo.png" alt="CSU Fresno" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.highlands.edu/ target=_blank title="Logo of Georgia Highlands College"><img src="/images/GHC_logo.png" alt="GHC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.jooust.ac.ke/ target=_blank title="Logo of Jaramogi Oginga Odinga University of Science and Technology"><img src="/images/JOOUST_logo.png" alt="JOOUST" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.kckcc.edu/ target=_blank title="Logo of Kansas City Kansas Community College"><img src="/images/KCKCC_logo.png" alt="KCKCC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.marian.edu/ target=_blank title="Logo of Marian University"><img src="/images/Marian_logo.png" alt="Marian" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.hofstra.edu/ target=_blank title="Logo of Hofstra University"><img src="/images/Hofstra_logo.png" alt="Hofstra" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.nsu.edu/ target=_blank title="Logo of Norfolk State University"><img src="/images/NSU_logo.png" alt="NSU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.smith.edu/ target=_blank title="Logo of Smith College"><img src="/images/Smith_logo.png" alt="Smith" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.creighton.edu/ target=_blank title="Logo of Creighton University"><img src="/images/Creighton_logo.png" alt="Creighton" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.juniata.edu/ target=_blank title="Logo of Juniata College"><img src="/images/Juniata_logo.png" alt="Juniata" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.gettysburg.edu/ target=_blank title="Logo of Gettysburg College"><img src="/images/Gettysburg_logo.png" alt="Gettysburg" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.regis.edu/ target=_blank title="Logo of Regis University"><img src="/images/Regis_logo.png" alt="Regis" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.ecu.edu/ target=_blank title="Logo of East Carolina University"><img src="/images/ECU_logo.png" alt="ECU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.polyu.edu.hk/ target=_blank title="Logo of The Hong Kong Polytechnic University"><img src="/images/PolyU_logo.png" alt="PolyU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.umass.edu/ target=_blank title="Logo of University of Massachusetts Amherst"><img src="/images/UMass Amherst_logo.png" alt="UMass Amherst" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.carthage.edu/ target=_blank title="Logo of Carthage College"><img src="/images/Carthage_logo.png" alt="Carthage" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.missouriwestern.edu/ target=_blank title="Logo of Missouri Western State University"><img src="/images/MWSU_logo.png" alt="MWSU" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.elmhurst.edu/ target=_blank title="Logo of Elmhurst University"><img src="/images/Elmhurst_logo.png" alt="Elmhurst" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.mines.edu/ target=_blank title="Logo of Colorado School of Mines"><img src="/images/Mines_logo.png" alt="Mines" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.southmountaincc.edu/ target=_blank title="Logo of South Mountain Community College"><img src="/images/SMCC_logo.png" alt="SMCC" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://www.unr.edu/ target=_blank title="Logo of University of Nevada, Reno"><img src="/images/UNR_logo.png" alt="UNR" height=36px></a>&nbsp;&#32;&nbsp;
-                <a href=http://ku.edu/ target=_blank title="Logo of University of Kansas"><img src="/images/KU_logo.png" alt="KU" height=36px></a>&nbsp;&#32;&nbsp;
-            </details>
-        </footer>
 	</body>
 </html>
 */
