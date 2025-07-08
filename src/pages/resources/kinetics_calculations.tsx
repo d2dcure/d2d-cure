@@ -111,7 +111,7 @@ const HowParamsAreCalculated = () => {
 				<p className="mt-4 text-gray-600 dark:text-gray-300">
 					In short, we simply need to divide the steepest slope from our absorbance versus time curves by the extinction coefficient, 
 					which is a constant unique to each enzyme, 
-					to obtain the initial velocity. 
+					and adjust for pathlength of the light to obtain the initial velocity. 
             				Since absorbance, being the logarithm of the <em>ratio</em> of light transmitted and light received, 
 					has no units,<sup><a href=#note2>2</a></sup> 
                 			using the above equation provides a rate in units of m<span style="font-variant: small-caps">m</span>&nbsp;<abbr title=para-nitrophenol>PNP</abbr>/min, 
