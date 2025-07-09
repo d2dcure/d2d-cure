@@ -246,7 +246,8 @@ const HowParamsAreCalculated = () => {
 					simply dividing that maximum rate/velcoity by the initial enzyme 
 					concentration: <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>&nbsp;=&nbsp;<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>⁄<abbr title="initial molar concentration of enzyme">[E]<sub>0</sub></abbr>. 
 					(<abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr> can be determined from the Michaelis–Menten equation 
-					given above.)
+					given above.
+					See below for more details on that.)
 				</p>
 				<p className="mt-4 text-gray-600 dark:text-gray-300">
 					<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> values 
@@ -263,6 +264,164 @@ const HowParamsAreCalculated = () => {
 					Mathematically, the best possible <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>/<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> value
 					must have both a big <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> value (fast catalysis) and
 					a small <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> value (good substrate binding).
+				</p>
+			</div>
+
+			{/* How to Determine Kinetic Parameters */}			
+			<div className="px-6 md:px-12 lg:px-24 py-16 bg-white">
+				<h2 className="text-4xl font-light dark:text-white">How to Determine Kinetic Parameters</h2>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> values 
+					can be determined a number of ways.
+					Traditionally, most biochemistry students are taught the Lineweaver–Burk method,
+					which is a variation of using the Michaelis–Menten plot.
+					Both methods are described below.
+					However, it is important to recognize that the Lineweaver–Burk method was developed
+					long before the introduction of curve-fitting algorithms and software.
+					The Lineweaver–Burk plot  can be useful as a visual aid,
+					and it is helpful for making estimates if all you have available for analysis is
+					a simple spreadsheet (such as Excel&reg;) or graphing paper;
+					however, it introduces large errors into the calculation of kinetic parameters,
+					and thus <strong>it should never be used for accurate calculations</strong>!
+					Instead, modern kineticists use curve-fitting software to analyze either 
+					Michaelis–Menten plots or plots of observed rate constants versus substrate concentration.
+					This website uses the latter method.
+					We will now look at all three methods in turn.
+				</p>
+
+				<h3>The Michaelis–Menten Plot</h3>
+		    	<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The Michaelis–Menten method for determining kinetic parameters involves first 
+					plotting enzyme rate/velocity <i>vs.</i> substrate concentration,
+					that is, <i>v</i> <i>vs.</i> [S].
+					Ideally, such a plot will show a curve rising steeply at lower substrate
+					concentrations (non-saturated conditions) and then plateauing at higher substrate
+					concentrations (saturated conditions).
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Mathematically, such a curve follows the form <i>y</i>&nbsp;=&nbsp;<i>ax</i>/(<i>b</i> + <i>x</i>).
+					The constant <i>a</i> is the maximum possible value for <i>y</i>. <i>y</i>&nbsp;=&nbsp;<i>a</i> when <i>x</i>&nbsp;=&nbsp;&infin;.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The Michaelis–Menten equation, given above, has exactly this form.
+					The maximum value on the <i>y</i> axis (<i>v</i>) must be <i>v</i><sub>max</sub>.
+					This can only be <em>estimated</em>, because to know the true value,
+					we would have to know the value when the <i>x</i> axis ([S]) is infinity!
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					As explained above,
+					because <i>v</i>&nbsp;=&nbsp;<abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>[E]<sub>0</sub>, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> is
+					simply <abbr title="maximum velocity"><i>v</i><sub>max</sub></abbr>⁄<abbr title="initial molar concentration of enzyme">[E]<sub>0</sub></abbr>.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> can be found by finding 
+					the value on the <i>x</i> axis where the rate/velocity
+				    is at half its maximum value.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Performing this analysis requires curve-fitting software and 
+					an estimate of a maximal value, so it cannot be performed with a simple spreadsheet
+					application or by hand.
+					For this reason, two scientists,
+					Hans Lineweaver and Dean Burk,
+					developed a method in 1934 to make the estimates easier&hellip;.
+				</p>
+
+				<h3>The Lineweaver–Burk Method</h3>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					The Lineweaver–Burk plot is also known as the &ldquo;double reciprocal plot&rdquo;,
+					because it inverts both the <i>y</i> and the <i>x</i> axis
+					of the Michaelis–Menten plot.
+					It is thus a plot of inverse rate versus inverse concentration,
+					or 1/<i>v</i> <i>vs.</i> 1/[S].
+					This converts the curved Michaelis–Menten plot into a straight line,
+					with the general form <i>y</i>&nbsp;<i>ax</i>&nbsp;+&nbsp;<i>b</i>,
+					in our case, specifically,
+					1/<i>v</i>&nbsp;=&nbsp;(<abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>/<i>v</i><sub>max</sub>)(1/[S])&nbsp;+&nbsp;1/<i>v</i><sub>max</sub>.
+				</p>
+		    	<p className="mt-4 text-gray-600 dark:text-gray-300">
+					While this may appear more complicated,
+					it actually makes <em>estimating</em> the kinetic parameters easier
+					when making plots by hand with pencil and graphing paper,
+					as one had to do in 1934. <i>v</i><sub>max</sub> is
+					simply the inverse of the <i>y</i> intercept,
+					where the line crosses the <i>y</i> axis. <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> is
+					simply the negative of the inverse of the <i>x</i> intercept.
+				</p>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					Why is this a very bad idea for accuracy?
+					Because, when you invert a value, very tiny values become very large
+					and <i>vice versa</i>.
+					This applies to error as well.
+					So, values at low substrate concentrations,
+					where the rates are low,
+					become large values with high error,
+					which has a large effect on the slop of the line and on the quality of its fit to the datapoints.
+				</p>
+			    <p className="mt-4 text-gray-600 dark:text-gray-300">
+					While this website does display Lineweaver–Burk plots for reference, 
+					as noted above,
+					the actual kinetic constants determined on this website are calculated using 
+					curve-fitting software,
+		        	from plots of <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> <i>vs.</i> substrate 
+					concentration, which provide more accurate values.
+		        	This modern process is described next.
+				</p>
+
+				<h3>The Observed-Rate-Constant Method</h3>
+				<p className="mt-4 text-gray-600 dark:text-gray-300">
+					This method is very similar to Michaelis–Menten method,
+					but it requires us to introduce another term.
+					The <strong>observed rate constant</strong>, <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
+		        	is the ratio of the rate/velocity of the enzyme 
+					over the initial enzyme concentraion, so: <i>v</i>/[E]<sub>0</sub>.
+					(For example, a <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> value
+					might be something like 5 product molecules produced per second per 1 molar of initial enzyme.)
+				</p>
+		      	<p className="mt-4 text-gray-600 dark:text-gray-300">
+					We must be careful, though, not to mix up the initial molar enzyme concentration,
+					[E]<sub>0</sub>, <em>in</em> the reaction mixture
+					with the molar concentration of our enzyme solution <em>before</em> we have added it 
+					to our reaction mixture.
+					If we want to calculate <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> directly
+					from enzyme rate,
+					we need to adjust for the change in concentration upon mixing the enzyme 
+					with the other components of the reaction.
+					(Do you remember the equation <i>M</i><sub>1</sub><i>V</i><sub>1</sub>&nbsp;=&nbsp;<i>M</i><sub>2</sub><i>V</i><sub>2</sub>?)
+					For example, if we use the example of the <em>stock</em> enzyme solution 
+					with a concentration of 1&nbsp;mg/mL,
+					if its molar mass is 50&nbsp;<abbr title="kilodaltons">kDa</abbr>, 
+					then this corresponds to a molar concentration of 0.02&nbsp;mᴍ.
+					If we add 25&nbsp;μL to our reaction mixture to have a total reaction volume of 100&nbsp;μL,
+					then our [E]<sub>0</sub> would be 0.005&nbsp;mᴍ. So:
+				</p>
+		        
+		    	<figure class="center">
+					<img 
+						src="/resources/images/equations/eq4simple.png"
+						alt="The observed rate constant is equal to the rate divided by intial molar enzyme concentration."
+					/>
+				</figure>
+
+				<p>
+					What is nice about this value is that <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
+					like the catalytic rate constant <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, is a turnover number.
+					The units of any turnover number are inverse time. Like <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
+					it <em>actually</em> is an expression of the number of product molecules released (or substrate molecules consumed) per molecule of enzyme per unit of time,
+					but the units of number of product molecules and number of enzyme molecules cancel out.
+				</p>
+				
+				<figure class="right">
+					<img
+						src="/resources/images/sample_plots/sample_plot.png"
+						alt="A plot of observed rate constant in inverse minutes versus substrate concentration in molar." width="300px"
+					/>
+				</figure>
+				
+			
+				<h3>Linear Plots</h3>
+		    	<p className="mt-4 text-gray-600 dark:text-gray-300">
+					To be written&hellip;
 				</p>
 			</div>
 
@@ -422,52 +581,7 @@ export default HowParamsAreCalculated;
 	
 	<body>
    		<main>
-		    <p><abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr> and <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr>
-		        values can be determined a number of ways. From either plots of rate <i>vs.</i> substrate concentration
-		        or plots of observed rate constants (<abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>, see below) <i>vs.</i> substrate concentration,
-		        <abbr title="Michaelis constant"><i>K</i><sub>M</sub></abbr> can be found by finding the value on the <i>x</i> axis where
-		        rate or <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> are at half their maximum value, respectively.</p>
-		    
-		    <p>Alternatively, one can use the <a href=https://en.wikipedia.org/wiki/Lineweaver%E2%80%93Burk_plot>Lineweaver–Burk method</a>,
-		        which is described in the next section.</p>
-		    
-		    <h3>Lineweaver–Burk Method</h3>
-		    
-		    <p>To be written...</p>
-		    
-		    <p>While this website displays Lineweaver–Burk plots for reference, the actual kinetic constants are calculated using curve-fitting software,
-		        from plots of <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> <i>vs.</i> substrate concentration, which provide more accurate values.
-		        This process is described below.</p>
-		    
-		    <h3>Other Advanced Kinetics Terms & Methods</h3>
-		    <h4>Activity &amp; Specific Activity</h4>
-		    
-		    <h4>Alternative Ways to Determine Turnover Numbers &amp; Rate Constants</h4>
-		
-		    <p>The <strong>observed rate constant</strong>, <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
-		        is the ratio of the rate over the initial enzyme concentraion, <i>rate</i>/[E]<sub>0</sub>.
-		        
-		    <p>We must be careful, though, not to mix up the initial molar enzyme concentration, [E]<sub>0</sub>, in the reaction mixture
-		        with the molar concentration of our enzyme solution <em>before</em> we have added it to our reaction mixture.
-		        If we want to calculate <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr> directly from enzyme rate,
-		        we need to adjust for the change in concentration upon mixing.
-		        (Do you remember the equation <i>M</i><sub>1</sub><i>V</i><sub>1</sub> = <i>M</i><sub>2</sub><i>V</i><sub>2</sub>?)
-		        For example, if we use the example of the stock enzyme solution from before with a concentration of 1&nbsp;mg/mL, if its molar mass is 50&nbsp;kDa, then this
-		        corresponds to a molar concentration of 0.02&nbsp;m<span style="font-variant: small-caps">m</span>.
-		        If we add 25&nbsp;μL to our reaction mixture to have a total reaction volume of 100&nbsp;μL,
-		        then our [E]<sub>0</sub> would be 0.005&nbsp;m<span style="font-variant: small-caps">m</span>. So:</p>
-		        
-		    <figure class=center><img src=/resources/images/equations/eq4simple.png alt="The observed rate constant is equal to the rate divided by intial molar enzyme concentration."></figure>
-		        
-		   
-		    <p>What is nice about this value is that <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
-		        like the catalytic rate constant <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, is a turnover number.
-		        The units of any turnover number are inverse time. Like <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>,
-		        it <em>actually</em> is an expression of the number of product molecules released (or substrate molecules consumed) per molecule of enzyme per unit of time,
-		        but the units of number of product molecules and number of enzyme molecules cancel out.</p>
-		    
-		    <figure class="right"><img src=/resources/images/sample_plot.png alt="A plot of observed rate constant in inverse minutes versus substrate concentration in molar." width=300px></a></figure>
-		
+
 		    <p>The catalytic rate constant, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, which we defined above,
 		        is, again, the <em>maximum</em> number of product molecules released per molecule of enzyme per unit of time.
 		        It is the <em>maximum</em> turnover number possible for an enzyme.
