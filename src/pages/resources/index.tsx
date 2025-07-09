@@ -61,9 +61,9 @@ const Resources = () => {
               linkText: "View Sequence"
             },
             {
-              title: "How data is calculated",
-              link: "#",
-              linkText: "Learn More"
+              title: "How data are calculated",
+              link: "/resources/kinetics_calculations",
+              linkText: "Learn more about kinetics and how kinetics parameters are calculated"
             },
             {
               title: "How to interpret data",
