@@ -77,7 +77,7 @@ const HowParamsAreCalculated = () => {
 				
 				<figure class="center">
 					<img 
-						src="./sample_plots/steepest_slope.png"
+						src="/resources/images/sample_plots/steepest_slope.png"
 						alt="Rate is equal to the change in concentration over the change in time, which is represented by the curves shown. The rate is fastest where the curve is steepest."
 					/>
 				</figure>
@@ -109,7 +109,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq1.png"
+						src="/resources/images/equations/eq1.png"
 						alt="Initial velocity/rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
 					/>
 				</figure>
@@ -130,7 +130,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq1ex.png"
+						src="/resources/images/equations/eq1ex.png"
 						alt="Inital velocity/rate is equal to the change in concentration of PNP over the change in time, which is equal to the change in absorbance at 420 nm over the change in time over the extinction coefficient of PNP times path length, which is equal to the slope over the extinction coefficient of PNP times path length"
 					/>
 				</figure>
@@ -149,7 +149,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq0.png"
+						src="/resources/images/equations/eq0.png"
 						alt="The initial velocity/rate is equal to the maximum velocity times the substrate concentration divided by the sum of the Michaelis constant and the substrate concentration."
 					/>
 				</figure>
@@ -195,7 +195,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/rxn.png" 
+						src="/resources/images/equations/rxn.png" 
 						alt="E + S goes to ES, which goes to E + P."
 					/>
 				</figure>
@@ -221,7 +221,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq6.png"
+						src="/resources/images/equations/eq6.png"
 						alt="Rate/velocity is equal to the catalytic rate constant times enzyme molarity."
 					/>
 				</figure>
@@ -235,7 +235,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq6a.png"
+						src="/resources/images/equations/eq6a.png"
 						alt="Maximum rate is equal to the catalytic rate constant times initial enzyme molarity."
 					/>
 				</figure>
@@ -296,7 +296,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq2.png"
+						src="/resources/images/equations/eq2.png"
 						alt="Activity is equal to rate times total volume."
 					/>
 				</figure>
@@ -309,7 +309,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq2ex.png"
+						src="/resources/images/equations/eq2ex.png"
 						alt="Activity is equal to rate times total volume, that is, to 0.2 enzyme units."
 					/>
 				</figure>
@@ -326,7 +326,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq3.png"
+						src="/resources/images/equations/eq3.png"
 						alt="Specific activity is equal to activity over the concentration of BglB times its volume."
 					/>
 				</figure>
@@ -338,7 +338,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq3ex.png"
+						src="/resources/images/equations/eq3ex.png"
 						alt="Specific activity is equal to activity over the concentration of BglB times its volume."
 					/>
 				</figure>
@@ -360,7 +360,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq4.png"
+						src="/resources/images/equations/eq4.png"
 						alt="The observed rate constant is equal to the specific activity times the molar mass."
 					/>
 				</figure>
@@ -375,7 +375,7 @@ const HowParamsAreCalculated = () => {
 
 				<figure class="center">
 					<img 
-						src="./equations/eq4alt.png"
+						src="/resources/images/equations/eq4alt.png"
 						alt="The observed rate constant is equal to the activity divided by number of enzyme molecules."
 					/>
 				</figure>
@@ -457,7 +457,7 @@ export default HowParamsAreCalculated;
 		        If we add 25&nbsp;μL to our reaction mixture to have a total reaction volume of 100&nbsp;μL,
 		        then our [E]<sub>0</sub> would be 0.005&nbsp;m<span style="font-variant: small-caps">m</span>. So:</p>
 		        
-		    <figure class=center><img src=./equations/eq4simple.png alt="The observed rate constant is equal to the rate divided by intial molar enzyme concentration."></figure>
+		    <figure class=center><img src=/resources/images/equations/eq4simple.png alt="The observed rate constant is equal to the rate divided by intial molar enzyme concentration."></figure>
 		        
 		   
 		    <p>What is nice about this value is that <abbr title="observed rate constant"><i>k</i><sub>obs</sub></abbr>,
@@ -466,7 +466,7 @@ export default HowParamsAreCalculated;
 		        it <em>actually</em> is an expression of the number of product molecules released (or substrate molecules consumed) per molecule of enzyme per unit of time,
 		        but the units of number of product molecules and number of enzyme molecules cancel out.</p>
 		    
-		    <figure class="right"><img src=../images/sample_plot.png alt="A plot of observed rate constant in inverse minutes versus substrate concentration in molar." width=300px></a></figure>
+		    <figure class="right"><img src=/resources/images/sample_plot.png alt="A plot of observed rate constant in inverse minutes versus substrate concentration in molar." width=300px></a></figure>
 		
 		    <p>The catalytic rate constant, <abbr title="catalytic rate constant"><i>k</i><sub>cat</sub></abbr>, which we defined above,
 		        is, again, the <em>maximum</em> number of product molecules released per molecule of enzyme per unit of time.
@@ -485,7 +485,7 @@ export default HowParamsAreCalculated;
 		        
 		    <p>Curve fitting algorithms are used to find the actual constants, by fitting the following equation to the curve:</p>
 		    
-		    <figure class=center><img src=./equations/eq5.png alt="The observed rate constant is equal to the catalytic rate constant times the substrate concentration 
+		    <figure class=center><img src=/resources/images/equations/eq5.png alt="The observed rate constant is equal to the catalytic rate constant times the substrate concentration 
 		        divided by the sum of the Michaelis constant and the substrate concentration."></figure>
 		    
 		    <p>Notice how similar this equation is to the Michaelis–Menten equation shown above!
