@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_proteins.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_proteins.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma",
+    "dev:setup": "npm run setup && npm run dev"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",

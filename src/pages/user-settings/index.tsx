@@ -315,11 +315,18 @@ const ProfileSettings = () => {
 
                           {/* Only show Manage button if user is a professor/admin */}
                           {(user?.status === "professor" || user?.status === "ADMIN") && (
-                            <Link href="/user-management">
-                              <Button className="mt-4 w-full text-white bg-[#06B7DB]">
-                                Manage students
-                              </Button>
-                            </Link>
+                            <>
+                              <Link href="/user-management">
+                                <Button className="mt-4 w-full text-white bg-[#06B7DB]">
+                                  Manage students
+                                </Button>
+                              </Link>
+                              <Link href="/institution-management">
+                                <Button className="mt-4 w-full text-white bg-[#06B7DB]">
+                                  Manage Institutions
+                                </Button>
+                              </Link>
+                            </>
                           )}
                         </div>
                       </div>
