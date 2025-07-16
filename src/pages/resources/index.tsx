@@ -143,7 +143,7 @@ const Resources = () => {
           {[
             {
               title: "Rosetta Education Hub",
-              link: "#",
+              link: "http://rosettacommons.org/education/",
               linkText: "Visit Website"
             }
           ].map((item, index) => (
