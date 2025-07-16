@@ -233,6 +233,32 @@ const DataPage = () => {
         </Tooltip>
       )
     },
+    {
+      name: "KM relative deviation from reference WT", 
+      uid: "km_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>K</i><sub>M</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for his assy.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help">
+            <i>d</i><sub><i>K</i>M</sub> (%)
+          </div>
+        </Tooltip>
+      )
+    },
     { 
       name: "kcat", 
       uid: "kcat", 
@@ -886,6 +912,8 @@ const DataPage = () => {
     switch (column.uid) {
       case "km":
         return <><span className="italic">K</span><sub>M</sub> (mᴍ)</>;
+      case "km_dev_from_ref":
+        return <><i>d</i><sub><i>K</i>M</sub> (%)</>;
       case "kcat":
         return <><span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)</>;
       case "kcat_km":
@@ -1624,6 +1652,24 @@ const DataPage = () => {
                                       </TableCell>
                                     );
                                     break;
+                                  //case "km_dev_from_ref":
+                                    /*cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );*/
+                                    //break;
                                   case "kcat":
                                     cell = (
                                       <TableCell key={column.uid}>
