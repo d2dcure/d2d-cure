@@ -62,7 +62,7 @@ const HowParamsAreCalculated = () => {
 					the initial rate, or <strong>initial &ldquo;velocity&rdquo;</strong> (<i>v</i>), that we are determining is 
 					&delta;[<abbr title="para-nitrophenol">PNP</abbr>]/&delta;<abbr title="time"><i>t</i></abbr>, 
 					the instantaneous change in molar concentration of <abbr title="para-nitrophenol">PNP</abbr> per 
-					instantaneous change time.
+					instantaneous change in time.
 				</p>
 				<p className="mt-4 text-gray-600 dark:text-gray-300">
 					The initial rate/velocity is imporant&mdash;as opposed to the overall rate&mdash;because 
@@ -73,12 +73,13 @@ const HowParamsAreCalculated = () => {
 					that every enzyme effectively instantly replaces any product molecule with a new substrate as soon as it &ldquo;turns over&rdquo;. 
 					This results in a concentration of product <i>versus</i> time curve with a steep, straight slope at the beginning of the reaction, 
 					before the slope curves off (slows down) as the enzyme runs out of substrate to convert.
+					(See figure.)
 				</p>
 				
 				<figure class="center">
 					<img 
-						src="/resources/images/sample_plots/steepest_slope.png"
-						alt="Rate is equal to the change in concentration over the change in time, which is represented by the curves shown. The rate is fastest where the curve is steepest."
+						src="/resources/images/sample_plots/sample_initial_velocity_plot.png"
+						alt="Rate is equal to the change in concentration over the change in time, which is represented by the curve shown. The rate is fastest where the curve is steepest."
 					/>
 				</figure>
 
