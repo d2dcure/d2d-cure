@@ -124,9 +124,17 @@ const HowParamsAreCalculated = () => {
 					the above equation provides a rate in units of <abbr title="millimolar para-nitrophenol">mᴍ&nbsp;PNP</abbr>/min, 
 					if the provided slope is in inverse minutes.
 				</p>
+
+				<figure class="center">
+					<img 
+						src="/resources/images/sample_plots/steepest_slope_plot.png"
+						alt="The steepest slope of absorbance over time is the slope of the maximum value of a plot of absorbance versus time."
+					/>
+				</figure>
+
 				<p className="mt-4 text-gray-600 dark:text-gray-300">
 					For example, if we measure an intitial steepest slope of <abbr title="absorbance"><i>A</i></abbr><sub>420&nbsp;nm</sub>
-					of 1.80&nbsp;min<sup>&minus;1</sup>:
+					of 1.80&nbsp;min<sup>&minus;1</sup>, as in the figure above, we can calculate initial velocity like this:
 				</p>
 
 				<figure class="center">
