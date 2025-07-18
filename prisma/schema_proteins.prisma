@@ -10,46 +10,53 @@ datasource db {
 }
 
 model CharacterizationData {
-  id                     Int      @id @default(autoincrement()) @db.UnsignedMediumInt
-  resid                  String   @db.Char(1)
-  resnum                 Int      @db.UnsignedSmallInt
-  resmut                 String   @db.Char(1)
-  oligo_ordered          Boolean  @default(false)
-  plasmid_verified       Boolean  @default(false)
-  expressed              Boolean?
-  yield_avg              Float?   @db.Float
-  KM_avg                 Float?   @db.Float
-  KM_SD                  Float?   @db.Float
-  kcat_avg               Float?   @db.Float
-  kcat_SD                Float?   @db.Float
-  kcat_over_KM           Float?   @db.Float
-  kcat_over_KM_SD        Float?   @db.Float
-  T50                    Float?   @db.Float
-  T50_SD                 Float?   @db.Float
-  T50_k                  Float?   @db.Float
-  T50_k_SD               Float?   @db.Float
-  Tm                     Float?   @db.Float
-  Tm_SD                  Float?   @db.Float
-  Rosetta_score          Float?   @db.Float
-  raw_data_id            Int      @default(0) @db.UnsignedMediumInt
-  temp_raw_data_id       Int      @default(0) @db.UnsignedMediumInt
-  WT_raw_data_id         Int      @default(0) @db.UnsignedMediumInt
-  WT_temp_raw_data_id    Int      @default(0) @db.UnsignedMediumInt
-  ab1_filename           String?  @db.VarChar(84)
-  gel_filename           String?  @db.VarChar(84)
-  creator                String   @default("unknown") @db.VarChar(30)
-  teammate               String?  @db.VarChar(30)
-  teammate2              String?  @db.VarChar(30)
-  teammate3              String?  @db.VarChar(30)
-  pi                     String   @db.VarChar(30)
-  institution            String   @db.VarChar(50)
-  submitted_for_curation Boolean  @default(false)
-  approved_by_pi         Boolean  @default(false)
-  curated                Boolean  @default(false)
-  reference1             Int      @default(0) @db.UnsignedTinyInt
-  reference2             Int      @default(0) @db.UnsignedTinyInt
-  reference3             Int      @default(0) @db.UnsignedTinyInt
-  comments               String?  @db.TinyText
+  id                        Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  resid                     String   @db.Char(1)
+  resnum                    Int      @db.UnsignedSmallInt
+  resmut                    String   @db.Char(1)
+  oligo_ordered             Boolean  @default(false)
+  plasmid_verified          Boolean  @default(false)
+  induced                   Boolean  @default(false)
+  expressed                 Boolean?
+  yield_avg                 Float?   @db.Float
+  KM_avg                    Float?   @db.Float
+  KM_SD                     Float?   @db.Float
+  KM_dev_from_ref           Float?   @db.Float
+  kcat_avg                  Float?   @db.Float
+  kcat_SD                   Float?   @db.Float
+  kcat_dev_from_ref         Float?   @db.Float
+  kcat_over_KM              Float?   @db.Float
+  kcat_over_KM_SD           Float?   @db.Float
+  kcat_over_KM_dev_from_ref Float?   @db.Float
+  T50                       Float?   @db.Float
+  T50_SD                    Float?   @db.Float
+  T50_dev_from_ref          Float?   @db.Float
+  T50_k                     Float?   @db.Float
+  T50_k_SD                  Float?   @db.Float
+  T50_k_dev_from_ref        Float?   @db.Float
+  Tm                        Float?   @db.Float
+  Tm_SD                     Float?   @db.Float
+  Tm_dev_from_ref           Float?   @db.Float
+  Rosetta_score             Float?   @db.Float
+  raw_data_id               Int      @default(0) @db.UnsignedMediumInt
+  temp_raw_data_id          Int      @default(0) @db.UnsignedMediumInt
+  WT_raw_data_id            Int      @default(0) @db.UnsignedMediumInt
+  WT_temp_raw_data_id       Int      @default(0) @db.UnsignedMediumInt
+  ab1_filename              String?  @db.VarChar(84)
+  gel_filename              String?  @db.VarChar(84)
+  creator                   String   @default("unknown") @db.VarChar(30)
+  teammate                  String?  @db.VarChar(30)
+  teammate2                 String?  @db.VarChar(30)
+  teammate3                 String?  @db.VarChar(30)
+  pi                        String   @db.VarChar(30)
+  institution               String   @db.VarChar(50)
+  submitted_for_curation    Boolean  @default(false)
+  approved_by_pi            Boolean  @default(false)
+  curated                   Boolean  @default(false)
+  reference1                Int      @default(0) @db.UnsignedTinyInt
+  reference2                Int      @default(0) @db.UnsignedTinyInt
+  reference3                Int      @default(0) @db.UnsignedTinyInt
+  comments                  String?  @db.TinyText
 }
 
 model KineticRawData {
