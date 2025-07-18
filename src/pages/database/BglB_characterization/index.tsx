@@ -45,7 +45,7 @@ function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
-  const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
+  const [useRosettaNumbering, setUseRosettaNumbering] = useState(true);
   const [sequences, setSequences] = useState<any[]>([]);
   const [showNonCurated, setShowNonCurated] = useState(false); 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
