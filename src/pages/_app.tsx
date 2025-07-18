@@ -24,7 +24,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <UserProvider>
       <Head>
-        <title>D2D Cure - {pageName}</title>
+        <title>D2D CURE - {pageName}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AuthStateListener />
