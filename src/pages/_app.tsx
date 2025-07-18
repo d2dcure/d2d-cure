@@ -20,11 +20,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const pathEnd = router.pathname.split('/').pop() ?? 'Page';
   const pageName = router.pathname === '/' ? 'Home' : pathEnd.charAt(0).toUpperCase() + pathEnd.slice(1);
+	// TODO: fix this behavior
 
   return (
     <UserProvider>
-      <Head>
-        <title>D2D CURE - {pageName}</title>
+      <Head>  {/* Head, not head -- special tag from next/app */}
+        <title>D2D CURE | {pageName}</title>
+		<meta charset="UTF-8" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AuthStateListener />

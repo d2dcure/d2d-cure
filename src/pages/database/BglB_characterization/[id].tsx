@@ -525,9 +525,12 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             <div>
-                              <span className="text-sm text-gray-500">Yield</span>
+                              <span className="text-sm text-gray-500">
+                                {(entryData2?.yield_units == 'A280_') ? '<i>A</i><sub>280&nbsp;nm</sub>' : 'Yield'}
+                              </span>
                               <p className="text-sm font-medium text-gray-900">
-                                {entryData2?.yield} {entryData2?.yield_units?.replace(/_/g, '/')}
+                                {entryData2?.yield} {entryData2?.yield_units?.replace(/_/g, ' ')}
+								{/* TODO: This behavior is incorrect, and needs a conversion function. */}
                               </p>
                             </div>
                           </div>
