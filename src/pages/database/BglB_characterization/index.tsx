@@ -503,6 +503,7 @@ const DataPage = () => {
         const WT_row = characterizationData.find((row:any) => row.id === 1);
         if (WT_row) {
           setWTValues({
+			WT_KM: WT_row.KM_avg,
             WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
             WT_log_kcat: Math.log10(WT_row.kcat_avg),
             WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
@@ -1652,11 +1653,11 @@ const DataPage = () => {
                                       </TableCell>
                                     );
                                     break;
-                                  //case "km_dev_from_ref":
-                                    /*cell = (
+                                  case "km_dev_from_ref":
+                                    cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
+                                          backgroundColor: getColorForValue(0),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1665,11 +1666,15 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'}
+                                          {((data.KM_avg !== null) || (data.KM_avg !== 0)) &&
+												!isNaN(data.KM_avg) ? 
+													`${roundTo(((data.KM_avg - WTValues.WT_KM) / WTValues.WT_KM) * 100, 1)}%` :
+													 '—'
+										  }
                                         </div>
                                       </TableCell>
-                                    );*/
-                                    //break;
+                                    );
+                                    break;
                                   case "kcat":
                                     cell = (
                                       <TableCell key={column.uid}>
