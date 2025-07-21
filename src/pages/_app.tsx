@@ -19,7 +19,15 @@ const FlowbiteInit = dynamic(
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const pathEnd = router.pathname.split('/').pop() ?? 'Page';
-  const pageName = router.pathname === '/' ? 'Home' : pathEnd.charAt(0).toUpperCase() + pathEnd.slice(1);
+	let pageName;
+	switch (router.pathname) {
+		case "/":
+			pageName = "Home";
+			break;
+		default:
+			pageName = pathEnd.charAt(0).toUpperCase() + pathEnd.slice(1);
+	};
+  //const pageName = router.pathname === '/' ? 'Home' : pathEnd.charAt(0).toUpperCase() + pathEnd.slice(1);
 	// TODO: fix this behavior
 
   return (
