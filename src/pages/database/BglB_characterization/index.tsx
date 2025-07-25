@@ -811,8 +811,6 @@ const DataPage = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-	// showNonCurated
-//selectedInstitution
     link.setAttribute('download',
 		'BglB_characterization_data' + 
 		(selectedInstitution ? "_" + selectedInstitution : "") +
