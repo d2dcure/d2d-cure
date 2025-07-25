@@ -734,11 +734,18 @@ const DataPage = () => {
 
   // Add this function near other utility functions
   const downloadCSV = () => {
-    // Only include curated data
-    const curatedData = characterizationData.filter(data => data.curated);
-    
+    // Generate a .csv file for download, based on current filter selections.
+
+	// TODO: Fix this duplicated code from above.
+	const filteredData = characterizationData
+      .filter(data => 
+        data.curated || 
+        (showNonCurated && !data.curated && data.submitted_for_curation)
+      )
+      .filter(data => !selectedInstitution || data.institution === selectedInstitution);
+	    
     // Sort data by resnum (not resid)
-    const sortedData = [...curatedData].sort((a, b) => {
+	const sortedData = [...filteredData].sort((a, b) => {
       // First, handle the WT (resid == 'X') cases
       if (a.resid === 'X' && b.resid !== 'X') return -1;
       if (a.resid !== 'X' && b.resid === 'X') return 1;
@@ -749,28 +756,34 @@ const DataPage = () => {
     
     // Define headers for CSV with plain text alternatives for special characters
     const headers = [
+	  'ID #',
       'Variant',
-      'Expressed',
+      'Induced?',
+      'Expressed?',
       'Yield (mg/mL)',
-      'KM (mᴍ)',
+      'KM (mM)',
       'KM SD',
-      'kcat (min^-1)',  // Changed from min⁻¹
+      'kcat (1/min)',
       'kcat SD',
-      'kcat/KM (mᴍ^-1min^-1)',  // Changed from mM⁻¹min⁻¹
+      'kcat/KM (1/(mM min))',
       'kcat/KM SD',
       'T50 (degrees C)',  // Changed from °C
       'T50 SD',
       'Tm (degrees C)',  // Changed from °C
       'Tm SD',
       'Rosetta score change',
-      'Institution'
+      'Institution',
+	  'Created by',
+	  'Curated?',
     ];
 
     // Transform data into CSV rows
     const csvRows = sortedData.map(data => {
       const variant = getVariantDisplay(data.resid, data.resnum, data.resmut);
       return [
+		data.id,
         variant,
+		'data not transfered from old site',  // TODO: Fix when databases are re-synced
         data.expressed ? 'yes' : 'no',
         (data.yield_avg !== null && !isNaN(data.yield_avg)) ? data.yield_avg : (data.expressed ? 'not reported' : ''),
         data.KM_avg || '',
@@ -784,7 +797,9 @@ const DataPage = () => {
         data.Tm || '',
         data.Tm_SD || '',
         data.Rosetta_score || '',
-        data.institution || ''
+        data.institution || '',
+	    data.creator || 'unknown',
+		data.curated ? 'yes' : 'no'
       ].join(',');
     });
 
@@ -796,7 +811,12 @@ const DataPage = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'BglB_characterization_data.csv');
+	// showNonCurated
+//selectedInstitution
+    link.setAttribute('download',
+		'BglB_characterization_data' + 
+		(selectedInstitution ? "_" + selectedInstitution : "") +
+		(showNonCurated ? "" : "_curated") + '.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1202,7 +1222,7 @@ const DataPage = () => {
                             size="md"
                             onClick={downloadCSV}
                           >
-                            Download data as <br /> comma-delimited file
+                            Download filtered/displayed data as <br /> comma-delimited file
                           </Button>
                         </div>
 
