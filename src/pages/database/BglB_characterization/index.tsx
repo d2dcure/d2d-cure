@@ -1202,7 +1202,7 @@ const DataPage = () => {
                             size="md"
                             onClick={downloadCSV}
                           >
-                            Download curated data as <br></br> comma-delimited file
+                            Download data as <br /> comma-delimited file
                           </Button>
                         </div>
 
