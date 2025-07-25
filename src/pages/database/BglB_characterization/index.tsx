@@ -1221,7 +1221,7 @@ const DataPage = () => {
                             onClick={downloadCSV}
                           >
                             Download filtered/displayed data <br />
-			    ({displayData.length} records) <br />
+			    <small>({displayData.length} records)</small> <br />
 			    as comma-delimited file
                           </Button>
                         </div>
