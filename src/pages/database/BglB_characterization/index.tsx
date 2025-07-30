@@ -10,7 +10,6 @@ import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
-import axios from 'axios';
 
 // Add this interface near the top of the file
 interface Institution {
@@ -62,6 +61,7 @@ const DataPage = () => {
     "variant",
     "yield",
     "km",
+    "km_dev_from_ref",
     "kcat",
     "kcat_km",
     "t50",
@@ -98,6 +98,8 @@ const DataPage = () => {
 
   // Add this new state for publications
   const [publications, setPublications] = useState<any[]>([]);
+
+
 
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
@@ -428,6 +430,8 @@ const DataPage = () => {
     setRowsPerPage(0); // "all"
   };
 
+
+
   useEffect(() => {
     const fetchInstitutions = async () => {
       try {
@@ -513,6 +517,8 @@ const DataPage = () => {
             WT_Rosetta_score: WT_row.Rosetta_score
           });
         }
+
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setIsError(true);
@@ -600,6 +606,10 @@ const DataPage = () => {
           case "km":
             aValue = a.KM_avg || 0;
             bValue = b.KM_avg || 0;
+            break;
+          case "km_dev_from_ref":
+            aValue = a.KM_ref ? ((a.KM_avg - a.KM_ref) / a.KM_ref) * 100 : 0;
+            bValue = b.KM_ref ? ((b.KM_avg - b.KM_ref) / b.KM_ref) * 100 : 0;
             break;
           case "kcat":
             aValue = a.kcat_avg || 0;
@@ -749,21 +759,28 @@ const DataPage = () => {
           page * rowsPerPage
         );
 
-  // TEMP Function to initially get and set ref data.
-  const lookUpAndSetRef = (rawID: number) => {
-	if (rawID) {
-		const response = axios.get('/api/getKineticRawDataEntryDataFromWTid', {
-	          params: { id: rawID }
-	        });
-		if (response.status === 200) {
-	          const data = response.data;
-			return data.parent_id;
-		}
-		return null;
-	}
-	return null;
-	//return rawID;
+  // Function to calculate relative deviation from reference WT
+  const calculateKMDeviation = (data: any): string => {
+    // Check if we have both the variant KM and reference KM
+    if (!data.KM_avg || data.KM_avg === null || isNaN(data.KM_avg)) {
+      return '—';
+    }
+    
+    // Use the KM_ref field if available
+    if (data.KM_ref && !isNaN(data.KM_ref)) {
+      const deviation = ((data.KM_avg - data.KM_ref) / data.KM_ref) * 100;
+      return `${roundTo(deviation, 1)}%`;
+    }
+    
+    // If KM_ref is not populated but we have WT_raw_data_id, show that reference data exists
+    if (data.WT_raw_data_id && data.WT_raw_data_id !== 0) {
+      return 'Ref data linked*';
+    }
+    
+    return '—';
   };
+
+
 
   // Replace the scrollToTable function with scrollToTop
   const scrollToTop = () => {
@@ -1683,14 +1700,7 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {
-												lookUpAndSetRef(data.WT_raw_data_id)
-												/*data.KM_ref*/ /*TEMP*/
-												/*((data.KM_avg !== null) || (data.KM_avg !== 0)) &&
-													!isNaN(data.KM_avg) ? 
-													`${roundTo(((data.KM_avg - WTValues.WT_KM) / WTValues.WT_KM) * 100, 1)}%` :
-													 '—'*/
-										  }
+                                          {calculateKMDeviation(data)}
                                         </div>
                                       </TableCell>
                                     );
