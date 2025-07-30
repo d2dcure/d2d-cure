@@ -21,22 +21,22 @@ model CharacterizationData {
   yield_avg                 Float?   @db.Float
   KM_avg                    Float?   @db.Float
   KM_SD                     Float?   @db.Float
-  KM_dev_from_ref           Float?   @db.Float
+  KM_ref                    Float?   @db.Float
   kcat_avg                  Float?   @db.Float
   kcat_SD                   Float?   @db.Float
-  kcat_dev_from_ref         Float?   @db.Float
+  kcat_ref                  Float?   @db.Float
   kcat_over_KM              Float?   @db.Float
   kcat_over_KM_SD           Float?   @db.Float
-  kcat_over_KM_dev_from_ref Float?   @db.Float
+  kcat_over_KM_ref          Float?   @db.Float
   T50                       Float?   @db.Float
   T50_SD                    Float?   @db.Float
-  T50_dev_from_ref          Float?   @db.Float
+  T50_ref                   Float?   @db.Float
   T50_k                     Float?   @db.Float
   T50_k_SD                  Float?   @db.Float
-  T50_k_dev_from_ref        Float?   @db.Float
+  T50_k_ref                   Float?   @db.Float
   Tm                        Float?   @db.Float
   Tm_SD                     Float?   @db.Float
-  Tm_dev_from_ref           Float?   @db.Float
+  Tm_ref                    Float?   @db.Float
   Rosetta_score             Float?   @db.Float
   raw_data_id               Int      @default(0) @db.UnsignedMediumInt
   temp_raw_data_id          Int      @default(0) @db.UnsignedMediumInt
