@@ -10,6 +10,7 @@ import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
 // Add this interface near the top of the file
 interface Institution {
@@ -52,7 +53,6 @@ const DataPage = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the BglB database
-  const [rawAssayData, setRawAssyData] = useState<any[]>([]);  // TEMP
   const [WTValues, setWTValues] = useState<any>(null);
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -751,7 +751,18 @@ const DataPage = () => {
 
   // TEMP Function to initially get and set ref data.
   const lookUpAndSetRef = (rawID: number) => {
-	return rawID;
+	if (rawID) {
+		const response = axios.get('/api/getKineticRawDataEntryDataFromWTid', {
+	          params: { id: rawID }
+	        });
+		if (response.status === 200) {
+	          const data = response.data;
+			return data.parent_id;
+		}
+		return null;
+	}
+	return null;
+	//return rawID;
   };
 
   // Replace the scrollToTable function with scrollToTop
