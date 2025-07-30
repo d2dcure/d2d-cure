@@ -912,17 +912,17 @@ const DataPage = () => {
   const getFormattedColumnName = (column: any) => {
     switch (column.uid) {
       case "km":
-        return <><span className="italic">K</span><sub>M</sub> (mᴍ)</>;
+        return <><i>K</i><sub>M</sub> (mᴍ)</>;
       case "km_dev_from_ref":
         return <><i>d</i><sub><i>K</i>M</sub> (%)</>;
       case "kcat":
-        return <><span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)</>;
+        return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
       case "kcat_km":
-        return <><span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+        return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
       case "t50":
-        return <><span className="italic">T</span><sub>50</sub> (°C)</>;
+        return <><i>T</i><sub>50</sub> (°C)</>;
       case "tm":
-        return <><span className="italic">T</span><sub>m</sub> (°C)</>;
+        return <><i>T</i><sub>m</sub> (°C)</>;
       case "rosetta":
         return <>Rosetta score change</>;
       default:
