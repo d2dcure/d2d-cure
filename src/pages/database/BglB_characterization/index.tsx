@@ -52,6 +52,7 @@ const DataPage = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the BglB database
+  const [rawAssayData, setRawAssyData] = useState<any[]>([]);  // TEMP
   const [WTValues, setWTValues] = useState<any>(null);
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -747,6 +748,11 @@ const DataPage = () => {
           (page - 1) * rowsPerPage,
           page * rowsPerPage
         );
+
+  // TEMP Function to initially get and set ref data.
+  const lookUpAndSetRef = (rawID: number) => {
+	return rawID;
+  };
 
   // Replace the scrollToTable function with scrollToTop
   const scrollToTop = () => {
@@ -1666,10 +1672,13 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {((data.KM_avg !== null) || (data.KM_avg !== 0)) &&
-												!isNaN(data.KM_avg) ? 
+                                          {
+												lookUpAndSetRef(data.WT_raw_data_id)
+												/*data.KM_ref*/ /*TEMP*/
+												/*((data.KM_avg !== null) || (data.KM_avg !== 0)) &&
+													!isNaN(data.KM_avg) ? 
 													`${roundTo(((data.KM_avg - WTValues.WT_KM) / WTValues.WT_KM) * 100, 1)}%` :
-													 '—'
+													 '—'*/
 										  }
                                         </div>
                                       </TableCell>
