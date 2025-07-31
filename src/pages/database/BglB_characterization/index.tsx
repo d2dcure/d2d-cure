@@ -820,6 +820,52 @@ const DataPage = () => {
     document.body.removeChild(link);
   };
 
+  // DEMO FUNCTION FOR JASON: How to get parent_id from KineticRawData
+  const getParentIdFromKineticData = async (kineticRawDataId: number): Promise<number | null> => {
+    try {
+      console.log(`🔍 Fetching parent_id for KineticRawData ID: ${kineticRawDataId}`);
+      
+      // Make the API call using fetch (not axios)
+      const response = await fetch(`/api/getKineticData?id=${kineticRawDataId}`);
+      
+      // Check if the request was successful
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      // Parse the JSON response
+      const data = await response.json();
+      
+      // Log the full response for Jason to see
+      console.log('📦 Full API response:', data);
+      
+      // Extract and return just the parent_id
+      const parentId = data?.parent_id || null;
+      console.log(`✅ Found parent_id: ${parentId}`);
+      
+      return parentId;
+    } catch (error) {
+      console.error('❌ Error fetching parent_id:', error);
+      return null;
+    }
+  };
+
+  // DEMO FUNCTION: Test with a known KineticRawData ID
+  const testGetParentId = async () => {
+    // You can change this ID to test with different KineticRawData records
+    const testId = 107; 
+    console.log('\n🧪 TESTING API CALL FOR JASON:');
+    console.log('=====================================');
+    
+    const result = await getParentIdFromKineticData(testId);
+    
+    if (result !== null) {
+      alert(`Success! KineticRawData ID ${testId} has parent_id: ${result}\n\nCheck console for detailed logs.`);
+    } else {
+      alert(`No data found for KineticRawData ID ${testId} or error occurred.\n\nCheck console for details.`);
+    }
+  };
+
   // Modify the handleRowClick function
   const handleRowClick = (row: any) => {
     // Generate a unique identifier for the row
@@ -828,6 +874,17 @@ const DataPage = () => {
     // Save to both state and localStorage
     setLastClickedRowId(rowId);
     localStorage.setItem('lastClickedBglBRow', rowId);
+
+    // DEMO FOR JASON: If this row has kinetic data, also demonstrate the parent_id lookup
+    if (row.raw_data_id && row.raw_data_id > 0) {
+      console.log(`\n🔬 DEMO: Row clicked has kinetic data! raw_data_id: ${row.raw_data_id}`);
+      console.log('Let\'s demonstrate getting the parent_id...');
+      
+      // Call our demo function to show Jason how it works
+      getParentIdFromKineticData(row.raw_data_id).then(parentId => {
+        console.log(`🎯 Result: KineticRawData ID ${row.raw_data_id} has parent_id: ${parentId}`);
+      });
+    }
 
     if (expandData) {
       // If in expanded view, open detail page in new tab
@@ -1092,6 +1149,17 @@ const DataPage = () => {
             <h1 className="mb-4 pb-4 lg:pb-14 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
               BglB Variant Characterization Data
             </h1>
+
+            {/* DEMO BUTTON FOR JASON - Test API function - Now at the top! */}
+            <div className="mb-6 flex justify-center">
+              <Button 
+                className="bg-orange-500 text-white hover:bg-orange-600 transition-colors px-6 py-3"
+                size="lg"
+                onClick={testGetParentId}
+              >
+                🧪 Test API Call (For Jason) - Get parent_id from KineticRawData
+              </Button>
+            </div>
 
             {/* New flex container */}
             <div className="flex w-full gap-4 flex-col lg:flex-row">
