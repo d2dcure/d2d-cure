@@ -1798,7 +1798,7 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? roundTo(data.Rosetta_score, 1) : '—'}
+                                          {getParentIdFromKineticData(data.raw_data_id)}
                                         </div>
                                       </TableCell>
                                     );
