@@ -756,50 +756,58 @@ const DataPage = () => {
     
     // Define headers for CSV with plain text alternatives for special characters
     const headers = [
-	  'ID #',
+	    'ID #',
       'Variant',
       'Induced?',
       'Expressed?',
       'Yield (mg/mL)',
       'KM (mM)',
       'KM SD',
+      'reference KM',
       'kcat (1/min)',
       'kcat SD',
+      'reference kcat',
       'kcat/KM (1/(mM min))',
       'kcat/KM SD',
+      'reference kcat/KM',
       'T50 (degrees C)',  // Changed from °C
       'T50 SD',
+      'reference T50',
       'Tm (degrees C)',  // Changed from °C
       'Tm SD',
       'Rosetta score change',
       'Institution',
-	  'Created by',
-	  'Curated?',
+	    'Created by',
+	    'Curated?',
     ];
 
     // Transform data into CSV rows
     const csvRows = sortedData.map(data => {
       const variant = getVariantDisplay(data.resid, data.resnum, data.resmut);
       return [
-		data.id,
+		    data.id,
         variant,
-		'data not transfered from old site',  // TODO: Fix when databases are re-synced
+		    'data not transfered from old site',  // TODO: Fix when databases are re-synced
         data.expressed ? 'yes' : 'no',
         (data.yield_avg !== null && !isNaN(data.yield_avg)) ? data.yield_avg : (data.expressed ? 'not reported' : ''),
         data.KM_avg || '',
         data.KM_SD || '',
+        data.KM_ref || '',
         data.kcat_avg || '',
         data.kcat_SD || '',
+        data.kcat_ref || '',
         data.kcat_over_KM || '',
         data.kcat_over_KM_SD || '',
+        data.kcat_over_KM_ref || '',
         data.T50 || '',
         data.T50_SD || '',
+        data.T50_ref || '',
         data.Tm || '',
         data.Tm_SD || '',
         data.Rosetta_score || '',
         data.institution || '',
-	    data.creator || 'unknown',
-		data.curated ? 'yes' : 'no'
+	      data.creator || 'unknown',
+	      data.curated ? 'yes' : 'no'
       ].join(',');
     });
 
