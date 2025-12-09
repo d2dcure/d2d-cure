@@ -27,6 +27,7 @@ model Users {
   institution    String       @db.VarChar(50)
   status         Users_status
   email          String       @db.VarChar(50)
+  alt_email      String       @db.VarChar(50)
   password       String       @db.VarChar(30)
   image_filename String       @db.VarChar(84)
   approved       Boolean
