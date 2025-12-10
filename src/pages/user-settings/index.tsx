@@ -43,6 +43,7 @@ const ProfileSettings = () => {
     if (user) {
       setEditableGivenName(user.given_name || '');
       setEditableEmail(user.email || '');
+      //setEditableAltEmail(user.alt_email || '');
     }
   }, [user]);
 
@@ -280,17 +281,12 @@ const ProfileSettings = () => {
                             Click to change profile picture
                           </p>
 
-                          <h2 className="text-2xl font-normal mb-2 mt-2 text-left">{user?.user_name || 'First Last'}</h2>
+                          <h2 className="text-2xl font-normal mb-2 mt-2 text-left">{user?.user_name}</h2>
                           
                           <div className="w-full space-y-3">
                             <div>
-                              <p className="text-gray-500 text-sm">Username</p>
-                              <p className="text-black">{user?.user_name || 'Username'}</p>
-                            </div>
-
-                            <div>
                               <p className="text-gray-500 text-sm">Given Name</p>
-                              <p className="text-black">{user?.given_name || 'Given name'}</p>
+                              <p className="text-black">{user?.given_name || 'not provided'}</p>
                             </div>
 
                             <div>
@@ -304,12 +300,17 @@ const ProfileSettings = () => {
 
                             <div>
                               <p className="text-gray-500 text-sm">Institution</p>
-                              <p className="text-black">{user?.institution || 'UC Davis'}</p>
+                              <p className="text-black">{user?.institution || 'missing data'}</p>
                             </div>
 
                             <div>
                               <p className="text-gray-500 text-sm">Email</p>
-                              <p className="text-black">{user?.email || 'firstlast@ucdavis.edu'}</p>
+                              <p className="text-black">{user?.email || 'missing data'}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-gray-500 text-sm">Alternative Email</p>
+                              <p className="text-black">{user?.alt_email || 'not provided'}</p>
                             </div>
                           </div>
 
