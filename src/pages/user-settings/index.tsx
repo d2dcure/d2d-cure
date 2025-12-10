@@ -188,7 +188,8 @@ const ProfileSettings = () => {
           userId: user?.id,
           givenName: editableGivenName,
           email: editableEmail,
-          currentEmail: user?.email
+          currentEmail: user?.email,
+          altEmail: editableAltEmail
         })
       });
       

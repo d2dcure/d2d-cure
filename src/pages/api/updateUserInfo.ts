@@ -7,20 +7,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { userId, givenName, email, currentEmail } = req.body;
+  const { userId, givenName, email, currentEmail, altEmail } = req.body;
 
-  if (!userId || !givenName || !email) {
+  if (!userId || !givenName || !email || !altEmail) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   // Validate email
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
+    return res.status(400).json({ error: 'Invalid email format in main email' });
+  }
+  if (!emailPattern.test(altEmail)) {
+    return res.status(400).json({ error: 'Invalid email format in alt email' });
   }
 
   try {
-    // Check if email already exists for another user
+    // Check if primary email already exists for another user
     const existingUser = await prismaUsers.users.findFirst({
       where: {
         email,
@@ -31,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (existingUser) {
-      return res.status(409).json({ error: 'Email is already in use by another account' });
+      return res.status(409).json({ error: 'Primary email is already in use by another account' });
     }
 
     // Update user info in your database
@@ -39,7 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { id: parseInt(userId) },
       data: { 
         given_name: givenName,
-        email: email
+        email: email,
+        alt_email: altEmail
       },
     });
 
@@ -67,7 +71,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       user: {
         id: updatedUser.id,
         given_name: updatedUser.given_name,
-        email: updatedUser.email
+        email: updatedUser.email,
+        alt_email: updatedUser.alt_email
       }
     });
   } catch (error) {
