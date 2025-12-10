@@ -23,9 +23,11 @@ const ProfileSettings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editableGivenName, setEditableGivenName] = useState('');
   const [editableEmail, setEditableEmail] = useState('');
+  const [editableAltEmail, setEditableAltEmail] = useState('');
   const [isUserInfoEditing, setIsUserInfoEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [altEmailError, setAltEmailError] = useState('');
 
   // Load profile image when user data is available
   useEffect(() => {
@@ -43,7 +45,7 @@ const ProfileSettings = () => {
     if (user) {
       setEditableGivenName(user.given_name || '');
       setEditableEmail(user.email || '');
-      //setEditableAltEmail(user.alt_email || '');
+      setEditableAltEmail(user.alt_email || '');
     }
   }, [user]);
 
@@ -168,12 +170,14 @@ const ProfileSettings = () => {
   // Add function to handle save
   const handleSaveUserInfo = async () => {
     // Validate email
-    if (!validateEmail(editableEmail)) {
-      setEmailError('Please enter a valid email address');
+    if ((!validateEmail(editableEmail)) || (!validateEmail(editableAltEmail))) {
+      if (!validateEmail(editableEmail)) { setEmailError('Please enter a valid email address'); }
+      if (!validateEmail(editableAltEmail)) { setAltEmailError('Please enter a valid email address'); }
       return;
     }
     
     setEmailError('');
+    setAltEmailError('');
     setIsSaving(true);
     
     try {
@@ -383,6 +387,20 @@ const ProfileSettings = () => {
                           {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                         </div>
                         <div>
+                          <label className="block text-gray-700 dark:text-white mb-2">Alternative Email (Optional)</label>
+                          <Input
+                            type="email"
+                            radius="sm"
+                            placeholder="An Alternate Email"
+                            value={isUserInfoEditing ? editableAltEmail : (user?.alt_email || '')}
+                            onChange={(e) => setEditableAltEmail(e.target.value)}
+                            className="w-full"
+                            isDisabled={!isUserInfoEditing}
+                            color={altEmailError ? "danger" : "default"}
+                          />
+                          {altEmailError && <p className="text-red-500 text-xs mt-1">{altEmailError}</p>}
+                        </div>
+                        <div>
                           <label className="block text-gray-700 dark:text-white mb-2">Institution</label>
                           <Input
                             type="text"
@@ -415,7 +433,9 @@ const ProfileSettings = () => {
                                 setIsUserInfoEditing(false);
                                 setEditableGivenName(user?.given_name || '');
                                 setEditableEmail(user?.email || '');
+                                setEditableAltEmail(user?.alt_email || '');
                                 setEmailError('');
+                                setAltEmailError('');
                               }}
                               disabled={isSaving}
                             >
