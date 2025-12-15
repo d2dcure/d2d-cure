@@ -45,12 +45,14 @@ model CharacterizationData {
   ab1_filename              String?  @db.VarChar(84)
   gel_filename              String?  @db.VarChar(84)
   creator                   String   @default("unknown") @db.VarChar(30)
+  created_date              String?  @db.TinyText
   teammate                  String?  @db.VarChar(30)
   teammate2                 String?  @db.VarChar(30)
   teammate3                 String?  @db.VarChar(30)
   pi                        String   @db.VarChar(30)
   institution               String   @db.VarChar(50)
   submitted_for_curation    Boolean  @default(false)
+  submitted_date            String?  @db.TinyText
   approved_by_pi            Boolean  @default(false)
   curated                   Boolean  @default(false)
   reference1                Int      @default(0) @db.UnsignedTinyInt
