@@ -130,7 +130,9 @@ const CuratePage = () => {
             case "variant":
                 return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
-                return (data.creator + " (" + data.pi + " Lab)") 
+                return (data.creator + " (" + data.pi + " Lab)")
+            case "created_date":
+                return format(data.created_date, "yyyy.MM.dd")
             case "assay_date": {
                 let date = "";
                 if (data.tempRawData?.assay_date) {
@@ -147,13 +149,15 @@ const CuratePage = () => {
                 for (const parseFormat of dateParseFormats) {
                     try {
                         const parsedDate = parse(date, parseFormat, new Date());
-                        return format(parsedDate, 'MM/dd/yy');
+                        return format(parsedDate, "yyyy.MM.dd");
                     } catch (error) {
                         continue;
                     }
                 }
                 return date;
             }
+            case "submitted_date":
+                return format(data.submitted_date, "yyyy.MM.dd")
             case "km":
                 return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
             case "kcat":
