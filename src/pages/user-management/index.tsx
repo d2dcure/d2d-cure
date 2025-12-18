@@ -508,7 +508,7 @@ const handleDeleteFirebase = async () => {
                     if (isLoading) {
                       return (
                         <TableRow key="loading-row">
-                          {Array(10).fill(0).map((_, index) => (
+                          {Array(11).fill(0).map((_, index) => (
                             <TableCell key={`loading-cell-${index}`} className={index === 0 ? "text-center" : ""}>
                               {index === 0 ? "Loading users..." : ""}
                             </TableCell>
@@ -520,7 +520,7 @@ const handleDeleteFirebase = async () => {
                     if (filteredAndSortedUsers.length === 0) {
                       return (
                         <TableRow key="empty-row">
-                          {Array(10).fill(0).map((_, index) => (
+                          {Array(11).fill(0).map((_, index) => (
                             <TableCell key={`empty-cell-${index}`} className={index === 0 ? "text-center" : ""}>
                               {index === 0 ? "No users found." : ""}
                             </TableCell>
