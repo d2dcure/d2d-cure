@@ -53,6 +53,7 @@ function UserManagement() {
     { name: "Status/Role", uid: "status", sortable: true, width: "40" },
     { name: "PI", uid: "pi", sortable: true, width: "40" },
     { name: "Email", uid: "email", sortable: true, width: "40" },
+    { name: "Alt. Email", uid: "alt_email", sortable: true, width: "40" },
     { name: "Registered Date", uid: "registered_date", sortable: true, width: "40" },
     { name: "Approved", uid: "approved", sortable: true, width: "40" },
   ];
@@ -65,6 +66,7 @@ interface User {
   status: string;
   pi: string;
   email: string;
+  alt_email: string;
   registered_date: string;
   approved: boolean;
 }
@@ -496,6 +498,7 @@ const handleDeleteFirebase = async () => {
                   <TableColumn width="40" key = "status" onClick={() => sortTable("status")} allowsSorting>Status/Role</TableColumn>
                   <TableColumn width="40" key = "pi" onClick={() => sortTable("pi")} allowsSorting>PI</TableColumn>
                   <TableColumn width="40" key = "email" onClick={() => sortTable("email")} allowsSorting>Email</TableColumn>
+                  <TableColumn width="40" key = "alt_email" onClick={() => sortTable("alt_email")} allowsSorting>Alt. Email</TableColumn>
                   <TableColumn width="40" key = "registered_date" onClick={() => sortTable("registered_date")} allowsSorting>Registered Date</TableColumn>
                   <TableColumn width="40" key = "approved" onClick={() => sortTable("approved")} allowsSorting>Approved</TableColumn>
                 </TableHeader>
@@ -541,6 +544,7 @@ const handleDeleteFirebase = async () => {
                         <TableCell>{user.status}</TableCell>
                         <TableCell>{user.pi}</TableCell>
                         <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.alt_email}</TableCell>
                         <TableCell>{user.reg_date}</TableCell>
                         <TableCell>
                           <span
