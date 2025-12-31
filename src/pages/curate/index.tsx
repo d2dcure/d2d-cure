@@ -15,7 +15,7 @@ const columns = [
     { name: "ID", uid: "id", sortable: true },
     { name: "Variant", uid: "variant", sortable: true },
     { name: "Creator", uid: "creator", sortable: true },
-    { name: "Purification Date", uid: "purification_date", sortable: false},
+    //{ name: "Purification Date", uid: "purification_date", sortable: false},
     { name: "Assay Date", uid: "assay_date", sortable: false},
     { name: "Km", uid: "km", sortable: false },
     { name: "Kcat", uid: "kcat", sortable: false },
@@ -53,12 +53,13 @@ const CuratePage = () => {
         fullname: string;
     }
     const [institutions, setInstitutions] = useState<Institution[]>([]);
+	const [showOnlyNoComments, setShowOnlyNoComments] = useState(false);
     const [showNonSubmitted, setShowNonSubmitted] = useState(false);
     const [selectedInstitution, setSelectedInstitution] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", "purification_date", "assay_date", 
+        "status", "id", "variant", "creator", /*"purification_date",*/ "assay_date", 
         "km", "kcat", "t50", "comments", "actions"
     ]));
 
@@ -104,7 +105,7 @@ const CuratePage = () => {
         setIsLoading(true);
         filterAndSortData(data);
         setIsLoading(false);
-    }, [showNonSubmitted, selectedInstitution, searchTerm])
+    }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
         switch (columnKey) {
@@ -212,6 +213,10 @@ const CuratePage = () => {
             sortedData = sortedData
                 .filter((item:any) => item.submitted_for_curation === true);
         }
+		if (showOnlyNoComments) {
+			sortedData = sortedData
+                .filter((item:any) => item.comments === null);
+		}
         if (viewAs === "ADMIN" && selectedInstitution !== "") {
             sortedData = sortedData
                 .filter((item:any) => item.institution === selectedInstitution)
@@ -463,7 +468,6 @@ const CuratePage = () => {
                                         <Dropdown
                                             className="w-full"
                                             shouldBlockScroll={false}
-                                            shouldCloseOnInteractOutside={() => false}
                                         >
                                             <DropdownTrigger>
                                                 <Button
@@ -494,7 +498,6 @@ const CuratePage = () => {
                                         <Dropdown
                                             className="w-full"
                                             shouldBlockScroll={false}
-                                            shouldCloseOnInteractOutside={() => false}
                                         >
                                             <DropdownTrigger>
                                                 <Button
@@ -566,7 +569,7 @@ const CuratePage = () => {
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">Non-Submitted Data</span>
+                                                            <span className="text-sm text-gray-600">Non-Submitted/Incomplete Datasets</span>
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
@@ -588,6 +591,32 @@ const CuratePage = () => {
                                                         </Select>
                                                     </div>
                                                 </DropdownItem>
+
+												<DropdownItem className="p-0 mb-2">
+												    <div className="space-y-1">
+												        <div className="flex justify-between items-center">
+												            <span className="text-sm text-gray-600">Datasets With Comments</span>
+												            <Button
+												                size="sm"
+												                variant="light"
+												                className="text-blue-500 text-sm"
+												                onPress={() => setShowOnlyNoComments(false)}
+												            >
+												                Clear
+												            </Button>
+												        </div>
+												        <Select
+												            size="sm"
+												            placeholder="Excluded"
+												            selectedKeys={[showOnlyNoComments ? "excluded" : "included"]}
+												            onChange={(e) => setShowOnlyNoComments(e.target.value === "excluded")}
+												            className="w-full text-sm"
+												        >
+												            <SelectItem key="included" value="included">Included</SelectItem>
+												            <SelectItem key="excluded" value="excluded">Excluded</SelectItem>
+												        </Select>
+												    </div>
+												</DropdownItem>
                                             </DropdownMenu>
                                         </Dropdown>
                                     </div>

@@ -33,7 +33,7 @@ model CharacterizationData {
   T50_ref                   Float?   @db.Float
   T50_k                     Float?   @db.Float
   T50_k_SD                  Float?   @db.Float
-  T50_k_ref                   Float?   @db.Float
+  T50_k_ref                 Float?   @db.Float
   Tm                        Float?   @db.Float
   Tm_SD                     Float?   @db.Float
   Tm_ref                    Float?   @db.Float
