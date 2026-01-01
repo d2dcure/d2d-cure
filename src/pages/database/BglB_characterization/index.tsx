@@ -68,6 +68,7 @@ const DataPage = () => {
     "km",
     "km_dev_from_ref",
     "kcat",
+    "kcat_dev_from_ref",
     "kcat_km",
     "t50",
     "tm",
@@ -103,8 +104,6 @@ const DataPage = () => {
 
   // Add this new state for publications
   const [publications, setPublications] = useState<any[]>([]);
-
-
 
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
@@ -250,7 +249,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>Relative deviation from reference <i>K</i><sub>M</sub>.</p>
-              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for his assy.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for his assay.</p>
               <p>Click to sort by this column.</p>
             </div>
           }
@@ -289,6 +288,32 @@ const DataPage = () => {
         >
           <div className="cursor-help">
             <span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "Kcat relative deviation from reference WT", 
+      uid: "kcat_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>k</i><sub>cat</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub> from that of the WT enzyme used as a reference for his assay.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help">
+            <i>d</i><sub><i>k</i>cat</sub>
           </div>
         </Tooltip>
       )
@@ -434,8 +459,6 @@ const DataPage = () => {
     });
     setRowsPerPage(0); // "all"
   };
-
-
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -612,12 +635,16 @@ const DataPage = () => {
             bValue = b.KM_avg || 0;
             break;
           case "km_dev_from_ref":
-            aValue = a.KM_ref ? calculateRelativeDeviation(a.KM_avg, a.KM_ref) : 0;  // TODO: should be null
+            aValue = a.KM_ref ? calculateRelativeDeviation(a.KM_avg, a.KM_ref) : 0;
             bValue = b.KM_ref ? calculateRelativeDeviation(b.KM_avg, b.KM_ref) : 0;
             break;
           case "kcat":
             aValue = a.kcat_avg || 0;
             bValue = b.kcat_avg || 0;
+            break;
+          case "kcat_dev_from_ref":
+            aValue = a.kcat_ref ? calculateRelativeDeviation(a.kcat_avg, a.kcat_ref) : 0;
+            bValue = b.kcat_ref ? calculateRelativeDeviation(b.kcat_avg, b.kcat_ref) : 0;
             break;
           case "kcat_km":
             aValue = a.kcat_over_KM || 0;
@@ -959,6 +986,8 @@ const DataPage = () => {
         return <><i>d</i><sub><i>K</i>M</sub> (%)</>;
       case "kcat":
         return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
+      case "kcat_dev_from_ref":
+        return <><i>d</i><sub><i>k</i>cat</sub> (%)</>;
       case "kcat_km":
         return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
       case "t50":
@@ -1728,6 +1757,24 @@ const DataPage = () => {
                                           minWidth: 'fit-content'
                                         }}>
                                           {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 2)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "kcat_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.kcat_avg !== null && !isNaN(data.kcat_avg)) && (data.kcat_ref !== null && !isNaN(data.kcat_ref)) ? `${roundTo(calculateRelativeDeviation(data.kcat_avg, data.kcat_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
