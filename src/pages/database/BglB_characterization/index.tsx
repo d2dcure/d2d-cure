@@ -70,6 +70,7 @@ const DataPage = () => {
     "kcat",
     //"kcat_dev_from_ref",
     "kcat_km",
+    //"kcat_km_dev_from_ref",
     "t50",
     "tm",
     "rosetta"
@@ -249,7 +250,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>Relative deviation from reference <i>K</i><sub>M</sub>.</p>
-              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for his assay.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
               <p>Click to sort by this column.</p>
             </div>
           }
@@ -261,7 +262,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            <i>d</i><sub><i>K</i>M</sub>
+            <i>d</i><sub><i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
       )
@@ -301,7 +302,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>Relative deviation from reference <i>k</i><sub>cat</sub>.</p>
-              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub> from that of the WT enzyme used as a reference for his assay.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub> from that of the WT enzyme used as a reference for this assay.</p>
               <p>Click to sort by this column.</p>
             </div>
           }
@@ -313,7 +314,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            <i>d</i><sub><i>k</i>cat</sub>
+            <i>d</i><sub><i>k</i><sub>cat</sub></sub>
           </div>
         </Tooltip>
       )
@@ -340,6 +341,32 @@ const DataPage = () => {
         >
           <div className="cursor-help">
             <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "kcat/KM relative deviation from reference WT", 
+      uid: "kcat_km_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help">
+            <i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
       )
@@ -649,6 +676,10 @@ const DataPage = () => {
           case "kcat_km":
             aValue = a.kcat_over_KM || 0;
             bValue = b.kcat_over_KM || 0;
+            break;
+          case "kcat_km_dev_from_ref":
+            aValue = a.kcat_over_KM_ref ? calculateRelativeDeviation(a.kcat_over_KM, a.kcat_over_KM_ref) : 0;
+            bValue = b.kcat_over_KM_ref ? calculateRelativeDeviation(b.kcat_over_KM, b.kcat_over_KM_ref) : 0;
             break;
           case "t50":
             aValue = a.T50 || 0;
@@ -983,13 +1014,15 @@ const DataPage = () => {
       case "km":
         return <><i>K</i><sub>M</sub> (mᴍ)</>;
       case "km_dev_from_ref":
-        return <><i>d</i><sub><i>K</i>M</sub> (%)</>;
+        return <><i>d</i><sub><i>K</i><sub>M</sub></sub> (%)</>;
       case "kcat":
         return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
       case "kcat_dev_from_ref":
-        return <><i>d</i><sub><i>k</i>cat</sub> (%)</>;
+        return <><i>d</i><sub><i>k</i><sub>cat</sub></sub> (%)</>;
       case "kcat_km":
         return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+      case "kcat_km_dev_from_ref":
+        return <><i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub> (%)</>;
       case "t50":
         return <><i>T</i><sub>50</sub> (°C)</>;
       case "tm":
@@ -1795,6 +1828,24 @@ const DataPage = () => {
                                           {data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
                                             `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` 
                                             : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "kcat_km_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM)) && (data.kcat_over_KM_ref !== null && !isNaN(data.kcat_over_KM_ref)) ? `${roundTo(calculateRelativeDeviation(data.kcat_over_KM, data.kcat_over_KM_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
