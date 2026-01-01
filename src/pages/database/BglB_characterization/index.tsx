@@ -864,12 +864,11 @@ const DataPage = () => {
     scrollToPosition('top');
   };
 
-  // Add this function near other utility functions
   const downloadCSV = () => {
     // Generate a .csv file for download, based on current filter selections.
 
-	// TODO: Fix this duplicated code from above.
-	const filteredData = characterizationData
+	  // TODO: Fix this duplicated code from above.
+	  const filteredData = characterizationData
       .filter(data => 
         data.curated || 
         (showNonCurated && !data.curated && data.submitted_for_curation)
@@ -877,7 +876,7 @@ const DataPage = () => {
       .filter(data => !selectedInstitution || data.institution === selectedInstitution);
 	    
     // Sort data by resnum (not resid)
-	const sortedData = [...filteredData].sort((a, b) => {
+	  const sortedData = [...filteredData].sort((a, b) => {
       // First, handle the WT (resid == 'X') cases
       if (a.resid === 'X' && b.resid !== 'X') return -1;
       if (a.resid !== 'X' && b.resid === 'X') return 1;
