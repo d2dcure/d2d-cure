@@ -32,7 +32,12 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-
+// Calculate the relative deviation of two values and return as percentage.
+const calculateRelativeDeviation = (value: number, ref: number): number => {
+  const deviation = value - ref;
+  const relDeviation = deviation / ref;
+  return relDeviation * 100;  // as percentage
+};
 
 function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
   const link = `/bglb?id=${id}&wt_id=${wt_id}`;
@@ -257,7 +262,7 @@ const DataPage = () => {
           placement="bottom"
         >
           <div className="cursor-help">
-            <i>d</i><sub><i>K</i>M</sub> (%)
+            <i>d</i><sub><i>K</i>M</sub>
           </div>
         </Tooltip>
       )
@@ -508,7 +513,7 @@ const DataPage = () => {
         const WT_row = characterizationData.find((row:any) => row.id === 1);
         if (WT_row) {
           setWTValues({
-			WT_KM: WT_row.KM_avg,
+            //WT_KM: WT_row.KM_avg,
             WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
             WT_log_kcat: Math.log10(WT_row.kcat_avg),
             WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
@@ -517,7 +522,6 @@ const DataPage = () => {
             WT_Rosetta_score: WT_row.Rosetta_score
           });
         }
-
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -608,8 +612,8 @@ const DataPage = () => {
             bValue = b.KM_avg || 0;
             break;
           case "km_dev_from_ref":
-            aValue = a.KM_ref ? ((a.KM_avg - a.KM_ref) / a.KM_ref) * 100 : 0;
-            bValue = b.KM_ref ? ((b.KM_avg - b.KM_ref) / b.KM_ref) * 100 : 0;
+            aValue = a.KM_ref ? calculateRelativeDeviation(a.KM_avg, a.KM_ref) : 0;  // TODO: should be null
+            bValue = b.KM_ref ? calculateRelativeDeviation(b.KM_avg, b.KM_ref) : 0;
             break;
           case "kcat":
             aValue = a.kcat_avg || 0;
@@ -758,28 +762,6 @@ const DataPage = () => {
           (page - 1) * rowsPerPage,
           page * rowsPerPage
         );
-
-  // Function to calculate relative deviation from reference WT
-  const calculateKMDeviation = (data: any): string => {
-    // Check if we have both the variant KM and reference KM
-    if (!data.KM_avg || data.KM_avg === null || isNaN(data.KM_avg)) {
-      return '—';
-    }
-    
-    // Use the KM_ref field if available
-    if (data.KM_ref && !isNaN(data.KM_ref)) {
-      const deviation = ((data.KM_avg - data.KM_ref) / data.KM_ref) * 100;
-      return `${roundTo(deviation, 1)}%`;
-    }
-    
-    // If KM_ref is not populated but we have WT_raw_data_id, show that reference data exists
-    if (data.WT_raw_data_id && data.WT_raw_data_id !== 0) {
-      return 'Ref data linked*';
-    }
-    
-    return '—';
-  };
-
 
 
   // Replace the scrollToTable function with scrollToTop
@@ -1727,7 +1709,7 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {calculateKMDeviation(data)}
+                                          {(data.KM_avg !== null && !isNaN(data.KM_avg)) && (data.KM_ref !== null && !isNaN(data.KM_ref)) ? `${roundTo(calculateRelativeDeviation(data.KM_avg, data.KM_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
