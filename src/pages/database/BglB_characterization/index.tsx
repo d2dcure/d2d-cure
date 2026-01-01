@@ -11,23 +11,23 @@ import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
 
-// Add this interface near the top of the file
+// Interfaces /////////////////////////////////////////////////////////////////
 interface Institution {
   abbr: string;
   fullname: string;
 }
 
-// Add this interface near the top with the other interfaces
 interface ExpandedRows {
   [key: string]: boolean;
 }
 
-// Add these new interfaces near the top of the file
 interface SortDescriptor {
   column: string;
   direction: "ascending" | "descending";
 }
 
+
+// Functions //////////////////////////////////////////////////////////////////
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
@@ -72,6 +72,7 @@ const DataPage = () => {
     "kcat_km",
     //"kcat_km_dev_from_ref",
     "t50",
+    //"t50_dev_from_ref",
     "tm",
     "rosetta"
   ]));
@@ -396,6 +397,32 @@ const DataPage = () => {
         </Tooltip>
       )
     },
+    {
+      name: "T50 relative deviation from reference WT", 
+      uid: "t50_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>T</i><sub>50</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>T</i><sub>50</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help">
+            <i>d</i><sub><i>T</i><sub>50</sub></sub>
+          </div>
+        </Tooltip>
+      )
+    },
     { 
       name: "Tm", 
       uid: "tm", 
@@ -684,6 +711,10 @@ const DataPage = () => {
           case "t50":
             aValue = a.T50 || 0;
             bValue = b.T50 || 0;
+            break;
+          case "t50_dev_from_ref":
+            aValue = a.T50_ref ? calculateRelativeDeviation(a.T50, a.T50_ref) : 0;
+            bValue = b.T50_ref ? calculateRelativeDeviation(b.T50, b.T50_ref) : 0;
             break;
           case "tm":
             aValue = a.Tm || 0;
@@ -1025,6 +1056,8 @@ const DataPage = () => {
         return <><i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub> (%)</>;
       case "t50":
         return <><i>T</i><sub>50</sub> (°C)</>;
+      case "t50_dev_from_ref":
+        return <><i>d</i><sub><i>T</i><sub>50</sub></sub> (%)</>;
       case "tm":
         return <><i>T</i><sub>m</sub> (°C)</>;
       case "rosetta":
@@ -1864,6 +1897,24 @@ const DataPage = () => {
                                           minWidth: 'fit-content'
                                         }}>
                                           {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 2)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "t50_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.T50 !== null && !isNaN(data.T50)) && (data.T50_ref !== null && !isNaN(data.T50_ref)) ? `${roundTo(calculateRelativeDeviation(data.T50, data.T50_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
