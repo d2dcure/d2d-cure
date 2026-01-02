@@ -174,7 +174,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
    * When user picks a different WT raw data ID, store it in the DB 
    * then go back to checklist
    */
-  const updateWTRawDataId = async (WT_raw_data_id: any) => {
+  const updateWTRawData = async (WT_raw_data_id: any) => {
     const response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -433,7 +433,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                     <TableCell>{row.user_name}</TableCell>
                     <TableCell>
                       <button
-                        onClick={() => updateWTRawDataId(row.id)}
+                        onClick={() => updateWTRawData(row.id)}
                         className={`${
                           entryData.curated
                             ? 'text-gray-300 cursor-not-allowed'
