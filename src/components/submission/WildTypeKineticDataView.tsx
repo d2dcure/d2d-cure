@@ -40,8 +40,11 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
 }) => {
   const { user } = useUser();
 
-  const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);
-  const [kineticData, setKineticData] = useState<any[]>([]);
+  const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);  // a list of raw data ids
+  const [kineticParamKMs, setKineticParamKMs] = useState<number[]>([]);  // TEMP
+  const [kineticParamkcats, setKineticParamkcats] = useState<number[]>([]);  // TEMP
+  const [kineticParamkcatOverKMs, setKineticParamkcatOverKMs] = useState<number[]>([]);  // TEMP
+  const [kineticData, setKineticData] = useState<any[]>([]);  // a list of dictionaries containing assay dates and user names 
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
   const [plotImageUrl, setPlotImageUrl] = useState<string | null>(null);
@@ -50,7 +53,8 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'];
 
-  // 1) Fetch all "characterizationData" and filter for your user/institution + resid='X'
+  // 1) Fetch all "characterizationData" and filter for the user/institution + resid='X' (WT)
+  // Then, save raw data ids for the kinetic assays along with the saved kinetic parameters.
   useEffect(() => {
     const fetchKineticWTData = async () => {
       const response = await fetch('/api/getCharacterizationData');
@@ -62,11 +66,15 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
         .map((row: any) => row.raw_data_id)
         .filter((id: any) => id !== 0);
       setKineticRawDataIds(ids);
+      //setkineticParamKMs();
+      //setkineticParamkcats();
+      //setkineticParamkcatOverKMs();
     };
     fetchKineticWTData();
   }, [user]);
 
   // 2) For each raw_data_id, fetch the actual "KineticRawData" objects
+  // This will store the assay dates and the user names for each raw dataset.
   useEffect(() => {
     const fetchKineticData = async () => {
       if (kineticRawDataIds.length > 0) {
@@ -423,6 +431,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                 <TableColumn>Enzyme</TableColumn>
                 <TableColumn>Date Assayed</TableColumn>
                 <TableColumn>Uploaded By</TableColumn>
+                <TableColumn><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</TableColumn>
                 <TableColumn>Actions</TableColumn>
               </TableHeader>
               <TableBody>
@@ -431,6 +440,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                     <TableCell>BglB</TableCell>
                     <TableCell>{row.assay_date}</TableCell>
                     <TableCell>{row.user_name}</TableCell>
+                    <TableCell>{'Foo'}</TableCell>
                     <TableCell>
                       <button
                         onClick={() => updateWTRawData(row.id)}
