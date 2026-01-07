@@ -41,9 +41,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   const { user } = useUser();
 
   const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);  // a list of raw data ids
-  const [kineticParamKMs, setKineticParamKMs] = useState<number[]>([]);  // TEMP
-  const [kineticParamkcats, setKineticParamkcats] = useState<number[]>([]);  // TEMP
-  const [kineticParamkcatOverKMs, setKineticParamkcatOverKMs] = useState<number[]>([]);  // TEMP
+  const [kineticParams, setKineticParams] = useState<any[]>([]);  // a list of raw data ids with the three params for that id
   const [kineticData, setKineticData] = useState<any[]>([]);  // a list of dictionaries containing assay dates and user names 
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
@@ -65,10 +63,11 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       const ids = filteredData
         .map((row: any) => row.raw_data_id)
         .filter((id: any) => id !== 0);
+      const params = filteredData
+        .map((row: any) => (row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM))
+        .filter((id: any) => id !== 0);  // Save an array of params, each entry containing a list of raw data id and params.
       setKineticRawDataIds(ids);
-      //setkineticParamKMs();
-      //setkineticParamkcats();
-      //setkineticParamkcatOverKMs();
+      setKineticParams(params);
     };
     fetchKineticWTData();
   }, [user]);
