@@ -60,12 +60,13 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'
       );
-      const ids = filteredData
-        .map((row: any) => row.raw_data_id)
-        .filter((id: any) => id !== 0);
+      //const ids = filteredData
+      //  .map((row: any) => row.raw_data_id)
+      //  .filter((id: any) => id !== 0);
       const params = filteredData
         .map((row: any) => [row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM])
         .filter((id: any) => id !== 0);  // Save an array of params, each entry containing a list of raw data id and params.
+      const ids = params.map((row: any) => row[0]);  // Create a list of just the raw data ids.
       setKineticRawDataIds(ids);
       setKineticParams(params);
     };
