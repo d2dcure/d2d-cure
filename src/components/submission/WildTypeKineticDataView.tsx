@@ -64,7 +64,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
         .map((row: any) => row.raw_data_id)
         .filter((id: any) => id !== 0);
       const params = filteredData
-        .map((row: any) => (row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM))
+        .map((row: any) => [row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM])
         .filter((id: any) => id !== 0);  // Save an array of params, each entry containing a list of raw data id and params.
       setKineticRawDataIds(ids);
       setKineticParams(params);
@@ -439,7 +439,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                     <TableCell>BglB</TableCell>
                     <TableCell>{row.assay_date}</TableCell>
                     <TableCell>{row.user_name}</TableCell>
-                    <TableCell>{'Foo'}</TableCell>
+                    <TableCell>{kineticParams[index][3] /*4th item in array is the kcat/KM*/}</TableCell>
                     <TableCell>
                       <button
                         onClick={() => updateWTRawData(row.id)}
