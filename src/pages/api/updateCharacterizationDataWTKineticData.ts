@@ -7,7 +7,7 @@ export default async function handler(req:any, res:any) {
       const updatedEntry = await prismaProteins.characterizationData.update({
         where: { id },
         data: { 
-          WT_raw_data_id: WT_raw_data_id || null,
+          WT_raw_data_id: WT_raw_data_id,
           KM_ref: WT_KM || null,
           kcat_ref: WT_kcat || null,
           kcat_over_KM_ref: WT_kcat_over_KM || null
