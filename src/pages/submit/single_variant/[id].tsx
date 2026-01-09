@@ -835,6 +835,16 @@ const SingleVariant = () => {
         );
       }
 
+      if (item === "Wild type thermostability assay data uploaded" && entryData.T50_ref !== null) {
+        const t50Ref = parseFloat(entryData.T50_ref).toFixed(1); 
+        return (
+          <div className="flex items-center gap-1">
+            <span className="font-semibold"><i>T</i><sub>50</sub> =</span>
+            <span>{t50Ref} °C</span>
+          </div>
+        );
+      }
+
       if (item === "Melting point values uploaded" && entryData.Tm !== null) {
         const tm = parseFloat(entryData.Tm).toFixed(1); 
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
