@@ -763,7 +763,10 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Kinetic assay data uploaded" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
+      if (item === "Kinetic assay data uploaded" &&
+        entryData.KM_avg !== null && 
+        entryData.kcat_avg !== null &&
+        entryData.kcat_over_KM !== null) {
         const kmAvg = parseFloat(entryData.KM_avg);
         const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
         const kcatAvg = parseFloat(entryData.kcat_avg);
@@ -799,6 +802,22 @@ const SingleVariant = () => {
               <span>
                 {kcatOverKMRounded}
                 {kcatOverKMSdRounded !== null && <> ± {kcatOverKMSdRounded}</>} min<sup>−1</sup>/mᴍ
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      if (item === "Wild type kinetic data uploaded" && entryData.kcat_over_KM_ref !== null) {
+        const kcatOverKMRef = parseFloat(entryData.kcat_over_KM_ref);
+        const kcatOverKMRefRounded = isNaN(kcatOverKMRef) ? '' : kcatOverKMRef.toFixed(1);
+
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
+              <span>
+                {kcatOverKMRefRounded} min<sup>−1</sup>/mᴍ
               </span>
             </div>
           </div>
