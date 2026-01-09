@@ -777,17 +777,24 @@ const SingleVariant = () => {
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
-              <span className="font-semibold">K<sub>M</sub> =</span>
+              <span className="font-semibold"><i>K</i><sub>M</sub> =</span>
               <span>
                 {kmAvgRounded}
-                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mᴍ
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-semibold">k<sub>cat</sub> =</span>
+              <span className="font-semibold"><i>k</i><sub>cat</sub> =</span>
               <span>
                 {kcatAvgRounded}
-                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
+                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>−1</sup>
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
+              <span>
+                {kcatAvgRounded}
+                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>−1</sup>/mᴍ
               </span>
             </div>
           </div>
