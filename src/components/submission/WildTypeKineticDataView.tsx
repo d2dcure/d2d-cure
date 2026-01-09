@@ -40,7 +40,6 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
 }) => {
   const { user } = useUser();
 
-  //const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);  // a list of raw data ids
   const [kineticParams, setKineticParams] = useState<any[]>([]);  // a list of raw data ids with the three params for that id
   const [kineticData, setKineticData] = useState<any[]>([]);  // a list of dictionaries containing assay dates and user names 
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
@@ -60,14 +59,10 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'
       );
-      //const ids = filteredData
-      //  .map((row: any) => row.raw_data_id)
-      //  .filter((id: any) => id !== 0);
       const params = filteredData
         .map((row: any) => [row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM])
         .filter((id: any) => id !== 0);  // Save an array of params, each entry containing a list of raw data id and params.
       const ids = params.map((row: any) => row[0]);  // Create a list of just the raw data ids.
-      //setKineticRawDataIds(ids);
       setKineticParams(params);
     };
     fetchKineticWTData();
@@ -81,7 +76,6 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
         const response = await fetch('/api/getKineticRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          //body: JSON.stringify({ ids: kineticRawDataIds })
           body: JSON.stringify({ ids: kineticParams.map((row: any) => row[0]) })  // The raw data ids are index 0.
         });
         const data = await response.json();
