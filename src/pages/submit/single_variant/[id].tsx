@@ -499,15 +499,15 @@ const SingleVariant = () => {
           break;
 
         case 'Kinetic assay data uploaded':
-          // First delete the KineticRawData entry
-          const response1 = await fetch('/api/deleteKineticData', {
+          // First, delete the KineticRawData entry.
+          const KineticDeleteResponse = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ parent_id: entryData.id })
           });
 
-          if (response1.ok) {
-            // Then update CharacterizationData to remove references
+          if (KineticDeleteResponse.ok) {
+            // Then, update CharacterizationData to remove references.
             response = await fetch('/api/updateCharacterizationDataKineticStuff', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -527,8 +527,8 @@ const SingleVariant = () => {
           break;
 
         case 'Wild type kinetic data uploaded':
-          // Reset WT kinetic data reference
-          response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
+          // First, reset WT kinetic data reference.
+          const KineticWTDeleteResponse = await fetch('/api/updateCharacterizationDataWTRawDataId', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -536,6 +536,20 @@ const SingleVariant = () => {
               WT_raw_data_id: 0, 
             })
           });
+
+          //if (KineticWTDeleteResponse.ok) {
+            // Then, update CharacterizationData to remove references.
+            //response = await fetch('/api/updateCharacterizationDataKineticStuff', {
+            //  method: 'POST',
+            //  headers: { 'Content-Type': 'application/json' },
+            //  body: JSON.stringify({
+            //    parent_id: entryData.id,
+            //    kcat_ref: null,
+            //    KM_ref: null,
+            //    kcat_over_KM_ref: null,
+            //  })
+            //});
+          //}
           break;
 
         case 'Thermostability assay data uploaded':
