@@ -768,11 +768,15 @@ const SingleVariant = () => {
         const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
         const kcatAvg = parseFloat(entryData.kcat_avg);
         const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
+        const kcatOverKM = parseFloat(entryData.kcat_over_KM);
+        const kcatOverKMSd = entryData.kcat_over_KM_SD !== null ? parseFloat(entryData.kcat_over_KM_SD) : null;
 
         const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
         const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
         const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
         const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
+        const kcatOverKMRounded = isNaN(kcatOverKM) ? '' : kcatOverKM.toFixed(1);
+        const kcatOverKMSdRounded = kcatOverKMSd !== null && !isNaN(kcatOverKMSd) ? kcatOverKMSd.toFixed(1) : null;
 
         return (
           <div className="flex flex-col gap-1">
@@ -793,8 +797,8 @@ const SingleVariant = () => {
             <div className="flex items-center gap-1">
               <span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
               <span>
-                {kcatAvgRounded}
-                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>−1</sup>/mᴍ
+                {kcatOverKMRounded}
+                {kcatOverKMSdRounded !== null && <> ± {kcatOverKMSdRounded}</>} min<sup>−1</sup>/mᴍ
               </span>
             </div>
           </div>
