@@ -17,7 +17,16 @@ const columns = [
     { name: "Creator", uid: "creator", sortable: true },
     //{ name: "Purification Date", uid: "purification_date", sortable: false},
     { name: "Assay Date", uid: "assay_date", sortable: false},
-    { name: "Km", uid: "km", sortable: false },
+    { 
+        name: "Km",
+        uid: "km",
+        sortable: false,
+        renderHeader: () => (
+            <div>
+                <i>K</i><sub>M</sub> (mᴍ)
+            </div>
+        )
+    },
     { name: "Kcat", uid: "kcat", sortable: false },
     { name: "T50", uid: "t50", sortable: false },
     { name: "Comments", uid: "comments", sortable: false },
@@ -700,7 +709,7 @@ const CuratePage = () => {
                                             key={column.uid}
                                             allowsSorting={column.sortable}
                                         >
-                                            {column.name}
+                                            {column.renderHeader ? column.renderHeader() : column.name}
                                         </TableColumn>
                                     )}
                                 </TableHeader>
