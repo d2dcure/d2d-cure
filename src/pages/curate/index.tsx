@@ -128,7 +128,7 @@ const CuratePage = () => {
             case "variant":
                 return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
-                return (data.creator + " (" + data.pi + " Lab)") 
+                return (data.creator + "\n(" + data.pi + " Lab)") 
             case "assay_date": {
                 let date = "";
                 if (data.tempRawData?.assay_date) {
@@ -680,7 +680,7 @@ const CuratePage = () => {
                             <span className='text-default-400 text-sm'>{viewableData.length} Records</span>
                         </div>
 
-                        <div>
+                        <div className="overflow-x-auto">
                             <Table
                                 aria-label="Data to Curate"
                                 isHeaderSticky
@@ -690,11 +690,13 @@ const CuratePage = () => {
                                 onSelectionChange={setCheckedItems}
                                 sortDescriptor={sortDescriptor}
                                 onSortChange={handleColumnClick}
-                                className="mt-2 mb-8 sm:mb-12"
+                                //className="mt-2 mb-8 sm:mb-12"
+                                className="table-fixed"
                             >
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
                                         <TableColumn
+                                            className="w-32"
                                             key={column.uid}
                                             allowsSorting={column.sortable}
                                         >
@@ -709,7 +711,7 @@ const CuratePage = () => {
                                 >
                                     {(item) => (
                                         <TableRow key={item.id}>
-                                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                            {(columnKey) => <TableCell className="wrap-lines">{renderCell(item, columnKey)}</TableCell>}
                                         </TableRow>
                                     )}
                                 </TableBody>
