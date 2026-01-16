@@ -27,7 +27,16 @@ const columns = [
             </div>
         )
     },
-    { name: "Kcat", uid: "kcat", sortable: false },
+    { 
+        name: "Kcat",
+        uid: "kcat",
+        sortable: false,
+        renderHeader: () => (
+            <div>
+                <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
+            </div>
+        )
+    },
     { name: "T50", uid: "t50", sortable: false },
     { name: "Comments", uid: "comments", sortable: false },
     { name: "Actions", uid: "actions", sortable: false }
