@@ -240,11 +240,17 @@ const CuratePage = () => {
                 return date;
             }
             case "km":
-                return (<div className="text-right">{
-                    data.KM_avg !== null && !isNaN(data.KM_avg) ?
-                        `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` :
-                        '—'
-                    }</div>)
+                return (
+                    <div className="text-right">
+                        <Tooltip content={<p>To-Do: Add assay details here.</p>}>
+                            {
+                                data.KM_avg !== null && !isNaN(data.KM_avg) ?
+                                    `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
             case "kcat":
                 return (
                     <div className="text-right">
@@ -258,17 +264,29 @@ const CuratePage = () => {
                     </div>
                 )
             case "kcat_km":
-                return (<div className="text-right">{
-                    data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
-                        `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
-                        '—'
-                    }</div>)
+                return (
+                    <div className="text-right">
+                        <Tooltip content={<p>To-Do: Add assay details here.</p>}>
+                            {
+                                data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
+                                    `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
             case "t50":
-                return (<div className="text-right">{
-                    data.T50 !== null && !isNaN(data.T50) ?
-                        `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` :
-                        '—'
-                    }</div>)
+                return (
+                    <div className="text-right">
+                        <Tooltip content={<p>To-Do: Add assay details here.</p>}>
+                            {
+                                data.T50 !== null && !isNaN(data.T50) ?
+                                    `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` :
+                                    '—'
+                             }
+                        </Tooltip>
+                    </div>
+                )
             case "comments":
                 return decodeHTML(data.comments)
             case "purification_date": {
@@ -516,6 +534,7 @@ const CuratePage = () => {
                             }
                             <p className='text'>Please approve or reject the data below.</p>
                             <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
+                            <p className='text'>Hovering over any kinetic or thermodynamic parameter will provide details on the specific assay used to obtain the values.</p>
                             {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
