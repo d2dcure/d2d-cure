@@ -10,6 +10,23 @@ import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { parse, format } from 'date-fns';
 
+// Render formatted column names for Columns selection list.
+const getFormattedColumnName = (column: any) => {
+    switch (column.uid) {
+        case "km":
+            return <><i>K</i><sub>M</sub> (mᴍ)</>;
+        case "kcat":
+            return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
+        case "kcat_km":
+            return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+        case "t50":
+            return <><i>T</i><sub>50</sub> (°C)</>;
+        default:
+            return column.name;
+    }
+};
+
+
 const columns = [
     { name: "Status", uid: "status", sortable: false},
     { name: "ID", uid: "id", sortable: true },
@@ -534,7 +551,7 @@ const CuratePage = () => {
                                             >
                                                 {columns.map((column) => (
                                                     <DropdownItem key={column.uid}>
-                                                        {column.name}
+                                                        {getFormattedColumnName(column)}
                                                     </DropdownItem>
                                                 ))}
                                             </DropdownMenu>
