@@ -60,7 +60,7 @@ const columns = [
         sortable: false,
         renderHeader: () => (
             <div>
-                <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
+                <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub><br />(mᴍ<sup>−1</sup>min<sup>−1</sup>)
             </div>
         )
     },
