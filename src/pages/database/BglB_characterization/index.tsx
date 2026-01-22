@@ -212,8 +212,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            Yield, c<sub>E</sub> (mg/mL)
+          <div className="cursor-help text-right">
+            Yield,<br/><i>c</i><sub>E</sub> (mg/mL)
           </div>
         </Tooltip>
       )
@@ -238,8 +238,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">K</span><sub>M</sub> (mᴍ)
+          <div className="cursor-help text-right">
+            <i>K</i><sub>M</sub> (mᴍ)
           </div>
         </Tooltip>
       )
@@ -264,7 +264,7 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
+          <div className="cursor-help text-right">
             <i>d</i><sub><i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
@@ -290,8 +290,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)
+          <div className="cursor-help text-right">
+            <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
           </div>
         </Tooltip>
       )
@@ -316,7 +316,7 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
+          <div className="cursor-help text-right">
             <i>d</i><sub><i>k</i><sub>cat</sub></sub>
           </div>
         </Tooltip>
@@ -342,8 +342,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
+          <div className="cursor-help text-right">
+            <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
           </div>
         </Tooltip>
       )
@@ -368,7 +368,7 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
+          <div className="cursor-help text-right">
             <i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
@@ -393,8 +393,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">T</span><sub>50</sub> (°C)
+          <div className="cursor-help text-right">
+            <i>T</i><sub>50</sub> (°C)
           </div>
         </Tooltip>
       )
@@ -419,7 +419,7 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
+          <div className="cursor-help text-right">
             <i>d</i><sub><i>T</i><sub>50</sub></sub>
           </div>
         </Tooltip>
@@ -444,8 +444,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">T</span><sub>m</sub> (°C)
+          <div className="cursor-help text-right">
+            <i>T</i><sub>m</sub> (°C)
           </div>
         </Tooltip>
       )
@@ -470,8 +470,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            Rosetta score change
+          <div className="cursor-help text-right">
+            Rosetta<br/>score change
           </div>
         </Tooltip>
       )
