@@ -29,8 +29,26 @@ const getFormattedColumnName = (column: any) => {
 
 const columns = [
     { name: "Status", uid: "status", sortable: false},
-    { name: "ID", uid: "id", sortable: true },
-    { name: "Variant", uid: "variant", sortable: true },
+    {
+        name: "ID",
+        uid: "id",
+        sortable: true,
+        renderHeader: () => (
+            <div className="text-right">
+                ID
+            </div>
+        )
+    },
+    {
+        name: "Variant",
+        uid: "variant",
+        sortable: true,
+        renderHeader: () => (
+            <div className="text-center">
+                Variant
+            </div>
+        )
+    },
     { name: "Creator", uid: "creator", sortable: true },
     //{ name: "Purification Date", uid: "purification_date", sortable: false},
     { name: "Assay Date", uid: "assay_date", sortable: false},
@@ -39,7 +57,7 @@ const columns = [
         uid: "km",
         sortable: false,
         renderHeader: () => (
-            <div>
+            <div className="text-right">
                 <i>K</i><sub>M</sub> (mᴍ)
             </div>
         )
@@ -49,7 +67,7 @@ const columns = [
         uid: "kcat",
         sortable: false,
         renderHeader: () => (
-            <div>
+            <div className="text-right">
                 <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
             </div>
         )
@@ -59,7 +77,7 @@ const columns = [
         uid: "kcat_km",
         sortable: false,
         renderHeader: () => (
-            <div>
+            <div className="text-right">
                 <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub><br />(mᴍ<sup>−1</sup>min<sup>−1</sup>)
             </div>
         )
@@ -69,7 +87,7 @@ const columns = [
         uid: "t50",
         sortable: false,
         renderHeader: () => (
-            <div>
+            <div className="text-right">
                 <i>T</i><sub>50</sub> (°C)
             </div>
         )
@@ -177,21 +195,23 @@ const CuratePage = () => {
                     <StatusChip status={status} />
                 )
             case "id":
-                return data.id
+                return (<div className="text-right">{data.id}</div>)
             case "variant":
                 return (
-                    <Link
-                        href={data.resid === "X" 
-                            ? `/submit/wild_type/${data.id}`
-                            : `/submit/single_variant/${data.id}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#06B7DB]"
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        {getVariantDisplay(data.resid, data.resnum, data.resmut)}
-                    </Link>
+                    <div className="text-center">
+                        <Link
+                            href={data.resid === "X" 
+                                ? `/submit/wild_type/${data.id}`
+                                : `/submit/single_variant/${data.id}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#06B7DB]"
+                            onPointerDown={(e) => e.stopPropagation()}
+                        >
+                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
+                        </Link>
+                    </div>
                 )
                 //return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
@@ -220,19 +240,35 @@ const CuratePage = () => {
                 return date;
             }
             case "km":
-                return data.KM_avg !== null && !isNaN(data.KM_avg) ?
-                    `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}`
-                    : '—'
+                return (<div className="text-right">{
+                    data.KM_avg !== null && !isNaN(data.KM_avg) ?
+                        `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` :
+                        '—'
+                    }</div>)
             case "kcat":
-                return data.kcat_avg !== null && !isNaN(data.kcat_avg) ?
-                    `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}`
-                    : '—'
+                return (
+                    <div className="text-right">
+                        <Tooltip content={<p>To-Do: Add assay details here.</p>}>
+                            {
+                                data.kcat_avg !== null && !isNaN(data.kcat_avg) ?
+                                    `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
             case "kcat_km":
-                return data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
-                    `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` 
-                    : '—';
+                return (<div className="text-right">{
+                    data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
+                        `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
+                        '—'
+                    }</div>)
             case "t50":
-                return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
+                return (<div className="text-right">{
+                    data.T50 !== null && !isNaN(data.T50) ?
+                        `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` :
+                        '—'
+                    }</div>)
             case "comments":
                 return decodeHTML(data.comments)
             case "purification_date": {
@@ -479,6 +515,7 @@ const CuratePage = () => {
                                 <h2 className="text-xl">Data from the D2D Network</h2>
                             }
                             <p className='text'>Please approve or reject the data below.</p>
+                            <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
                             {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
