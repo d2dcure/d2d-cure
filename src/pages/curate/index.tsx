@@ -37,7 +37,16 @@ const columns = [
             </div>
         )
     },
-    { name: "T50", uid: "t50", sortable: false },
+    { 
+        name: "T50",
+        uid: "t50",
+        sortable: false,
+        renderHeader: () => (
+            <div>
+                <i>T</i><sub>50</sub> (°C)
+            </div>
+        )
+    },
     { name: "Comments", uid: "comments", sortable: false },
     { name: "Actions", uid: "actions", sortable: false }
 ];
