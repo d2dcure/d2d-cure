@@ -75,7 +75,6 @@ const columns = [
         )
     },
     { name: "Comments", uid: "comments", sortable: false },
-    { name: "Actions", uid: "actions", sortable: false }
 ];
 
 interface StatusChipProps {
@@ -114,7 +113,7 @@ const CuratePage = () => {
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
         "status", "id", "variant", "creator", /*"purification_date",*/ "assay_date", 
-        /*"km", "kcat",*/ "kcat_km", "t50", "comments", "actions"
+        /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
     const headerColumns = React.useMemo(() => {
@@ -180,7 +179,21 @@ const CuratePage = () => {
             case "id":
                 return data.id
             case "variant":
-                return getVariantDisplay(data.resid, data.resnum, data.resmut)
+                return (
+                    <Link
+                        href={data.resid === "X" 
+                            ? `/submit/wild_type/${data.id}`
+                            : `/submit/single_variant/${data.id}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#06B7DB]"
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
+                        {getVariantDisplay(data.resid, data.resnum, data.resmut)}
+                    </Link>
+                )
+                //return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
                 return (data.creator + "\n(" + data.pi + " Lab)") 
             case "assay_date": {
@@ -222,21 +235,6 @@ const CuratePage = () => {
                 return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
             case "comments":
                 return decodeHTML(data.comments)
-            case "actions":
-                return (
-                    <Link
-                        href={data.resid === "X" 
-                            ? `/submit/wild_type/${data.id}`
-                            : `/submit/single_variant/${data.id}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#06B7DB]"
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        View
-                    </Link>
-                )
             case "purification_date": {
                 let purificationDate = "";
                 if (data.tempRawData?.purification_date) {
