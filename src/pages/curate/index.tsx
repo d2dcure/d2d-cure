@@ -28,12 +28,22 @@ const columns = [
         )
     },
     { 
-        name: "Kcat",
+        name: "kcat",
         uid: "kcat",
         sortable: false,
         renderHeader: () => (
             <div>
                 <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
+            </div>
+        )
+    },
+    { 
+        name: "kcat/KM",
+        uid: "kcat_km",
+        sortable: false,
+        renderHeader: () => (
+            <div>
+                <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
             </div>
         )
     },
@@ -87,7 +97,7 @@ const CuratePage = () => {
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
         "status", "id", "variant", "creator", /*"purification_date",*/ "assay_date", 
-        "km", "kcat", "t50", "comments", "actions"
+        /*"km", "kcat",*/ "kcat_km", "t50", "comments", "actions"
     ]));
 
     const headerColumns = React.useMemo(() => {
@@ -180,9 +190,17 @@ const CuratePage = () => {
                 return date;
             }
             case "km":
-                return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
+                return data.KM_avg !== null && !isNaN(data.KM_avg) ?
+                    `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}`
+                    : '—'
             case "kcat":
-                return data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'
+                return data.kcat_avg !== null && !isNaN(data.kcat_avg) ?
+                    `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}`
+                    : '—'
+            case "kcat_km":
+                return data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
+                    `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` 
+                    : '—';
             case "t50":
                 return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
             case "comments":
