@@ -174,7 +174,8 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The variant name in Rosetta/Foldit numbering.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
+              <p>Click any colored variant name/code to open a new window and view the raw data for that variant.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -200,7 +201,8 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Yield is reported as concentration of enzyme after purification, as determined by spectrophotometry assay.</p>
               <p>Cells shaded grey indicate expression, as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL.</p>
-              <p>Click to sort by this column.</p>
+              <p>Variants marked with an asterisk (*) expressed, but no yield was recorded.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -226,7 +228,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The Michaelis constant.</p>
               <p>It represents the molarity of substrate for which the reaction rate is half of its maximal value. It is an indication of how well an enzyme binds to a substrate, with lower values corresponding to tighter binding.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -252,7 +254,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Relative deviation from reference <i>K</i><sub>M</sub>.</p>
               <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -278,7 +280,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The catalytic rate constant, a.k.a. &quot;turnover number&quot;.</p>
               <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -304,7 +306,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Relative deviation from reference <i>k</i><sub>cat</sub>.</p>
               <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub> from that of the WT enzyme used as a reference for this assay.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -330,7 +332,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The specificity constant, a.k.a. &quot;kinetic efficiency&quot;.</p>
               <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -356,7 +358,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Relative deviation from reference <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub>.</p>
               <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -381,7 +383,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The temperature at which the enzyme has 50% activity.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -407,7 +409,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Relative deviation from reference <i>T</i><sub>50</sub>.</p>
               <p>This percentage represents the relative deviation of this variant&rsquo;s <i>T</i><sub>50</sub> from that of the WT enzyme used as a reference for this assay.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -432,7 +434,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The temperature at which the enzyme melts.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -458,7 +460,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The change in Rosetta score between the WT and variant, as provided by Foldit.</p>
               <p>This score is a relative representation of the stability of a chemical structure, with lower values being more stable.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -1767,7 +1769,11 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.yield_avg !== null && !isNaN(data.yield_avg) ? roundTo(data.yield_avg, 2) : data.expressed ? '*' : '—'}
+                                          {data.yield_avg !== null && !isNaN(data.yield_avg) ? 
+                                            roundTo(data.yield_avg, 2) : 
+                                            data.expressed ? 
+                                              <Tooltip content={<p>This variant expressed, but no yield was recorded.</p>}>{'*'}</Tooltip> :
+                                              '—'}
                                         </div>
                                       </TableCell>
                                     );
