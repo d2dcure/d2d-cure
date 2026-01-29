@@ -51,7 +51,7 @@ const columns = [
     },
     { name: "Creator", uid: "creator", sortable: true },
     //{ name: "Purification Date", uid: "purification_date", sortable: false},
-    { name: "Assay Date", uid: "assay_date", sortable: false},
+    //{ name: "Assay Date", uid: "assay_date", sortable: false},
     { 
         name: "Km",
         uid: "km",
@@ -99,7 +99,7 @@ interface StatusChipProps {
     status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
 }
 
-// Move parseFormats outside the renderCell function
+// List of possible date formats.
 const dateParseFormats = [
     'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
     'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
@@ -130,7 +130,7 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", /*"purification_date",*/ "assay_date", 
+        "status", "id", "variant", "creator", /*"purification_date",*/ /*"assay_date",*/ 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
@@ -216,29 +216,29 @@ const CuratePage = () => {
                 //return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
                 return (data.creator + "\n(" + data.pi + " Lab)") 
-            case "assay_date": {
-                let date = "";
-                if (data.tempRawData?.assay_date) {
-                    date = data.tempRawData.assay_date;
-                }
-                if (data.kineticRawData?.assay_date) {
-                    date = data.kineticRawData.assay_date;
-                }
-                if (date === "") {
-                    return "N/A";
-                }
+            //case "assay_date": {
+            //    let date = "";
+            //    if (data.tempRawData?.assay_date) {
+            //        date = data.tempRawData.assay_date;
+            //    }
+            //    if (data.kineticRawData?.assay_date) {
+            //        date = data.kineticRawData.assay_date;
+            //    }
+            //    if (date === "") {
+            //        return "N/A";
+            //    }
 
                 // Use shared dateParseFormats
-                for (const parseFormat of dateParseFormats) {
-                    try {
-                        const parsedDate = parse(date, parseFormat, new Date());
-                        return format(parsedDate, 'MM/dd/yy');
-                    } catch (error) {
-                        continue;
-                    }
-                }
-                return date;
-            }
+            //    for (const parseFormat of dateParseFormats) {
+            //        try {
+            //            const parsedDate = parse(date, parseFormat, new Date());
+            //            return format(parsedDate, 'MM/dd/yy');
+            //        } catch (error) {
+            //            continue;
+            //        }
+            //    }
+            //    return date;
+            //}
             case "km":
                 return (
                     <div className="text-right">
@@ -289,29 +289,29 @@ const CuratePage = () => {
                 )
             case "comments":
                 return decodeHTML(data.comments)
-            case "purification_date": {
-                let purificationDate = "";
-                if (data.tempRawData?.purification_date) {
-                    purificationDate = data.tempRawData.purification_date;
-                }
-                if (data.kineticRawData?.purification_date) {
-                    purificationDate = data.kineticRawData.purification_date;
-                }
-                if (purificationDate === "") {
-                    return "N/A";
-                }
+            //case "purification_date": {
+            //    let purificationDate = "";
+            //    if (data.tempRawData?.purification_date) {
+            //        purificationDate = data.tempRawData.purification_date;
+            //    }
+            //    if (data.kineticRawData?.purification_date) {
+            //        purificationDate = data.kineticRawData.purification_date;
+            //    }
+            //    if (purificationDate === "") {
+            //        return "N/A";
+            //    }
 
                 // Use shared dateParseFormats
-                for (const parseFormat of dateParseFormats) {
-                    try {
-                        const parsedDate = parse(purificationDate, parseFormat, new Date());
-                        return format(parsedDate, 'MM/dd/yy');
-                    } catch (error) {
-                        continue;
-                    }
-                }
-                return purificationDate;
-            }
+            //    for (const parseFormat of dateParseFormats) {
+            //        try {
+            //            const parsedDate = parse(purificationDate, parseFormat, new Date());
+            //            return format(parsedDate, 'MM/dd/yy');
+            //        } catch (error) {
+            //            continue;
+            //        }
+            //    }
+            //    return purificationDate;
+            //}
         }
     }, []);
 
