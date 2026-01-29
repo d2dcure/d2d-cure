@@ -180,10 +180,10 @@ const CuratePage = () => {
     }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
-        function assayDetails(assayData:any) {
+        function assayDetails(assayData:any, type:string) {
             return (
                 <div>
-                    <h3>Assay Details</h3>
+                    <h3>{type} Assay Details</h3>
                     <p>
                         <label><b>Uploaded by:</b> </label>
                         {
@@ -269,7 +269,7 @@ const CuratePage = () => {
             case "km":
                 return (
                     <div className="text-right">
-                        <Tooltip content={assayDetails(data.kineticRawData)}>
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
                             {
                                 data.KM_avg !== null && !isNaN(data.KM_avg) ?
                                     `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` :
@@ -281,7 +281,7 @@ const CuratePage = () => {
             case "kcat":
                 return (
                     <div className="text-right">
-                        <Tooltip content={assayDetails(data.kineticRawData)}>
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
                             {
                                 data.kcat_avg !== null && !isNaN(data.kcat_avg) ?
                                     `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` :
@@ -293,7 +293,7 @@ const CuratePage = () => {
             case "kcat_km":
                 return (
                     <div className="text-right">
-                        <Tooltip content={assayDetails(data.kineticRawData)}>
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
                             {
                                 data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
                                     `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
@@ -305,7 +305,7 @@ const CuratePage = () => {
             case "t50":
                 return (
                     <div className="text-right">
-                        <Tooltip content={assayDetails(data.tempRawData)}>
+                        <Tooltip content={assayDetails(data.tempRawData, "Thermodynamic")}>
                             {
                                 data.T50 !== null && !isNaN(data.T50) ?
                                     `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` :
