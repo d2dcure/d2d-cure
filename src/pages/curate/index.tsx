@@ -50,6 +50,7 @@ const columns = [
         )
     },
     { name: "Creator", uid: "creator", sortable: true },
+    { name: "Date Created", uid: "date", sortable: true },
     //{ name: "Purification Date", uid: "purification_date", sortable: false},
     //{ name: "Assay Date", uid: "assay_date", sortable: false},
     { 
@@ -103,7 +104,7 @@ interface StatusChipProps {
 const dateParseFormats = [
     'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
     'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
-    'yyyy.MM.dd'
+    'yyyy.MM.dd', 'yyyy-MM-dd'
 ];
 
 const CuratePage = () => {
@@ -130,7 +131,7 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", /*"purification_date",*/ /*"assay_date",*/ 
+        "status", "id", "variant", "creator", "date", /*"purification_date",*/ /*"assay_date",*/ 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
@@ -215,7 +216,24 @@ const CuratePage = () => {
                 )
                 //return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
-                return (data.creator + "\n(" + data.pi + " Lab)") 
+                return (data.creator + "\n(" + data.pi + " Lab)")
+            case "date": {
+                let date = "unknown";
+                //if (data.created_date) {
+                //    date = data.created_date;
+                //    for (const parseFormat of dateParseFormats) {
+                //        try {
+                //            const parsedDate = parse(date, parseFormat, new Date());
+                //            //return format(parsedDate, 'yyyy.MM.dd');
+                //            return format(parsedDate, 'MM/dd/yy');
+                //        } catch (error) {
+                //            continue;
+                //        }
+                //        
+                //    }
+                //}
+                return date;
+            }
             //case "assay_date": {
             //    let date = "";
             //    if (data.tempRawData?.assay_date) {
