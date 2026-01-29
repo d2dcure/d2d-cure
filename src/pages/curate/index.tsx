@@ -234,29 +234,6 @@ const CuratePage = () => {
                 //}
                 return date;
             }
-            //case "assay_date": {
-            //    let date = "";
-            //    if (data.tempRawData?.assay_date) {
-            //        date = data.tempRawData.assay_date;
-            //    }
-            //    if (data.kineticRawData?.assay_date) {
-            //        date = data.kineticRawData.assay_date;
-            //    }
-            //    if (date === "") {
-            //        return "N/A";
-            //    }
-
-                // Use shared dateParseFormats
-            //    for (const parseFormat of dateParseFormats) {
-            //        try {
-            //            const parsedDate = parse(date, parseFormat, new Date());
-            //            return format(parsedDate, 'MM/dd/yy');
-            //        } catch (error) {
-            //            continue;
-            //        }
-            //    }
-            //    return date;
-            //}
             case "km":
                 return (
                     <div className="text-right">
@@ -284,7 +261,35 @@ const CuratePage = () => {
             case "kcat_km":
                 return (
                     <div className="text-right">
-                        <Tooltip content={<p>To-Do: Add assay details here.</p>}>
+                        <Tooltip content={
+                            <div>
+                                <h3>Kinetic Data</h3>
+                                <p>
+                                    <label><b>Uploaded by:</b> </label>
+                                    {
+                                        data.kineticRawData?.user_name ? 
+                                            data.kineticRawData?.user_name :
+                                            "unknown"
+                                    }
+                                </p>
+                                <p>
+                                    <label><b>Purif. date:</b> </label>
+                                    {
+                                        data.kineticRawData?.purification_date ?
+                                            data.kineticRawData?.purification_date :
+                                            "unknown"
+                                    }
+                                </p>
+                                <p>
+                                    <label><b>Assay date:</b> </label>
+                                    {
+                                        data.kineticRawData?.assay_date ?
+                                            data.kineticRawData?.assay_date :
+                                            "unknown"
+                                    }
+                                </p>
+                            </div>
+                        }>
                             {
                                 data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
                                     `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
@@ -307,29 +312,6 @@ const CuratePage = () => {
                 )
             case "comments":
                 return decodeHTML(data.comments)
-            //case "purification_date": {
-            //    let purificationDate = "";
-            //    if (data.tempRawData?.purification_date) {
-            //        purificationDate = data.tempRawData.purification_date;
-            //    }
-            //    if (data.kineticRawData?.purification_date) {
-            //        purificationDate = data.kineticRawData.purification_date;
-            //    }
-            //    if (purificationDate === "") {
-            //        return "N/A";
-            //    }
-
-                // Use shared dateParseFormats
-            //    for (const parseFormat of dateParseFormats) {
-            //        try {
-            //            const parsedDate = parse(purificationDate, parseFormat, new Date());
-            //            return format(parsedDate, 'MM/dd/yy');
-            //        } catch (error) {
-            //            continue;
-            //        }
-            //    }
-            //    return purificationDate;
-            //}
         }
     }, []);
 
