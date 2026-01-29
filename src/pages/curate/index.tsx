@@ -180,6 +180,38 @@ const CuratePage = () => {
     }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
+        function assayDetails(assayData:any) {
+            return (
+                <div>
+                    <h3>Kinetic Data</h3>
+                    <p>
+                        <label><b>Uploaded by:</b> </label>
+                        {
+                            assayData?.user_name ? 
+                                assayData?.user_name :
+                                "unknown"
+                        }
+                    </p>
+                    <p>
+                        <label><b>Purif. date:</b> </label>
+                        {
+                            assayData?.purification_date ?
+                                assayData?.purification_date :
+                                "unknown"
+                        }
+                    </p>
+                    <p>
+                        <label><b>Assay date:</b> </label>
+                        {
+                            assayData?.assay_date ?
+                                assayData?.assay_date :
+                                "unknown"
+                        }
+                    </p>
+                </div>
+            )
+        }
+
         switch (columnKey) {
             case "status":
                 let status: StatusChipProps['status'];
@@ -261,35 +293,7 @@ const CuratePage = () => {
             case "kcat_km":
                 return (
                     <div className="text-right">
-                        <Tooltip content={
-                            <div>
-                                <h3>Kinetic Data</h3>
-                                <p>
-                                    <label><b>Uploaded by:</b> </label>
-                                    {
-                                        data.kineticRawData?.user_name ? 
-                                            data.kineticRawData?.user_name :
-                                            "unknown"
-                                    }
-                                </p>
-                                <p>
-                                    <label><b>Purif. date:</b> </label>
-                                    {
-                                        data.kineticRawData?.purification_date ?
-                                            data.kineticRawData?.purification_date :
-                                            "unknown"
-                                    }
-                                </p>
-                                <p>
-                                    <label><b>Assay date:</b> </label>
-                                    {
-                                        data.kineticRawData?.assay_date ?
-                                            data.kineticRawData?.assay_date :
-                                            "unknown"
-                                    }
-                                </p>
-                            </div>
-                        }>
+                        <Tooltip content={assayDetails(data.kineticRawData)}>
                             {
                                 data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
                                     `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
