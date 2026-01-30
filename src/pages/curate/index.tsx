@@ -250,7 +250,7 @@ const CuratePage = () => {
             }
             case "submitted_date": {
                 let date = "unknown";
-                if (data.created_date) {
+                if (data.submitted_date) {
                     date = format(data.submitted_date, "yyyy.MM.dd");
                 }
                 return date;
