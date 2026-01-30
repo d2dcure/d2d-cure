@@ -123,7 +123,7 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", "date", /*"purification_date",*/ /*"assay_date",*/ 
+        "status", "id", "variant", "creator", "date", 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
@@ -376,6 +376,14 @@ const CuratePage = () => {
             } else if (sortColumn === 'creator') {
                 valA = a.creator;
                 valB = b.creator;
+                compareVal = valA.localeCompare(valB);
+            } else if (sortColumn === 'created_date') {
+                valA = a.created_date;
+                valB = b.created_date;
+                compareVal = valA.localeCompare(valB);
+            } else if (sortColumn === 'submitted_date') {
+                valA = a.submitted_date;
+                valB = b.submitted_date;
                 compareVal = valA.localeCompare(valB);
             }
 
