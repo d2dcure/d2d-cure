@@ -1,12 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  output        = "./generated/client_proteins"
   binaryTargets = ["native", "windows"]
-  output   = "./generated/client_proteins"
 }
 
 datasource db {
   provider = "mysql"
-  url      =  env("DATABASE_URL_PROTEINS")
+  url      = env("DATABASE_URL_PROTEINS")
 }
 
 model CharacterizationData {
@@ -114,16 +114,16 @@ model TempRawData {
 
 enum KineticRawData_slope_units {
   min_1min_Kin @map("(1/min)")
-  s_1s_Kin   @map("(1/s)")
+  s_1s_Kin     @map("(1/s)")
   min_3min_Kin @map("(10^-3/min)")
-  s_10s_Kin   @map("(10^-3/s)")
+  s_10s_Kin    @map("(10^-3/s)")
 }
 
 enum TempRawData_slope_units {
   min_3min_Temp @map("(10^-3/min)")
-  s_3s_Temp   @map("(10^-3/s)")
+  s_3s_Temp     @map("(10^-3/s)")
   min_1min_Temp @map("(1/min)")
-  s_1s_Temp   @map("(1/s)")
+  s_1s_Temp     @map("(1/s)")
 }
 
 enum KineticRawData_yield_units {

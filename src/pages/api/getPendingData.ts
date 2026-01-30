@@ -13,6 +13,7 @@ export default async function handler(req: any, res: any) {
       const kineticRawData = await prismaProteins.kineticRawData.findUnique({
         where: { id: data.raw_data_id },
         select: {
+          user_name: true,
           purification_date: true,
           assay_date: true,
           approved_by_student: true

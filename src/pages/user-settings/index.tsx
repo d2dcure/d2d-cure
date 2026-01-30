@@ -170,9 +170,12 @@ const ProfileSettings = () => {
   // Add function to handle save
   const handleSaveUserInfo = async () => {
     // Validate email
-    if ((!validateEmail(editableEmail)) || (!validateEmail(editableAltEmail))) {
-      if (!validateEmail(editableEmail)) { setEmailError('Please enter a valid email address'); }
-      if (!validateEmail(editableAltEmail)) { setAltEmailError('Please enter a valid email address'); }
+    const emailValid = validateEmail(editableEmail);
+    const altEmailValid = (editableAltEmail == '') || validateEmail(editableAltEmail);
+
+    if ((!emailValid) || (!altEmailValid)) {
+      if (!emailValid) { setEmailError('Please enter a valid email address'); }
+      if (!altEmailValid) { setAltEmailError('Please enter a valid email address'); }
       return;
     }
     
@@ -400,6 +403,9 @@ const ProfileSettings = () => {
                             color={altEmailError ? "danger" : "default"}
                           />
                           {altEmailError && <p className="text-red-500 text-xs mt-1">{altEmailError}</p>}
+                          <p className="text-xs text-gray-500 mt-1">
+                            If a student, please provide a permanent e-mail address so that you can be contacted after you leave your campus.
+                          </p>
                         </div>
                         <div>
                           <label className="block text-gray-700 dark:text-white mb-2">Institution</label>
@@ -411,7 +417,7 @@ const ProfileSettings = () => {
                             className="w-full"
                             isDisabled
                           />
-                          <p className="text-xs text-gray-500 mt-1">Please contact support to change institution</p>
+                          <p className="text-xs text-gray-500 mt-1">Please contact support to change institution.</p>
                         </div>
                       </div>
                       

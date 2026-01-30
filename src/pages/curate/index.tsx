@@ -10,31 +10,100 @@ import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { parse, format } from 'date-fns';
 
+// Render formatted column names for Columns selection list.
+const getFormattedColumnName = (column: any) => {
+    switch (column.uid) {
+        case "km":
+            return <><i>K</i><sub>M</sub> (mᴍ)</>;
+        case "kcat":
+            return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
+        case "kcat_km":
+            return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+        case "t50":
+            return <><i>T</i><sub>50</sub> (°C)</>;
+        default:
+            return column.name;
+    }
+};
+
+
 const columns = [
     { name: "Status", uid: "status", sortable: false},
-    { name: "ID", uid: "id", sortable: true },
-    { name: "Variant", uid: "variant", sortable: true },
+    {
+        name: "ID",
+        uid: "id",
+        sortable: true,
+        renderHeader: () => (
+            <div className="text-right">
+                ID
+            </div>
+        )
+    },
+    {
+        name: "Variant",
+        uid: "variant",
+        sortable: true,
+        renderHeader: () => (
+            <div className="text-center">
+                Variant
+            </div>
+        )
+    },
     { name: "Creator", uid: "creator", sortable: true },
     { name: "Date Created", uid: "created_date", sortable: true },
-    //{ name: "Purification Date", uid: "purification_date", sortable: false},
-    { name: "Assay Date", uid: "assay_date", sortable: false},
-    { name: "Date Submitted", uid: "submitted_date", sortable: true },
-    { name: "Km", uid: "km", sortable: false },
-    { name: "Kcat", uid: "kcat", sortable: false },
-    { name: "T50", uid: "t50", sortable: false },
+    { name: "Date Submitted", uid: "submitted_date", sortable: true },   
+    { 
+        name: "Km",
+        uid: "km",
+        sortable: false,
+        renderHeader: () => (
+            <div className="text-right">
+                <i>K</i><sub>M</sub> (mᴍ)
+            </div>
+        )
+    },
+    { 
+        name: "kcat",
+        uid: "kcat",
+        sortable: false,
+        renderHeader: () => (
+            <div className="text-right">
+                <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
+            </div>
+        )
+    },
+    { 
+        name: "kcat/KM",
+        uid: "kcat_km",
+        sortable: false,
+        renderHeader: () => (
+            <div className="text-right">
+                <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub><br />(mᴍ<sup>−1</sup>min<sup>−1</sup>)
+            </div>
+        )
+    },
+    { 
+        name: "T50",
+        uid: "t50",
+        sortable: false,
+        renderHeader: () => (
+            <div className="text-right">
+                <i>T</i><sub>50</sub> (°C)
+            </div>
+        )
+    },
     { name: "Comments", uid: "comments", sortable: false },
-    { name: "Actions", uid: "actions", sortable: false }
 ];
 
 interface StatusChipProps {
     status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
 }
 
-// Move parseFormats outside the renderCell function
+// List of possible date formats.
 const dateParseFormats = [
     'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
     'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
-    'yyyy.MM.dd'
+    'yyyy.MM.dd', 'yyyy-MM-dd'
 ];
 
 const CuratePage = () => {
@@ -61,8 +130,8 @@ const CuratePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", /*"purification_date",*/ "assay_date", 
-        "km", "kcat", "t50", "comments", "actions"
+        "status", "id", "variant", "creator", "date", /*"purification_date",*/ /*"assay_date",*/ 
+        /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
     const headerColumns = React.useMemo(() => {
@@ -110,6 +179,38 @@ const CuratePage = () => {
     }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
+        function assayDetails(assayData:any, type:string) {
+            return (
+                <div>
+                    <h3>{type} Assay Details</h3>
+                    <p>
+                        <label><b>Uploaded by:</b> </label>
+                        {
+                            assayData?.user_name ? 
+                                assayData?.user_name :
+                                "unknown"
+                        }
+                    </p>
+                    <p>
+                        <label><b>Purif. date:</b> </label>
+                        {
+                            assayData?.purification_date ?
+                                assayData?.purification_date :
+                                "unknown"
+                        }
+                    </p>
+                    <p>
+                        <label><b>Assay date:</b> </label>
+                        {
+                            assayData?.assay_date ?
+                                assayData?.assay_date :
+                                "unknown"
+                        }
+                    </p>
+                </div>
+            )
+        }
+
         switch (columnKey) {
             case "status":
                 let status: StatusChipProps['status'];
@@ -126,84 +227,86 @@ const CuratePage = () => {
                     <StatusChip status={status} />
                 )
             case "id":
-                return data.id
+                return (<div className="text-right">{data.id}</div>)
             case "variant":
-                return getVariantDisplay(data.resid, data.resnum, data.resmut)
+                return (
+                    <div className="text-center">
+                        <Link
+                            href={data.resid === "X" 
+                                ? `/submit/wild_type/${data.id}`
+                                : `/submit/single_variant/${data.id}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#06B7DB]"
+                            onPointerDown={(e) => e.stopPropagation()}
+                        >
+                            {getVariantDisplay(data.resid, data.resnum, data.resmut)}
+                        </Link>
+                    </div>
+                )
+                //return getVariantDisplay(data.resid, data.resnum, data.resmut)
             case "creator":
-                return (data.creator + " (" + data.pi + " Lab)")
-            case "created_date":
-                return format(data.created_date, "yyyy.MM.dd")
-            case "assay_date": {
-                let date = "";
-                if (data.tempRawData?.assay_date) {
-                    date = data.tempRawData.assay_date;
-                }
-                if (data.kineticRawData?.assay_date) {
-                    date = data.kineticRawData.assay_date;
-                }
-                if (date === "") {
-                    return "N/A";
-                }
-
-                // Use shared dateParseFormats
-                for (const parseFormat of dateParseFormats) {
-                    try {
-                        const parsedDate = parse(date, parseFormat, new Date());
-                        return format(parsedDate, "yyyy.MM.dd");
-                    } catch (error) {
-                        continue;
-                    }
+                return (data.creator + "\n(" + data.pi + " Lab)")
+            case "created_date": {
+                let date = "unknown";
+                if (data.created_date) {
+                    date = format(data.created_date, "yyyy.MM.dd")
                 }
                 return date;
             }
             case "submitted_date":
                 return format(data.submitted_date, "yyyy.MM.dd")
             case "km":
-                return data.KM_avg !== null && !isNaN(data.KM_avg) ? `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` : '—'
+                return (
+                    <div className="text-right">
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
+                            {
+                                data.KM_avg !== null && !isNaN(data.KM_avg) ?
+                                    `${roundTo(data.KM_avg, 2)} ± ${data.KM_SD !== null && !isNaN(data.KM_SD) ? roundTo(data.KM_SD, 2) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
             case "kcat":
-                return data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` : '—'
+                return (
+                    <div className="text-right">
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
+                            {
+                                data.kcat_avg !== null && !isNaN(data.kcat_avg) ?
+                                    `${roundTo(data.kcat_avg, 1)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 1) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
+            case "kcat_km":
+                return (
+                    <div className="text-right">
+                        <Tooltip content={assayDetails(data.kineticRawData, "Kinetic")}>
+                            {
+                                data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? 
+                                    `${roundTo(data.kcat_over_KM, 2)} ± ${data.kcat_over_KM_SD !== null && !isNaN(data.kcat_over_KM_SD) ? roundTo(data.kcat_over_KM_SD, 2) : '—'}` :
+                                    '—'
+                            }
+                        </Tooltip>
+                    </div>
+                )
             case "t50":
-                return data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` : '—'
+                return (
+                    <div className="text-right">
+                        <Tooltip content={assayDetails(data.tempRawData, "Thermodynamic")}>
+                            {
+                                data.T50 !== null && !isNaN(data.T50) ?
+                                    `${roundTo(data.T50, 1)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 1) : '—'}` :
+                                    '—'
+                             }
+                        </Tooltip>
+                    </div>
+                )
             case "comments":
                 return decodeHTML(data.comments)
-            case "actions":
-                return (
-                    <Link
-                        href={data.resid === "X" 
-                            ? `/submit/wild_type/${data.id}`
-                            : `/submit/single_variant/${data.id}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#06B7DB]"
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        View
-                    </Link>
-                )
-            case "purification_date": {
-                let purificationDate = "";
-                if (data.tempRawData?.purification_date) {
-                    purificationDate = data.tempRawData.purification_date;
-                }
-                if (data.kineticRawData?.purification_date) {
-                    purificationDate = data.kineticRawData.purification_date;
-                }
-                if (purificationDate === "") {
-                    return "N/A";
-                }
-
-                // Use shared dateParseFormats
-                for (const parseFormat of dateParseFormats) {
-                    try {
-                        const parsedDate = parse(purificationDate, parseFormat, new Date());
-                        return format(parsedDate, 'MM/dd/yy');
-                    } catch (error) {
-                        continue;
-                    }
-                }
-                return purificationDate;
-            }
         }
     }, []);
 
@@ -425,6 +528,8 @@ const CuratePage = () => {
                                 <h2 className="text-xl">Data from the D2D Network</h2>
                             }
                             <p className='text'>Please approve or reject the data below.</p>
+                            <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
+                            <p className='text'>Hovering over any kinetic or thermodynamic parameter will provide details on the specific assay used to obtain the values.</p>
                             {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
@@ -495,7 +600,7 @@ const CuratePage = () => {
                                             >
                                                 {columns.map((column) => (
                                                     <DropdownItem key={column.uid}>
-                                                        {column.name}
+                                                        {getFormattedColumnName(column)}
                                                     </DropdownItem>
                                                 ))}
                                             </DropdownMenu>
@@ -686,7 +791,7 @@ const CuratePage = () => {
                             <span className='text-default-400 text-sm'>{viewableData.length} Records</span>
                         </div>
 
-                        <div>
+                        <div className="overflow-x-auto">
                             <Table
                                 aria-label="Data to Curate"
                                 isHeaderSticky
@@ -696,15 +801,17 @@ const CuratePage = () => {
                                 onSelectionChange={setCheckedItems}
                                 sortDescriptor={sortDescriptor}
                                 onSortChange={handleColumnClick}
-                                className="mt-2 mb-8 sm:mb-12"
+                                //className="mt-2 mb-8 sm:mb-12"
+                                className="table-fixed"
                             >
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
                                         <TableColumn
+                                            className="w-32"
                                             key={column.uid}
                                             allowsSorting={column.sortable}
                                         >
-                                            {column.name}
+                                            {column.renderHeader ? column.renderHeader() : column.name}
                                         </TableColumn>
                                     )}
                                 </TableHeader>
@@ -715,7 +822,7 @@ const CuratePage = () => {
                                 >
                                     {(item) => (
                                         <TableRow key={item.id}>
-                                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                            {(columnKey) => <TableCell className="wrap-lines">{renderCell(item, columnKey)}</TableCell>}
                                         </TableRow>
                                     )}
                                 </TableBody>

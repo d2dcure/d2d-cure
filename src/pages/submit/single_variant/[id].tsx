@@ -936,15 +936,23 @@ const SingleVariant = () => {
                   </TableCell>
                   <TableCell>
                     <div className="relative flex items-center justify-center gap-2">
-                      <Tooltip content={accessible ? "Edit" : "Complete prerequisites first"}>
+                      <Tooltip
+                        content={
+                          !accessible 
+                            ? "Complete prerequisites first"
+                            : entryData.curated
+                              ? "Cannot edit after curation; recall dataset first" 
+                              : "Edit"
+                        }
+                      >
                         <span 
                           className={`text-lg ${
-                            accessible 
-                              ? 'text-default-400 cursor-pointer active:opacity-50'
-                              : 'text-gray-300 cursor-not-allowed'
+                            (!accessible || entryData.curated)
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-default-400 cursor-pointer active:opacity-50"
                           }`}
                           onClick={() => {
-                            if (accessible) {
+                            if (accessible && !entryData.curated) {
                               setCurrentView('detail');
                               setSelectedDetail(item);
                             }
@@ -958,19 +966,19 @@ const SingleVariant = () => {
                         content={
                           !accessible 
                             ? "Complete prerequisites first"
-                            : entryData.curated || entryData.approved_by_pi 
-                              ? "Cannot delete after approval" 
+                            : entryData.curated
+                              ? "Cannot delete after curation; recall dataset first" 
                               : "Delete"
                         }
                       >
                         <span 
                           className={`text-lg ${
-                            !accessible || entryData.curated || entryData.approved_by_pi
+                            (!accessible || entryData.curated)
                               ? "text-gray-300 cursor-not-allowed"
                               : "text-danger cursor-pointer active:opacity-50"
                           }`}
                           onClick={() => {
-                            if (accessible && !entryData.curated && !entryData.approved_by_pi) {
+                            if (accessible && !entryData.curated) {
                               setItemToDelete(item);
                               setShowDeleteItemModal(true);
                             }
