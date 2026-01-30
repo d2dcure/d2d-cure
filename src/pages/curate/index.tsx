@@ -8,7 +8,7 @@ import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, Dropdown
 import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
-import { parse, format } from 'date-fns';
+import { format } from 'date-fns';
 
 // Render formatted column names for Columns selection list.
 const getFormattedColumnName = (column: any) => {
@@ -98,13 +98,6 @@ const columns = [
 interface StatusChipProps {
     status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
 }
-
-// List of possible date formats.
-const dateParseFormats = [
-    'M/d/yy', 'MM/d/yy', 'M/dd/yy', 'MM/dd/yy',
-    'M/d/yyyy', 'MM/d/yyyy', 'M/dd/yyyy', 'MM/dd/yyyy',
-    'yyyy.MM.dd', 'yyyy-MM-dd'
-];
 
 const CuratePage = () => {
     const { user, loading } = useUser();
