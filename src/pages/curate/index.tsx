@@ -251,12 +251,17 @@ const CuratePage = () => {
             case "created_date": {
                 let date = "unknown";
                 if (data.created_date) {
-                    date = format(data.created_date, "yyyy.MM.dd")
+                    date = format(data.created_date, "yyyy.MM.dd");
                 }
                 return date;
             }
-            case "submitted_date":
-                return format(data.submitted_date, "yyyy.MM.dd")
+            case "submitted_date": {
+                let date = "unknown";
+                if (data.created_date) {
+                    date = format(data.submitted_date, "yyyy.MM.dd");
+                }
+                return date;
+            }
             case "km":
                 return (
                     <div className="text-right">
