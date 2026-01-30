@@ -14,7 +14,10 @@ export default async function handler(req:any, res:any) {
     try {
       const updatedEntry = await prismaProteins.characterizationData.update({
         where: { id: parsedId },
-        data: { submitted_for_curation: true },
+        data: { 
+          submitted_for_curation: true,
+          submitted_date: new Date()
+        },
       });
 
       console.log("Updated entry:", updatedEntry); // Log the updated entry for debugging
