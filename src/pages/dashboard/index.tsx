@@ -323,12 +323,12 @@ const Dashboard = () => {
               {[
                 {
                   title: 'Single Variant',
-                  link: '/submit',
+                  link: '/submit/?single_variant=1',
                   linkText: 'Submit Data'
                 },
                 {
                   title: 'Wild Type',
-                  link: '/submit',
+                  link: '/submit/?wild_type=1',
                   linkText: 'Submit Data'
                 },
                 {
