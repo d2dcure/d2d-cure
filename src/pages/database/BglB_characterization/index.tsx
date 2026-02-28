@@ -911,6 +911,8 @@ const DataPage = () => {
       'Rosetta score change',
       'Institution',
 	    'Created by',
+      'Date created',
+      'Date submitted',
 	    'Curated?',
     ];
 
@@ -940,6 +942,8 @@ const DataPage = () => {
         data.Rosetta_score || '',
         data.institution || '',
 	      data.creator || 'unknown',
+        data.created_date,
+        data.submitted_date || 'not submitted',
 	      data.curated ? 'yes' : 'no'
       ].join(',');
     });
