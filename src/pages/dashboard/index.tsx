@@ -118,6 +118,11 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  function downloadCSV() {
+    showToast("Downloading .csv file…", "Please wait.");
+    return;
+  }
+
   async function fetchCharacterizationData(userName: string) {
     try {
       setIsLoading(true);
@@ -374,12 +379,14 @@ const Dashboard = () => {
               <div className="mb-12">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl text-gray-500">Variant Profiles</h3>
-                    <div className="flex gap-2">
-                    <Link href="/submit" passHref>
-                      <Button variant="bordered" className="border-[#06B7DB] text-[#06B7DB]">
-                        Download as <code>.csv</code> File
-                      </Button>
-                    </Link>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="bordered"
+                      className="border-[#06B7DB] text-[#06B7DB]"
+                      onClick={downloadCSV}
+                    >
+                      Download as <code>.csv</code> File
+                    </Button>
                     <Link href="/submit" passHref>
                       <Button color="primary" className="bg-[#06B7DB]">
                         Submit New Data
