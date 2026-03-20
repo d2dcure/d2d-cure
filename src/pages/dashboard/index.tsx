@@ -374,11 +374,18 @@ const Dashboard = () => {
               <div className="mb-12">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl text-gray-500">Variant Profiles</h3>
-                  <Link href="/submit" passHref>
-                    <Button color="primary" className="bg-[#06B7DB]">
-                      Submit New Data
-                    </Button>
-                  </Link>
+                    <div className="flex gap-2">
+                    <Link href="/submit" passHref>
+                      <Button variant="bordered" className="border-[#06B7DB] text-[#06B7DB]">
+                        Download as <code>.csv</code> File
+                      </Button>
+                    </Link>
+                    <Link href="/submit" passHref>
+                      <Button color="primary" className="bg-[#06B7DB]">
+                        Submit New Data
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
                 <Table aria-label="Variant Profiles" classNames={{ table: 'min-h-[100px]' }}>
                   <TableHeader>
