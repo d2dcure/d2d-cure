@@ -20,8 +20,9 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [givenNameError, setGivenNameError] = useState('');
   const [institutionError, setInstitutionError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
@@ -99,6 +100,7 @@ const SignUpPage = () => {
       setPasswordError('Password must be at least 6 characters long.');
       return; // Stop submission
     }
+    setEmailError('');
     setPasswordError('');
     // Set submitting state to true
     setIsSubmitting(true);
@@ -524,12 +526,24 @@ const SignUpPage = () => {
                   type="text"
                   placeholder="Enter your given name."
                   value={givenName}
-                  onChange={(e) => setGivenName(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setGivenName(value);
+
+                    if (!value.trim().includes(' ')) {
+                      setGivenNameError("Please include your full name.");
+                    } else {
+                      setGivenNameError("");
+                    }
+                  }}
                   variant="bordered"
                   size="md"
                   className="w-full text-base"
                   required
                 />
+                {givenNameError && (
+                  <p className="text-red-500 text-sm mt-1">{givenNameError}</p>
+                )}
               </div>
 
               <div>
@@ -581,6 +595,10 @@ const SignUpPage = () => {
                     const value = e.target.value;
                     setEmail(value);
 
+                    // This error message will not prevent submission,
+                    // but hopefully it will lessen invalid submissions.
+                    // Some schools, like PolyU, do not have .edu in their address.
+                    // TODO: Cross-reference the e-mail server with the institution website.
                     if (!value.includes(".edu")) {
                       setEmailError("E-mail address must be an institutional e-mail.");
                     } else {
@@ -638,7 +656,14 @@ const SignUpPage = () => {
               <button
                 type="submit"
                 className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (username == '') ||
+                  (!givenName.trim().includes(' ')) ||
+                  (pi == '') ||
+                  (email == '') ||  // TODO: Ensure that e-mail is institutional
+                  (password.length < 6)
+                }
               >
                 {isSubmitting ? "Creating..." : "Create account"}
               </button>
