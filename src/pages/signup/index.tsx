@@ -20,6 +20,8 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [institutionError, setInstitutionError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
@@ -575,12 +577,24 @@ const SignUpPage = () => {
                   type="email"
                   placeholder="Enter your e-mail."
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEmail(value);
+
+                    if (!value.includes(".edu")) {
+                      setEmailError("E-mail address must be an institutional e-mail.");
+                    } else {
+                      setEmailError("");
+                    }
+                  }}
                   variant="bordered"
                   size="md"
                   className="w-full text-base"
                   required
                 />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
               </div>
 
               <div>
