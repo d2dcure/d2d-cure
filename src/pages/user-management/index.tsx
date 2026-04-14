@@ -18,6 +18,7 @@ import StatusChip from '@/components/StatusChip';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
+import { format } from 'date-fns';
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -545,7 +546,7 @@ const handleDeleteFirebase = async () => {
                         <TableCell>{user.pi}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.alt_email}</TableCell>
-                        <TableCell>{user.reg_date}</TableCell>
+                        <TableCell>{format(user.reg_date, "yyyy.MM.dd")}</TableCell>
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
