@@ -129,7 +129,7 @@ const list = useAsyncList<User>({
         setInstitutionsList(institutionsData);
         
         // Fetch users
-        const institutionParam = user?.status === "ADMIN" ? '' : `&institution=${encodeURIComponent(user.institution)}`;
+        const institutionParam = user?.status === "ADMIN" ? '' : `&institution=${encodeURIComponent(user?.institution)}`;
         const url = `/api/getAllUsers?page=${page}&pageSize=${pageSize}${institutionParam}&sortField=${sortField}&sortDirection=${sortDirection}`;
         
         const usersResponse = await fetch(url);
