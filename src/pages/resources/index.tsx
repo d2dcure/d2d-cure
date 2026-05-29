@@ -47,7 +47,7 @@ const Resources = () => {
           {[
             {
               title: "Structure & Sequence Files",
-              link: "#",
+              link: "/resources/StructuredFiles",
               linkText: "View Files"
             },
             {
@@ -72,7 +72,7 @@ const Resources = () => {
             },
             {
               title: "Enzyme Rate Calculator",
-              link: "#",
+              link: "http://d2d-graph-applet.vercel.app/",
               linkText: "Visit Calculator"
             }
           ].map((item, index) => (
@@ -110,7 +110,7 @@ const Resources = () => {
             },
             {
               title: "Publications",
-              link: "#",
+              link: "/resources/publications",
               linkText: "Learn More"
             }
           ].map((item, index) => (
@@ -143,7 +143,7 @@ const Resources = () => {
           {[
             {
               title: "Rosetta Education Hub",
-              link: "#",
+              link: "http://rosettacommons.org/education/",
               linkText: "Visit Website"
             }
           ].map((item, index) => (

@@ -23,9 +23,11 @@ const ProfileSettings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editableGivenName, setEditableGivenName] = useState('');
   const [editableEmail, setEditableEmail] = useState('');
+  const [editableAltEmail, setEditableAltEmail] = useState('');
   const [isUserInfoEditing, setIsUserInfoEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [altEmailError, setAltEmailError] = useState('');
 
   // Load profile image when user data is available
   useEffect(() => {
@@ -43,6 +45,7 @@ const ProfileSettings = () => {
     if (user) {
       setEditableGivenName(user.given_name || '');
       setEditableEmail(user.email || '');
+      setEditableAltEmail(user.alt_email || '');
     }
   }, [user]);
 
@@ -167,12 +170,17 @@ const ProfileSettings = () => {
   // Add function to handle save
   const handleSaveUserInfo = async () => {
     // Validate email
-    if (!validateEmail(editableEmail)) {
-      setEmailError('Please enter a valid email address');
+    const emailValid = validateEmail(editableEmail);
+    const altEmailValid = (editableAltEmail == '') || validateEmail(editableAltEmail);
+
+    if ((!emailValid) || (!altEmailValid)) {
+      if (!emailValid) { setEmailError('Please enter a valid email address'); }
+      if (!altEmailValid) { setAltEmailError('Please enter a valid email address'); }
       return;
     }
     
     setEmailError('');
+    setAltEmailError('');
     setIsSaving(true);
     
     try {
@@ -183,7 +191,8 @@ const ProfileSettings = () => {
           userId: user?.id,
           givenName: editableGivenName,
           email: editableEmail,
-          currentEmail: user?.email
+          currentEmail: user?.email,
+          altEmail: editableAltEmail
         })
       });
       
@@ -280,17 +289,12 @@ const ProfileSettings = () => {
                             Click to change profile picture
                           </p>
 
-                          <h2 className="text-2xl font-normal mb-2 mt-2 text-left">{user?.user_name || 'First Last'}</h2>
+                          <h2 className="text-2xl font-normal mb-2 mt-2 text-left">{user?.user_name}</h2>
                           
                           <div className="w-full space-y-3">
                             <div>
-                              <p className="text-gray-500 text-sm">Username</p>
-                              <p className="text-black">{user?.user_name || 'Username'}</p>
-                            </div>
-
-                            <div>
                               <p className="text-gray-500 text-sm">Given Name</p>
-                              <p className="text-black">{user?.given_name || 'Given name'}</p>
+                              <p className="text-black">{user?.given_name || 'not provided'}</p>
                             </div>
 
                             <div>
@@ -304,22 +308,34 @@ const ProfileSettings = () => {
 
                             <div>
                               <p className="text-gray-500 text-sm">Institution</p>
-                              <p className="text-black">{user?.institution || 'UC Davis'}</p>
+                              <p className="text-black">{user?.institution || 'missing data'}</p>
                             </div>
 
                             <div>
                               <p className="text-gray-500 text-sm">Email</p>
-                              <p className="text-black">{user?.email || 'firstlast@ucdavis.edu'}</p>
+                              <p className="text-black">{user?.email || 'missing data'}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-gray-500 text-sm">Alternative Email</p>
+                              <p className="text-black">{user?.alt_email || 'not provided'}</p>
                             </div>
                           </div>
 
                           {/* Only show Manage button if user is a professor/admin */}
                           {(user?.status === "professor" || user?.status === "ADMIN") && (
-                            <Link href="/user-management">
-                              <Button className="mt-4 w-full text-white bg-[#06B7DB]">
-                                Manage students
-                              </Button>
-                            </Link>
+                            <>
+                              <Link href="/user-management">
+                                <Button className="mt-4 w-full text-white bg-[#06B7DB]">
+                                  Manage students
+                                </Button>
+                              </Link>
+                              <Link href="/institution-management">
+                                <Button className="mt-4 w-full text-white bg-[#06B7DB]">
+                                  Manage Institutions
+                                </Button>
+                              </Link>
+                            </>
                           )}
                         </div>
                       </div>
@@ -375,6 +391,23 @@ const ProfileSettings = () => {
                           {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                         </div>
                         <div>
+                          <label className="block text-gray-700 dark:text-white mb-2">Alternative Email (Optional)</label>
+                          <Input
+                            type="email"
+                            radius="sm"
+                            placeholder="An Alternate Email"
+                            value={isUserInfoEditing ? editableAltEmail : (user?.alt_email || '')}
+                            onChange={(e) => setEditableAltEmail(e.target.value)}
+                            className="w-full"
+                            isDisabled={!isUserInfoEditing}
+                            color={altEmailError ? "danger" : "default"}
+                          />
+                          {altEmailError && <p className="text-red-500 text-xs mt-1">{altEmailError}</p>}
+                          <p className="text-xs text-gray-500 mt-1">
+                            If a student, please provide a permanent e-mail address so that you can be contacted after you leave your campus.
+                          </p>
+                        </div>
+                        <div>
                           <label className="block text-gray-700 dark:text-white mb-2">Institution</label>
                           <Input
                             type="text"
@@ -384,7 +417,7 @@ const ProfileSettings = () => {
                             className="w-full"
                             isDisabled
                           />
-                          <p className="text-xs text-gray-500 mt-1">Please contact support to change institution</p>
+                          <p className="text-xs text-gray-500 mt-1">Please contact support to change institution.</p>
                         </div>
                       </div>
                       
@@ -407,7 +440,9 @@ const ProfileSettings = () => {
                                 setIsUserInfoEditing(false);
                                 setEditableGivenName(user?.given_name || '');
                                 setEditableEmail(user?.email || '');
+                                setEditableAltEmail(user?.alt_email || '');
                                 setEmailError('');
+                                setAltEmailError('');
                               }}
                               disabled={isSaving}
                             >

@@ -12,7 +12,7 @@ datasource db {
 model Institutions {
   id           Int     @id @default(autoincrement()) @db.UnsignedSmallInt
   fullname     String  @db.VarChar(64)
-  abbr         String  @db.VarChar(12)
+  abbr         String  @db.VarChar(16)
   state        String? @db.VarChar(2)
   country_code String  @default("USA") @db.VarChar(3)
   url          String? @db.VarChar(100)
@@ -27,6 +27,7 @@ model Users {
   institution    String       @db.VarChar(50)
   status         Users_status
   email          String       @db.VarChar(50)
+  alt_email      String?      @db.VarChar(50)
   password       String       @db.VarChar(30)
   image_filename String       @db.VarChar(84)
   approved       Boolean

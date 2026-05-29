@@ -7,6 +7,9 @@ export default async function handler(req:any, res:any) {
         id: true,
         fullname: true,
         abbr: true,
+        state: true,
+        country_code: true,
+        url: true,
       },
     })
     res.status(200).json(institutions)

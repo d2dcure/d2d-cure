@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_proteins.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_proteins.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma",
+    "dev:setup": "npm run setup && npm run dev"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
@@ -36,7 +38,7 @@
     "lucide-react": "^0.453.0",
     "multer": "^1.4.5-lts.1",
     "net": "^1.0.2",
-    "next": "^14.2.3",
+    "next": "15.5.7",
     "next-connect": "^1.0.0",
     "nodemailer": "^6.9.16",
     "nookies": "^2.5.2",

@@ -126,6 +126,20 @@ const SubmitPage = () => {
     }
   };
 
+  // Add an effect to initialize filters from URL on page load.
+  useEffect(() => {
+    // Wait for router to be ready.
+    if (!router.isReady) return;
+    
+    const { 
+      single_variant, 
+      wild_type, 
+    } = router.query;
+    
+    // Set initial selection of submission type.
+    if (single_variant !== undefined) setSelection('single_variant');
+    if (wild_type !== undefined) setSelection('wild_type');
+  }, [router.isReady, router.query]);
 
   // for new dataset navigation to work 
   useEffect(() => {

@@ -20,6 +20,9 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [givenNameError, setGivenNameError] = useState('');
+  const [institutionError, setInstitutionError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [professors, setProfessors] = useState<any[]>([]);
@@ -97,6 +100,7 @@ const SignUpPage = () => {
       setPasswordError('Password must be at least 6 characters long.');
       return; // Stop submission
     }
+    setEmailError('');
     setPasswordError('');
     // Set submitting state to true
     setIsSubmitting(true);
@@ -471,7 +475,9 @@ const SignUpPage = () => {
               </div> */}
               
               
-              <h1 className="text-2xl font-semibold mb-2">Create student account</h1>
+              <h2 className="text-2xl font-semibold mb-2">New User Registration</h2>
+
+              <p>All fields required.</p>
               
               {/* // Option 1 
               
@@ -493,56 +499,67 @@ const SignUpPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Username
-                  </label>
-                  <Input
-                    id="username"
-                    type="username"
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    variant="bordered"
-                    size="md"
-                    className="w-full text-base"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Given Name
-                  </label>
-                  <Input
-                    id="given_name"
-                    type="text"
-                    placeholder="Enter given name"
-                    value={givenName}
-                    onChange={(e) => setGivenName(e.target.value)}
-                    variant="bordered"
-                    size="md"
-                    className="w-full text-base"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  New User Name:
+                </label>
+                <Input
+                  id="username"
+                  type="username"
+                  placeholder="Enter a new user name."
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  variant="bordered"
+                  size="md"
+                  className="w-full text-base"
+                  required
+                />
+                <small>(This is a public-facing user name that will be visible to everyone.)</small>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Primary Investigator (your professor)
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Given Name:
+                </label>
+                <Input
+                  id="given_name"
+                  type="text"
+                  placeholder="Enter your given name."
+                  value={givenName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setGivenName(value);
+
+                    if (!value.trim().includes(' ')) {
+                      setGivenNameError("Please include your full name.");
+                    } else {
+                      setGivenNameError("");
+                    }
+                  }}
+                  variant="bordered"
+                  size="md"
+                  className="w-full text-base"
+                  required
+                />
+                {givenNameError && (
+                  <p className="text-red-500 text-sm mt-1">{givenNameError}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Primary Investigator <small>(your professor)</small>:
                 </label>
                 <Select
                   id="pi"
-                  placeholder="Select your PI"
+                  placeholder="Select your PI."
                   selectedKeys={pi ? [pi] : []}
                   onChange={(e) => {
                     const piValue = e.target.value;
                     setpi(piValue);
                     
                     // Find the selected professor and get their institution directly
-                    const selectedProf = professors.find(prof => prof.user_name === piValue);
+                    const selectedProf = professors.find(prof => prof.given_name === piValue);
                     if (selectedProf && selectedProf.institution) {
                       // Update both institution variables - this is the key fix
                       setInstitution(selectedProf.institution);
@@ -558,73 +575,95 @@ const SignUpPage = () => {
                   }}
                 >
                   {professors.map((prof: any) => (
-                    <SelectItem key={prof.user_name} value={prof.user_name}>
-                      {`${prof.user_name} (${prof.institution})`}
+                    <SelectItem key={prof.given_name} value={prof.given_name}>
+                      {`${prof.given_name} (${prof.institution})`}
                     </SelectItem>
                   ))}
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  E-mail:
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your e-mail."
+                  value={email}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEmail(value);
+
+                    // This error message will not prevent submission,
+                    // but hopefully it will lessen invalid submissions.
+                    // Some schools, like PolyU, do not have .edu in their address.
+                    // TODO: Cross-reference the e-mail server with the institution website.
+                    if (!value.includes(".edu")) {
+                      setEmailError("E-mail address must be an institutional e-mail.");
+                    } else {
+                      setEmailError("");
+                    }
+                  }}
+                  variant="bordered"
+                  size="md"
+                  className="w-full text-base"
+                  required
+                />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Password
+                </label>
+                <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter a secure password."
+                    value={password}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPassword(value);
+
+                      // Real-time validation
+                      if (value.length > 0 && value.length < 6) {
+                        setPasswordError('Password must be at least 6 characters long.');
+                      } else {
+                        setPasswordError('');
+                      }
+                    }}
                     variant="bordered"
                     size="md"
                     className="w-full text-base"
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter password"
-                      value={password}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setPassword(value);
-
-                        // Real-time validation
-                        if (value.length > 0 && value.length < 6) {
-                          setPasswordError('Password must be at least 6 characters long.');
-                        } else {
-                          setPasswordError('');
-                        }
-                      }}
-                      variant="bordered"
-                      size="md"
-                      className="w-full text-base"
-                      required
-                    />
-                    {passwordError && (
-                      <p className="text-red-500 text-sm mt-1">{passwordError}</p>
-                    )}
-                </div>
+                  {passwordError && (
+                    <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                  )}
               </div>
 
               <div className="flex items-center gap-2 mb-4 bg-[#06B7DB]/5 px-3 py-2 rounded-lg">
                 <div className="h-12 w-2 bg-[#06B7DB] rounded-full"></div>
                 <span className="text-xs text-gray-600">
-                  Please use your institutional email address and create a strong password. Ensure you select your correct Primary Investigator (PI).
+                  Please use your institutional email address and create a strong password.
+                  Ensure you select your correct Primary Investigator (PI).
                 </span>
               </div>
 
               <button
                 type="submit"
                 className="w-full bg-[#06B7DB] text-white py-2 rounded-lg hover:bg-[#05a6c7] transition-colors text-sm font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (username == '') ||
+                  (!givenName.trim().includes(' ')) ||
+                  (pi == '') ||
+                  (email == '') ||  // TODO: Ensure that e-mail is institutional
+                  (password.length < 6)
+                }
               >
                 {isSubmitting ? "Creating..." : "Create account"}
               </button>

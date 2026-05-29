@@ -18,6 +18,7 @@ import StatusChip from '@/components/StatusChip';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
+import { format } from 'date-fns';
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -53,6 +54,7 @@ function UserManagement() {
     { name: "Status/Role", uid: "status", sortable: true, width: "40" },
     { name: "PI", uid: "pi", sortable: true, width: "40" },
     { name: "Email", uid: "email", sortable: true, width: "40" },
+    { name: "Alt. Email", uid: "alt_email", sortable: true, width: "40" },
     { name: "Registered Date", uid: "registered_date", sortable: true, width: "40" },
     { name: "Approved", uid: "approved", sortable: true, width: "40" },
   ];
@@ -65,6 +67,7 @@ interface User {
   status: string;
   pi: string;
   email: string;
+  alt_email: string;
   registered_date: string;
   approved: boolean;
 }
@@ -496,6 +499,7 @@ const handleDeleteFirebase = async () => {
                   <TableColumn width="40" key = "status" onClick={() => sortTable("status")} allowsSorting>Status/Role</TableColumn>
                   <TableColumn width="40" key = "pi" onClick={() => sortTable("pi")} allowsSorting>PI</TableColumn>
                   <TableColumn width="40" key = "email" onClick={() => sortTable("email")} allowsSorting>Email</TableColumn>
+                  <TableColumn width="40" key = "alt_email" onClick={() => sortTable("alt_email")} allowsSorting>Alt. Email</TableColumn>
                   <TableColumn width="40" key = "registered_date" onClick={() => sortTable("registered_date")} allowsSorting>Registered Date</TableColumn>
                   <TableColumn width="40" key = "approved" onClick={() => sortTable("approved")} allowsSorting>Approved</TableColumn>
                 </TableHeader>
@@ -505,7 +509,7 @@ const handleDeleteFirebase = async () => {
                     if (isLoading) {
                       return (
                         <TableRow key="loading-row">
-                          {Array(10).fill(0).map((_, index) => (
+                          {Array(11).fill(0).map((_, index) => (
                             <TableCell key={`loading-cell-${index}`} className={index === 0 ? "text-center" : ""}>
                               {index === 0 ? "Loading users..." : ""}
                             </TableCell>
@@ -517,7 +521,7 @@ const handleDeleteFirebase = async () => {
                     if (filteredAndSortedUsers.length === 0) {
                       return (
                         <TableRow key="empty-row">
-                          {Array(10).fill(0).map((_, index) => (
+                          {Array(11).fill(0).map((_, index) => (
                             <TableCell key={`empty-cell-${index}`} className={index === 0 ? "text-center" : ""}>
                               {index === 0 ? "No users found." : ""}
                             </TableCell>
@@ -541,7 +545,8 @@ const handleDeleteFirebase = async () => {
                         <TableCell>{user.status}</TableCell>
                         <TableCell>{user.pi}</TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.reg_date}</TableCell>
+                        <TableCell>{user.alt_email}</TableCell>
+                        <TableCell>{format(user.reg_date, "yyyy.MM.dd")}</TableCell>
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${

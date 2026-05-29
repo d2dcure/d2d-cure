@@ -11,28 +11,33 @@ import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
 
-// Add this interface near the top of the file
+// Interfaces /////////////////////////////////////////////////////////////////
 interface Institution {
   abbr: string;
   fullname: string;
 }
 
-// Add this interface near the top with the other interfaces
 interface ExpandedRows {
   [key: string]: boolean;
 }
 
-// Add these new interfaces near the top of the file
 interface SortDescriptor {
   column: string;
   direction: "ascending" | "descending";
 }
 
+
+// Functions //////////////////////////////////////////////////////////////////
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-
+// Calculate the relative deviation of two values and return as percentage.
+const calculateRelativeDeviation = (value: number, ref: number): number => {
+  const deviation = value - ref;
+  const relDeviation = deviation / ref;
+  return relDeviation * 100;  // as percentage
+};
 
 function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
   const link = `/bglb?id=${id}&wt_id=${wt_id}`;
@@ -45,7 +50,7 @@ function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
-  const [useRosettaNumbering, setUseRosettaNumbering] = useState(false);
+  const [useRosettaNumbering, setUseRosettaNumbering] = useState(true);
   const [sequences, setSequences] = useState<any[]>([]);
   const [showNonCurated, setShowNonCurated] = useState(false); 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -61,9 +66,13 @@ const DataPage = () => {
     "variant",
     "yield",
     "km",
+    //"km_dev_from_ref",
     "kcat",
+    //"kcat_dev_from_ref",
     "kcat_km",
+    //"kcat_km_dev_from_ref",
     "t50",
+    //"t50_dev_from_ref",
     "tm",
     "rosetta"
   ]));
@@ -165,7 +174,8 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The variant name in Rosetta/Foldit numbering.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
+              <p>Click any colored variant name/code to open a new window and view the raw data for that variant.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -191,7 +201,8 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>Yield is reported as concentration of enzyme after purification, as determined by spectrophotometry assay.</p>
               <p>Cells shaded grey indicate expression, as confirmed by gel electrophoresis and/or yield &gt; 0.1 mg/mL.</p>
-              <p>Click to sort by this column.</p>
+              <p>Variants marked with an asterisk (*) expressed, but no yield was recorded.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -201,8 +212,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            Yield, <i>c</i><sub>E</sub> (mg/mL)
+          <div className="cursor-help text-right">
+            Yield,<br/><i>c</i><sub>E</sub> (mg/mL)
           </div>
         </Tooltip>
       )
@@ -217,7 +228,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The Michaelis constant.</p>
               <p>It represents the molarity of substrate for which the reaction rate is half of its maximal value. It is an indication of how well an enzyme binds to a substrate, with lower values corresponding to tighter binding.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -227,8 +238,34 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">K</span><sub>M</sub> (mᴍ)
+          <div className="cursor-help text-right">
+            <i>K</i><sub>M</sub> (mᴍ)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "KM relative deviation from reference WT", 
+      uid: "km_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>K</i><sub>M</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click here to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help text-right">
+            <i>d</i><sub><i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
       )
@@ -243,7 +280,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The catalytic rate constant, a.k.a. &ldquo;turnover number&rdquo;.</p>
               <p>It gives the number of substrate molecules turned over into product by a single enzyme molecule in a given unit of time. It is thus an indication of how good the enzyme is at performing the reaction, with bigger values corresponding to faster enzymes.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -253,8 +290,34 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub> (min<sup>&minus;1</sup>)
+          <div className="cursor-help text-right">
+            <i>k</i><sub>cat</sub> (min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "Kcat relative deviation from reference WT", 
+      uid: "kcat_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>k</i><sub>cat</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click here to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help text-right">
+            <i>d</i><sub><i>k</i><sub>cat</sub></sub>
           </div>
         </Tooltip>
       )
@@ -269,7 +332,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The specificity constant, a.k.a. &ldquo;kinetic efficiency&rdquo;.</p>
               <p>It is an indicator of how efficient the enzyme is. Enzymes with a high specificity constant are efficient at what they do; they have a good balance of binding substrates and turning them over quickly.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -279,8 +342,34 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>&minus;1</sup>min<sup>&minus;1</sup>)
+          <div className="cursor-help text-right">
+            <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "kcat/KM relative deviation from reference WT", 
+      uid: "kcat_km_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click here to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help text-right">
+            <i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub>
           </div>
         </Tooltip>
       )
@@ -294,7 +383,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The temperature at which the enzyme has 50% activity.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -304,8 +393,34 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">T</span><sub>50</sub> (°C)
+          <div className="cursor-help text-right">
+            <i>T</i><sub>50</sub> (°C)
+          </div>
+        </Tooltip>
+      )
+    },
+    {
+      name: "T50 relative deviation from reference WT", 
+      uid: "t50_dev_from_ref", 
+      sortable: true,
+      renderHeader: () => (
+        <Tooltip 
+          content={
+            <div className="space-y-2">
+              <p>Relative deviation from reference <i>T</i><sub>50</sub>.</p>
+              <p>This percentage represents the relative deviation of this variant&rsquo;s <i>T</i><sub>50</sub> from that of the WT enzyme used as a reference for this assay.</p>
+              <p>Click here to sort by this column.</p>
+            </div>
+          }
+          className="max-w-xs bg-white/80 backdrop-blur-sm"
+          classNames={{
+            base: "py-3 px-6 shadow-sm",
+            content: "text-[11px] text-gray-600"
+          }}
+          placement="bottom"
+        >
+          <div className="cursor-help text-right">
+            <i>d</i><sub><i>T</i><sub>50</sub></sub>
           </div>
         </Tooltip>
       )
@@ -319,7 +434,7 @@ const DataPage = () => {
           content={
             <div className="space-y-2">
               <p>The temperature at which the enzyme melts.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -329,8 +444,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            <span className="italic">T</span><sub>m</sub> (°C)
+          <div className="cursor-help text-right">
+            <i>T</i><sub>m</sub> (°C)
           </div>
         </Tooltip>
       )
@@ -345,7 +460,7 @@ const DataPage = () => {
             <div className="space-y-2">
               <p>The change in Rosetta score between the WT and variant, as provided by Foldit.</p>
               <p>This score is a relative representation of the stability of a chemical structure, with lower values being more stable.</p>
-              <p>Click to sort by this column.</p>
+              <p>Click here to sort by this column.</p>
             </div>
           }
           className="max-w-xs bg-white/80 backdrop-blur-sm"
@@ -355,8 +470,8 @@ const DataPage = () => {
           }}
           placement="bottom"
         >
-          <div className="cursor-help">
-            Rosetta score change
+          <div className="cursor-help text-right">
+            Rosetta<br/>score change
           </div>
         </Tooltip>
       )
@@ -477,6 +592,7 @@ const DataPage = () => {
         const WT_row = characterizationData.find((row:any) => row.id === 1);
         if (WT_row) {
           setWTValues({
+            //WT_KM: WT_row.KM_avg,
             WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
             WT_log_kcat: Math.log10(WT_row.kcat_avg),
             WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
@@ -485,6 +601,7 @@ const DataPage = () => {
             WT_Rosetta_score: WT_row.Rosetta_score
           });
         }
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setIsError(true);
@@ -573,17 +690,33 @@ const DataPage = () => {
             aValue = a.KM_avg || 0;
             bValue = b.KM_avg || 0;
             break;
+          case "km_dev_from_ref":
+            aValue = a.KM_ref ? calculateRelativeDeviation(a.KM_avg, a.KM_ref) : 0;
+            bValue = b.KM_ref ? calculateRelativeDeviation(b.KM_avg, b.KM_ref) : 0;
+            break;
           case "kcat":
             aValue = a.kcat_avg || 0;
             bValue = b.kcat_avg || 0;
+            break;
+          case "kcat_dev_from_ref":
+            aValue = a.kcat_ref ? calculateRelativeDeviation(a.kcat_avg, a.kcat_ref) : 0;
+            bValue = b.kcat_ref ? calculateRelativeDeviation(b.kcat_avg, b.kcat_ref) : 0;
             break;
           case "kcat_km":
             aValue = a.kcat_over_KM || 0;
             bValue = b.kcat_over_KM || 0;
             break;
+          case "kcat_km_dev_from_ref":
+            aValue = a.kcat_over_KM_ref ? calculateRelativeDeviation(a.kcat_over_KM, a.kcat_over_KM_ref) : 0;
+            bValue = b.kcat_over_KM_ref ? calculateRelativeDeviation(b.kcat_over_KM, b.kcat_over_KM_ref) : 0;
+            break;
           case "t50":
             aValue = a.T50 || 0;
             bValue = b.T50 || 0;
+            break;
+          case "t50_dev_from_ref":
+            aValue = a.T50_ref ? calculateRelativeDeviation(a.T50, a.T50_ref) : 0;
+            bValue = b.T50_ref ? calculateRelativeDeviation(b.T50, b.T50_ref) : 0;
             break;
           case "tm":
             aValue = a.Tm || 0;
@@ -721,6 +854,7 @@ const DataPage = () => {
           page * rowsPerPage
         );
 
+
   // Replace the scrollToTable function with scrollToTop
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -732,13 +866,19 @@ const DataPage = () => {
     scrollToPosition('top');
   };
 
-  // Add this function near other utility functions
   const downloadCSV = () => {
-    // Only include curated data
-    const curatedData = characterizationData.filter(data => data.curated);
-    
+    // Generate a .csv file for download, based on current filter selections.
+
+	  // TODO: Fix this duplicated code from above.
+	  const filteredData = characterizationData
+      .filter(data => 
+        data.curated || 
+        (showNonCurated && !data.curated && data.submitted_for_curation)
+      )
+      .filter(data => !selectedInstitution || data.institution === selectedInstitution);
+	    
     // Sort data by resnum (not resid)
-    const sortedData = [...curatedData].sort((a, b) => {
+	  const sortedData = [...filteredData].sort((a, b) => {
       // First, handle the WT (resid == 'X') cases
       if (a.resid === 'X' && b.resid !== 'X') return -1;
       if (a.resid !== 'X' && b.resid === 'X') return 1;
@@ -749,42 +889,62 @@ const DataPage = () => {
     
     // Define headers for CSV with plain text alternatives for special characters
     const headers = [
+	    'ID #',
       'Variant',
-      'Expressed',
+      'Induced?',
+      'Expressed?',
       'Yield (mg/mL)',
-      'KM (mᴍ)',
+      'KM (mM)',
       'KM SD',
-      'kcat (min^-1)',  // Changed from min⁻¹
+      'reference KM',
+      'kcat (1/min)',
       'kcat SD',
-      'kcat/KM (mᴍ^-1min^-1)',  // Changed from mM⁻¹min⁻¹
+      'reference kcat',
+      'kcat/KM (1/(mM min))',
       'kcat/KM SD',
+      'reference kcat/KM',
       'T50 (degrees C)',  // Changed from °C
       'T50 SD',
+      'reference T50',
       'Tm (degrees C)',  // Changed from °C
       'Tm SD',
       'Rosetta score change',
-      'Institution'
+      'Institution',
+	    'Created by',
+      'Date created',
+      'Date submitted',
+	    'Curated?',
     ];
 
     // Transform data into CSV rows
     const csvRows = sortedData.map(data => {
       const variant = getVariantDisplay(data.resid, data.resnum, data.resmut);
       return [
+		    data.id,
         variant,
+		    'data not transfered from old site',  // TODO: Fix when databases are re-synced
         data.expressed ? 'yes' : 'no',
         (data.yield_avg !== null && !isNaN(data.yield_avg)) ? data.yield_avg : (data.expressed ? 'not reported' : ''),
         data.KM_avg || '',
         data.KM_SD || '',
+        data.KM_ref || '',
         data.kcat_avg || '',
         data.kcat_SD || '',
+        data.kcat_ref || '',
         data.kcat_over_KM || '',
         data.kcat_over_KM_SD || '',
+        data.kcat_over_KM_ref || '',
         data.T50 || '',
         data.T50_SD || '',
+        data.T50_ref || '',
         data.Tm || '',
         data.Tm_SD || '',
         data.Rosetta_score || '',
-        data.institution || ''
+        data.institution || '',
+	      data.creator || 'unknown',
+        data.created_date,
+        data.submitted_date || 'not submitted',
+	      data.curated ? 'yes' : 'no'
       ].join(',');
     });
 
@@ -796,7 +956,10 @@ const DataPage = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'BglB_characterization_data.csv');
+    link.setAttribute('download',
+		'BglB_characterization_data' + 
+		(selectedInstitution ? "_" + selectedInstitution : "") +
+		(showNonCurated ? "" : "_curated") + '.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -885,15 +1048,23 @@ const DataPage = () => {
   const getFormattedColumnName = (column: any) => {
     switch (column.uid) {
       case "km":
-        return <><span className="italic">K</span><sub>M</sub> (mᴍ)</>;
+        return <><i>K</i><sub>M</sub> (mᴍ)</>;
+      case "km_dev_from_ref":
+        return <><i>d</i><sub><i>K</i><sub>M</sub></sub> (%)</>;
       case "kcat":
-        return <><span className="italic">k</span><sub>cat</sub> (min<sup>−1</sup>)</>;
+        return <><i>k</i><sub>cat</sub> (min<sup>−1</sup>)</>;
+      case "kcat_dev_from_ref":
+        return <><i>d</i><sub><i>k</i><sub>cat</sub></sub> (%)</>;
       case "kcat_km":
-        return <><span className="italic">k</span><sub>cat</sub>/<span className="italic">K</span><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+        return <><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</>;
+      case "kcat_km_dev_from_ref":
+        return <><i>d</i><sub><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub></sub> (%)</>;
       case "t50":
-        return <><span className="italic">T</span><sub>50</sub> (°C)</>;
+        return <><i>T</i><sub>50</sub> (°C)</>;
+      case "t50_dev_from_ref":
+        return <><i>d</i><sub><i>T</i><sub>50</sub></sub> (%)</>;
       case "tm":
-        return <><span className="italic">T</span><sub>m</sub> (°C)</>;
+        return <><i>T</i><sub>m</sub> (°C)</>;
       case "rosetta":
         return <>Rosetta score change</>;
       default:
@@ -1202,7 +1373,8 @@ const DataPage = () => {
                             size="md"
                             onClick={downloadCSV}
                           >
-                            Download curated data as <br></br> comma-delimited file
+				Download filtered/displayed data<br />				
+				as comma-delimited file
                           </Button>
                         </div>
 
@@ -1601,7 +1773,11 @@ const DataPage = () => {
                                           display: 'inline-block',
                                           minWidth: 'fit-content'
                                         }}>
-                                          {data.yield_avg !== null && !isNaN(data.yield_avg) ? roundTo(data.yield_avg, 2) : data.expressed ? '*' : '—'}
+                                          {data.yield_avg !== null && !isNaN(data.yield_avg) ? 
+                                            roundTo(data.yield_avg, 2) : 
+                                            data.expressed ? 
+                                              <Tooltip content={<p>This variant expressed, but no yield was recorded.</p>}>{'*'}</Tooltip> :
+                                              '—'}
                                         </div>
                                       </TableCell>
                                     );
@@ -1624,6 +1800,24 @@ const DataPage = () => {
                                       </TableCell>
                                     );
                                     break;
+                                  case "km_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.KM_avg !== null && !isNaN(data.KM_avg)) && (data.KM_ref !== null && !isNaN(data.KM_ref)) ? `${roundTo(calculateRelativeDeviation(data.KM_avg, data.KM_ref), 1)}%` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
                                   case "kcat":
                                     cell = (
                                       <TableCell key={column.uid}>
@@ -1638,6 +1832,24 @@ const DataPage = () => {
                                           minWidth: 'fit-content'
                                         }}>
                                           {data.kcat_avg !== null && !isNaN(data.kcat_avg) ? `${roundTo(data.kcat_avg, 2)} ± ${data.kcat_SD !== null && !isNaN(data.kcat_SD) ? roundTo(data.kcat_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "kcat_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.kcat_avg !== null && !isNaN(data.kcat_avg)) && (data.kcat_ref !== null && !isNaN(data.kcat_ref)) ? `${roundTo(calculateRelativeDeviation(data.kcat_avg, data.kcat_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
@@ -1662,6 +1874,24 @@ const DataPage = () => {
                                       </TableCell>
                                     );
                                     break;
+                                  case "kcat_km_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM)) && (data.kcat_over_KM_ref !== null && !isNaN(data.kcat_over_KM_ref)) ? `${roundTo(calculateRelativeDeviation(data.kcat_over_KM, data.kcat_over_KM_ref), 1)}%` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
                                   case "t50":
                                     cell = (
                                       <TableCell key={column.uid}>
@@ -1676,6 +1906,24 @@ const DataPage = () => {
                                           minWidth: 'fit-content'
                                         }}>
                                           {data.T50 !== null && !isNaN(data.T50) ? `${roundTo(data.T50, 2)} ± ${data.T50_SD !== null && !isNaN(data.T50_SD) ? roundTo(data.T50_SD, 2) : '—'}` : '—'}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                    break;
+                                  case "t50_dev_from_ref":
+                                    cell = (
+                                      <TableCell key={column.uid}>
+                                        <div style={{
+                                          backgroundColor: getColorForValue(0),
+                                          borderRadius: '4px',
+                                          padding: '1px 6px',
+                                          textAlign: 'right',
+                                          width: '100px',
+                                          marginLeft: 'auto',
+                                          display: 'inline-block',
+                                          minWidth: 'fit-content'
+                                        }}>
+                                          {(data.T50 !== null && !isNaN(data.T50)) && (data.T50_ref !== null && !isNaN(data.T50_ref)) ? `${roundTo(calculateRelativeDeviation(data.T50, data.T50_ref), 1)}%` : '—'}
                                         </div>
                                       </TableCell>
                                     );
