@@ -9,7 +9,8 @@ export default function App() {
 				<div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 px-2 sm:px-4">
 					<Image 
 						src="/resources/images/CUREnet_logo.png" 
-						alt="CUREnet Logo" 
+						title="Logo of CUREnet"
+						alt="CUREnet " 
 						width={120}
 						height={40}
 						style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
@@ -19,7 +20,8 @@ export default function App() {
 					/>
 					<Image 
 						src="/resources/images/Rosetta_logo.png" 
-						alt="Rosetta Logo" 
+						title="Logog of the RosettaCommons" 
+						alt="RosettaCommons "
 						width={120}
 						height={40}
 						style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
@@ -29,7 +31,8 @@ export default function App() {
 					/>
 					<Image 
 						src="/resources/images/NSF_logo.png" 
-						alt="NSF Logo" 
+						title="Logo of the National Science Foundation"
+						alt="NSF " 
 						width={120}
 						height={40}
 						style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
@@ -39,7 +42,8 @@ export default function App() {
 					/>
 					<Image 
 						src="/resources/images/UC Davis_logo.png" 
-						alt="UC Davis Logo" 
+						title="Logo of the University of California, Davis"
+						alt="UC Davis " 
 						width={120}
 						height={40}
 						style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
@@ -49,7 +53,8 @@ export default function App() {
 					/>
 					<Image 
 						src="/resources/images/codelablogo.png" 
-						alt="CodeLab Logo" 
+						title="Logot of CodeLab"
+						alt="CodeLab" 
 						width={100}
 						height={32}
 						style={{ objectFit: 'contain', width: 'auto', height: '32px' }}
