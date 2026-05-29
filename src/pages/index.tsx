@@ -51,6 +51,7 @@ export default function Home() {
 						<img
 							src="/resources/images/D2D_Logo.svg" draggable="false"
 							className="h-12 sm:h-16 lg:h-20 select-none pr-2 lg:pr-3"
+							title="The Design2Data logo"
 							alt="D2D"
 						/>
 						<h1
@@ -85,7 +86,8 @@ export default function Home() {
 					<div className="flex justify-center">
 						<img
 							src="/resources/images/thumb.png"
-							alt="Dashboard image" 
+							title="An example of a database entry for an enzyme variant."
+							alt="Front page main image" 
 							className="rounded-t-3xl w-full max-w-[1000px] select-none h-auto object-cover" 
 							draggable="false"
 						/>
@@ -126,51 +128,73 @@ export default function Home() {
 							src="/resources/images/Homepage.png" 
 							draggable="false" 
 							className="select-none rounded-lg object-cover max-w-full" 
-							alt="An image of the original cohort of professors in the D@D Network." 
+							title="An image of the original cohort of professors in the D@D Network."
+							alt="photo"
 						/>
 					</div>
 				</div>
 
-				{/* Analyze and Submit Section */}
+				{/* How It Works section */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-20 items-center">
 					<div className="lg:pt-1">
-						<p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
+						<h2 className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
 							HOW IT WORKS
-						</p>
-						<h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze and Submit</h1>
+						</h2>
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">
+							Design, Build, &amp; Test
+						</h3>
 						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-							D2D students upload their colorimetric kinetic and thermal assay data for enzyme va that they studied.
+							D2D students upload their colorimetric kinetic and thermal assay data for enzyme varaiants
+							that they designed, purified, and characterized.
 						</p>
 					</div>
 					<div className="flex justify-center lg:justify-start">
-						<img src="/resources/images/card_2.png" draggable="false" className="max-w-full select-none" alt="mockup" />
+						<img
+							src="/resources/images/card_2.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of a student&rsquo;s dashboard, showing an enzyme variant in progress, with the image caption, &ldquo;40+ institutions submitting data through D2DCure&rdquo;"
+							alt="40+ institutions submitting data through D2DCure"
+						/>
 					</div>
 				</div>
 
-				{/* Curate Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10 items-center">
 					<div className="order-2 lg:order-1 flex justify-center lg:justify-start">
-						<img src="/resources/images/card_large.png" draggable="false" 
-						className="max-w-full select-none" alt="mockup" />
+						<img
+							src="/resources/images/card_large.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of a faculty member&rsquo;s curation list."
+							alt="zoom-in of curation"
+						/>
 					</div>
 					<div className="order-1 lg:order-2 lg:pt-1">
-						<h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h3>
 						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-							D2D faculty and admin in a two-step process review and approve data with appropriate controls; data that fails to meet network standards is flagged for replication.
+							D2D faculty, in a two-step process,
+							review and approve data with appropriate controls;
+							data that fails to meet network standards is flagged for replication.
 						</p>
 					</div>
 				</div>
 
-				{/* Characterize Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-10 items-center">
 					<div className="lg:pt-1">
-						<h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Characterize</h1>
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze &amp; Predict</h3>
 						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-							The D2D system facilitates characterization contributions of thousands of students to solve the next generation challenge in protein design: function prediction.
+							The D2D system combines contributions from thousands of students into a single database.
+							Data are analyzed to solve the next-generation challenge in protein design:
+							prediction of function.
 						</p>
 					</div>
 					<div className="flex justify-center lg:justify-start">
-						<img src="/resources/images/card_3.png" draggable="false" className="max-w-full select-none" alt="mockup" />
+						<img
+							src="/resources/images/card_3.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of the color key for the main characterization database, with the image caption, &ldquo;438+ Mutants characterized&rdquo;"
+							alt="438+ Mutants characterized" />
 					</div>
 				</div>
 
