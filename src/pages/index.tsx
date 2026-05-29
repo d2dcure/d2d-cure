@@ -211,11 +211,15 @@ export default function Home() {
 
 			{showCookieNotice && user?.user_name && (
 				<section className="fixed max-w-[300px] p-3 mx-auto bg-white border border-gray-200 dark:bg-gray-800 right-6 bottom-6 dark:border-gray-700 rounded-xl shadow-xl">
-					<h2 className="font-semibold text-gray-800 dark:text-white text-sm">🍪 Cookie Notice</h2>
+					<h2 className="font-semibold text-gray-800 dark:text-white text-sm">
+						🍪 Cookie Notice
+					</h2>
 
 					<p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
 						We use cookies to ensure that we give you the best experience on our website.{' '}
-						<a href="#" className="text-blue-500 hover:underline">Read cookies policies</a>
+						<a href="#" className="text-blue-500 hover:underline">
+							Read cookies policies
+						</a>
 					</p>
 					
 					<div className="flex items-center justify-between mt-3 gap-x-2 shrink-0">
