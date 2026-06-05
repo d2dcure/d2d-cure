@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
-import "../../../app/globals.css";
+import "../../../../app/globals.css";
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
@@ -16,7 +16,7 @@ import StatusChip from '@/components/StatusChip';
 
 const DataPageView = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
   const { user } = useUser();
   
   const [entryData1, setEntryData1] = useState<any>(null);
