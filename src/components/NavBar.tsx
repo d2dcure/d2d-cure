@@ -116,7 +116,7 @@ const NavBar = () => {
         onMouseLeave={handleNestedDropdownLeave}
       >
         <Link 
-          href="/database/BglB_characterization"
+          href="/database/characterization_data"
           className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:text-[#06B7DB] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 gap-2"
         >
           <div className="flex items-center gap-2">
@@ -419,7 +419,7 @@ const NavBar = () => {
 
               <div className={`transition-all duration-200 ${activeDropdown === 'mobile-database' ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <Link 
-                  href="/database/BglB_characterization" 
+                  href="/database/characterization_data" 
                   className="flex items-center gap-2 px-8 py-2 text-gray-900 hover:text-[#06B7DB] hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                 >
                   <Database className="w-4 h-4 stroke-[1.5]" />
