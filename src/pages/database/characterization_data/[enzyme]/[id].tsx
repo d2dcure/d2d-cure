@@ -441,7 +441,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                 </button>
 
                 <Link 
-                  href={`/contact/report?page=${encodeURIComponent(`/database/characterization_data/BglB${id}`)}`}
+                  href={`/contact/report?page=${encodeURIComponent(`/database/characterization_data/${enzyme}/${id}`)}`}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
                 >
                   <BugIcon className="w-4 h-4" />
@@ -997,7 +997,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return 'Loading...';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -1169,7 +1169,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
               <Link href="/database">Database</Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
-              <Link href="/database/characterization_data/BglB">BglB Characterization Data</Link>
+              <Link href={`/database/characterization_data/${enzyme}`}>{`${enzyme}`} Characterization Data</Link>
             </BreadcrumbItem>
             <BreadcrumbItem>{getBreadcrumbDisplay(entryData1)}</BreadcrumbItem>
           </Breadcrumbs>
