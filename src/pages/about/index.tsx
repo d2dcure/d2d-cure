@@ -117,7 +117,7 @@ const AboutD2D = () => {
           <Card 
             className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
             as={Link}
-            href="/about/bglb"
+            href="/about/BglB"
           >
             <img 
               src="/resources/images/prettyBglB.png" 
