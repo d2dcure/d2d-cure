@@ -1240,7 +1240,7 @@ const DataPage = () => {
           <Breadcrumbs className="mb-2">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/database">Database</BreadcrumbItem>
-            <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
+            <BreadcrumbItem>BglB Characterization Data</BreadcrumbItem>
           </Breadcrumbs>
 
           <div className="pt-3">

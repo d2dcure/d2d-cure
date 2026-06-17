@@ -980,7 +980,7 @@ const SingleVariant = () => {
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                       {getVariantDisplay(entryData)}
                       <Link
-                        href={`/database/characterization_data?search=${encodeURIComponent(
+                        href={`/database/characterization_data/BglB?search=${encodeURIComponent(
                           getVariantDisplay(entryData).replace(' BglB', '').trim()
                         )}`}
                         className="inline-flex items-center hover:text-[#06B7DB]"

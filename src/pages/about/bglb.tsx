@@ -168,7 +168,7 @@ const BglBPage = () => {
                     `}
                     onClick={() => {
                       if (hasData && residue.Rosetta_resnum) {
-                        window.location.href = `/database/characterization_data?highlight=${residue.Rosetta_resnum}`;
+                        window.location.href = `/database/characterization_data/BglB?highlight=${residue.Rosetta_resnum}`;
                       }
                     }}
                   >
