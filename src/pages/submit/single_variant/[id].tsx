@@ -499,15 +499,15 @@ const SingleVariant = () => {
           break;
 
         case 'Kinetic assay data uploaded':
-          // First delete the KineticRawData entry
-          const response1 = await fetch('/api/deleteKineticData', {
+          // First, delete the KineticRawData entry.
+          const KineticDeleteResponse = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ parent_id: entryData.id })
           });
 
-          if (response1.ok) {
-            // Then update CharacterizationData to remove references
+          if (KineticDeleteResponse.ok) {
+            // Then, update CharacterizationData to remove references.
             response = await fetch('/api/updateCharacterizationDataKineticStuff', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -527,8 +527,8 @@ const SingleVariant = () => {
           break;
 
         case 'Wild type kinetic data uploaded':
-          // Reset WT kinetic data reference
-          response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
+          // First, reset WT kinetic data reference.
+          const KineticWTDeleteResponse = await fetch('/api/updateCharacterizationDataWTRawDataId', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -536,6 +536,20 @@ const SingleVariant = () => {
               WT_raw_data_id: 0, 
             })
           });
+
+          //if (KineticWTDeleteResponse.ok) {
+            // Then, update CharacterizationData to remove references.
+            //response = await fetch('/api/updateCharacterizationDataKineticStuff', {
+            //  method: 'POST',
+            //  headers: { 'Content-Type': 'application/json' },
+            //  body: JSON.stringify({
+            //    parent_id: entryData.id,
+            //    kcat_ref: null,
+            //    KM_ref: null,
+            //    kcat_over_KM_ref: null,
+            //  })
+            //});
+          //}
           break;
 
         case 'Thermostability assay data uploaded':
@@ -747,7 +761,7 @@ const SingleVariant = () => {
       if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">ΔΔG =</span>
+            <span className="font-semibold">ΔΔ<i>G</i> =</span>
             <span>{entryData.Rosetta_score} REU</span>
           </div>
         );
@@ -757,37 +771,67 @@ const SingleVariant = () => {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">c =</span>
+            <span className="font-semibold"><i>c</i> =</span>
             <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
           </div>
         );
       }
 
-      if (item === "Kinetic assay data uploaded" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
+      if (item === "Kinetic assay data uploaded" &&
+        entryData.KM_avg !== null && 
+        entryData.kcat_avg !== null &&
+        entryData.kcat_over_KM !== null) {
         const kmAvg = parseFloat(entryData.KM_avg);
         const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
         const kcatAvg = parseFloat(entryData.kcat_avg);
         const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
+        const kcatOverKM = parseFloat(entryData.kcat_over_KM);
+        const kcatOverKMSd = entryData.kcat_over_KM_SD !== null ? parseFloat(entryData.kcat_over_KM_SD) : null;
 
         const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
         const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
         const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
         const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
+        const kcatOverKMRounded = isNaN(kcatOverKM) ? '' : kcatOverKM.toFixed(1);
+        const kcatOverKMSdRounded = kcatOverKMSd !== null && !isNaN(kcatOverKMSd) ? kcatOverKMSd.toFixed(1) : null;
 
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
-              <span className="font-semibold">K<sub>M</sub> =</span>
+              <span className="font-semibold"><i>K</i><sub>M</sub> =</span>
               <span>
                 {kmAvgRounded}
-                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mᴍ
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-semibold">k<sub>cat</sub> =</span>
+              <span className="font-semibold"><i>k</i><sub>cat</sub> =</span>
               <span>
                 {kcatAvgRounded}
-                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
+                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>−1</sup>
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
+              <span>
+                {kcatOverKMRounded}
+                {kcatOverKMSdRounded !== null && <> ± {kcatOverKMSdRounded}</>} min<sup>−1</sup>/mᴍ
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      if (item === "Wild type kinetic data uploaded" && entryData.kcat_over_KM_ref !== null) {
+        const kcatOverKMRef = parseFloat(entryData.kcat_over_KM_ref);
+        const kcatOverKMRefRounded = isNaN(kcatOverKMRef) ? '' : kcatOverKMRef.toFixed(1);
+
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
+              <span>
+                {kcatOverKMRefRounded} min<sup>−1</sup>/mᴍ
               </span>
             </div>
           </div>
@@ -799,8 +843,18 @@ const SingleVariant = () => {
         const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>50</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>50</sub> =</span>
             <span>{t50} ± {t50sd}°C</span>
+          </div>
+        );
+      }
+
+      if (item === "Wild type thermostability assay data uploaded" && entryData.T50_ref !== null) {
+        const t50Ref = parseFloat(entryData.T50_ref).toFixed(1); 
+        return (
+          <div className="flex items-center gap-1">
+            <span className="font-semibold"><i>T</i><sub>50</sub> =</span>
+            <span>{t50Ref} °C</span>
           </div>
         );
       }
@@ -810,7 +864,7 @@ const SingleVariant = () => {
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>M</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>m</sub> =</span>
             <span>{tm} ± {tmSD}°C</span>
           </div>
         );

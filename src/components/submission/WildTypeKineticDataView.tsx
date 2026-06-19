@@ -40,8 +40,8 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
 }) => {
   const { user } = useUser();
 
-  const [kineticRawDataIds, setKineticRawDataIds] = useState<number[]>([]);
-  const [kineticData, setKineticData] = useState<any[]>([]);
+  const [kineticParams, setKineticParams] = useState<any[]>([]);  // a list of raw data ids with the three params for that id
+  const [kineticData, setKineticData] = useState<any[]>([]);  // a list of dictionaries containing assay dates and user names 
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
   const [plotImageUrl, setPlotImageUrl] = useState<string | null>(null);
@@ -50,7 +50,8 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const sValues = ['75.00', '25.00', '8.33', '2.78', '0.93', '0.31', '0.10', '0.03'];
 
-  // 1) Fetch all "characterizationData" and filter for your user/institution + resid='X'
+  // 1) Fetch all "characterizationData" and filter for the user/institution + resid='X' (WT)
+  // Then, save raw data ids for the kinetic assays along with the saved kinetic parameters.
   useEffect(() => {
     const fetchKineticWTData = async () => {
       const response = await fetch('/api/getCharacterizationData');
@@ -58,29 +59,31 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'
       );
-      const ids = filteredData
-        .map((row: any) => row.raw_data_id)
-        .filter((id: any) => id !== 0);
-      setKineticRawDataIds(ids);
+      const params = filteredData
+        .map((row: any) => [row.raw_data_id, row.KM_avg, row.kcat_avg, row.kcat_over_KM])
+        .filter((id: any) => id !== 0);  // Save an array of params, each entry containing a list of raw data id and params.
+      const ids = params.map((row: any) => row[0]);  // Create a list of just the raw data ids.
+      setKineticParams(params);
     };
     fetchKineticWTData();
   }, [user]);
 
   // 2) For each raw_data_id, fetch the actual "KineticRawData" objects
+  // This will store the assay dates and the user names for each raw dataset.
   useEffect(() => {
     const fetchKineticData = async () => {
-      if (kineticRawDataIds.length > 0) {
+      if (kineticParams.length > 0) {
         const response = await fetch('/api/getKineticRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: kineticRawDataIds })
+          body: JSON.stringify({ ids: kineticParams.map((row: any) => row[0]) })  // The raw data ids are index 0.
         });
         const data = await response.json();
         setKineticData(data);
       }
     };
     fetchKineticData();
-  }, [kineticRawDataIds]);
+  }, [kineticParams]);
 
   // 3) If there's a WT_raw_data_id, fetch that single "KineticRawData" object, parse CSV, get image
   useEffect(() => {
@@ -170,15 +173,20 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
     }
   };
 
+
   /**
    * When user picks a different WT raw data ID, store it in the DB 
    * then go back to checklist
    */
-  const updateWTRawDataId = async (WT_raw_data_id: any) => {
-    const response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
+  const updateWTRawData = async (WT_kinetic_params: any) => {
+    const WT_raw_data_id = WT_kinetic_params[0];
+    const WT_KM = WT_kinetic_params[1];
+    const WT_kcat = WT_kinetic_params[2];
+    const WT_kcat_over_KM = WT_kinetic_params[3];
+    const response = await fetch('/api/updateCharacterizationDataWTKineticData', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: entryData.id, WT_raw_data_id })
+      body: JSON.stringify({ id: entryData.id, WT_raw_data_id, WT_KM, WT_kcat, WT_kcat_over_KM })
     });
     if (response.ok) {
       const updatedEntry = await response.json();
@@ -423,6 +431,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                 <TableColumn>Enzyme</TableColumn>
                 <TableColumn>Date Assayed</TableColumn>
                 <TableColumn>Uploaded By</TableColumn>
+                <TableColumn><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> (mᴍ<sup>−1</sup>min<sup>−1</sup>)</TableColumn>
                 <TableColumn>Actions</TableColumn>
               </TableHeader>
               <TableBody>
@@ -431,9 +440,10 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                     <TableCell>BglB</TableCell>
                     <TableCell>{row.assay_date}</TableCell>
                     <TableCell>{row.user_name}</TableCell>
+                    <TableCell>{kineticParams[index][3] /*4th item in array is the kcat/KM*/}</TableCell>
                     <TableCell>
                       <button
-                        onClick={() => updateWTRawDataId(row.id)}
+                        onClick={() => updateWTRawData(kineticParams[index])}
                         className={`${
                           entryData.curated
                             ? 'text-gray-300 cursor-not-allowed'
