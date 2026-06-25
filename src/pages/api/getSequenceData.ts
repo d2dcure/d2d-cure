@@ -1,9 +1,9 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
     if (req.method === 'GET') {
         try {
-            const data = await prismaProteins.sequence.findMany({
+            const data = await prismaBglB.sequence.findMany({
                 orderBy: {
                     id: 'asc'
                 }

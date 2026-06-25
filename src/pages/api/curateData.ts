@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   const { ids, status } = req.body;
@@ -14,7 +14,7 @@ export default async function handler(req: any, res: any) {
     const integerIds = ids.map(id => parseInt(id, 10))
     if (req.method === 'DELETE') {
       // First get the associated data IDs
-      const rowsToDelete = await prismaProteins.characterizationData.findMany({
+      const rowsToDelete = await prismaBglB.characterizationData.findMany({
         where: {
           id: { in: integerIds }
         },
@@ -26,21 +26,21 @@ export default async function handler(req: any, res: any) {
       // Delete in sequence to maintain referential integrity
       for (const row of rowsToDelete) {
         // Delete associated kinetic data
-        await prismaProteins.kineticRawData.deleteMany({
+        await prismaBglB.kineticRawData.deleteMany({
           where: {
             parent_id: row.id
           }
         });
 
         // Delete associated temperature data
-        await prismaProteins.tempRawData.deleteMany({
+        await prismaBglB.tempRawData.deleteMany({
           where: {
             parent_id: row.id
           }
         });
 
         // Delete the characterization data
-        await prismaProteins.characterizationData.delete({
+        await prismaBglB.characterizationData.delete({
           where: { id: row.id }
         });
       }
@@ -59,7 +59,7 @@ export default async function handler(req: any, res: any) {
       }
 
       // Update the entries
-      await prismaProteins.characterizationData.updateMany({
+      await prismaBglB.characterizationData.updateMany({
         where: {
           id: { in: integerIds }
         },
@@ -67,7 +67,7 @@ export default async function handler(req: any, res: any) {
       });
 
       // Fetch and return the updated entry
-      const updatedEntry = await prismaProteins.characterizationData.findFirst({
+      const updatedEntry = await prismaBglB.characterizationData.findFirst({
         where: {
           id: integerIds[0]  // Since we're dealing with a single entry in this case
         }

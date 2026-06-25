@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'DELETE') {
@@ -7,21 +7,21 @@ export default async function handler(req: any, res: any) {
 
     try {
       // First, delete any associated KineticRawData entries
-      await prismaProteins.kineticRawData.deleteMany({
+      await prismaBglB.kineticRawData.deleteMany({
         where: {
           parent_id: numericId
         }
       });
 
       // Then, delete any associated TempRawData entries
-      await prismaProteins.tempRawData.deleteMany({
+      await prismaBglB.tempRawData.deleteMany({
         where: {
           parent_id: numericId
         }
       });
 
       // Finally, delete the CharacterizationData entry itself
-      const deletedEntry = await prismaProteins.characterizationData.delete({
+      const deletedEntry = await prismaBglB.characterizationData.delete({
         where: {
           id: numericId
         }

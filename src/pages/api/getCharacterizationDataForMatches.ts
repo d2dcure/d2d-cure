@@ -1,5 +1,5 @@
 // This is for the 'submit data' part, to see if the variant the user is submitting data for exists already for their school 
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   const { resid, resnum, resmut, institution } = req.query;
@@ -9,7 +9,7 @@ export default async function handler(req:any, res:any) {
 
   try {
     // Add filtering logic here based on the query parameters
-    const data = await prismaProteins.characterizationData.findMany({ 
+    const data = await prismaBglB.characterizationData.findMany({ 
       where: {
         resid: resid,
         resnum: resnumInt,

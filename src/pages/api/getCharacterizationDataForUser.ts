@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   const { userName } = req.query; // Expecting the user's username from query params.
@@ -8,7 +8,7 @@ export default async function handler(req:any, res:any) {
   }
 
   try {
-    const data = await prismaProteins.characterizationData.findMany({
+    const data = await prismaBglB.characterizationData.findMany({
       where: {
         creator: userName,
       },
