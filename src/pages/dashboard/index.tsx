@@ -334,34 +334,6 @@ const Dashboard = () => {
 		setSelectedImageData(gelImages[nextIndex]);
 	}
 
-	const faqs = [
-		{
-			question: 'What is D2D Cure and how does it work?',
-			answer:
-				'D2D Cure (Design2Data) is a research platform that connects students and researchers in investigating protein sequence-structure-function relationships...'
-		},
-		{
-			question: 'How do I submit characterization data?',
-			answer:
-				'To submit characterization data, navigate to the submission section...'
-		},
-		{
-			question: 'What happens after I submit my data?',
-			answer:
-				"After submission, your data goes through a curation process. First, it's marked as 'Submitted for Curation'..."
-		},
-		{
-			question: 'How can I collaborate with team members?',
-			answer:
-				'D2D Cure supports team collaboration through its teammate system...'
-		},
-		{
-			question: 'How do I manage my gel images?',
-			answer:
-				'You can upload, view, and manage gel images through the dashboard...'
-		}
-	];
-
 	return (
 		<>
 			<NavBar />
@@ -465,7 +437,7 @@ const Dashboard = () => {
 								</div>
 								<Table aria-label="Variant Profiles" classNames={{ table: 'min-h-[100px]' }}>
 									<TableHeader>
-										<TableColumn>STATUS</TableColumn>
+										<TableColumn>Status</TableColumn>
 										<TableColumn>Enzyme</TableColumn>
 										<TableColumn>Variant</TableColumn>
 										<TableColumn>ID</TableColumn>
@@ -537,9 +509,9 @@ const Dashboard = () => {
 										}}
 									>
 										<TableHeader>
-											<TableColumn>PREVIEW</TableColumn>
-											<TableColumn>FILENAME</TableColumn>
-											<TableColumn>INSTITUTION</TableColumn>
+											<TableColumn>Image</TableColumn>
+											<TableColumn>Filename</TableColumn>
+											<TableColumn>Institution</TableColumn>
 											<TableColumn>Actions</TableColumn>
 										</TableHeader>
 										<TableBody>
@@ -601,9 +573,9 @@ const Dashboard = () => {
 										}}
 									>
 										<TableHeader>
-											<TableColumn>PREVIEW</TableColumn>
-											<TableColumn>FILENAME</TableColumn>
-											<TableColumn>INSTITUTION</TableColumn>
+											<TableColumn>Image</TableColumn>
+											<TableColumn>Filename</TableColumn>
+											<TableColumn>Institution</TableColumn>
 											<TableColumn>Actions</TableColumn>
 										</TableHeader>
 										<TableBody>
