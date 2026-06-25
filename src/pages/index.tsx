@@ -3,200 +3,244 @@ import { useRouter } from 'next/router';
 import "../app/globals.css"; 
 import NavBar from '@/components/NavBar';
 import { useUser } from '@/components/UserProvider';
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Button } from "@nextui-org/react";
 import Footer from '@/components/Footer';
 
 export default function Home() {
-  const { user } = useUser();
-  const router = useRouter();
-  const [showCookieNotice, setShowCookieNotice] = useState(false);
+	const { user } = useUser();
+	const router = useRouter();
+	const [showCookieNotice, setShowCookieNotice] = useState(false);
+	
+	useEffect(() => {
+		// Only check if user is logged in
+			// Check if we've shown the notice this session
+			const hasShownNoticeThisSession = sessionStorage.getItem('cookieNoticeShown');
+			if (!hasShownNoticeThisSession) {
+				setShowCookieNotice(true);
+				// Mark that we've shown the notice this session
+				sessionStorage.setItem('cookieNoticeShown', 'true');
+			}
+		}
+	); // Depend on user to re-run when login state changes
+	
+	const handleAcceptCookies = () => {
+		setShowCookieNotice(false);
+	};
 
-  useEffect(() => {
-    // Only check if user is logged in
-      // Check if we've shown the notice this session
-      const hasShownNoticeThisSession = sessionStorage.getItem('cookieNoticeShown');
-      if (!hasShownNoticeThisSession) {
-        setShowCookieNotice(true);
-        // Mark that we've shown the notice this session
-        sessionStorage.setItem('cookieNoticeShown', 'true');
-      }
-    }
-  ); // Depend on user to re-run when login state changes
+	const handleManagePreferences = () => {
+		console.log('Manage preferences clicked');
+	};
 
-  const handleAcceptCookies = () => {
-    setShowCookieNotice(false);
-  };
+	return (
+		<div>
+			<NavBar />
+			{/* Greet user, if logged in. */}
+			{user && (
+				<>
+					<div className="max-w-2xl text-center mx-auto">
+						<p>Welcome, {user.given_name}!</p>
+					</div>
+				</>
+			)}
+			{/* Container for content with responsive padding */}
+			<section
+				className="pt-14 lg:pt-14 bg-[url('/resources/images/ng.png')] bg-center bg-fill bg-no-repeat"
+			>
+				<div className="max-w-2xl text-center mx-auto">
+					<div className="flex pb-3 flex-row justify-center items-center pb-1">
+						<img
+							src="/resources/images/D2D_Logo.svg" draggable="false"
+							className="h-12 sm:h-16 lg:h-20 select-none pr-2 lg:pr-3"
+							title="The Design2Data logo"
+							alt="D2D"
+						/>
+						<h1
+							className="text-4xl sm:text-5xl lg:text-6xl font-bold font-poppins"
+							style={{ color: '#3C99AC', opacity: 0.38 }}>Design2Data</h1>
+					</div>
+					<p className="text-base sm:text-lg lg:text-xl font-light text-[#518C98]">
+						Unpacking protein structure-to-function relationships<br />
+						through large, high-resolution, quantitative datasets
+					</p>
 
-  const handleManagePreferences = () => {
-    console.log('Manage preferences clicked');
-  };
+					<div className="flex space-x-4 pt-2 pb-10 justify-center">
+						<Button
+							className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
+							size="md"
+							onClick={() => router.push(user?.user_name ? '/dashboard' : '/login')}
+						>
+							{user?.user_name ? "Dashboard" : "Sign-In / Create Account"}
+						</Button>
+						<Button
+							className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
+							size="md"
+							color="primary"
+							onClick={() => router.push('/about')}
+						>
+							Learn More
+						</Button>
+					</div>
+				</div>
 
-  return (
-    <div>
-      <NavBar />
-      {/* Container for content with responsive padding */}
-<section
-  className="pt-14 lg:pt-14 bg-[url('/resources/images/ng.png')] bg-center bg-fill bg-no-repeat"
->
-  <div className="max-w-2xl text-center mx-auto">
-    <div className="flex pb-3 flex-row justify-center items-center pb-1">
-      <img src="/resources/images/D2D_Logo.svg" draggable="false" className="h-12 sm:h-16 lg:h-20 select-none pr-2 lg:pr-3" alt="logo" />
-      <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold font-poppins" style={{ color: '#3C99AC', opacity: 0.38 }}>CURE</h1>
-    </div>
-    <p className="text-base sm:text-lg lg:text-xl font-light text-[#518C98]">
-      Unpacking protein structure-to-function relationships
-    </p>
-    <p className="text-base sm:text-lg lg:text-xl mb-5 font-light text-[#518C98]">
-      through large, high-resolution, quantitative datasets.
-    </p>
-    <div className="flex space-x-4 pt-2 pb-10 justify-center">
-      <Button
-        className="bg-[#06B7DB] text-white rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
-        size="md"
-        onClick={() => router.push(user?.user_name ? '/dashboard' : '/login')}
-      >
-        {user?.user_name ? "Dashboard" : "Get Started"}
-      </Button>
-      <Button
-        className="bg-transparent text-[#06B7DB] border border-[#06B7DB] rounded-lg px-6 py-2 text-lg transition-all duration-300 hover:scale-105"
-        size="md"
-        color="primary"
-        onClick={() => router.push('/about')}
-      >
-        Learn More
-      </Button>
-    </div>
-  </div>
+				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 relative text-center">
+					<div className="flex justify-center">
+						<img
+							src="/resources/images/thumb.png"
+							title="An example of a database entry for an enzyme variant."
+							alt="Front page main image" 
+							className="rounded-t-3xl w-full max-w-[1000px] select-none h-auto object-cover" 
+							draggable="false"
+						/>
+					</div>
+				</div>
+			</section>
 
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 relative text-center">
-    <div className="flex justify-center">
-      <img
-        src="/resources/images/thumb.png"
-        alt="Dashboard image" 
-        className="rounded-t-3xl w-full max-w-[1000px] select-none h-auto object-cover" 
-        draggable="false"
-      />
-    </div>
-  </div>
-</section>
-                                            
+			<div className="mx-4 sm:mx-8 lg:mx-24 py-20 bg-white">
+				{/* Mission Section */}
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10">
+					<div className="lg:pt-1">
+						<h2 className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
+							OUR MISSION
+						</h2>
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">
+							Innovative Protein Engineering
+						</h3>
+						<p className="mb-6 pb-6 text-gray-500 text-lg dark:text-gray-200">
+							The Design2Data workflow was developed in the Siegel Lab
+							with the central research goal of improving the current predictive limitations of protein-modeling software
+							by functionally characterizing single-amino-acid enzyme variants in a robust model system.
+							This workflow is undergraduate-friendly,
+							and students have an opportunity to practice protein design,
+							mutagenesis, and enzyme-characterization assays.
+							The workflow is intuitively organized through engineering’s conceptual progression of
+							design&ndash;build&ndash;test.
+						</p>
+						<Button
+							variant="bordered"
+							onPress={() => window.location.href = '/about'}
+							className="w-[250px] h-[40px] font-semibold border-[#06B7DB] border-2 text-[#06B7DB] transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
+						>
+							Learn More
+						</Button>
+					</div>
+					<div className="flex justify-center lg:justify-start">
+						<img 
+							src="/resources/images/Homepage.png" 
+							draggable="false" 
+							className="select-none rounded-lg object-cover max-w-full" 
+							title="An image of the original cohort of professors in the D@D Network."
+							alt="photo"
+						/>
+					</div>
+				</div>
 
+				{/* How It Works section */}
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-20 items-center">
+					<div className="lg:pt-1">
+						<h2 className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
+							HOW IT WORKS
+						</h2>
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">
+							Design, Build, &amp; Test
+						</h3>
+						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
+							D2D students upload their colorimetric kinetic and thermal assay data for enzyme varaiants
+							that they designed, purified, and characterized.
+						</p>
+					</div>
+					<div className="flex justify-center lg:justify-start">
+						<img
+							src="/resources/images/card_2.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of a student&rsquo;s dashboard, showing an enzyme variant in progress, with the image caption, &ldquo;40+ institutions submitting data through D2DCure&rdquo;"
+							alt="40+ institutions submitting data through D2DCure"
+						/>
+					</div>
+				</div>
 
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10 items-center">
+					<div className="order-2 lg:order-1 flex justify-center lg:justify-start">
+						<img
+							src="/resources/images/card_large.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of a faculty member&rsquo;s curation list."
+							alt="zoom-in of curation"
+						/>
+					</div>
+					<div className="order-1 lg:order-2 lg:pt-1">
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h3>
+						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
+							D2D faculty, in a two-step process,
+							review and approve data with appropriate controls;
+							data that fails to meet network standards is flagged for replication.
+						</p>
+					</div>
+				</div>
 
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-10 items-center">
+					<div className="lg:pt-1">
+						<h3 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze &amp; Predict</h3>
+						<p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
+							The D2D system combines contributions from thousands of students into a single database.
+							Data are analyzed to solve the next-generation challenge in protein design:
+							prediction of function.
+						</p>
+					</div>
+					<div className="flex justify-center lg:justify-start">
+						<img
+							src="/resources/images/card_3.png"
+							draggable="false"
+							className="max-w-full select-none"
+							title="A zoom-in of the color key for the main characterization database, with the image caption, &ldquo;438+ Mutants characterized&rdquo;"
+							alt="438+ Mutants characterized" />
+					</div>
+				</div>
 
-      <div className="mx-4 sm:mx-8 lg:mx-24 py-20 bg-white">
+				{/* Submit Button */}
+				<div className="flex justify-center mt-10 lg:mt-20">
+					<Button
+						onPress={() => window.location.href = '/login'}
+						className="w-[250px] h-[40px] font-semibold bg-[#06B7DB] text-white transition-all duration-300 hover:shadow-xl hover:scale-105"
+					>
+						Submit Data
+					</Button>
+				</div>
+			</div>
 
-        {/* Mission Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10">
-          <div className="lg:pt-1">
-            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
-              OUR MISSION
-            </p>
-            <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Innovative Protein Engineering</h1>
-            <p className="mb-6 pb-6 text-gray-500 text-lg dark:text-gray-200">
-            The Design-to-Data workflow was developed in the Siegel Lab with the central research of improving the current predictive limitations of protein modeling software by functionally characterizing single amino acid mutants in a robust model system. This workflow is undergraduate-friendly, and students have an opportunity to practice protein design, kunkel mutagenesis, and enzyme characterization assays. The workflow is intuitively organized through engineering’s conceptual progression of design-build-test. 
-            </p>
-            <Button
-              variant="bordered"
-              onPress={() => window.location.href = '/login'}
-              className="w-[250px] h-[40px] font-semibold border-[#06B7DB] border-2 text-[#06B7DB] transition-all duration-300 hover:bg-[#06B7DB] hover:text-white hover:shadow-xl hover:scale-105"
-            >
-              Learn More
-            </Button>
-          </div>
-          <div className="flex justify-center lg:justify-start">
-            <img 
-              src="/resources/images/Homepage.png" 
-              draggable="false" 
-              className="select-none rounded-lg object-cover max-w-full" 
-              alt="mockup" 
-            />
-          </div>
-        </div>
+			{showCookieNotice && user?.user_name && (
+				<section className="fixed max-w-[300px] p-3 mx-auto bg-white border border-gray-200 dark:bg-gray-800 right-6 bottom-6 dark:border-gray-700 rounded-xl shadow-xl">
+					<h2 className="font-semibold text-gray-800 dark:text-white text-sm">
+						🍪 Cookie Notice
+					</h2>
 
-        {/* Analyze and Submit Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-20 items-center">
-          <div className="lg:pt-1">
-            <p className="text-lg font-regular text-gray-500" style={{ color: '#06B7DB' }}>
-              HOW IT WORKS
-            </p>
-            <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Analyze and Submit</h1>
-            <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              D2D students upload their colorimetric kinetic and thermal assay data for enzyme va that they studied.
-            </p>
-          </div>
-          <div className="flex justify-center lg:justify-start">
-            <img src="/resources/images/card_2.png" draggable="false" className="max-w-full select-none" alt="mockup" />
-          </div>
-        </div>
+					<p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+						We use cookies to ensure that we give you the best experience on our website.{' '}
+						<a href="#" className="text-blue-500 hover:underline">
+							Read cookies policies
+						</a>
+					</p>
+					
+					<div className="flex items-center justify-between mt-3 gap-x-2 shrink-0">
+						<button 
+							onClick={() => console.log('Manage preferences clicked')}
+							className="text-[11px] text-gray-800 underline transition-colors duration-300 dark:text-white dark:hover:text-gray-400 hover:text-gray-600 focus:outline-none"
+						>
+							Manage preferences
+						</button>
 
-        {/* Curate Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-40 mt-10 items-center">
-          <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
-            <img src="/resources/images/card_large.png" draggable="false" 
-            className="max-w-full select-none" alt="mockup" />
-          </div>
-          <div className="order-1 lg:order-2 lg:pt-1">
-            <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Curate</h1>
-            <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              D2D faculty and admin in a two-step process review and approve data with appropriate controls; data that fails to meet network standards is flagged for replication.
-            </p>
-          </div>
-        </div>
+						<button 
+							onClick={handleAcceptCookies}
+							className="text-[11px] bg-gray-900 font-medium rounded-lg hover:bg-gray-700 text-white px-3 py-1.5 duration-300 transition-colors focus:outline-none"
+						>
+							Accept
+						</button>
+					</div>
+				</section>
+			)}
 
-        {/* Characterize Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 mt-10 items-center">
-          <div className="lg:pt-1">
-            <h1 className="text-2xl lg:text-4xl mb-4 font-inter dark:text-white">Characterize</h1>
-            <p className="text-lg text-gray-500 dark:text-gray-200 max-w-lg">
-              The D2D system facilitates characterization contributions of thousands of students to solve the next generation challenge in protein design: function prediction.
-            </p>
-          </div>
-          <div className="flex justify-center lg:justify-start">
-            <img src="/resources/images/card_3.png" draggable="false" className="max-w-full select-none" alt="mockup" />
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-center mt-10 lg:mt-20">
-          <Button
-            onPress={() => window.location.href = '/login'}
-            className="w-[250px] h-[40px] font-semibold bg-[#06B7DB] text-white transition-all duration-300 hover:shadow-xl hover:scale-105"
-          >
-            Submit Data
-          </Button>
-        </div>
-      </div>
-
-      {showCookieNotice && user?.user_name && (
-        <section className="fixed max-w-[300px] p-3 mx-auto bg-white border border-gray-200 dark:bg-gray-800 right-6 bottom-6 dark:border-gray-700 rounded-xl shadow-xl">
-          <h2 className="font-semibold text-gray-800 dark:text-white text-sm">🍪 Cookie Notice</h2>
-
-          <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-            We use cookies to ensure that we give you the best experience on our website.{' '}
-            <a href="#" className="text-blue-500 hover:underline">Read cookies policies</a>
-          </p>
-          
-          <div className="flex items-center justify-between mt-3 gap-x-2 shrink-0">
-            <button 
-              onClick={() => console.log('Manage preferences clicked')}
-              className="text-[11px] text-gray-800 underline transition-colors duration-300 dark:text-white dark:hover:text-gray-400 hover:text-gray-600 focus:outline-none"
-            >
-              Manage preferences
-            </button>
-
-            <button 
-              onClick={handleAcceptCookies}
-              className="text-[11px] bg-gray-900 font-medium rounded-lg hover:bg-gray-700 text-white px-3 py-1.5 duration-300 transition-colors focus:outline-none"
-            >
-              Accept
-            </button>
-          </div>
-        </section>
-      )}
-
-      <Footer />
-    </div>
-  );
+			<Footer />
+		</div>
+	);
 }
