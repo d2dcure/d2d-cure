@@ -10,12 +10,6 @@ import {
 	Card,
 	CardBody,
 	Chip,
-	Avatar,
-	Tooltip,
-	Input,
-	Modal,
-	ModalContent,
-	ModalBody,
 	Spinner,
 	Popover,
 	PopoverTrigger,
@@ -443,7 +437,7 @@ const Dashboard = () => {
 								</div>
 								<Table aria-label="Variant Profiles" classNames={{ table: 'min-h-[100px]' }}>
 									<TableHeader>
-										<TableColumn>STATUS</TableColumn>
+										<TableColumn>Status</TableColumn>
 										<TableColumn>Enzyme</TableColumn>
 										<TableColumn>Variant</TableColumn>
 										<TableColumn>ID</TableColumn>
@@ -492,13 +486,8 @@ const Dashboard = () => {
 							{/* Gel Image Uploads Table */}
 							<div>
 								<div className="flex justify-between items-center mb-4">
-									<h3 className="text-xl text-gray-500">My Gel Image Uploads</h3>
+									<h3 className="text-xl text-gray-500">Gel Image Uploads</h3>
 									<div className="flex gap-2">
-										<Link href="/submit/gel_image_upload/all" passHref>
-											<Button variant="bordered" className="border-[#06B7DB] text-[#06B7DB]">
-												View All Images
-											</Button>
-										</Link>
 										<Link href="/submit/gel_image_upload" passHref>
 											<Button color="primary" className="bg-[#06B7DB]">
 												Upload New Image
