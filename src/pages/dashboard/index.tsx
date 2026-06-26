@@ -504,16 +504,12 @@ const Dashboard = () => {
 										}}
 									>
 										<TableHeader>
-											<TableColumn>PREVIEW</TableColumn>
-											<TableColumn>FILENAME</TableColumn>
-											<TableColumn>INSTITUTION</TableColumn>
+											<TableColumn>Preview</TableColumn>
+											<TableColumn>Filename</TableColumn>
 											<TableColumn>Actions</TableColumn>
 										</TableHeader>
 										<TableBody>
 											<TableRow>
-												<TableCell>
-													<Spinner size="sm" />
-												</TableCell>
 												<TableCell>
 													<Spinner size="sm" />
 												</TableCell>
@@ -553,7 +549,7 @@ const Dashboard = () => {
 														href="/submit/gel_image_upload"
 														className="font-medium text-[#06B7DB] hover:text-[#06B7DB]/80"
 													>
-														Upload your first image
+														Upload your first image.
 													</Link>
 												</p>
 											</div>
@@ -568,9 +564,8 @@ const Dashboard = () => {
 										}}
 									>
 										<TableHeader>
-											<TableColumn>PREVIEW</TableColumn>
-											<TableColumn>FILENAME</TableColumn>
-											<TableColumn>INSTITUTION</TableColumn>
+											<TableColumn>Preview</TableColumn>
+											<TableColumn>Filename</TableColumn>
 											<TableColumn>Actions</TableColumn>
 										</TableHeader>
 										<TableBody>
@@ -584,7 +579,6 @@ const Dashboard = () => {
 														/>
 													</TableCell>
 													<TableCell className="max-w-[200px] truncate">{image.filename}</TableCell>
-													<TableCell>{image.institution}</TableCell>
 													<TableCell>
 														<div className="flex gap-2">
 															<Button isIconOnly variant="light" onClick={() => setSelectedImageData(image)}>
