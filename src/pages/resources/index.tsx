@@ -51,7 +51,7 @@ const Resources = () => {
 					{[
 						{
 							title: "Structure & Sequence Files",
-							link: "/resources/StructuredFiles",
+							link: "/resources/StructureFiles",
 							linkText: "View Files"
 						},
 						{
