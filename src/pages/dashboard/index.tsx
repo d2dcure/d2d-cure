@@ -78,7 +78,6 @@ const Dashboard = () => {
 	const { user } = useUser();
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	//const [characterizationData, setCharacterizationData] = useState<CharacterizationData[]>([]);
 	const [characterizationData, setCharacterizationData] = useState<any[]>([]);
 	const [isError, setIsError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
@@ -658,6 +657,7 @@ const Dashboard = () => {
 				type={toastConfig.type}
 			/>
 
+			{/* Pop-up for confirmation of gel image deletion */}
 			<ConfirmationModal
 				isOpen={confirmationModal.show}
 				onClose={() => setConfirmationModal({ show: false, imageKey: null })}
@@ -668,6 +668,7 @@ const Dashboard = () => {
 				cancelText="Cancel"
 			/>
 
+			{/* Pop-up for viewing of gel images */}
 			{selectedImageData && (
 				<div
 					className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
@@ -765,8 +766,9 @@ const Dashboard = () => {
 						>
 							<div className="flex justify-between items-start mb-6">
 								<div>
-									<h3 className="text-xl lg:text-2xl font-semibold text-gray-800">Image Details</h3>
-									<p className="text-sm text-gray-500 mt-1">View and manage image information</p>
+									<h3 className="text-xl lg:text-2xl font-semibold text-gray-800">
+										Image Details
+									</h3>
 								</div>
 								<button
 									className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -784,28 +786,19 @@ const Dashboard = () => {
 									<p className="font-medium break-words mt-1 text-gray-800">{selectedImageData.filename}</p>
 								</div>
 
-								<div className="grid grid-cols-2 gap-3 sm:gap-4">
-									<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-										<label className="text-sm font-medium text-gray-600">Institution</label>
-										<p className="font-medium mt-1 text-gray-800">{selectedImageData.institution}</p>
-									</div>
-
-									<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-										<label className="text-sm font-medium text-gray-600">Variant</label>
-										<p className="font-medium mt-1 text-gray-800">{selectedImageData.variant}</p>
-									</div>
+								<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+									<label className="text-sm font-medium text-gray-600">Variant</label>
+									<p className="font-medium mt-1 text-gray-800">{selectedImageData.variant}</p>
 								</div>
 
-								<div className="grid grid-cols-2 gap-3 sm:gap-4">
-									<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-										<label className="text-sm font-medium text-gray-600">Date</label>
-										<p className="font-medium mt-1 text-gray-800">{selectedImageData.fileDate}</p>
-									</div>
+								<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+									<label className="text-sm font-medium text-gray-600">Uploaded By</label>
+									<p className="font-medium mt-1 text-gray-800">{selectedImageData.userName}</p>
+								</div>
 
-									<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-										<label className="text-sm font-medium text-gray-600">Uploaded By</label>
-										<p className="font-medium mt-1 text-gray-800">{selectedImageData.userName}</p>
-									</div>
+								<div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+									<label className="text-sm font-medium text-gray-600">Date</label>
+									<p className="font-medium mt-1 text-gray-800">{selectedImageData.fileDate}</p>
 								</div>
 
 								<div className="pt-4 space-y-3">
@@ -841,7 +834,7 @@ const Dashboard = () => {
 												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 												</svg>
-												As the uploader, you can delete this image
+												As the uploader, you can delete this image.
 											</div>
 										</>
 									)}
