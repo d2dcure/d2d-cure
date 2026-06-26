@@ -17,11 +17,15 @@ const Resources = () => {
 							<BreadcrumbItem>Resources</BreadcrumbItem>
 						</Breadcrumbs>
 						<div className="pt-4 lg:pt-10">
-							<h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-inter tracking-tight leading-tight mb-4">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-inter tracking-tight leading-tight mb-4">
 								Resources
-							</h1>
+							</h2>
 							<p className="text-base md:text-lg lg:text-xl text-gray-500 max-w-lg">
-								Explore Comprehensive Resources for D2D CURE: Delve into Structural Insights, Sequence Data, and Research Publications for β-glucosidase B (BglB)
+								Explore resources for students and faculty related
+								to <abbr title="Design2Data">D2D</abbr> Projects:
+								Delve into structures, sequence data, background information, and
+								research publications for our network&apos;s enzymes, and
+								access helpful tools and applications.
 							</p>
 						</div>
 					</div>
