@@ -32,27 +32,82 @@ const Resources = () => {
 					<div className="hidden lg:flex justify-center items-center">
 						<img 
 							src="/resources/images/Design-Data-class-UC-Davis.webp" 
-							alt="mockup" 
 							className="max-w-full h-auto rounded-2xl mt-8"
 							draggable="false"
 							loading="lazy"
 							unselectable="on"
+							title="A student in a labcoat working on her laptop"
+							alt="photo"
 						/>
 					</div>
 				</div>
 			</div>
 
-			{/* Data Section */}
+			{/* Input Files Section */}
 			<div className="px-4 md:px-8 lg:px-24 py-8 md:py-16">
-				<h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
-					Data
-				</h2>
+				<h3 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
+					Input Files
+				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10">
 					{[
 						{
-							title: "Structure & Sequence Files",
+							title: "Structure Files",
 							link: "/resources/StructureFiles",
+							desc: ".pdb files and other input files for use with Foldit",
 							linkText: "View Files"
+						},
+						{
+							title: "Sequence Files",
+							link: "/resources/StructureFiles#",
+							desc: ".fasta files",
+							linkText: "View Files"
+						},
+						{
+							title: "Spreadsheet Template Files",
+							link: "/resources/StructureFiles",
+							desc: ".xlsx files for use in uploading data",
+							linkText: "View Files"
+						}
+					].map((item, index) => (
+						<Card 
+							key={index} 
+							className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
+							as={Link}
+							href={item.link}
+							isPressable
+						>
+							<CardBody className="text-xl md:text-2xl lg:text-3xl font-light overflow-hidden">
+								<p className="pl-4 pt-2">{item.title}</p>
+								<span className="text-sm pl-8 pb-3 text-gray-500 max-w-lg">
+									{item.desc}
+								</span>
+							</CardBody>
+							<CardFooter>
+								<span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
+									{item.linkText} {'>'}
+								</span>
+							</CardFooter>
+						</Card>
+					))}
+				</div>
+			</div>
+
+			{/* Tools Section */}
+			<div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
+				<h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
+					Process
+				</h2>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{[
+						{
+							title: "Lab Manual",
+							link: "#",
+							linkText: "Open Manual"
+						},
+						{
+							title: "Publications",
+							link: "/resources/publications",
+							linkText: "Learn More"
 						},
 						{
 							title: "Oligo Search",
@@ -78,44 +133,6 @@ const Resources = () => {
 							title: "Enzyme Rate Calculator",
 							link: "http://d2d-graph-applet.vercel.app/",
 							linkText: "Visit Calculator"
-						}
-					].map((item, index) => (
-						<Card 
-							key={index} 
-							className="h-[170px] hover:scale-105 transition-transform overflow-hidden cursor-pointer flex flex-col justify-between"
-							as={Link}
-							href={item.link}
-							isPressable
-						>
-							<CardBody className="text-xl md:text-2xl lg:text-3xl font-light overflow-hidden">
-								<p className="pl-4 pt-2">{item.title}</p>
-							</CardBody>
-							<CardFooter>
-								<span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
-									{item.linkText} {'>'}
-								</span>
-							</CardFooter>
-						</Card>
-					))}
-				</div>
-			</div>
-
-			{/* Process Section */}
-			<div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
-				<h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
-					Process
-				</h2>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{[
-						{
-							title: "Lab Manual",
-							link: "#",
-							linkText: "Open Manual"
-						},
-						{
-							title: "Publications",
-							link: "/resources/publications",
-							linkText: "Learn More"
 						}
 					].map((item, index) => (
 						<Card 

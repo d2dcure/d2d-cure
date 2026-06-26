@@ -128,7 +128,7 @@ export default function Home() {
 							src="/resources/images/Homepage.png" 
 							draggable="false" 
 							className="select-none rounded-lg object-cover max-w-full" 
-							title="An image of the original cohort of professors in the D@D Network."
+							title="An image of the original cohort of professors in the D2D Network."
 							alt="photo"
 						/>
 					</div>
