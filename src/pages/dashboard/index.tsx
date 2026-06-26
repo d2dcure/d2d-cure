@@ -340,34 +340,6 @@ const Dashboard = () => {
 		setSelectedImageData(gelImages[nextIndex]);
 	}
 
-	const faqs = [
-		{
-			question: 'What is D2D Cure and how does it work?',
-			answer:
-				'D2D Cure (Design2Data) is a research platform that connects students and researchers in investigating protein sequence-structure-function relationships...'
-		},
-		{
-			question: 'How do I submit characterization data?',
-			answer:
-				'To submit characterization data, navigate to the submission section...'
-		},
-		{
-			question: 'What happens after I submit my data?',
-			answer:
-				"After submission, your data goes through a curation process. First, it's marked as 'Submitted for Curation'..."
-		},
-		{
-			question: 'How can I collaborate with team members?',
-			answer:
-				'D2D Cure supports team collaboration through its teammate system...'
-		},
-		{
-			question: 'How do I manage my gel images?',
-			answer:
-				'You can upload, view, and manage gel images through the dashboard...'
-		}
-	];
-
 	return (
 		<>
 			<NavBar />
@@ -646,58 +618,6 @@ const Dashboard = () => {
 								)}
 							</div>
 						</div>
-
-						{/* FAQ Section */}
-						<section className="py-10">
-							<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-								<div className="mb-10">
-									<Chip className="bg-[#E6F1FE] mt-2 text-[#06B7DB]" variant="flat">
-										FAQs
-									</Chip>
-									<h2 className="text-4xl text-gray-900 leading-[3.25rem]">Frequently Asked Questions</h2>
-								</div>
-
-								<div className="space-y-4">
-									{faqs.map((faq, index) => (
-										<div
-											key={index}
-											className={`accordion py-6 px-6 border border-solid border-gray-200 rounded-2xl transition-all duration-500`}
-										>
-											<button
-												className="accordion-toggle flex items-center justify-between leading-8 text-gray-900 w-full text-left font-medium"
-												onClick={() => toggleAccordion(index)}
-											>
-												<h5 className="text-lg hover:text-[#06B7DB]">{faq.question}</h5>
-												<svg
-													className={`transition-transform duration-500 ${activeIndex === index ? 'rotate-180' : ''}`}
-													width="22"
-													height="22"
-													viewBox="0 0 22 22"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M16.5 8.25L12.4142 12.3358C11.7475 13.0025 11.4142 13.3358 11 13.3358C10.5858 13.3358 10.2525 13.0025 9.58579 12.3358L5.5 8.25"
-														stroke="currentColor"
-														strokeWidth="1.6"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													></path>
-												</svg>
-											</button>
-
-											<div
-												className={`accordion-content transition-all duration-500 overflow-hidden ${
-													activeIndex === index ? 'max-h-64' : 'max-h-0'
-												}`}
-											>
-												<p className="text-base text-gray-600 leading-6 mt-4">{faq.answer}</p>
-											</div>
-										</div>
-									))}
-								</div>
-							</div>
-						</section>
 					</div>
 				</ErrorChecker>
 			</AuthChecker>
