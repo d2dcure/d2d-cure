@@ -63,7 +63,7 @@ const Resources = () => {
 							linkText: "View Files"
 						},
 						{
-							title: "Spreadsheet Template Files",
+							title: "Spreadsheet Templates",
 							link: "/resources/StructureFiles",
 							desc: ".xlsx files for use in uploading data",
 							linkText: "View Files"
@@ -76,7 +76,7 @@ const Resources = () => {
 							href={item.link}
 							isPressable
 						>
-							<CardBody className="text-xl md:text-2xl lg:text-3xl font-light overflow-hidden">
+							<CardBody className="text-1xl md:text-2xl lg:text-3xl font-light overflow-hidden">
 								<p className="pl-4 pt-2">{item.title}</p>
 								<span className="text-sm pl-8 pb-3 text-gray-500 max-w-lg">
 									{item.desc}
@@ -94,44 +94,21 @@ const Resources = () => {
 
 			{/* Tools Section */}
 			<div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
-				<h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
-					Process
-				</h2>
+				<h3 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
+					Tools
+				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{[
 						{
-							title: "Lab Manual",
-							link: "#",
-							linkText: "Open Manual"
-						},
-						{
-							title: "Publications",
-							link: "/resources/publications",
-							linkText: "Learn More"
-						},
-						{
-							title: "Oligo Search",
+							title: "Oligo Search Tool",
 							link: "/resources/oligosearch",
-							linkText: "Search Database"
+							desc: "Tool to search for DNA 33-mers for use as a primers for single-point gene mutantation.",
+							linkText: "Search for primer sequence"
 						},
 						{
-							title: "Complete BgLb Sequence",
-							link: "#",
-							linkText: "View Sequence"
-						},
-						{
-							title: "How data is calculated",
-							link: "#",
-							linkText: "Learn More"
-						},
-						{
-							title: "How to interpret data",
-							link: "#",
-							linkText: "Learn More"
-						},
-						{
-							title: "Enzyme Rate Calculator",
+							title: "Enzyme-Rate Calculator",
 							link: "http://d2d-graph-applet.vercel.app/",
+							desc: "External tool to calculate enzyme rates from Google sheet files with absorbance vs. time data",
 							linkText: "Visit Calculator"
 						}
 					].map((item, index) => (
@@ -142,8 +119,11 @@ const Resources = () => {
 							href={item.link}
 							isPressable
 						>
-							<CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
-								<h3 className="pl-4 pt-2">{item.title}</h3>
+							<CardBody className="text-1xl md:text-2xl lg:text-3xl font-light overflow-hidden">
+								<p className="pl-4 pt-2">{item.title}</p>
+								<span className="text-sm pl-8 pb-3 text-gray-500 max-w-lg">
+									{item.desc}
+								</span>
 							</CardBody>
 							<CardFooter>
 								<span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
@@ -155,13 +135,38 @@ const Resources = () => {
 				</div>
 			</div>
 
-			{/* Protein Science Section */}
+			{/* Miscellaneous */}
 			<div className="px-4 md:px-8 lg:px-24 py-4 md:py-10">
-				<h2 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
-					Protein Science
-				</h2>
+				<h3 className="text-3xl md:text-4xl lg:text-5xl mb-8 font-inter tracking-tight">
+					Miscellaneous
+				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{[
+						{
+							title: "Lab Manual",
+							link: "#",
+							linkText: "Open Manual"
+						},
+						{
+							title: "Complete BglB Sequence",
+							link: "#",
+							linkText: "View Sequence"
+						},
+						{
+							title: "How data are calculated",
+							link: "#",
+							linkText: "Learn More"
+						},
+						{
+							title: "How to interpret data",
+							link: "#",
+							linkText: "Learn More"
+						},
+						{
+							title: "Publications",
+							link: "/resources/publications",
+							linkText: "Learn More"
+						},
 						{
 							title: "Rosetta Education Hub",
 							link: "http://rosettacommons.org/education/",
@@ -175,8 +180,11 @@ const Resources = () => {
 							href={item.link}
 							isPressable
 						>
-							<CardBody className="text-2xl md:text-3xl lg:text-4xl font-light overflow-hidden">
-								<h3 className="pl-4 pt-2">{item.title}</h3>
+							<CardBody className="text-1xl md:text-2xl lg:text-3xl font-light overflow-hidden">
+								<p className="pl-4 pt-2">{item.title}</p>
+								<span className="text-sm pl-8 pb-3 text-gray-500 max-w-lg">
+									{item.desc}
+								</span>
 							</CardBody>
 							<CardFooter>
 								<span className="text-sm pl-4 pb-3 text-[#06B7DB] group-hover:font-semibold hover:font-semibold">
