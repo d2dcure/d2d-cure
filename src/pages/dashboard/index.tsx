@@ -10,10 +10,7 @@ import {
 	Card,
 	CardBody,
 	Chip,
-	Spinner,
-	Popover,
-	PopoverTrigger,
-	PopoverContent
+	Spinner
 } from '@nextui-org/react';
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
@@ -22,7 +19,6 @@ import { CardFooter } from '@nextui-org/react';
 import { useUser } from '@/components/UserProvider';
 import { useDisclosure } from '@nextui-org/react';
 import { AuthChecker } from '@/components/AuthChecker';
-import { RiSparklingFill } from 'react-icons/ri';
 import StatusChip from '@/components/StatusChip';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
