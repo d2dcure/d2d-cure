@@ -356,7 +356,7 @@ const Dashboard = () => {
 						{/* Action Cards Section */}
 						<div
 							className={`grid gap-6 mb-20 ${
-								user?.status === 'ADMIN' || user?.status === 'PROFESSOR'
+								user?.status === 'ADMIN' || user?.status === 'professor'
 									? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
 									: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
 							}`}
@@ -377,7 +377,7 @@ const Dashboard = () => {
 									link: '/submit/gel_image_upload',
 									linkText: 'Upload Image'
 								},
-								...(user?.status === 'ADMIN' || user?.status === 'PROFESSOR'
+								...(user?.status === 'ADMIN' || user?.status === 'professor'
 									? [
 											{
 												title: 'Curate',
