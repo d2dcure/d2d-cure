@@ -330,6 +330,10 @@ const ProfileSettings = () => {
                                   Manage students
                                 </Button>
                               </Link>
+							</>
+						  )}
+						  {(user?.status === "ADMIN") && (
+							<>
                               <Link href="/institution-management">
                                 <Button className="mt-4 w-full text-white bg-[#06B7DB]">
                                   Manage Institutions
