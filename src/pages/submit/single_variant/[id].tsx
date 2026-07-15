@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
-import axios from 'axios';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { AuthChecker } from '@/components/AuthChecker';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -28,7 +26,6 @@ import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
 import WildTypeThermoDataView from '@/components/submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
-import { Linden_Hill } from 'next/font/google';
 
 
 const SingleVariant = () => {
