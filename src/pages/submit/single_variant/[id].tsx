@@ -744,7 +744,7 @@ const SingleVariant = () => {
       if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">ΔΔG =</span>
+            <span className="font-semibold">ΔΔ<i>G</i> =</span>
             <span>{entryData.Rosetta_score} REU</span>
           </div>
         );
@@ -754,7 +754,7 @@ const SingleVariant = () => {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">c =</span>
+            <span className="font-semibold"><i>c</i> =</span>
             <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
           </div>
         );
@@ -775,14 +775,14 @@ const SingleVariant = () => {
 			return (
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center gap-1">
-					<span className="font-semibold">K<sub>M</sub> =</span>
+					<span className="font-semibold"><i>K</i><sub>M</sub> =</span>
 					<span>
 						{kmAvgRounded}
 						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
 					</span>
 					</div>
 					<div className="flex items-center gap-1">
-					<span className="font-semibold">k<sub>cat</sub> =</span>
+					<span className="font-semibold"><i>k</i><sub>cat</sub> =</span>
 					<span>
 						{kcatAvgRounded}
 						{kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
@@ -799,7 +799,7 @@ const SingleVariant = () => {
 			return (
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center gap-1">
-					<span className="font-semibold">k<sub>cat</sub>/K<sub>M</sub> =</span>
+					<span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
 					<span>
 						{kcatOverKMRounded}
 						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
@@ -815,7 +815,7 @@ const SingleVariant = () => {
         const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>50</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>50</sub> =</span>
             <span>{t50} ± {t50sd}°C</span>
           </div>
         );
@@ -826,7 +826,7 @@ const SingleVariant = () => {
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>M</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>M</sub> =</span>
             <span>{tm} ± {tmSD}°C</span>
           </div>
         );
