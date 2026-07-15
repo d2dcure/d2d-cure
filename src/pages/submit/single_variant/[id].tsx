@@ -185,7 +185,7 @@ const SingleVariant = () => {
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
       return 'Protein yield?';
     }
-    if (oldData.KM_avg === null && newData.KM_avg !== null) {
+    if (oldData.kcat_over_KM === null && newData.kcat_over_KM !== null) {
       return 'Kinetic assay data uploaded?';
     }
     if (oldData.WT_raw_data_id === 0 && newData.WT_raw_data_id !== 0) {
@@ -760,35 +760,54 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Kinetic assay data uploaded?" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
-        const kmAvg = parseFloat(entryData.KM_avg);
-        const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
-        const kcatAvg = parseFloat(entryData.kcat_avg);
-        const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
+      if (item === "Kinetic assay data uploaded?" && entryData.kcat_over_KM !== null) {
+		if (entryData.KM_avg !== null && entryData.kcat_avg !== null) {
+			const kmAvg = parseFloat(entryData.KM_avg);
+			const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
+			const kcatAvg = parseFloat(entryData.kcat_avg);
+			const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
 
-        const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
-        const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
-        const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
-        const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
+			const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
+			const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
+			const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
+			const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
 
-        return (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1">
-              <span className="font-semibold">K<sub>M</sub> =</span>
-              <span>
-                {kmAvgRounded}
-                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-semibold">k<sub>cat</sub> =</span>
-              <span>
-                {kcatAvgRounded}
-                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
-              </span>
-            </div>
-          </div>
-        );
+			return (
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-1">
+					<span className="font-semibold">K<sub>M</sub> =</span>
+					<span>
+						{kmAvgRounded}
+						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+					</span>
+					</div>
+					<div className="flex items-center gap-1">
+					<span className="font-semibold">k<sub>cat</sub> =</span>
+					<span>
+						{kcatAvgRounded}
+						{kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
+					</span>
+					</div>
+				</div>
+			);
+		} else {
+			const kcatOverKM = parseFloat(entryData.kcat_over_KM);
+			const kcatOverKMSD = entryData.kcat_over_KM !== null ? parseFloat(entryData.kcat_over_KM_SD) : null;
+			const kcatOverKMRounded = isNaN(kcatOverKM) ? '' : kcatOverKM.toFixed(2);
+			const kcatOverKMSDRounded = kcatOverKMSD !== null && !isNaN(kcatOverKMSD) ? kcatOverKMSD.toFixed(2) : null;
+
+			return (
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-1">
+					<span className="font-semibold">k<sub>cat</sub>/K<sub>M</sub> =</span>
+					<span>
+						{kcatOverKMRounded}
+						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
+					</span>
+					</div>
+				</div>
+			);
+		}
       }
 
       if (item === "Thermostability assay data uploaded?" && entryData.T50 !== null) {
