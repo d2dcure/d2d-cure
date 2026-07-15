@@ -64,17 +64,17 @@ const SingleVariant = () => {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const checklistItems = [
-    'Protein Modeled',
-    'Oligonucleotide ordered',
-    'Plasmid sequence verified',
-    'Protein induced',
-    'Protein yield',
-    'Kinetic assay data uploaded',
-    'Wild type kinetic data uploaded',
-    'Thermostability assay data uploaded',
-    'Wild type thermostability assay data uploaded',
-    'Melting point values uploaded',
-    'Gel uploaded',
+    'Protein modeled?',
+    'Oligonucleotide ordered?',
+    'Plasmid sequence verified?',
+    'Protein production induced?',
+    'Protein yield?',
+    'Kinetic assay data uploaded?',
+    'Wild-type kinetic assay data uploaded?',
+    'Thermostability assay data uploaded?',
+    'Wild-type thermostability assay data uploaded?',
+    'Melting point values uploaded?',
+    'SDS-PAGE gel uploaded?',
   ];
 
   // Helper function to show toast
@@ -171,37 +171,37 @@ const SingleVariant = () => {
   const checkItemCompletion = (oldData: any, newData: any) => {
     // Check each field to see if it changed from incomplete to complete
     if (oldData.Rosetta_score === null && newData.Rosetta_score !== null) {
-      return 'Protein Modeled';
+      return 'Protein modeled?';
     }
     if (oldData.oligo_ordered === false && newData.oligo_ordered === true) {
-      return 'Oligonucleotide ordered';
+      return 'Oligonucleotide ordered?';
     }
     if (oldData.plasmid_verified === false && newData.plasmid_verified === true) {
-      return 'Plasmid sequence verified';
+      return 'Plasmid sequence verified?';
     }
     if (oldData.expressed === null && newData.expressed !== null) {
-      return 'Protein induced';
+      return 'Protein production induced?';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
-      return 'Protein yield';
+      return 'Protein yield?';
     }
     if (oldData.KM_avg === null && newData.KM_avg !== null) {
-      return 'Kinetic assay data uploaded';
+      return 'Kinetic assay data uploaded?';
     }
     if (oldData.WT_raw_data_id === 0 && newData.WT_raw_data_id !== 0) {
-      return 'Wild type kinetic data uploaded';
+      return 'Wild-type kinetic assay data uploaded?';
     }
     if (oldData.T50 === null && newData.T50 !== null) {
-      return 'Thermostability assay data uploaded';
+      return 'Thermostability assay data uploaded?';
     }
     if (oldData.WT_temp_raw_data_id === 0 && newData.WT_temp_raw_data_id !== 0) {
-      return 'Wild type thermostability assay data uploaded';
+      return 'Wild-type thermostability assay data uploaded?';
     }
     if (oldData.Tm === null && newData.Tm !== null) {
-      return 'Melting point values uploaded';
+      return 'Melting point values uploaded?';
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
-      return 'Gel uploaded';
+      return 'SDS-PAGE gel uploaded?';
     }
     return null;
   };
@@ -423,7 +423,7 @@ const SingleVariant = () => {
     try {
       let response;
       switch (itemToDelete) {
-        case 'Protein Modeled':
+        case 'Protein modeled?':
           // Reset modeling data
           response = await fetch('/api/updateCharacterizationDataRosettaScore', {
             method: 'POST',
@@ -435,7 +435,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Oligonucleotide ordered':
+        case 'Oligonucleotide ordered?':
           // Reset oligo data
           response = await fetch('/api/updateCharacterizationDataOligoOrdered', {
             method: 'POST',
@@ -447,7 +447,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Plasmid sequence verified':
+        case 'Plasmid sequence verified?':
           // Reset plasmid data
           response = await fetch('/api/updateCharacterizationDataPlasmidStuff', {
             method: 'POST',
@@ -460,7 +460,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Protein induced':
+        case 'Protein production induced?':
           // Reset induction data
           response = await fetch('/api/updateCharacterizationDataExpressed', {
             method: 'POST',
@@ -472,7 +472,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Protein yield':
+        case 'Protein yield?':
           // First update KineticRawData
           response = await fetch('/api/updateKineticRawDataYield', {
             method: 'POST',
@@ -495,7 +495,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Kinetic assay data uploaded':
+        case 'Kinetic assay data uploaded?':
           // First delete the KineticRawData entry
           const response1 = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
@@ -523,7 +523,7 @@ const SingleVariant = () => {
           }
           break;
 
-        case 'Wild type kinetic data uploaded':
+        case 'Wild-type kinetic assay data uploaded?':
           // Reset WT kinetic data reference
           response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
             method: 'POST',
@@ -535,7 +535,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Thermostability assay data uploaded':
+        case 'Thermostability assay data uploaded?':
           // First delete the TempRawData entry
           const response2 = await fetch('/api/deleteTempData', {
             method: 'DELETE',
@@ -560,7 +560,7 @@ const SingleVariant = () => {
           }
           break;
 
-        case 'Wild type thermostability assay data uploaded':
+        case 'Wild-type thermostability assay data uploaded?':
           response = await fetch('/api/updateCharacterizationDataWTTempRawDataId', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -571,7 +571,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Melting point values uploaded':
+        case 'Melting point values uploaded?':
           // Reset melting point data
           response = await fetch('/api/updateMeltingPointValues', {
             method: 'POST',
@@ -584,7 +584,7 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Gel uploaded':
+        case 'SDS-PAGE gel uploaded?':
           // Reset gel data
           response = await fetch('/api/updateCharacterizationDataGelFilename', {
             method: 'POST',
@@ -691,47 +691,47 @@ const SingleVariant = () => {
     // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
       switch (item) {
-        case "Protein Modeled":
+        case "Protein modeled?":
           return entryData.Rosetta_score === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Oligonucleotide ordered":
+        case "Oligonucleotide ordered?":
           return entryData.oligo_ordered === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Plasmid sequence verified":
+        case "Plasmid sequence verified?":
           return entryData.plasmid_verified === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Protein induced":
+        case "Protein production induced?":
           return entryData.expressed === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Protein yield":
+        case "Protein yield?":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Kinetic assay data uploaded":
+        case "Kinetic assay data uploaded?":
           return entryData.kcat_over_KM === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Wild type kinetic data uploaded":
+        case "Wild-type kinetic assay data uploaded?":
           return entryData.WT_raw_data_id === 0
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Thermostability assay data uploaded":
+        case "Thermostability assay data uploaded?":
           return entryData.T50 === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Wild type thermostability assay data uploaded":
+        case "Wild-type thermostability assay data uploaded?":
           return entryData.WT_temp_raw_data_id === 0
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Melting point values uploaded":
+        case "Melting point values uploaded?":
           return entryData.Tm === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Gel uploaded":
+        case "SDS-PAGE gel uploaded?":
           return entryData.gel_filename === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
@@ -741,7 +741,7 @@ const SingleVariant = () => {
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein Modeled" && entryData.Rosetta_score !== null) {
+      if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
         return (
           <div className="flex items-center gap-1">
             <span className="font-semibold">ΔΔG =</span>
@@ -750,7 +750,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Protein yield" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
+      if (item === "Protein yield?" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
@@ -760,7 +760,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Kinetic assay data uploaded" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
+      if (item === "Kinetic assay data uploaded?" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
         const kmAvg = parseFloat(entryData.KM_avg);
         const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
         const kcatAvg = parseFloat(entryData.kcat_avg);
@@ -791,7 +791,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Thermostability assay data uploaded" && entryData.T50 !== null) {
+      if (item === "Thermostability assay data uploaded?" && entryData.T50 !== null) {
         const t50 = parseFloat(entryData.T50).toFixed(1); 
         const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
         return (
@@ -802,7 +802,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Melting point values uploaded" && entryData.Tm !== null) {
+      if (item === "Melting point values uploaded?" && entryData.Tm !== null) {
         const tm = parseFloat(entryData.Tm).toFixed(1); 
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
@@ -813,7 +813,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Gel uploaded" && entryData.gel_filename) {
+      if (item === "SDS-PAGE gel uploaded?" && entryData.gel_filename) {
         return (
           <div className="flex items-center gap-2">
             <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
@@ -835,7 +835,7 @@ const SingleVariant = () => {
         );
       }
 
-      if (item === "Plasmid sequence verified" && entryData.ab1_filename) {
+      if (item === "Plasmid sequence verified?" && entryData.ab1_filename) {
         return (
           <div className="flex items-center gap-2">
             <button
@@ -854,23 +854,23 @@ const SingleVariant = () => {
     // Helper function to determine if an item should be accessible
     const isItemAccessible = (item: string) => {
       switch (item) {
-        case 'Protein Modeled':
-        case 'Oligonucleotide ordered':
-        case 'Protein induced':
+        case 'Protein modeled?':
+        case 'Oligonucleotide ordered?':
+        case 'Protein production induced?':
           return true;
         
-        case 'Plasmid sequence verified':
+        case 'Plasmid sequence verified?':
           return entryData.oligo_ordered === true;
         
-        case 'Protein yield':
-        case 'Gel uploaded':
+        case 'Protein yield?':
+        case 'SDS-PAGE gel uploaded?':
           return entryData.expressed === true;
         
-        case 'Kinetic assay data uploaded':
-        case 'Wild type kinetic data uploaded':
-        case 'Thermostability assay data uploaded':
-        case 'Wild type thermostability assay data uploaded':
-        case 'Melting point values uploaded':
+        case 'Kinetic assay data uploaded?':
+        case 'Wild-type kinetic assay data uploaded?':
+        case 'Thermostability assay data uploaded?':
+        case 'Wild-type thermostability assay data uploaded?':
+        case 'Melting point values uploaded?':
           return entryData.yield_avg !== null;
         
         default:
@@ -1008,17 +1008,17 @@ const SingleVariant = () => {
 
   const renderDetailView = () => {
     const checklistItems = [
-      "Protein Modeled",
-      "Oligonucleotide ordered",
-      "Plasmid sequence verified",
-      'Protein induced',
-      'Protein yield',
-      "Kinetic assay data uploaded",
-      "Wild type kinetic data uploaded",
-      "Thermostability assay data uploaded",
-      "Wild type thermostability assay data uploaded",
-      "Melting point values uploaded",
-      "Gel uploaded"
+      "Protein modeled?",
+      "Oligonucleotide ordered?",
+      "Plasmid sequence verified?",
+      'Protein production induced?',
+      'Protein yield?',
+      "Kinetic assay data uploaded?",
+      "Wild-type kinetic assay data uploaded?",
+      "Thermostability assay data uploaded?",
+      "Wild-type thermostability assay data uploaded?",
+      "Melting point values uploaded?",
+      "SDS-PAGE gel uploaded?"
     ];
 
     const currentIndex = checklistItems.indexOf(selectedDetail);
@@ -1027,27 +1027,27 @@ const SingleVariant = () => {
 
     const DetailComponent = (() => {
       switch (selectedDetail) {
-        case "Protein Modeled":
+        case "Protein modeled?":
           return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Oligonucleotide ordered":
+        case "Oligonucleotide ordered?":
           return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
-        case "Plasmid sequence verified":
+        case "Plasmid sequence verified?":
           return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-        case 'Protein induced':
+        case 'Protein production induced?':
           return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case 'Protein yield':
+        case 'Protein yield?':
           return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Kinetic assay data uploaded":
+        case "Kinetic assay data uploaded?":
           return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-        case "Wild type kinetic data uploaded":
+        case "Wild-type kinetic assay data uploaded?":
           return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-        case "Thermostability assay data uploaded":
+        case "Thermostability assay data uploaded?":
           return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Wild type thermostability assay data uploaded":
+        case "Wild-type thermostability assay data uploaded?":
           return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Melting point values uploaded":
+        case "Melting point values uploaded?":
           return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Gel uploaded":
+        case "SDS-PAGE gel uploaded?":
           return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
