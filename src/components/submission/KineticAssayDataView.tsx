@@ -492,6 +492,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           alert('Data saved successfully');
           const updatedEntry = response2.data;
           updateEntryData(updatedEntry);
+		  setCurrentView('checklist');
         } else {
           console.error('Error updating CharacterizationData:', response2.data);
           alert('Error updating CharacterizationData');
