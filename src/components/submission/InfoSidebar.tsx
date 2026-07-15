@@ -350,8 +350,12 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
               </div>
             </div>
           )}
+
+
+
+		  	<small>(Please sign your comments with your initials; e.g., "~ABC".)</small>
         </div>
-      </div>
+	  </div>
     </div>
   );
 };

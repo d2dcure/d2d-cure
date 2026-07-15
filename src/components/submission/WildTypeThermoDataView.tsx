@@ -426,7 +426,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
 		  <div className="flex gap-2">
 			&hellip;Or
 			<Link href="/submit?wild_type=1" passHref>
-					create a new wild-type dataset.
+					create a new wild-type dataset  or add thermostability assay data to an existing WT dataset.
 			</Link>
 		  </div>
         </div>
