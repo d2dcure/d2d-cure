@@ -204,11 +204,6 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
         </div>
 
         <div>
-          <span className="font-medium text-sm">Plate ID</span>
-          <p className='text-gray-500 text-sm'>{entryData.plateId || '0000000000'}</p>
-        </div>
-
-        <div>
           <span className="font-medium text-sm">Institution</span>
           <p className='text-gray-500 text-sm'>{entryData.institution}</p>
         </div>
@@ -350,9 +345,6 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
               </div>
             </div>
           )}
-
-
-
 		  	<small>(Please sign your comments with your initials; e.g., "~ABC".)</small>
         </div>
 	  </div>
