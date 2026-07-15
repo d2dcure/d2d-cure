@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 import Papa from 'papaparse';
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
@@ -422,6 +423,12 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
               </TableBody>
             </Table>
           </div>
+		  <div className="flex gap-2">
+			&hellip;Or
+			<Link href="/submit?wild_type=1" passHref>
+					create a new wild-type dataset.
+			</Link>
+		  </div>
         </div>
       </CardBody>
 

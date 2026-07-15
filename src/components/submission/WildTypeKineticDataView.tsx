@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
 import axios from 'axios';
+import Link from 'next/link';
 import Papa from 'papaparse';
 
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
@@ -449,6 +450,12 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
               </TableBody>
             </Table>
           </div>
+		  <div className="flex gap-2">
+			&hellip;Or
+			<Link href="/submit?wild_type=1" passHref>
+					create a new wild-type dataset.
+			</Link>
+		  </div>
         </div>
       </CardBody>
 
