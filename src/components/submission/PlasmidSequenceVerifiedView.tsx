@@ -167,6 +167,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
       const updatedEntry = await response.json();
       updateEntryData(updatedEntry);
       setShowUploadBox(false);
+	  setCurrentView('checklist');
     } catch (error) {
       console.error('Error during file upload or database update:', error);
       setFileError(
