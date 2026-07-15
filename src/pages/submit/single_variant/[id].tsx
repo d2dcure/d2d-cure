@@ -910,9 +910,9 @@ const SingleVariant = () => {
           }}
         >
           <TableHeader>
-            <TableColumn>Status</TableColumn>
+            <TableColumn align="center">Status</TableColumn>
             <TableColumn>Checklist Item</TableColumn>
-            <TableColumn align="start">Additional Info</TableColumn>
+            <TableColumn align="start">Data</TableColumn>
             <TableColumn align="center">Actions</TableColumn>
           </TableHeader>
           <TableBody>
