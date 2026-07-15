@@ -989,7 +989,7 @@ const SingleVariant = () => {
                       >
                         <span 
                           className={`text-lg ${
-                            (!accessible || entryData.curated)
+                            (!accessible || entryData.curated || getStatusStyle(item).text == "Incomplete")
                               ? "text-gray-300 cursor-not-allowed"
                               : "text-danger cursor-pointer active:opacity-50"
                           }`}
@@ -1000,7 +1000,7 @@ const SingleVariant = () => {
                             }
                           }}
                         >
-                          <DeleteIcon />
+							<DeleteIcon />
                         </span>
                       </Tooltip>
                     </div>
