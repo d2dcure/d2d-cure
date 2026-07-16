@@ -10,16 +10,18 @@ datasource db {
 }
 
 model GeneralInfo {
-  id              Int     @id @default(autoincrement()) @db.UnsignedTinyInt
-  abbr            String  @db.VarChar(4)
-  full_name       String  @db.TinyText
-  year            Int     @db.Year
-  species         String  @db.TinyText
-  EC_number       String  @db.VarChar(14)
-  UniProt_number  String  @db.VarChar(10)
-  PDB_entries     String? @db.TinyText
-  molar_mass      Int     @db.UnsignedMediumInt
-  ext_coefficient Int     @db.UnsignedMediumInt
-  pathway_desc    String  @db.Text
-  assay_desc      String  @db.Text
+  id              Int      @id @default(autoincrement()) @db.UnsignedTinyInt
+  abbr            String   @db.VarChar(4)
+  full_name       String   @db.TinyText
+  year            Int      @db.Year
+  species         String   @db.TinyText
+  EC_number       String   @db.VarChar(14)
+  UniProt_number  String   @db.VarChar(10)
+  PDB_entries     String?  @db.TinyText
+  molar_mass      Int      @db.UnsignedMediumInt
+  ext_coefficient Int      @db.UnsignedMediumInt
+  pathway_desc    String?  @db.Text
+  assay_desc      String?  @db.Text
+  metadata        String?  @db.Text
+  foldit_score    Float    @default(0) @db.Float
 }

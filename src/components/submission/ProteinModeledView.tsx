@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {Input} from "@nextui-org/input";
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
+interface Enzymes {
+	abbr: string;
+	foldit_score: number;
+}
+
 interface ProteinModeledViewProps {
   entryData: any;
   setCurrentView: (view: string) => void;
@@ -15,14 +20,13 @@ interface ValidationMessage {
 }
 
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
+  const [enzymes, setEnzymes] = useState<Enzymes[]>([]);
+	const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
 
   const [WT, setWT] = useState<string>(expectedWTScore.toString());
   const [variant, setVariant] = useState<string>(WT.toString());
   const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-
 
   const validateScores = useCallback(() => {
     let isValid = true;
@@ -80,6 +84,16 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
     setValidationMessages(messages);
     return isValid;
   }, [WT, variant]);
+
+	useEffect(() => {
+		const fetchEnzymes = async () => {
+			const response = await fetch('/api/getEnzymes');
+			const data = await response.json();
+			setEnzymes(data);
+		};
+
+		fetchEnzymes(); 
+	}, []);
 
   useEffect(() => {
     if (WT || variant) {
