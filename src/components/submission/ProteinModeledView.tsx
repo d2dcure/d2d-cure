@@ -2,10 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {Input} from "@nextui-org/input";
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
-interface Enzymes {
-	abbr: string;
-	foldit_score: number;
-}
 
 interface ProteinModeledViewProps {
   entryData: any;
@@ -20,10 +16,11 @@ interface ValidationMessage {
 }
 
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const [enzymes, setEnzymes] = useState<Enzymes[]>([]);
+  const [folditScore, setFolditScore] = useState<number>(0);
 	const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
 
-  const [WT, setWT] = useState<string>(expectedWTScore.toString());
+  const [WT, setWT] = useState<string>(folditScore.toString());
+  //const [WT, setWT] = useState<string>(expectedWTScore.toString());
   const [variant, setVariant] = useState<string>(WT.toString());
   const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +35,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (wtScore !== expectedWTScore) {
         messages.push({
           type: 'warning',
-          message: `The expected score for the WT enzyme is ${expectedWTScore}. Please confirm and resubmit.`,
+          message: `The expected score for the WT enzyme is ${folditScore}. Please confirm and resubmit.`,
           field: 'WT'
         });
         isValid = false;
@@ -86,13 +83,15 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
   }, [WT, variant]);
 
 	useEffect(() => {
-		const fetchEnzymes = async () => {
-			const response = await fetch('/api/getEnzymes');
+		const enzyme = "BglB";  // TEMP; TODO: remove hardcoding!
+		const fetchScore = async () => {
+			const response = await fetch(`/api/getFolditScoresFromAbbr?abbr=${enzyme}`);
 			const data = await response.json();
-			setEnzymes(data);
+			console.log('Score: ', data.foldit_score);
+			setFolditScore(data.foldit_score);
 		};
 
-		fetchEnzymes(); 
+		fetchScore(); 
 	}, []);
 
   useEffect(() => {
