@@ -15,12 +15,14 @@ interface ValidationMessage {
 }
 
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const [WT, setWT] = useState<string>('');
-  const [variant, setVariant] = useState<string>('');
+  const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
+
+  const [WT, setWT] = useState<string>(expectedWTScore.toString());
+  const [variant, setVariant] = useState<string>(WT.toString());
   const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const expectedWTScore = -1089.697; // Example expected score
+
 
   const validateScores = useCallback(() => {
     let isValid = true;
@@ -125,7 +127,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
     return validationMessages.filter(msg => msg.field === field);
   };
 
-  // Add helper function to check if all validations pass
+  // Helper function to check if all validations pass
   const allChecksPass = () => {
     return WT && variant && validationMessages.length === 0;
   };
