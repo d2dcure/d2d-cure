@@ -11,6 +11,7 @@ import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
 
+
 // Interfaces /////////////////////////////////////////////////////////////////
 interface Institution {
   abbr: string;
