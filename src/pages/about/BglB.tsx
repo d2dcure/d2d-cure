@@ -48,6 +48,7 @@ const BglBPage = () => {
     return characterizationData.some(item => item.resnum === rosettaNum);
   };
 
+  // TODO: Remove all the horrible hard-coding in this file!
   return (
     <>
       <NavBar />
