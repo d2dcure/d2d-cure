@@ -1,5 +1,5 @@
 // prismaAbcDClient.ts
-import { PrismaClient } from './prisma/generated/client_AbCD';
+import { PrismaClient } from './prisma/generated/client_AbcD';
 
 const prismaAbcDClientSingleton = () => new PrismaClient();
 
