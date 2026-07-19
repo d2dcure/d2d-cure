@@ -90,7 +90,7 @@ const OligoSearchPage = () => {
             </h1>
             <p className="mb-12 text-left text-gray-600 max-w-2xl">
               Select the enzyme and enter an enzyme variant code to search for a reverse-compliment,
-              codon-optimized DNA 33-mer for use as a primer for the gene mutant.
+              codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer for use as a primer for the gene mutant.
             </p>
             
             <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
