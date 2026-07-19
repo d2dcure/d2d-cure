@@ -30,7 +30,6 @@ const OligoSearchPage = () => {
         }
 		const activeEnzymes: any[] = [];
 		for (let enzyme of enzymes) {
-			//if (true) {
 			if (enzyme.active === true) {
 				activeEnzymes.push(enzyme);
 			}
