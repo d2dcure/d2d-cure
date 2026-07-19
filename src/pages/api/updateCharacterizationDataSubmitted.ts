@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   if (req.method === 'POST') {
@@ -12,7 +12,7 @@ export default async function handler(req:any, res:any) {
     console.log("Received request to submit for curation with ID:", parsedId); // Log for debugging
 
     try {
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id: parsedId },
         data: { 
           submitted_for_curation: true,

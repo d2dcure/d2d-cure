@@ -48,6 +48,7 @@ const BglBPage = () => {
     return characterizationData.some(item => item.resnum === rosettaNum);
   };
 
+  // TODO: Remove all the horrible hard-coding in this file!
   return (
     <>
       <NavBar />
@@ -168,7 +169,7 @@ const BglBPage = () => {
                     `}
                     onClick={() => {
                       if (hasData && residue.Rosetta_resnum) {
-                        window.location.href = `/database/BglB_characterization?highlight=${residue.Rosetta_resnum}`;
+                        window.location.href = `/database/characterization_data/BglB?highlight=${residue.Rosetta_resnum}`;
                       }
                     }}
                   >

@@ -1,10 +1,10 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   if (req.method === 'POST') {
     const { id, WT_temp_raw_data_id } = req.body;
     try {
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id },
         data: { WT_temp_raw_data_id: WT_temp_raw_data_id }
       });

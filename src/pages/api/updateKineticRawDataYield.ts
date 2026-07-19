@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prismaProteins from '../../../prismaProteinsClient';
+import prismaBglB from '../../../prismaBglBClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -14,13 +14,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const mapped_yield_units = yield_units;
 
       // Check if a KineticRawData entry exists for the parent_id
-      let kineticRawData = await prismaProteins.kineticRawData.findFirst({
+      let kineticRawData = await prismaBglB.kineticRawData.findFirst({
         where: { parent_id: parentId },
       });
 
       if (kineticRawData) {
         // Update existing row
-        kineticRawData = await prismaProteins.kineticRawData.update({
+        kineticRawData = await prismaBglB.kineticRawData.update({
           where: { id: kineticRawData.id },
           data: {
             yield: yield_value,
@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       } else {
         // Create new row
-        kineticRawData = await prismaProteins.kineticRawData.create({
+        kineticRawData = await prismaBglB.kineticRawData.create({
           data: {
             parent_id: parentId,
             yield: yield_value,

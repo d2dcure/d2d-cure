@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   try {
@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
     
     // Fetch KineticRawData and TempRawData in parallel
     const [kineticData, tempData] = await Promise.all([
-      prismaProteins.kineticRawData.findMany({
+      prismaBglB.kineticRawData.findMany({
         where: {
           parent_id: { in: ids }
         },
@@ -23,7 +23,7 @@ export default async function handler(req: any, res: any) {
           approved_by_student: true
         }
       }),
-      prismaProteins.tempRawData.findMany({
+      prismaBglB.tempRawData.findMany({
         where: {
           parent_id: { in: ids }
         },

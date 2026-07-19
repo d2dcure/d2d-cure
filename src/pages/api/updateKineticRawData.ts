@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -26,7 +26,7 @@ export default async function handler(req: any, res: any) {
     const mapped_yield_units = mapYieldUnits(yield_units);
 
     // Insert or update KineticRawData
-    let kineticRawData = await prismaProteins.kineticRawData.findFirst({
+    let kineticRawData = await prismaBglB.kineticRawData.findFirst({
       where: {
         parent_id,
       },
@@ -34,7 +34,7 @@ export default async function handler(req: any, res: any) {
 
     if (kineticRawData) {
       // Update existing row
-      kineticRawData = await prismaProteins.kineticRawData.update({
+      kineticRawData = await prismaBglB.kineticRawData.update({
         where: { id: kineticRawData.id },
         data: {
           user_name,
@@ -53,7 +53,7 @@ export default async function handler(req: any, res: any) {
       });
     } else {
       // Create new row
-      kineticRawData = await prismaProteins.kineticRawData.create({
+      kineticRawData = await prismaBglB.kineticRawData.create({
         data: {
           user_name,
           variant,

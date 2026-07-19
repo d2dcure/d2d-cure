@@ -1,10 +1,10 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   if (req.method === 'POST') {
     const { id, Rosetta_score } = req.body;
     try {
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id },
         data: { Rosetta_score: Rosetta_score }
       });

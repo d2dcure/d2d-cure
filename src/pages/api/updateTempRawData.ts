@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 function mapSlopeUnits(value:any) {
   switch (value.trim()) {
@@ -36,13 +36,13 @@ export default async function handler(req:any, res:any) {
     const mapped_slope_units = mapSlopeUnits(slope_units); // Map to enum value
 
     // Check if there's already a row with this parent_id
-    let tempRawData = await prismaProteins.tempRawData.findFirst({
+    let tempRawData = await prismaBglB.tempRawData.findFirst({
       where: { parent_id },
     });
 
     if (tempRawData) {
       // Update existing row
-      tempRawData = await prismaProteins.tempRawData.update({
+      tempRawData = await prismaBglB.tempRawData.update({
         where: { id: tempRawData.id },
         data: {
           user_name, 
@@ -57,7 +57,7 @@ export default async function handler(req:any, res:any) {
       });
     } else {
       // Create new row
-      tempRawData = await prismaProteins.tempRawData.create({
+      tempRawData = await prismaBglB.tempRawData.create({
         data: {
           user_name, 
           variant, 

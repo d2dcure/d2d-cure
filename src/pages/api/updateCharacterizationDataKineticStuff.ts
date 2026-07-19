@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
   } = req.body;
 
   try {
-    const updatedCharacterizationData = await prismaProteins.characterizationData.update({
+    const updatedCharacterizationData = await prismaBglB.characterizationData.update({
       where: { id: parent_id },
       data: {
         yield_avg: yield_value,

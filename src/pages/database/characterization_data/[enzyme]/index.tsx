@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, Pagination } from "@nextui-org/react";
-import "../../../app/globals.css";
+import "../../../../app/globals.css";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Checkbox, Select, SelectItem, Input, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Popover, PopoverTrigger, PopoverContent, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
@@ -10,6 +10,7 @@ import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
+
 
 // Interfaces /////////////////////////////////////////////////////////////////
 interface Institution {
@@ -39,14 +40,6 @@ const calculateRelativeDeviation = (value: number, ref: number): number => {
   return relDeviation * 100;  // as percentage
 };
 
-function Page({ id, variant, wt_id}: { id: string, variant:string , wt_id:string}) {
-  const link = `/bglb?id=${id}&wt_id=${wt_id}`;
-  return <Link href={link}>
-    <button className="text-gray-600 hover:text-gray-800">
-      {variant}
-    </button>
-  </Link>;
-}
 
 const DataPage = () => {
   const [expandData, setExpandData] = useState(false);
@@ -56,7 +49,7 @@ const DataPage = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the BglB database
+  const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the database
   const [WTValues, setWTValues] = useState<any>(null);
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -85,7 +78,7 @@ const DataPage = () => {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
-  const { highlight } = router.query;
+  const { enzyme, highlight } = router.query;
 
   // Add this new state for tracking expanded rows
   const [expandedRows, setExpandedRows] = useState<ExpandedRows>({});
@@ -109,7 +102,7 @@ const DataPage = () => {
 
   // Add this useEffect to load the last clicked row from localStorage when the component mounts
   useEffect(() => {
-    const savedLastClickedRow = localStorage.getItem('lastClickedBglBRow');
+    const savedLastClickedRow = localStorage.getItem('lastClickedRow');
     if (savedLastClickedRow) {
       setLastClickedRowId(savedLastClickedRow);
     }
@@ -158,7 +151,7 @@ const DataPage = () => {
     });
 
     // Clear the last clicked row from localStorage
-    localStorage.removeItem('lastClickedBglBRow');
+    localStorage.removeItem('lastClickedRow');
     setLastClickedRowId(null);
     setHighlightedRowId(null);
   }, []); // Empty dependency array means this runs once on mount
@@ -957,7 +950,7 @@ const DataPage = () => {
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     link.setAttribute('download',
-		'BglB_characterization_data' + 
+		`${enzyme}_characterization_data` + 
 		(selectedInstitution ? "_" + selectedInstitution : "") +
 		(showNonCurated ? "" : "_curated") + '.csv');
     document.body.appendChild(link);
@@ -972,11 +965,11 @@ const DataPage = () => {
     
     // Save to both state and localStorage
     setLastClickedRowId(rowId);
-    localStorage.setItem('lastClickedBglBRow', rowId);
+    localStorage.setItem('lastClickedRow', rowId);
 
     if (expandData) {
       // If in expanded view, open detail page in new tab
-      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
     } else if (row.isAggregate) {
       // If it's an aggregate row, toggle expansion
       setExpandedRows(prev => ({
@@ -985,7 +978,7 @@ const DataPage = () => {
       }));
     } else {
       // If it's any individual row (including child rows), open detail page in new tab
-      window.open(`/database/BglB_characterization/${row.id}`, '_blank');
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
     }
   };
 
@@ -1136,10 +1129,11 @@ const DataPage = () => {
     };
     
     // Update URL without full page reload
+	// TODO: stop updating URL
     router.push(
       {
         pathname: router.pathname,
-        query
+        query: { enzyme: `${enzyme}` },
       }, 
       undefined, 
       { shallow: true }
@@ -1238,12 +1232,12 @@ const DataPage = () => {
           <Breadcrumbs className="mb-2">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/database">Database</BreadcrumbItem>
-            <BreadcrumbItem>BglB Characterization</BreadcrumbItem>
+            <BreadcrumbItem>{`${enzyme}`} Characterization Data</BreadcrumbItem>
           </Breadcrumbs>
 
           <div className="pt-3">
             <h1 className="mb-4 pb-4 lg:pb-14 text-4xl md:text-4xl lg:text-4xl font-inter dark:text-white">
-              BglB Variant Characterization Data
+              {`${enzyme}`} Variant Characterization Data
             </h1>
 
             {/* New flex container */}
@@ -1268,8 +1262,8 @@ const DataPage = () => {
                         <div>
                           <h2 className="text-xl font-light mb-2">Color Key</h2>
                           
-                          <Link href="/about/bglb" className="text-[#06B7DB] hover:underline mb-6 block text-sm">
-                            View full BglB Sequence
+                          <Link href={`/about/${enzyme}`} className="text-[#06B7DB] hover:underline mb-6 block text-sm">
+                            View full {`${enzyme}`} Sequence
                           </Link>
                           
                           {/* Color gradient bar */}
@@ -1658,7 +1652,7 @@ const DataPage = () => {
                   <div id="characterization-table" className="relative">
                     <Table
                       isHeaderSticky
-                      aria-label="BglB Variant Characterization Data"
+                      aria-label={`${enzyme} Variant Characterization Data`}
                       sortDescriptor={sortDescriptor}
                       onSortChange={(descriptor) => {
                         setSortDescriptor(descriptor as SortDescriptor);

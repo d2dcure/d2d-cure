@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -12,7 +12,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const kineticRawDataEntry = await prismaProteins.kineticRawData.findFirst({
+    const kineticRawDataEntry = await prismaBglB.kineticRawData.findFirst({
       where: { id: parseInt(id) },
     });
 

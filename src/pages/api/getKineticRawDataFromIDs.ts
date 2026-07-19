@@ -1,11 +1,11 @@
 // used in single variant submission process, when the user is going to select the kinetic assay WT 
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   const { ids } = req.body; 
 
   try {
-    const data = await prismaProteins.kineticRawData.findMany({
+    const data = await prismaBglB.kineticRawData.findMany({
       where: {
         id: {
           in: ids.map((id:any) => parseInt(id)),
