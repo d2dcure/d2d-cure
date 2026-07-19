@@ -10,7 +10,7 @@ import { ErrorChecker } from '@/components/ErrorChecker';
 
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
-  const [enzyme, setEnzyme] = useState<string>('');
+  const [enzyme, setEnzyme] = useState('');
   const [enzymeVariant, setEnzymeVariant] = useState('');
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
@@ -44,8 +44,7 @@ const OligoSearchPage = () => {
 
     const fetchOligosData = async () => {
       try {
-        const response = await fetch(`/api/getOligos?enzyme="${enzyme}"`);
-		//const response = await fetch('/api/getOligos?enzyme=BglB');
+        const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
         if (!response.ok) {
           throw new Error(`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
         }
@@ -62,8 +61,10 @@ const OligoSearchPage = () => {
     };
 
     fetchEnzymes();
-    fetchOligosData();
-  }, []);
+	if (enzyme) {
+    	fetchOligosData();
+	}
+  }, [enzyme]);
 
   const handleSubmit = () => {
     const foundOligo = oligosData.find(oligo => oligo.variant === enzymeVariant);

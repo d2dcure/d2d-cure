@@ -1,5 +1,5 @@
-import prismaBglB from "../../../prismaBglBClient";
 import prismaAbcD from "../../../prismaAbcDClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 // Look up and retrieve the Prisma client for the proper database.
 const getClient = (enzyme: string) => {
@@ -15,13 +15,12 @@ const getClient = (enzyme: string) => {
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'GET') {
-	const { enzyme } = req.query;  // Expect the enzyme name from query params.
-	if (!enzyme) {
+	const enzyme = (req.query.enzyme as string) || '';
+	if (enzyme == '') {
 		return res.status(400).json({ error: "Enzyme is required." });
 	}
 	const client = getClient(enzyme);
 	try {
-      //const oligos = await prismaBglB.oligos.findMany();
 	  const oligos = await client.oligos.findMany();
       res.status(200).json(oligos);
     } catch (error) {
