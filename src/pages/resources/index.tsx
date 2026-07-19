@@ -52,7 +52,7 @@ const Resources = () => {
             },
             {
               title: "Oligo Search",
-              link: "/resources/oligosearch",
+              link: "/resources/oligo_search",
               linkText: "Search Database"
             },
             {
