@@ -24,11 +24,18 @@ const OligoSearchPage = () => {
         if (!response.ok) {
           throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
         }
-        const data = await response.json();
-        if (!Array.isArray(data)) {
+        const enzymes = await response.json();
+        if (!Array.isArray(enzymes)) {
           throw new Error('GET /api/getEnzymes - Invalid data format: Expected array');
         }
-        setEnzymeList(data);
+		const activeEnzymes: any[] = [];
+		for (let enzyme of enzymes) {
+			//if (true) {
+			if (enzyme.active === true) {
+				activeEnzymes.push(enzyme);
+			}
+		}
+        setEnzymeList(activeEnzymes);
       } catch (error) {
         console.error('Error fetching enzymes:', error);
         setIsError(true);
