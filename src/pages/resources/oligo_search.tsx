@@ -89,8 +89,10 @@ const OligoSearchPage = () => {
               Oligo Search
             </h1>
             <p className="mb-12 text-left text-gray-600 max-w-2xl">
-              Select the enzyme and enter an enzyme variant code to search for a reverse-compliment,
-              codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer for use as a primer for the gene mutant.
+              Select the enzyme and
+			  enter an enzyme variant code to search for a reverse-compliment,
+              codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer 
+			  for use as a primer for the gene mutant.
             </p>
             
             <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
@@ -116,7 +118,7 @@ const OligoSearchPage = () => {
 
               <div className="w-full md:w-auto">
                 <label htmlFor="enzymeVariant" className="block mb-2">
-                  Enzyme Variant
+                  Enzyme Variant <small>(Use the format <code>A123C</code>.)</small>
                 </label>
                 <Input
                   type="text"
