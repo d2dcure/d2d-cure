@@ -44,7 +44,7 @@ const OligoSearchPage = () => {
 
     const fetchOligosData = async () => {
       try {
-        const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
+        const response = await fetch(`/api/getOligos?enzyme="${enzyme}"`);
 		//const response = await fetch('/api/getOligos?enzyme=BglB');
         if (!response.ok) {
           throw new Error(`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
