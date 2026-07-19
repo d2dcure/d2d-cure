@@ -1,24 +1,19 @@
 import NavBar from '@/components/NavBar';
 import React, { useState, useEffect } from 'react';
 import "../../app/globals.css";
-import { useUser } from '@/components/UserProvider';
-import { NextUIProvider } from "@nextui-org/react";
 import { Button } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
 import { Input } from "@nextui-org/input";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import Footer from '@/components/Footer';
 import { ErrorChecker } from '@/components/ErrorChecker';
 
 const OligoSearchPage = () => {
-  const { user } = useUser();
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
   const [enzymeVariant, setEnzymeVariant] = useState('');
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
-  const [filePath, setFilePath] = useState('/path/to/your/file.txt');
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -72,8 +67,6 @@ const OligoSearchPage = () => {
     }
   };
 
-  const sizes = ["sm", "md", "lg"];
-  const variants = ["flat", "bordered", "underlined", "faded"];
 
   return (
     <ErrorChecker 
