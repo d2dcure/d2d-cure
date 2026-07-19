@@ -10,7 +10,7 @@ import { ErrorChecker } from '@/components/ErrorChecker';
 
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
-  const [enzyme, setEnzyme] = useState('');
+  const [enzyme, setEnzyme] = useState<string>('');
   const [enzymeVariant, setEnzymeVariant] = useState('');
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
@@ -44,8 +44,8 @@ const OligoSearchPage = () => {
 
     const fetchOligosData = async () => {
       try {
-        //const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
-		const response = await fetch('/api/getOligos?enzyme=BglB');
+        const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
+		//const response = await fetch('/api/getOligos?enzyme=BglB');
         if (!response.ok) {
           throw new Error(`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
         }
@@ -108,6 +108,7 @@ const OligoSearchPage = () => {
                   Enzyme
                 </label>
                 <Select
+				  isRequired
                   size="sm"
                   id="enzyme"
                   value={enzyme}
@@ -116,7 +117,7 @@ const OligoSearchPage = () => {
                   className="w-full"
                 >
                   {enzymeList.map((enzyme) => (
-                    <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                    <SelectItem key={enzyme.abbr} value={enzyme.abbr}>
                       {enzyme.abbr}
                     </SelectItem>
                   ))}
@@ -155,7 +156,7 @@ const OligoSearchPage = () => {
                 <div className="text-gray-600">
                   <p className="mb-4">
                     The optimized DNA oligomer sequence to use as a DNA primer for the
-                    production of BgIB variant{" "}
+                    production of {enzyme} variant{" "}
                     <span className="text-black font-bold">{enzymeVariant}</span> is:
                   </p>
                   <p className="text-black font-bold break-words">{oligosDisplay}</p>
