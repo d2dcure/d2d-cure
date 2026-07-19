@@ -1,12 +1,12 @@
 generator client {
   provider      = "prisma-client-js"
-  output        = "./generated/client_proteins"
+  output        = "./generated/client_BglB"
   binaryTargets = ["native", "windows"]
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL_PROTEINS")
+  url      = env("DATABASE_URL_BGLB")
 }
 
 model CharacterizationData {

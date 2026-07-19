@@ -1,5 +1,5 @@
 ﻿// prismaBglBClient.ts
-import { PrismaClient } from './prisma/generated/client_proteins';
+import { PrismaClient } from './prisma/generated/client_BglB';
 
 const prismaBglBClientSingleton = () => new PrismaClient();
 
