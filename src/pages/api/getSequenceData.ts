@@ -1,9 +1,14 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
     if (req.method === 'GET') {
+		const enzyme = (req.query.enzyme as string) || 'BglB';  // TEMP
+		if (enzyme == '') {
+			return res.status(400).json({ error: "Enzyme is required." });
+		}
+		const client = getClient(enzyme);
         try {
-            const data = await prismaBglB.sequence.findMany({
+            const data = await client.sequence.findMany({
                 orderBy: {
                     id: 'asc'
                 }
