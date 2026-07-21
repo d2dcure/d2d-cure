@@ -1,12 +1,12 @@
-import NavBar from '@/components/NavBar';
-import React, { useState, useEffect } from 'react';
+import NavBar from "@/components/NavBar";
+import { useState, useEffect } from "react";
 import "../../app/globals.css";
 import { Button } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
 import { Input } from "@nextui-org/input";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import Footer from '@/components/Footer';
-import { ErrorChecker } from '@/components/ErrorChecker';
+import Footer from "@/components/Footer";
+import { ErrorChecker } from "@/components/ErrorChecker";
 
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
