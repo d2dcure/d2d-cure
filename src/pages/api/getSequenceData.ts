@@ -2,7 +2,7 @@ import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
     if (req.method === 'GET') {
-		const enzyme = (req.query.enzyme as string) || 'BglB';  // TEMP
+		const enzyme = (req.query.enzyme as string) || '';
 		if (enzyme == '') {
 			return res.status(400).json({ error: "Enzyme is required." });
 		}

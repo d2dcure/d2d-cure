@@ -158,7 +158,7 @@ const SubmitPage = () => {
       setEnzymeList(data);
     };
     const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData');
+      const response = await fetch('/api/getSequenceData?enzyme=BglB');  // TEMP
       const data = await response.json();
       setSequences(data);
     };
