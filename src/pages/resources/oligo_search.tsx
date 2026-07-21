@@ -93,9 +93,9 @@ const OligoSearchPage = () => {
           </Breadcrumbs>
           
           <div className="pt-8">
-            <h1 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
+            <h2 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
               Oligo Search
-            </h1>
+            </h2>
             <p className="mb-12 text-left text-gray-600 max-w-2xl">
               Select the enzyme and
 			  enter an enzyme variant code to search for a reverse-compliment,
