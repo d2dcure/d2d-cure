@@ -11,7 +11,9 @@ import { ErrorChecker } from "@/components/ErrorChecker";
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
+  const [resID, setResID] = useState('?');
   const [enzymeVariant, setEnzymeVariant] = useState('');
+  const [sequenceData, setSequenceData] = useState<any[]>([]);
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
   const [isError, setIsError] = useState(false);
@@ -56,15 +58,52 @@ const OligoSearchPage = () => {
       } catch (error) {
         console.error('Error fetching oligos:', error);
         setIsError(true);
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch oligos');
+        setErrorMessage(error instanceof Error ? error.message : `Failed to fetch oligos for ${enzyme}`);
       }
     };
 
+	const fetchSequenceData = async () => {
+		try {
+			const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
+			if (!response.ok) {
+        		throw new Error(
+					`GET /api/getSequenceData ${response.status} - Failed to fetch sequence data for ${enzyme}`);
+    		}
+			const sequenceData = await response.json();
+			if (!Array.isArray(sequenceData)) {
+				throw new Error(
+					"GET /api/getSequenceData - Invalid data format: Expected array");
+			}
+			setSequenceData(sequenceData);
+		} catch (error) {
+			console.error("Error fetching sequence data:", error);
+			setIsError(true);
+			setErrorMessage(
+				error instanceof Error ?
+				error.message :
+				`Failed to fetch sequence data for ${enzyme}`);
+		}
+	};
+
     fetchEnzymes();
 	if (enzyme) {
+		fetchSequenceData();
     	fetchOligosData();
 	}
   }, [enzyme]);
+
+
+  // Search the sequence data and return the one-letter residue code for the
+  // given residue number or return '?'.
+  const getResID = (resnum: number) => {
+		for (let sequenceDatum of sequenceData) {
+			if (resnum == sequenceDatum.Rosetta_resnum) {
+				return sequenceDatum.resid;
+			}
+		}
+		return '?';
+  };
+
 
   const handleSubmit = () => {
     const foundOligo = oligosData.find(oligo => oligo.variant === enzymeVariant);
@@ -85,8 +124,7 @@ const OligoSearchPage = () => {
       <NavBar />
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 mb-10 bg-white">
         <div className="w-full">
-          <Breadcrumbs
-          >
+          <Breadcrumbs>
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/resources">Resources</BreadcrumbItem>
             <BreadcrumbItem>Oligo Search</BreadcrumbItem>
@@ -115,7 +153,7 @@ const OligoSearchPage = () => {
                   value={enzyme}
                   onChange={(e) => setEnzyme(e.target.value)}
                   label="Select Enzyme"
-                  className="w-full"
+                  className="w-full md:w-[150px]"
                 >
                   {enzymeList.map((enzyme) => (
                     <SelectItem key={enzyme.abbr} value={enzyme.abbr}>
@@ -124,6 +162,28 @@ const OligoSearchPage = () => {
                   ))}
                 </Select>
               </div>
+
+			  {enzyme && (
+					<div className="w-full md:w-auto">
+						<label htmlFor="residue" className="block mb-2">
+							Residue
+						</label>
+						<Input
+							type="number"
+							id="resnum"
+							placeholder="#"
+							//value={resnum}
+							onChange={(e) => setResID(getResID(Number(e.target.value)))}
+							size="lg"
+							variant="bordered"
+							className="w-full md:w-[100px]"
+							radius="sm"
+							startContent={resID}
+							isInvalid={false}
+							errorMessage="Not a valid residue number"
+						/>
+					</div>
+			  )}
 
               {enzyme && (
 				<>
