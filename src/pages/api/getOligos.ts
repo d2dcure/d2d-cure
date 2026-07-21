@@ -1,17 +1,4 @@
-import prismaAbcD from "../../../prismaAbcDClient";
-import prismaBglB from "../../../prismaBglBClient";
-
-// Look up and retrieve the Prisma client for the proper database.
-const getClient = (enzyme: string) => {
-	switch (enzyme) {
-		case "AbcD":
-			return prismaAbcD;
-		case "BglB":
-			return prismaBglB;
-		default:
-			return prismaBglB;
-	}
-};
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'GET') {
