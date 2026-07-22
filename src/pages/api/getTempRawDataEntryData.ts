@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -12,7 +12,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const tempRawDataEntry = await prismaProteins.tempRawData.findFirst({
+    const tempRawDataEntry = await prismaBglB.tempRawData.findFirst({
       where: { 
         parent_id: parseInt(parent_id),
         slope_units: {

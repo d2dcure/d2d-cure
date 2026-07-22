@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'POST') {
@@ -9,7 +9,7 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: "Invalid yield average value" });
       }
 
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id },
         data: { yield_avg: yield_avg },
       });

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prismaProteins from '../../../prismaProteinsClient';
+import prismaBglB from '../../../prismaBglBClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       // Update the CharacterizationData table row with the new Tm and Tm_SD values
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id },
         data: {
           Tm: parseFloat(tm_mean), // Ensure these are stored as numbers

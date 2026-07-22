@@ -1,4 +1,4 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'DELETE') {
@@ -9,7 +9,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     // Delete the row with matching parent_id
-    await prismaProteins.tempRawData.deleteMany({
+    await prismaBglB.tempRawData.deleteMany({
       where: {
         parent_id: parent_id,
       },

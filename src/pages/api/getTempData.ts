@@ -1,8 +1,8 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req: any, res:any) {
   try {
-    const data = await prismaProteins.tempRawData.findUnique({
+    const data = await prismaBglB.tempRawData.findUnique({
       where: {
         id: parseInt(req.query.id)
       },

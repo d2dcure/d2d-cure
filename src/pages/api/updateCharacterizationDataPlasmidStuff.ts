@@ -1,10 +1,10 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   if (req.method === 'POST') {
     const { id, ab1_filename, plasmid_verified } = req.body;
     try {
-      const updatedEntry = await prismaProteins.characterizationData.update({
+      const updatedEntry = await prismaBglB.characterizationData.update({
         where: { id },
         data: { 
           plasmid_verified: plasmid_verified === true,

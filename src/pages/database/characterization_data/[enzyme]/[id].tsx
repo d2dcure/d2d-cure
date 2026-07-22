@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
-import "../../../app/globals.css";
+import "../../../../app/globals.css";
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
@@ -16,7 +16,7 @@ import StatusChip from '@/components/StatusChip';
 
 const DataPageView = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
   const { user } = useUser();
   
   const [entryData1, setEntryData1] = useState<any>(null);
@@ -441,7 +441,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                 </button>
 
                 <Link 
-                  href={`/contact/report?page=${encodeURIComponent(`/database/BglB_characterization/${id}`)}`}
+                  href={`/contact/report?page=${encodeURIComponent(`/database/characterization_data/${enzyme}/${id}`)}`}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
                 >
                   <BugIcon className="w-4 h-4" />
@@ -997,7 +997,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return 'Loading...';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -1169,7 +1169,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
               <Link href="/database">Database</Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
-              <Link href="/database/BglB_characterization">BglB Characterization</Link>
+              <Link href={`/database/characterization_data/${enzyme}`}>{`${enzyme}`} Characterization Data</Link>
             </BreadcrumbItem>
             <BreadcrumbItem>{getBreadcrumbDisplay(entryData1)}</BreadcrumbItem>
           </Breadcrumbs>

@@ -52,7 +52,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   useEffect(() => {
     const fetchOligosData = async () => {
       try {
-        const response = await fetch('/api/getOligos');
+        const response = await fetch('/api/getOligos?enzyme=BglB');  // TEMP
         const data = await response.json();
         setOligosData(data);
       } catch (error) {

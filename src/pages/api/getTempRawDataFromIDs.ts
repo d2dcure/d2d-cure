@@ -1,11 +1,11 @@
 // used in single variant submission process, when the user is going to select the temp assay WT 
-import prismaProteins from "../../../prismaProteinsClient";
+import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
   const { ids } = req.body; 
 
   try {
-    const data = await prismaProteins.tempRawData.findMany({
+    const data = await prismaBglB.tempRawData.findMany({
       where: {
         id: {
           in: ids.map((id:any) => parseInt(id)),

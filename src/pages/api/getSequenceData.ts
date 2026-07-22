@@ -1,12 +1,15 @@
-import prismaProteins from "../../../prismaProteinsClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
     if (req.method === 'GET') {
+		const enzyme = (req.query.enzyme as string) || '';
+		if (enzyme == '') {
+			return res.status(400).json({ error: "Enzyme is required." });
+		}
+		const client = getClient(enzyme);
         try {
-            const data = await prismaProteins.sequence.findMany({
-                orderBy: {
-                    id: 'asc'
-                }
+            const data = await client.sequence.findMany({
+                orderBy: {id: 'asc'}
             });
             res.status(200).json(data);
         } catch (error) {

@@ -24,4 +24,5 @@ model GeneralInfo {
   assay_desc      String?  @db.Text
   metadata        String?  @db.Text
   foldit_score    Float    @default(0) @db.Float
+  active          Boolean  @default(true)
 }
