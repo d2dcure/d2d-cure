@@ -23,7 +23,7 @@ const OligoSearchPage = () => {
 	const [enzymeVariant, setEnzymeVariant] = useState<string>('');
 	const [sequenceData, setSequenceData] = useState<any[]>([]);
 	const [oligosData, setOligosData] = useState<any[]>([]);
-	const [oligosDisplay, setOligosDisplay] = useState("");
+	//const [oligosDisplay, setFoundOligo] = useState("");
 	const [isError, setIsError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
@@ -129,7 +129,7 @@ const OligoSearchPage = () => {
 
 
 	// Return the variant using PDB numbering.
-	const getPDBNumbering = () => {
+	const getPDBNumbering = ():string => {
 		const foundResidue = sequenceData.find(
 				residue => residue.Rosetta_resnum == resnum);
 		if (foundResidue) {
@@ -142,12 +142,12 @@ const OligoSearchPage = () => {
 	}
 
 
-	const handleSubmit = () => {
+	const findOligo = () => {
 		const foundOligo = oligosData.find(oligo => oligo.variant === enzymeVariant);
 		if (foundOligo) {
-			setOligosDisplay(`${foundOligo.oligo}`);
+			return foundOligo.oligo;
 		} else {
-			setOligosDisplay("No matching oligo found for the specified variant.");
+			return "No matching oligo found for the specified variant."
 		}
 	};
 
@@ -171,11 +171,17 @@ const OligoSearchPage = () => {
 						<h2 className="mb-4 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
 							Oligo Search
 						</h2>
-						<p className="mb-12 text-left text-gray-600 max-w-2xl">
+						<p className="mb-4 text-justify  text-gray-600 max-w-2xl">
 							Select the enzyme and
-							choose an enzyme variant to search for a reverse-compliment,
+							choose an enzyme variant
+							(using Rosetta/Foldit numbering)
+							to search for a reverse-compliment,
 							codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer 
 							for use as a primer for the gene mutant for that variant.
+						</p>
+						<p className="mb-12 text-justify  text-gray-600 max-w-2xl">
+							Note: Primers may not be feasible
+							for the first and last several residues in an enzyme sequence.
 						</p>
 
 						{/* Dynamic Search Form */}						
@@ -276,14 +282,14 @@ const OligoSearchPage = () => {
 						<div className="mt-8 space-y-4">
 							<h3 className="text-lg font-semibold">Results</h3>
 							<div className="text-gray-600">
-								<p className="mb-4">
+								<p className="mb-4 text-justify  text-gray-600 max-w-2xl">
 									The optimized DNA oligomer sequence to use as a DNA primer for the
 									production of {enzyme} variant{" "}
 									<b>{enzymeVariant}</b>{" "}
 									(<abbr title="Protein DataBank">PDB</abbr>{" "}
 									numbering: {getPDBNumbering()}) is:
 								</p>
-								<p className="text-black font-bold break-words">{oligosDisplay}</p>
+								<p className="text-black font-bold break-words">{findOligo()}</p>
 							</div>
 						</div>
 					)}
