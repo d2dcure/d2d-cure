@@ -22,7 +22,7 @@ const BglBPage = () => {
     const fetchData = async () => {
       try {
         // Fetch sequence data
-        const seqResponse = await fetch('/api/getSequenceData');
+        const seqResponse = await fetch('/api/getSequenceData?enzyme=BglB');  // TEMP
         if (seqResponse.ok) {
           const seqData = await seqResponse.json();
           setSequenceData(seqData);

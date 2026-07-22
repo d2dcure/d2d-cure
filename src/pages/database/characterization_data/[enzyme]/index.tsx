@@ -534,7 +534,7 @@ const DataPage = () => {
         const [institutionsRes, characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
           fetch('/api/getInstitutions'),
           fetch('/api/getCharacterizationData'),
-          fetch('/api/getSequenceData'),
+          fetch('/api/getSequenceData?enzyme=BglB'),  // TEMP
           fetch('/api/getPublications')
         ]);
 
@@ -604,7 +604,7 @@ const DataPage = () => {
       }
     };
     const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData');
+      const response = await fetch('/api/getSequenceData?enzyme=BglB');  //TEMP
       const data = await response.json();
       setSequences(data);
     };
