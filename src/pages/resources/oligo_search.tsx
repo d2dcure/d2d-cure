@@ -13,6 +13,21 @@ const canonicalAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
 		'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
 
 
+// Copied from InfoSidebar
+// TODO: Move to shared location.
+const useClipboard = () => {
+  const [copied, setCopied] = useState(false);
+  
+  const copy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return { copied, copy };
+};
+
+
 const OligoSearchPage = () => {
 	const [enzymeList, setEnzymeList] = useState<any[]>([]);
 	const [enzyme, setEnzyme] = useState<string>('');
@@ -23,9 +38,10 @@ const OligoSearchPage = () => {
 	const [enzymeVariant, setEnzymeVariant] = useState<string>('');
 	const [sequenceData, setSequenceData] = useState<any[]>([]);
 	const [oligosData, setOligosData] = useState<any[]>([]);
-	//const [oligosDisplay, setFoundOligo] = useState("");
 	const [isError, setIsError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState('');
+
+	const clipboard = useClipboard();  // Copied from InfoSidebar
 
 	useEffect(() => {
 		const fetchEnzymes = async () => {
@@ -179,12 +195,20 @@ const OligoSearchPage = () => {
 							codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer 
 							for use as a primer for the gene mutant for that variant.
 						</p>
+						<p className="mb-4 text-justify  text-gray-600 max-w-2xl">
+							Tip: If you are in the D2D Network,
+							you can also get a primer sequence
+							by simply starting the process of{" "}
+							<a href="../submit?single_variant=1">submitting data</a>{" "}
+							for an enzyme variant.
+						</p>
 						<p className="mb-12 text-justify  text-gray-600 max-w-2xl">
 							Note: Primers may not be feasible
 							for the first and last several residues in an enzyme sequence.
 						</p>
 
-						{/* Dynamic Search Form */}						
+						{/* Dynamic Search Form */}
+						<h3 className="text-lg font-semibold">Search Form</h3>				
 						<div className="inline-grid grid-cols-3 grid-rows-1 gap-4">
 							{/* Enzyme Dropdown */}
 							<div>
@@ -289,7 +313,13 @@ const OligoSearchPage = () => {
 									(<abbr title="Protein DataBank">PDB</abbr>{" "}
 									numbering: {getPDBNumbering()}) is:
 								</p>
-								<p className="text-black font-bold break-words">{findOligo()}</p>
+								<p
+									className="text-black font-bold break-words cursor-pointer hover:text-[#06B7DB]"
+									onClick={() => clipboard.copy(findOligo())}
+                					title="Click to copy"
+								>
+									{findOligo()}
+								</p>
 							</div>
 						</div>
 					)}
