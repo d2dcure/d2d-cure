@@ -120,14 +120,19 @@ const OligoSearchPage = () => {
 
 	// Search the sequence data and return the one-letter residue code for the
 	// given residue number or return '?'.
-	const getResID = (resnum: number) => {
-		for (let sequenceDatum of sequenceData) {
-			if (resnum == sequenceDatum.Rosetta_resnum) {
-				return sequenceDatum.resid;
-			}
-		}
-		return '?';
+	const getResID = (resnum: number):string => {
+		const foundSequenceData = sequenceData.find(
+				sequenceDatum => sequenceDatum.Rosetta_resnum == resnum);
+		if (foundSequenceData) { return foundSequenceData.resid; }
+		else { return '?'; }
 	};
+
+
+	// Return the variant using PDB numbering.
+	const getPDBNumbering = ():string => {
+		//sequenceData[resnum].PDBresnum
+		return resID + '' + resmut;
+	}
 
 
 	const handleSubmit = () => {
