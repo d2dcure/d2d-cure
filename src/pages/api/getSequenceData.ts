@@ -9,9 +9,7 @@ export default async function handler(req: any, res: any) {
 		const client = getClient(enzyme);
         try {
             const data = await client.sequence.findMany({
-                orderBy: {
-                    id: 'asc'
-                }
+                orderBy: {id: 'asc'}
             });
             res.status(200).json(data);
         } catch (error) {
