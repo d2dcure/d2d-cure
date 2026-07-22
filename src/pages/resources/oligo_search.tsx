@@ -15,17 +15,17 @@ const canonicalAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
 
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
-  const [enzyme, setEnzyme] = useState('');
-  const [resID, setResID] = useState('?');
+  const [enzyme, setEnzyme] = useState<string>('');
+  const [resID, setResID] = useState<string>('?');
   const [resnum, setResnum] = useState<number>();
-  const [resnumLowerBound, setResnumLowerBound] = useState<number>(1);  // artificial lower bound
   const [resnumUpperBound, setResnumUpperBound] = useState<number>(999);  // artificial upper bound
-  const [enzymeVariant, setEnzymeVariant] = useState('');
+  const [resmut, setResmut] = useState<string>('');
+  const [enzymeVariant, setEnzymeVariant] = useState<string>('');
   const [sequenceData, setSequenceData] = useState<any[]>([]);
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [oligosDisplay, setOligosDisplay] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<String>('');
 
   useEffect(() => {
     const fetchEnzymes = async () => {
@@ -168,7 +168,7 @@ const OligoSearchPage = () => {
                   onChange={(e) => {
 						setEnzyme(e.target.value);
 						setResID('?');
-						//setResnum();
+						setResnum(undefined);
 				  }}
                   placeholder="Select Enzyme"
                   className="w-full md:w-[150px]"
@@ -194,6 +194,8 @@ const OligoSearchPage = () => {
 							onChange={(e) => {
 								setResID(getResID(Number(e.target.value)));
 								setResnum(Number(e.target.value));
+								setEnzymeVariant(
+									getResID(Number(e.target.value)) + String(e.target.value) + resmut);
 							}}
 							size="lg"
 							variant="bordered"
@@ -211,7 +213,7 @@ const OligoSearchPage = () => {
 					</div>
 			  )}
 
-			  {enzyme && (resnum != null) && (
+			  {resnum != null && (
 					<div className="w-full md:w-auto min-w-[200px]">
 						<label htmlFor="enzyme" className="block mb-2">
 							Variant Residue
@@ -219,9 +221,12 @@ const OligoSearchPage = () => {
 						<Select
 						isRequired
 						size="sm"
-						id="enzyme"
-						value={enzyme}
-						//onChange={(e) => setEnzyme(e.target.value)}
+						id="resmut"
+						value={resmut}
+						onChange={(e) => {
+							setResmut(e.target.value);
+							setEnzymeVariant(resID + String(resnum) + e.target.value);
+						}}
 						placeholder="Select AA"
 						className="w-full md:w-[100px]"
 						>
@@ -234,33 +239,14 @@ const OligoSearchPage = () => {
 					</div>
 			  )}
 
-              {enzyme && (
-				<>
-				<div className="w-full md:w-auto">
-                <label htmlFor="enzymeVariant" className="block mb-2">
-                  Enzyme Variant <small>(Use the format <code>A123C</code>.)</small>
-                </label>
-                <Input
-                  type="text"
-                  id="enzymeVariant"
-                  value={enzymeVariant}
-                  onChange={(e) => setEnzymeVariant(e.target.value)}
-                  placeholder="Search"
-                  size="lg"
-                  variant="bordered"
-                  className="w-full md:w-[200px]"
-                  radius="sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleSubmit}
-                className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
-                radius="sm"
-              >
-                Search
-              </Button>
-			  </>
+              {enzyme && (resnum != null) && resmut && (
+				<Button
+					onClick={handleSubmit}
+					className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
+					radius="sm"
+				>
+					Search
+				</Button>
 			  )}
             </div>
 
