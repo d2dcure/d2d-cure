@@ -25,30 +25,35 @@ const OligoSearchPage = () => {
 	const [oligosData, setOligosData] = useState<any[]>([]);
 	const [oligosDisplay, setOligosDisplay] = useState("");
 	const [isError, setIsError] = useState<boolean>(false);
-	const [errorMessage, setErrorMessage] = useState<String>('');
+	const [errorMessage, setErrorMessage] = useState('');
 
 	useEffect(() => {
 		const fetchEnzymes = async () => {
 			try {
-				const response = await fetch('/api/getEnzymes');
+				const response = await fetch("/api/getEnzymes");
 				if (!response.ok) {
-					throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
+					throw new Error(
+							`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
 				}
 				const enzymes = await response.json();
 				if (!Array.isArray(enzymes)) {
-					throw new Error('GET /api/getEnzymes - Invalid data format: Expected array');
+					throw new Error(
+							"GET /api/getEnzymes - Invalid data format: Expected array");
 				}
-		const activeEnzymes: any[] = [];
-		for (let enzyme of enzymes) {
-			if (enzyme.active === true) {
-				activeEnzymes.push(enzyme);
-			}
-		}
+				const activeEnzymes: any[] = [];
+				for (let enzyme of enzymes) {
+					if (enzyme.active === true) {
+						activeEnzymes.push(enzyme);
+					}
+				}
 				setEnzymeList(activeEnzymes);
 			} catch (error) {
 				console.error('Error fetching enzymes:', error);
 				setIsError(true);
-				setErrorMessage(error instanceof Error ? error.message : 'Failed to fetch enzymes');
+				setErrorMessage(
+						error instanceof Error ? 
+						error.message :
+						"Failed to fetch enzymes");
 			}
 		};
 
@@ -56,54 +61,60 @@ const OligoSearchPage = () => {
 			try {
 				const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
 				if (!response.ok) {
-					throw new Error(`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
+					throw new Error(
+							`GET /api/getOligos ${response.status} - Failed to fetch oligos`);
 				}
 				const data = await response.json();
 				if (!Array.isArray(data)) {
-					throw new Error('GET /api/getOligos - Invalid data format: Expected array');
+					throw new Error(
+							'GET /api/getOligos - Invalid data format: Expected array');
 				}
 				setOligosData(data);
 			} catch (error) {
 				console.error('Error fetching oligos:', error);
 				setIsError(true);
-				setErrorMessage(error instanceof Error ? error.message : `Failed to fetch oligos for ${enzyme}`);
+				setErrorMessage(
+						error instanceof Error ?
+						error.message :
+						`Failed to fetch oligos for ${enzyme}`);
 			}
 		};
 
-	const fetchSequenceData = async () => {
-		try {
-			const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
-			if (!response.ok) {
-						throw new Error(
-					`GET /api/getSequenceData ${response.status} - Failed to fetch sequence data for ${enzyme}`);
+		const fetchSequenceData = async () => {
+			try {
+				const response = await fetch(
+						`/api/getSequenceData?enzyme=${enzyme}`);
+				if (!response.ok) {
+					throw new Error(
+							`GET /api/getSequenceData ${response.status} - Failed to fetch sequence data for ${enzyme}`);
 				}
-			const sequenceData = await response.json();
-			if (!Array.isArray(sequenceData)) {
-				throw new Error(
-					"GET /api/getSequenceData - Invalid data format: Expected array");
-			}
-			setSequenceData(sequenceData);
-			for (let i = sequenceData.length - 1; i >= 0; i-- ) {
-				if (sequenceData[i].Rosetta_resnum != null) {
-					setResnumUpperBound(sequenceData[i].Rosetta_resnum);
-					break;
+				const sequenceData = await response.json();
+				if (!Array.isArray(sequenceData)) {
+					throw new Error(
+							"GET /api/getSequenceData - Invalid data format: Expected array");
 				}
+				setSequenceData(sequenceData);
+				for (let i = sequenceData.length - 1; i >= 0; i-- ) {
+					if (sequenceData[i].Rosetta_resnum != null) {
+						setResnumUpperBound(sequenceData[i].Rosetta_resnum);
+						break;
+					}
+				}
+			} catch (error) {
+				console.error("Error fetching sequence data:", error);
+				setIsError(true);
+				setErrorMessage(
+					error instanceof Error ?
+					error.message :
+					`Failed to fetch sequence data for ${enzyme}`);
 			}
-		} catch (error) {
-			console.error("Error fetching sequence data:", error);
-			setIsError(true);
-			setErrorMessage(
-				error instanceof Error ?
-				error.message :
-				`Failed to fetch sequence data for ${enzyme}`);
-		}
-	};
+		};
 
 		fetchEnzymes();
-	if (enzyme) {
-		fetchSequenceData();
+		if (enzyme) {
+			fetchSequenceData();
 			fetchOligosData();
-	}
+		}
 	}, [enzyme]);
 
 
@@ -150,119 +161,126 @@ const OligoSearchPage = () => {
 						</h2>
 						<p className="mb-12 text-left text-gray-600 max-w-2xl">
 							Select the enzyme and
-				enter an enzyme variant code to search for a reverse-compliment,
-				codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer 
-				for use as a primer for the gene mutant.
+							choose an enzyme variant to search for a reverse-compliment,
+							codon-optimized <abbr title="DeoxyriboNucleic Acid">DNA</abbr> 33-mer 
+							for use as a primer for the gene mutant for that variant.
 						</p>
-						
+
+						{/* Dynamic Search Form */}						
 						<div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+							{/* Enzyme Dropdown */}
 							<div className="w-full md:w-auto min-w-[200px]">
 								<label htmlFor="enzyme" className="block mb-2">
 									Enzyme
 								</label>
 								<Select
-					isRequired
+									isRequired
 									size="sm"
 									id="enzyme"
 									value={enzyme}
 									onChange={(e) => {
-						setEnzyme(e.target.value);
-						setResID('?');
-						setResnum(undefined);
-					}}
+										setEnzyme(e.target.value);
+										setResID('?');
+										setResnum(undefined);
+									}}
 									placeholder="Select Enzyme"
 									className="w-full md:w-[150px]"
 								>
-									{enzymeList.map((enzyme) => (
-										<SelectItem key={enzyme.abbr} value={enzyme.abbr}>
-											{enzyme.abbr}
-										</SelectItem>
-									))}
+								{enzymeList.map((enzyme) => (
+									<SelectItem key={enzyme.abbr} value={enzyme.abbr}>
+										{enzyme.abbr}
+									</SelectItem>
+								))}
 								</Select>
 							</div>
 
-				{enzyme && (
-					<div className="w-full md:w-auto">
-						<label htmlFor="residue" className="block mb-2">
-							<abbr title="Wild Type">WT</abbr> Residue
-						</label>
-						<Input
-							type="number"
-							id="resnum"
-							placeholder="#"
-							value={String(resnum)}
-							onChange={(e) => {
-								setResID(getResID(Number(e.target.value)));
-								setResnum(Number(e.target.value));
-								setEnzymeVariant(
-									getResID(Number(e.target.value)) + String(e.target.value) + resmut);
-							}}
-							size="lg"
-							variant="bordered"
-							className="w-full md:w-[100px]"
-							radius="sm"
-							startContent={resID}
-							isInvalid={
-								((resnum != null) &&
-									((resnum < 1) || (resnum > resnumUpperBound))) ?
-								true :
-								false
-							}
-							errorMessage="Not a valid residue number"
-						/>
-					</div>
-				)}
-
-				{resnum != null && (
-					<div className="w-full md:w-auto min-w-[200px]">
-						<label htmlFor="enzyme" className="block mb-2">
-							Variant Residue
-						</label>
-						<Select
-						isRequired
-						size="sm"
-						id="resmut"
-						value={resmut}
-						onChange={(e) => {
-							setResmut(e.target.value);
-							setEnzymeVariant(resID + String(resnum) + e.target.value);
-						}}
-						placeholder="Select AA"
-						className="w-full md:w-[100px]"
-						>
-						{canonicalAAs.map((canonicalAA) => (
-							<SelectItem key={canonicalAA} value={canonicalAA}>
-								{canonicalAA}
-							</SelectItem>
-						))}
-						</Select>
-					</div>
-				)}
-
-							{enzyme && (resnum != null) && resmut && (
-				<Button
-					onClick={handleSubmit}
-					className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
-					radius="sm"
-				>
-					Search
-				</Button>
-				)}
-						</div>
-
-						{oligosDisplay && (
-							<div className="mt-8 space-y-4">
-								<h2 className="text-lg font-semibold">Results</h2>
-								<div className="text-gray-600">
-									<p className="mb-4">
-										The optimized DNA oligomer sequence to use as a DNA primer for the
-										production of {enzyme} variant{" "}
-										<span className="text-black font-bold">{enzymeVariant}</span> is:
-									</p>
-									<p className="text-black font-bold break-words">{oligosDisplay}</p>
-								</div>
+							{/* Residue Input */}
+						{enzyme && (
+							<div className="w-full md:w-auto">
+								<label htmlFor="residue" className="block mb-2">
+									<abbr title="Wild Type">WT</abbr> Residue
+								</label>
+								<Input
+									type="number"
+									id="resnum"
+									placeholder="#"
+									value={String(resnum)}
+									onChange={(e) => {
+										setResID(getResID(Number(e.target.value)));
+										setResnum(Number(e.target.value));
+										setEnzymeVariant(
+										getResID(
+												Number(e.target.value)) + String(e.target.value) + resmut);
+									}}
+									size="lg"
+									variant="bordered"
+									className="w-full md:w-[100px]"
+									radius="sm"
+									startContent={resID}
+									isInvalid={
+										((resnum != null) &&
+												((resnum < 1) || (resnum > resnumUpperBound))) ?
+										true :
+										false
+									}
+									errorMessage="Not a valid residue number"
+								/>
 							</div>
 						)}
+
+							{/* Variant AA Dropdown */}
+						{resnum != null && (
+							<div className="w-full md:w-auto min-w-[200px]">
+								<label htmlFor="enzyme" className="block mb-2">
+									Variant Residue
+								</label>
+								<Select
+								isRequired
+								size="sm"
+								id="resmut"
+								value={resmut}
+								onChange={(e) => {
+									setResmut(e.target.value);
+									setEnzymeVariant(
+											resID + String(resnum) + e.target.value);
+								}}
+								placeholder="Select AA"
+								className="w-full md:w-[100px]"
+								>
+								{canonicalAAs.map((canonicalAA) => (
+									<SelectItem key={canonicalAA} value={canonicalAA}>
+										{canonicalAA}
+									</SelectItem>
+								))}
+								</Select>
+							</div>
+						)}
+
+							{/* Search Button */}
+						{enzyme && (resnum != null) && resmut && (
+							<Button
+								onClick={handleSubmit}
+								className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
+								radius="sm"
+							>
+								Search
+							</Button>
+						)}
+						</div>
+
+					{oligosDisplay && (
+						<div className="mt-8 space-y-4">
+							<h3 className="text-lg font-semibold">Results</h3>
+							<div className="text-gray-600">
+								<p className="mb-4">
+									The optimized DNA oligomer sequence to use as a DNA primer for the
+									production of {enzyme} variant{" "}
+									<b>{enzymeVariant}</b> is:
+								</p>
+								<p className="text-black font-bold break-words">{oligosDisplay}</p>
+							</div>
+						</div>
+					)}
 					</div>
 				</div>
 			</div>
