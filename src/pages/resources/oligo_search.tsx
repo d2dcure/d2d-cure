@@ -83,7 +83,12 @@ const OligoSearchPage = () => {
 					"GET /api/getSequenceData - Invalid data format: Expected array");
 			}
 			setSequenceData(sequenceData);
-			setResnumUpperBound(sequenceData.at(-1).Rosetta_resnum);
+			for (let i = sequenceData.length - 1; i >= 0; i-- ) {
+				if (sequenceData[i].Rosetta_resnum != null) {
+					setResnumUpperBound(sequenceData[i].Rosetta_resnum);
+					break;
+				}
+			}
 		} catch (error) {
 			console.error("Error fetching sequence data:", error);
 			setIsError(true);
@@ -160,7 +165,11 @@ const OligoSearchPage = () => {
                   size="sm"
                   id="enzyme"
                   value={enzyme}
-                  onChange={(e) => setEnzyme(e.target.value)}
+                  onChange={(e) => {
+						setEnzyme(e.target.value);
+						setResID('?');
+						//setResnum();
+				  }}
                   placeholder="Select Enzyme"
                   className="w-full md:w-[150px]"
                 >
@@ -212,7 +221,7 @@ const OligoSearchPage = () => {
 						size="sm"
 						id="enzyme"
 						value={enzyme}
-						onChange={(e) => setEnzyme(e.target.value)}
+						//onChange={(e) => setEnzyme(e.target.value)}
 						placeholder="Select AA"
 						className="w-full md:w-[100px]"
 						>
