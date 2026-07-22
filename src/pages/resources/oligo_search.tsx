@@ -8,6 +8,11 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import Footer from "@/components/Footer";
 import { ErrorChecker } from "@/components/ErrorChecker";
 
+
+const canonicalAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
+		'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
+
 const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
@@ -156,7 +161,7 @@ const OligoSearchPage = () => {
                   id="enzyme"
                   value={enzyme}
                   onChange={(e) => setEnzyme(e.target.value)}
-                  label="Select Enzyme"
+                  placeholder="Select Enzyme"
                   className="w-full md:w-[150px]"
                 >
                   {enzymeList.map((enzyme) => (
@@ -170,7 +175,7 @@ const OligoSearchPage = () => {
 			  {enzyme && (
 					<div className="w-full md:w-auto">
 						<label htmlFor="residue" className="block mb-2">
-							Residue
+							<abbr title="Wild Type">WT</abbr> Residue
 						</label>
 						<Input
 							type="number"
@@ -194,6 +199,29 @@ const OligoSearchPage = () => {
 							}
 							errorMessage="Not a valid residue number"
 						/>
+					</div>
+			  )}
+
+			  {enzyme && (resnum != null) && (
+					<div className="w-full md:w-auto min-w-[200px]">
+						<label htmlFor="enzyme" className="block mb-2">
+							Variant Residue
+						</label>
+						<Select
+						isRequired
+						size="sm"
+						id="enzyme"
+						value={enzyme}
+						onChange={(e) => setEnzyme(e.target.value)}
+						placeholder="Select AA"
+						className="w-full md:w-[100px]"
+						>
+						{canonicalAAs.map((canonicalAA) => (
+							<SelectItem key={canonicalAA} value={canonicalAA}>
+								{canonicalAA}
+							</SelectItem>
+						))}
+						</Select>
 					</div>
 			  )}
 
