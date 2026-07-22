@@ -12,6 +12,9 @@ const OligoSearchPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
   const [resID, setResID] = useState('?');
+  const [resnum, setResnum] = useState<number>();
+  const [resnumLowerBound, setResnumLowerBound] = useState<number>(1);  // artificial lower bound
+  const [resnumUpperBound, setResnumUpperBound] = useState<number>(999);  // artificial upper bound
   const [enzymeVariant, setEnzymeVariant] = useState('');
   const [sequenceData, setSequenceData] = useState<any[]>([]);
   const [oligosData, setOligosData] = useState<any[]>([]);
@@ -75,6 +78,7 @@ const OligoSearchPage = () => {
 					"GET /api/getSequenceData - Invalid data format: Expected array");
 			}
 			setSequenceData(sequenceData);
+			setResnumUpperBound(sequenceData.at(-1).Rosetta_resnum);
 		} catch (error) {
 			console.error("Error fetching sequence data:", error);
 			setIsError(true);
@@ -172,14 +176,22 @@ const OligoSearchPage = () => {
 							type="number"
 							id="resnum"
 							placeholder="#"
-							//value={resnum}
-							onChange={(e) => setResID(getResID(Number(e.target.value)))}
+							value={String(resnum)}
+							onChange={(e) => {
+								setResID(getResID(Number(e.target.value)));
+								setResnum(Number(e.target.value));
+							}}
 							size="lg"
 							variant="bordered"
 							className="w-full md:w-[100px]"
 							radius="sm"
 							startContent={resID}
-							isInvalid={false}
+							isInvalid={
+								((resnum != null) &&
+									((resnum < 1) || (resnum > resnumUpperBound))) ?
+								true :
+								false
+							}
 							errorMessage="Not a valid residue number"
 						/>
 					</div>
