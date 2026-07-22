@@ -167,15 +167,15 @@ const OligoSearchPage = () => {
 						</p>
 
 						{/* Dynamic Search Form */}						
-						<div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+						<div className="inline-grid grid-cols-3 grid-rows-1 gap-4">
 							{/* Enzyme Dropdown */}
-							<div className="w-full md:w-auto min-w-[200px]">
+							<div>
 								<label htmlFor="enzyme" className="block mb-2">
 									Enzyme
 								</label>
 								<Select
 									isRequired
-									size="sm"
+									size="md"
 									id="enzyme"
 									value={enzyme}
 									onChange={(e) => {
@@ -196,7 +196,7 @@ const OligoSearchPage = () => {
 
 							{/* Residue Input */}
 						{enzyme && (
-							<div className="w-full md:w-auto">
+							<div>
 								<label htmlFor="residue" className="block mb-2">
 									<abbr title="Wild Type">WT</abbr> Residue
 								</label>
@@ -212,9 +212,9 @@ const OligoSearchPage = () => {
 										getResID(
 												Number(e.target.value)) + String(e.target.value) + resmut);
 									}}
-									size="lg"
+									size="md"
 									variant="bordered"
-									className="w-full md:w-[100px]"
+									className="w-full md:w-[150px]"
 									radius="sm"
 									startContent={resID}
 									isInvalid={
@@ -230,13 +230,13 @@ const OligoSearchPage = () => {
 
 							{/* Variant AA Dropdown */}
 						{resnum != null && (
-							<div className="w-full md:w-auto min-w-[200px]">
+							<div>
 								<label htmlFor="enzyme" className="block mb-2">
 									Variant Residue
 								</label>
 								<Select
 								isRequired
-								size="sm"
+								size="md"
 								id="resmut"
 								value={resmut}
 								onChange={(e) => {
@@ -245,7 +245,7 @@ const OligoSearchPage = () => {
 											resID + String(resnum) + e.target.value);
 								}}
 								placeholder="Select AA"
-								className="w-full md:w-[100px]"
+								className="w-full md:w-[150px]"
 								>
 								{canonicalAAs.map((canonicalAA) => (
 									<SelectItem key={canonicalAA} value={canonicalAA}>
