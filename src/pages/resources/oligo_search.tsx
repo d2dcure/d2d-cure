@@ -121,17 +121,24 @@ const OligoSearchPage = () => {
 	// Search the sequence data and return the one-letter residue code for the
 	// given residue number or return '?'.
 	const getResID = (resnum: number):string => {
-		const foundSequenceData = sequenceData.find(
-				sequenceDatum => sequenceDatum.Rosetta_resnum == resnum);
-		if (foundSequenceData) { return foundSequenceData.resid; }
+		const foundResidue = sequenceData.find(
+				residue => residue.Rosetta_resnum == resnum);
+		if (foundResidue) { return foundResidue.resid; }
 		else { return '?'; }
 	};
 
 
 	// Return the variant using PDB numbering.
-	const getPDBNumbering = ():string => {
-		//sequenceData[resnum].PDBresnum
-		return resID + '' + resmut;
+	const getPDBNumbering = () => {
+		const foundResidue = sequenceData.find(
+				residue => residue.Rosetta_resnum == resnum);
+		if (foundResidue) {
+			const PDBresnum = foundResidue.PDBresnum;
+			if (PDBresnum) {
+				return resID + PDBresnum + resmut;
+			}
+		}
+		return "missing from PDB";
 	}
 
 
@@ -264,14 +271,17 @@ const OligoSearchPage = () => {
 						</div>
 
 						{/* Search Results */}
-					{enzyme && (resnum != null) && resmut && (
+					{enzyme && (resnum != null) && (resnum >= 1) && 
+							(resnum <= resnumUpperBound) && resmut && (
 						<div className="mt-8 space-y-4">
 							<h3 className="text-lg font-semibold">Results</h3>
 							<div className="text-gray-600">
 								<p className="mb-4">
 									The optimized DNA oligomer sequence to use as a DNA primer for the
 									production of {enzyme} variant{" "}
-									<b>{enzymeVariant}</b> is:
+									<b>{enzymeVariant}</b>{" "}
+									(<abbr title="Protein DataBank">PDB</abbr>{" "}
+									numbering: {getPDBNumbering()}) is:
 								</p>
 								<p className="text-black font-bold break-words">{oligosDisplay}</p>
 							</div>
