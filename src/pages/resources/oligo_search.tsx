@@ -1,6 +1,6 @@
 import NavBar from "@/components/NavBar";
 import { useState, useEffect } from "react";
-import "../../app/globals.css";
+//import "../../app/globals.css";
 import { Button } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
 import { Input } from "@nextui-org/input";
@@ -182,6 +182,7 @@ const OligoSearchPage = () => {
 										setEnzyme(e.target.value);
 										setResID('?');
 										setResnum(undefined);
+										setResmut('');
 									}}
 									placeholder="Select Enzyme"
 									className="w-full md:w-[150px]"
@@ -255,20 +256,10 @@ const OligoSearchPage = () => {
 								</Select>
 							</div>
 						)}
-
-							{/* Search Button */}
-						{enzyme && (resnum != null) && resmut && (
-							<Button
-								onClick={handleSubmit}
-								className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
-								radius="sm"
-							>
-								Search
-							</Button>
-						)}
 						</div>
 
-					{oligosDisplay && (
+						{/* Search Results */}
+					{enzyme && (resnum != null) && resmut && (
 						<div className="mt-8 space-y-4">
 							<h3 className="text-lg font-semibold">Results</h3>
 							<div className="text-gray-600">

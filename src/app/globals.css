@@ -4,7 +4,7 @@
 
 /* Add this to your globals.css file */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+  width: 80px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
