@@ -32,8 +32,8 @@ function MyApp({ Component, pageProps }: AppProps) {
 		}
 	}
 	if (!pageName) { pageName = " | Home"; }
-	if (enzyme) { pageName = pageName.replace("[enzyme]", enzyme); }
-	if (id) { pageName = pageName.replace("[id]", id); }
+	if (enzyme) { pageName = pageName.replace("[enzyme]", `${enzyme}`); }
+	if (id) { pageName = pageName.replace("[id]", `${id}`); }
 
 	return (
 		<UserProvider>
