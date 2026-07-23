@@ -1,120 +1,146 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {Input} from "@nextui-org/input";
+import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
+
 interface ProteinModeledViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
 interface ValidationMessage {
-  type: 'error' | 'warning';
-  message: string;
-  field: 'WT' | 'variant';
+	type: 'error' | 'warning';
+	message: string;
+	field: 'WT' | 'variant';
 }
 
-const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
+const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryData, setCurrentView, updateEntryData }) => {
+	const [folditScore, setFolditScore] = useState<number>();
+	const [startingScore, setStartingScore] = useState<number>();
+	const [endingScore, setEndingScore] = useState<number>();
+	const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const [WT, setWT] = useState<string>(expectedWTScore.toString());
-  const [variant, setVariant] = useState<string>(WT.toString());
-  const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+	const validateScores = useCallback(() => {
+		//let isValid = true;
+		const messages: ValidationMessage[] = [];
 
+		if (startingScore != null && endingScore != null) {
+			if (startingScore !== folditScore) {
+				messages.push({
+				type: 'warning',
+				message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
+				field: 'WT'
+				});
+				//isValid = false;
+			}
 
+			if (startingScore === endingScore) {
+				messages.push({
+				type: 'error',
+				message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
+				field: 'variant'
+				});
+				//isValid = false;
+			}
 
-  const validateScores = useCallback(() => {
-    let isValid = true;
-    const messages: ValidationMessage[] = [];
-    const wtScore = parseFloat(WT);
-    const variantScore = parseFloat(variant);
+			const delta = endingScore - startingScore;
+			if (delta < -20 || delta > 20) {
+				messages.push({
+				type: 'warning',
+				message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
+				field: 'variant'
+				});
+				//isValid = false;
+			}
+		} else {
+			if (startingScore == null) {
+				messages.push({
+				type: 'error',
+				message: "Please enter a valid number for WT score.",
+				field: 'WT'
+				});
+				//isValid = false;
+			}
+			if (endingScore == null) {
+				messages.push({
+				type: 'error',
+				message: "Please enter a valid number for Variant score.",
+				field: 'variant'
+				});
+				//isValid = false;
+			}
+		}
 
-    if (!isNaN(wtScore) && !isNaN(variantScore)) {
-      if (wtScore !== expectedWTScore) {
-        messages.push({
-          type: 'warning',
-          message: `The expected score for the WT enzyme is ${expectedWTScore}. Please confirm and resubmit.`,
-          field: 'WT'
-        });
-        isValid = false;
-      }
+		setValidationMessages(messages);
+		//return isValid;
+	}, [startingScore, endingScore, folditScore]);
 
-      if (wtScore === variantScore) {
-        messages.push({
-          type: 'warning',
-          message: 'It is highly unlikely for both WT and Variant scores to be the same. Please confirm.',
-          field: 'variant'
-        });
-        isValid = false;
-      }
+	useEffect(() => {
+		const fetchScore = async () => {
+			try {
+				const response = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				if (!response.ok) {
+					throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
+				}
+				const generalInfo = await response.json();
+				console.log('Score: ', generalInfo.foldit_score);
+				setFolditScore(generalInfo.foldit_score);
+			} catch (error) {
+				console.error("Error fetching enzymes general info:", error);
+			}
+		};
 
-      const delta = variantScore - wtScore;
-      if (delta < -20 || delta > 20) {
-        messages.push({
-          type: 'warning',
-          message: 'Variants rarely express if the change in score is greater than 20. Please review the values.',
-          field: 'variant'
-        });
-        isValid = false;
-      }
-    } else {
-      if (isNaN(wtScore)) {
-        messages.push({
-          type: 'error',
-          message: 'Please enter a valid number for WT score',
-          field: 'WT'
-        });
-        isValid = false;
-      }
-      if (isNaN(variantScore)) {
-        messages.push({
-          type: 'error',
-          message: 'Please enter a valid number for Variant score',
-          field: 'variant'
-        });
-        isValid = false;
-      }
-    }
+		fetchScore();
+		if (folditScore) {
+			if (startingScore == undefined) {
+				setStartingScore(folditScore);
+			}
+			if (endingScore == undefined) {
+				if (entryData.Rosetta_score) {
+					setEndingScore(folditScore + entryData.Rosetta_score);
+				} else {
+					setEndingScore(folditScore);
+				}
+			}
+		}
+	}, [startingScore, endingScore, folditScore]);
 
-    setValidationMessages(messages);
-    return isValid;
-  }, [WT, variant]);
-
-  useEffect(() => {
-    if (WT || variant) {
-      validateScores();
-    }
-  }, [WT, variant, validateScores]);
+	useEffect(() => {
+		if (startingScore != null || endingScore != null) { validateScores(); }
+	}, [startingScore, endingScore, validateScores]);
 
   const updateRosettaScore = async () => {
-    const isValid = validateScores();
+    //const isValid = validateScores();
     
     const hasBlockingValidation = validationMessages.some(msg => 
-      msg.type === 'error' || 
-      (msg.type === 'warning' && !msg.message.includes('Variants rarely express if the change in score is greater than 20'))
+      msg.type === 'error' 
     );
     
     if (hasBlockingValidation) return;
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: entryData.id,
-          Rosetta_score: parseFloat(variant) - parseFloat(WT),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update Rosetta score');
-      }
-
-      const updatedEntry = await response.json();
-      updateEntryData(updatedEntry);
-      setCurrentView('checklist');
+		if (startingScore != undefined && endingScore != undefined) {
+			const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+				id: entryData.id,
+				Rosetta_score: endingScore - startingScore,
+				}),
+			});
+			if (!response.ok) {
+				throw new Error("Failed to update Rosetta score");
+			}
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView('checklist');
+		} else {
+			throw new Error("Scores are undefined.");
+		}
     } catch (error) {
       console.error('Error updating Rosetta score:', error);
     } finally {
@@ -129,7 +155,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
   // Helper function to check if all validations pass
   const allChecksPass = () => {
-    return WT && variant && validationMessages.length === 0;
+    return startingScore != null && endingScore != null && validationMessages.length === 0;
   };
 
   return (
@@ -155,7 +181,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the Foldit scores for F253M BglB from UC Davis
+          Enter the Foldit scores for your {enzyme} variant.
         </p>
       </CardHeader>
 
@@ -163,10 +189,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
         <div className="space-y-6">
           <div>
             <Input
-              type="text"
+			  isRequired
+			  type="number"
               label="WT (starting) score"
-              value={WT}
-              onChange={(e) => setWT(e.target.value)}
+              value={startingScore?.toString()}
+			  placeholder="loading values&hellip;"
+			  endContent="REU"
+              onChange={(e) => setStartingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -189,10 +218,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
           <div>
             <Input
-              type="text"
+			  isRequired
+              type="number"
               label="Variant (ending) score"
-              value={variant}
-              onChange={(e) => setVariant(e.target.value)}
+              value={endingScore?.toString()}
+			  placeholder="loading values&hellip;"
+			  endContent="REU"
+              onChange={(e) => setEndingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -215,14 +247,29 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
         </div>
 
         {/* Simplified current score display */}
-        {entryData.Rosetta_score !== null && (
           <div className="text-sm text-gray-600 flex items-center gap-2">
+			{/* TODO: Remove hardcoded icons like this. */}
             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Current Rosetta score: <span className="font-medium text-gray-900">{entryData.Rosetta_score}</span>
-          </div>
+        {entryData.Rosetta_score !== null && (
+            <p>
+				Current ΔΔ<i>G</i> ={" "}
+				<span className="font-medium text-gray-900">
+					{entryData.Rosetta_score}
+				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
+			</p>
         )}
+
+		{startingScore != null && endingScore != null && (
+			<p>
+				New ΔΔ<i>G</i> ={" "}
+				<span className="font-medium text-gray-900">
+					{(endingScore - startingScore)?.toFixed(3)}
+				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
+			</p>
+		)}
+          </div>
       </CardBody>
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
@@ -230,7 +277,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           <button 
             onClick={updateRosettaScore}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!WT || !variant || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
+            disabled={!startingScore || !endingScore || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
           >
             {isSubmitting ? (
               <>
@@ -257,7 +304,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
         </div>
         
         <span className="text-xs text-gray-500">
-          All fields are required
+          *All fields are required
         </span>
       </CardFooter>
     </Card>

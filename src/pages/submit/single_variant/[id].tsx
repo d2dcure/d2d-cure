@@ -745,7 +745,7 @@ const SingleVariant = () => {
         return (
           <div className="flex items-center gap-1">
             <span className="font-semibold">ΔΔ<i>G</i> =</span>
-            <span>{entryData.Rosetta_score} REU</span>
+            <span>{entryData.Rosetta_score} <abbr title="Rosetta Energy Units">REU</abbr></span>
           </div>
         );
       }
@@ -1047,7 +1047,8 @@ const SingleVariant = () => {
     const DetailComponent = (() => {
       switch (selectedDetail) {
         case "Protein modeled?":
-          return <ProteinModeledView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+			// TEMP Hardcoding BglB for now to test framework.
+          return <ProteinModeledView enzyme="BglB" entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Oligonucleotide ordered?":
           return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
         case "Plasmid sequence verified?":

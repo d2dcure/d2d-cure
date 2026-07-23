@@ -309,7 +309,7 @@ const OligoSearchPage = () => {
 								<p className="mb-4 text-justify  text-gray-600 max-w-2xl">
 									The optimized DNA oligomer sequence to use as a DNA primer for the
 									production of {enzyme} variant{" "}
-									<b>{enzymeVariant}</b>{" "}
+									<strong>{enzymeVariant}</strong>{" "}
 									(<abbr title="Protein DataBank">PDB</abbr>{" "}
 									numbering: {getPDBNumbering()}) is:
 								</p>
