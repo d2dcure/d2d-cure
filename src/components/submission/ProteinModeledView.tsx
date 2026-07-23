@@ -4,6 +4,7 @@ import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
 
 interface ProteinModeledViewProps {
+	enzyme: string;
   entryData: any;
   setCurrentView: (view: string) => void;
   updateEntryData: (newData: any) => void; 
@@ -15,7 +16,7 @@ interface ValidationMessage {
   field: 'WT' | 'variant';
 }
 
-const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
+const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryData, setCurrentView, updateEntryData }) => {
 	const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
 	const [folditScore, setFolditScore] = useState<number>(expectedWTScore);
 
@@ -87,7 +88,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
   }, [WT, variant, folditScore]);
 
 	useEffect(() => {
-		const enzyme = "BglB";  // TEMP; TODO: remove hardcoding!
 		const fetchScore = async () => {
 			const response = await fetch(`/api/getFolditScoresFromAbbr?abbr=${enzyme}`);
 			const data = await response.json();
@@ -96,7 +96,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 		};
 
 		fetchScore(); 
-	}, []);
+	}, [enzyme]);
 
   useEffect(() => {
     if (WT || variant) {
@@ -171,7 +171,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the Foldit scores for your variant.
+          Enter the Foldit scores for your {enzyme} variant.
         </p>
       </CardHeader>
 
