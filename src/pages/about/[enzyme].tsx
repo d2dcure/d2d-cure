@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/Footer';
-import {Card, CardBody} from "@nextui-org/react";
-import Link from 'next/link';
+import Footer from "@/components/Footer";
+import NavBar from "@/components/NavBar";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { Card, CardBody } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
+import React, { useEffect, useState } from "react";
+
 
 interface SequenceData {
   id: number;
@@ -25,7 +26,7 @@ const AboutEnzymePAge = () => {
     const fetchData = async () => {
       try {
         // Fetch sequence data
-        const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);  // TEMP
+        const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
         if (seqResponse.ok) {
           const seqData = await seqResponse.json();
           setSequenceData(seqData);
