@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {Input} from "@nextui-org/input";
+import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
 
@@ -27,7 +27,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 		//let isValid = true;
 		const messages: ValidationMessage[] = [];
 
-		if (startingScore && endingScore) {
+		if (startingScore != null && endingScore != null) {
 			if (startingScore !== folditScore) {
 				messages.push({
 				type: 'warning',
@@ -56,7 +56,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 				//isValid = false;
 			}
 		} else {
-			if (!startingScore) {
+			if (startingScore == null) {
 				messages.push({
 				type: 'error',
 				message: "Please enter a valid number for WT score.",
@@ -64,7 +64,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 				});
 				//isValid = false;
 			}
-			if (!endingScore) {
+			if (endingScore == null) {
 				messages.push({
 				type: 'error',
 				message: "Please enter a valid number for Variant score.",
@@ -81,18 +81,11 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 	useEffect(() => {
 		const fetchScore = async () => {
 			try {
-				//const response = await fetch(`/api/getEnzymeGeneralInfo?abbr=${enzyme}`);
-				const response = await fetch("/api/getEnzymes");
-				//const generalInfo = await response.json();
+				const response = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
 				if (!response.ok) {
 					throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
 				}
-				const enzymes = await response.json();
-				if (!Array.isArray(enzymes)) {
-					throw new Error(
-							"GET /api/getEnzymes - Invalid data format: Expected array");
-				}
-				const generalInfo = enzymes.find(record => record.abbr === enzyme);
+				const generalInfo = await response.json();
 				console.log('Score: ', generalInfo.foldit_score);
 				setFolditScore(generalInfo.foldit_score);
 			} catch (error) {
@@ -101,20 +94,22 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 		};
 
 		fetchScore();
-		if (!startingScore && folditScore) {
-			setStartingScore(folditScore);
-		}
-		if (!endingScore) {
-			if (entryData.Rosetta_score) {
-				setEndingScore(folditScore + entryData.Rosetta_score);
-			} else {
-				setEndingScore(folditScore);
+		if (folditScore) {
+			if (startingScore == undefined) {
+				setStartingScore(folditScore);
+			}
+			if (endingScore == undefined) {
+				if (entryData.Rosetta_score) {
+					setEndingScore(folditScore + entryData.Rosetta_score);
+				} else {
+					setEndingScore(folditScore);
+				}
 			}
 		}
-	}, [enzyme, entryData, startingScore, endingScore, folditScore]);
+	}, [startingScore, endingScore, folditScore]);
 
 	useEffect(() => {
-		if (startingScore || endingScore) { validateScores(); }
+		if (startingScore != null || endingScore != null) { validateScores(); }
 	}, [startingScore, endingScore, validateScores]);
 
   const updateRosettaScore = async () => {
@@ -158,7 +153,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 
   // Helper function to check if all validations pass
   const allChecksPass = () => {
-    return startingScore && endingScore && validationMessages.length === 0;
+    return startingScore != null && endingScore != null && validationMessages.length === 0;
   };
 
   return (
@@ -192,9 +187,11 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
         <div className="space-y-6">
           <div>
             <Input
-              type="text"
+			  isRequired
+			  type="number"
               label="WT (starting) score"
               value={startingScore?.toString()}
+			  endContent="REU"
               onChange={(e) => setStartingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
@@ -218,9 +215,11 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 
           <div>
             <Input
-              type="text"
+			  isRequired
+              type="number"
               label="Variant (ending) score"
               value={endingScore?.toString()}
+			  endContent="REU"
               onChange={(e) => setEndingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
@@ -299,7 +298,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
         </div>
         
         <span className="text-xs text-gray-500">
-          All fields are required
+          *All fields are required
         </span>
       </CardFooter>
     </Card>
