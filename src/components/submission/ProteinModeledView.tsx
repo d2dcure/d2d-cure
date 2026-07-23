@@ -168,7 +168,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the Foldit scores for F253M BglB from UC Davis
+          Enter the Foldit scores for your variant.
         </p>
       </CardHeader>
 
