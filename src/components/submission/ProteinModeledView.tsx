@@ -259,7 +259,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 			<p>
 				New ΔΔ<i>G</i> ={" "}
 				<span className="font-medium text-gray-900">
-					{String(endingScore - startingScore)}
+					{(endingScore - startingScore)?.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
           </div>
