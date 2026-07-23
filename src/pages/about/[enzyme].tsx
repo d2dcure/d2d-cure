@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -14,7 +15,9 @@ interface SequenceData {
   resid: string;
 }
 
-const BglBPage = () => {
+const AboutEnzymePAge = () => {
+	const router = useRouter();
+	const { enzyme } = router.query;
   const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
   const [characterizationData, setCharacterizationData] = useState<any[]>([]);
 
@@ -22,7 +25,7 @@ const BglBPage = () => {
     const fetchData = async () => {
       try {
         // Fetch sequence data
-        const seqResponse = await fetch('/api/getSequenceData?enzyme=BglB');  // TEMP
+        const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);  // TEMP
         if (seqResponse.ok) {
           const seqData = await seqResponse.json();
           setSequenceData(seqData);
@@ -169,7 +172,7 @@ const BglBPage = () => {
                     `}
                     onClick={() => {
                       if (hasData && residue.Rosetta_resnum) {
-                        window.location.href = `/database/characterization_data/BglB?highlight=${residue.Rosetta_resnum}`;
+                        window.location.href = `/database/characterization_data/${enzyme}?highlight=${residue.Rosetta_resnum}`;
                       }
                     }}
                   >
@@ -228,7 +231,7 @@ const BglBPage = () => {
   );
 };
 
-export default BglBPage;
+export default AboutEnzymePAge;
 
 
 
