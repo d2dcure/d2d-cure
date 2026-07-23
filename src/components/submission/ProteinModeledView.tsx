@@ -191,6 +191,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 			  type="number"
               label="WT (starting) score"
               value={startingScore?.toString()}
+			  placeholder="loading values&hellip;"
 			  endContent="REU"
               onChange={(e) => setStartingScore(Number(e.target.value))}
               classNames={{
@@ -219,6 +220,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
               type="number"
               label="Variant (ending) score"
               value={endingScore?.toString()}
+			  placeholder="loading values&hellip;"
 			  endContent="REU"
               onChange={(e) => setEndingScore(Number(e.target.value))}
               classNames={{
