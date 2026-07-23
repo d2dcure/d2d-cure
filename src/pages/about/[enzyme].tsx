@@ -19,20 +19,28 @@ interface SequenceData {
 const AboutEnzymePAge = () => {
 	const router = useRouter();
 	const { enzyme } = router.query;
-  const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
-  const [characterizationData, setCharacterizationData] = useState<any[]>([]);
+	const [generalInfo, setGeneralInfo] = useState<any[]>([]);
+	const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
+	const [characterizationData, setCharacterizationData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch sequence data
+		// Fetch enzyme general information data.
+		const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+        if (infoResponse.ok) {
+          const infoData = await infoResponse.json();
+          setGeneralInfo(infoData);
+        }
+
+        // Fetch sequence data.
         const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
         if (seqResponse.ok) {
           const seqData = await seqResponse.json();
           setSequenceData(seqData);
         }
 
-        // Fetch characterization data
+        // Fetch characterization data.
         const charResponse = await fetch('/api/getCharacterizationData');
         if (charResponse.ok) {
           const charData = await charResponse.json();
@@ -44,7 +52,7 @@ const AboutEnzymePAge = () => {
     };
 
     fetchData();
-  }, []);
+  }, [enzyme]);
 
   // Helper function to check if a residue has characterization data
   const hasCharacterizationData = (rosettaNum: number | null) => {
