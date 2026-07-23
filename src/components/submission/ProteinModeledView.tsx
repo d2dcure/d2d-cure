@@ -16,8 +16,8 @@ interface ValidationMessage {
 }
 
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
-  const [folditScore, setFolditScore] = useState<number>(0);
 	const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
+	const [folditScore, setFolditScore] = useState<number>(expectedWTScore);
 
   const [WT, setWT] = useState<string>(folditScore.toString());
   //const [WT, setWT] = useState<string>(expectedWTScore.toString());
@@ -32,7 +32,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
     const variantScore = parseFloat(variant);
 
     if (!isNaN(wtScore) && !isNaN(variantScore)) {
-      if (wtScore !== expectedWTScore) {
+      if (wtScore !== folditScore) {
         messages.push({
           type: 'warning',
           message: `The expected score for the WT enzyme is ${folditScore}. Please confirm and resubmit.`,
@@ -80,7 +80,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
     setValidationMessages(messages);
     return isValid;
-  }, [WT, variant]);
+  }, [WT, variant, folditScore]);
 
 	useEffect(() => {
 		const enzyme = "BglB";  // TEMP; TODO: remove hardcoding!
@@ -233,7 +233,12 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Current Rosetta score: <span className="font-medium text-gray-900">{entryData.Rosetta_score}</span>
+            <p>
+				Current ΔΔ<i>G</i> =
+				<span className="font-medium text-gray-900">
+					{entryData.Rosetta_score}
+				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
+			</p>
           </div>
         )}
       </CardBody>
