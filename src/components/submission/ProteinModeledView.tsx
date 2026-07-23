@@ -5,107 +5,120 @@ import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 
 interface ProteinModeledViewProps {
 	enzyme: string;
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
 interface ValidationMessage {
-  type: 'error' | 'warning';
-  message: string;
-  field: 'WT' | 'variant';
+	type: 'error' | 'warning';
+	message: string;
+	field: 'WT' | 'variant';
 }
 
 const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryData, setCurrentView, updateEntryData }) => {
-	const expectedWTScore = -1089.697;  // Example expected score; TODO: remove hardcoding!
-	const [folditScore, setFolditScore] = useState<number>(expectedWTScore);
+	const [folditScore, setFolditScore] = useState<number>();
+	const [startingScore, setStartingScore] = useState<number>();
+	const [endingScore, setEndingScore] = useState<number>();
+	const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const [WT, setWT] = useState<string>(folditScore.toString());
-  //const [WT, setWT] = useState<string>(expectedWTScore.toString());
-  const [variant, setVariant] = useState<string>(
-	entryData.Rosetta_score !== null ?
-	String(parseFloat(WT) + entryData.Rosetta_score)  :
-	WT.toString()
-  );
-  const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+	const validateScores = useCallback(() => {
+		//let isValid = true;
+		const messages: ValidationMessage[] = [];
 
-  const validateScores = useCallback(() => {
-    let isValid = true;
-    const messages: ValidationMessage[] = [];
-    const wtScore = parseFloat(WT);
-    const variantScore = parseFloat(variant);
+		if (startingScore && endingScore) {
+			if (startingScore !== folditScore) {
+				messages.push({
+				type: 'warning',
+				message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
+				field: 'WT'
+				});
+				//isValid = false;
+			}
 
-    if (!isNaN(wtScore) && !isNaN(variantScore)) {
-      if (wtScore !== folditScore) {
-        messages.push({
-          type: 'warning',
-          message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
-          field: 'WT'
-        });
-        isValid = false;
-      }
+			if (startingScore === endingScore) {
+				messages.push({
+				type: 'error',
+				message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
+				field: 'variant'
+				});
+				//isValid = false;
+			}
 
-      if (wtScore === variantScore) {
-        messages.push({
-          type: 'error',
-          message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
-          field: 'variant'
-        });
-        isValid = false;
-      }
+			const delta = endingScore - startingScore;
+			if (delta < -20 || delta > 20) {
+				messages.push({
+				type: 'warning',
+				message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
+				field: 'variant'
+				});
+				//isValid = false;
+			}
+		} else {
+			if (!startingScore) {
+				messages.push({
+				type: 'error',
+				message: "Please enter a valid number for WT score.",
+				field: 'WT'
+				});
+				//isValid = false;
+			}
+			if (!endingScore) {
+				messages.push({
+				type: 'error',
+				message: "Please enter a valid number for Variant score.",
+				field: 'variant'
+				});
+				//isValid = false;
+			}
+		}
 
-      const delta = variantScore - wtScore;
-      if (delta < -20 || delta > 20) {
-        messages.push({
-          type: 'warning',
-          message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
-          field: 'variant'
-        });
-        isValid = false;
-      }
-    } else {
-      if (isNaN(wtScore)) {
-        messages.push({
-          type: 'error',
-          message: "Please enter a valid number for WT score.",
-          field: 'WT'
-        });
-        isValid = false;
-      }
-      if (isNaN(variantScore)) {
-        messages.push({
-          type: 'error',
-          message: "Please enter a valid number for Variant score.",
-          field: 'variant'
-        });
-        isValid = false;
-      }
-    }
-
-    setValidationMessages(messages);
-    return isValid;
-  }, [WT, variant, folditScore]);
+		setValidationMessages(messages);
+		//return isValid;
+	}, [startingScore, endingScore, folditScore]);
 
 	useEffect(() => {
 		const fetchScore = async () => {
-			const response = await fetch(`/api/getFolditScoresFromAbbr?abbr=${enzyme}`);
-			const data = await response.json();
-			console.log('Score: ', data.foldit_score);
-			setFolditScore(data.foldit_score);
+			try {
+				//const response = await fetch(`/api/getEnzymeGeneralInfo?abbr=${enzyme}`);
+				const response = await fetch("/api/getEnzymes");
+				//const generalInfo = await response.json();
+				if (!response.ok) {
+					throw new Error(`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
+				}
+				const enzymes = await response.json();
+				if (!Array.isArray(enzymes)) {
+					throw new Error(
+							"GET /api/getEnzymes - Invalid data format: Expected array");
+				}
+				const generalInfo = enzymes.find(record => record.abbr === enzyme);
+				console.log('Score: ', generalInfo.foldit_score);
+				setFolditScore(generalInfo.foldit_score);
+			} catch (error) {
+				console.error("Error fetching enzymes general info:", error);
+			}
 		};
 
-		fetchScore(); 
-	}, [enzyme]);
+		fetchScore();
+		if (!startingScore && folditScore) {
+			setStartingScore(folditScore);
+		}
+		if (!endingScore) {
+			if (entryData.Rosetta_score) {
+				setEndingScore(folditScore + entryData.Rosetta_score);
+			} else {
+				setEndingScore(folditScore);
+			}
+		}
+	}, [enzyme, entryData, startingScore, endingScore, folditScore]);
 
-  useEffect(() => {
-    if (WT || variant) {
-      validateScores();
-    }
-  }, [WT, variant, validateScores]);
+	useEffect(() => {
+		if (startingScore || endingScore) { validateScores(); }
+	}, [startingScore, endingScore, validateScores]);
 
   const updateRosettaScore = async () => {
-    const isValid = validateScores();
+    //const isValid = validateScores();
     
     const hasBlockingValidation = validationMessages.some(msg => 
       msg.type === 'error' 
@@ -120,7 +133,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: entryData.id,
-          Rosetta_score: parseFloat(variant) - parseFloat(WT),
+          Rosetta_score: endingScore - startingScore,
         }),
       });
 
@@ -145,7 +158,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 
   // Helper function to check if all validations pass
   const allChecksPass = () => {
-    return WT && variant && validationMessages.length === 0;
+    return startingScore && endingScore && validationMessages.length === 0;
   };
 
   return (
@@ -181,8 +194,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
             <Input
               type="text"
               label="WT (starting) score"
-              value={WT}
-              onChange={(e) => setWT(e.target.value)}
+              value={startingScore?.toString()}
+              onChange={(e) => setStartingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -207,8 +220,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
             <Input
               type="text"
               label="Variant (ending) score"
-              value={variant}
-              onChange={(e) => setVariant(e.target.value)}
+              value={endingScore?.toString()}
+              onChange={(e) => setEndingScore(Number(e.target.value))}
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -247,7 +260,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 			<p>
 				New ΔΔ<i>G</i> ={" "}
 				<span className="font-medium text-gray-900">
-					{parseFloat(variant) - parseFloat(WT)}
+					{String(endingScore - startingScore)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
           </div>
@@ -259,7 +272,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
           <button 
             onClick={updateRosettaScore}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!WT || !variant || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
+            disabled={!startingScore || !endingScore || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
           >
             {isSubmitting ? (
               <>
