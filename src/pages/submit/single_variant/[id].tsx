@@ -745,7 +745,7 @@ const SingleVariant = () => {
         return (
           <div className="flex items-center gap-1">
             <span className="font-semibold">ΔΔ<i>G</i> =</span>
-            <span>{entryData.Rosetta_score} REU</span>
+            <span>{entryData.Rosetta_score} <abbr title="Rosetta Energy Units">REU</abbr></span>
           </div>
         );
       }
