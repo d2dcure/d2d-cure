@@ -24,16 +24,16 @@ function MyApp({ Component, pageProps }: AppProps) {
 	const { enzyme, id } = router.query;
 
 	// Parse the URL to create a unique page title for the browser.
-	let subPages = router.pathname.split('/');
+	let subpages = router.pathname.split('/');
 	let pageName = '';
-	for (let subpage of subPages) {
-		if (pageName != '') {
-			pageName += " | " + pageName.charAt(0).toUpperCase() + pageName.slice(1).replace('_', ' ');
+	for (let subpage of subpages) {
+		if (subpage != '') {
+			pageName += " | " + subpage.charAt(0).toUpperCase() + subpage.slice(1).replace('_', ' ');
 		}
 	}
 	if (!pageName) { pageName = " | Home"; }
 	if (enzyme) { pageName = pageName.replace("[enzyme]", `${enzyme}`); }
-	if (id) { pageName = pageName.replace("[id]", `${id}`); }
+	if (id) { pageName = pageName.replace("[id]", `#${id}`); }
 
 	return (
 		<UserProvider>
