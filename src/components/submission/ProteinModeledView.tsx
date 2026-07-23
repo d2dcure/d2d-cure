@@ -123,22 +123,24 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: entryData.id,
-          Rosetta_score: endingScore - startingScore,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update Rosetta score');
-      }
-
-      const updatedEntry = await response.json();
-      updateEntryData(updatedEntry);
-      setCurrentView('checklist');
+		if (startingScore != undefined && endingScore != undefined) {
+			const response = await fetch('/api/updateCharacterizationDataRosettaScore', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+				id: entryData.id,
+				Rosetta_score: endingScore - startingScore,
+				}),
+			});
+			if (!response.ok) {
+				throw new Error("Failed to update Rosetta score");
+			}
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView('checklist');
+		} else {
+			throw new Error("Scores are undefined.");
+		}
     } catch (error) {
       console.error('Error updating Rosetta score:', error);
     } finally {
@@ -258,14 +260,16 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
         )}
+
+		{startingScore != null && endingScore != null && (
 			<p>
 				New ΔΔ<i>G</i> ={" "}
 				<span className="font-medium text-gray-900">
 					{(endingScore - startingScore)?.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
+		)}
           </div>
-
       </CardBody>
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
