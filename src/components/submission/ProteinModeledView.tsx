@@ -21,7 +21,11 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
   const [WT, setWT] = useState<string>(folditScore.toString());
   //const [WT, setWT] = useState<string>(expectedWTScore.toString());
-  const [variant, setVariant] = useState<string>(WT.toString());
+  const [variant, setVariant] = useState<string>(
+	entryData.Rosetta_score !== null ?
+	String(parseFloat(WT) + entryData.Rosetta_score)  :
+	WT.toString()
+  );
   const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,7 +39,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (wtScore !== folditScore) {
         messages.push({
           type: 'warning',
-          message: `The expected score for the WT enzyme is ${folditScore}. Please confirm and resubmit.`,
+          message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
           field: 'WT'
         });
         isValid = false;
@@ -43,8 +47,8 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
 
       if (wtScore === variantScore) {
         messages.push({
-          type: 'warning',
-          message: 'It is highly unlikely for both WT and Variant scores to be the same. Please confirm.',
+          type: 'error',
+          message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
           field: 'variant'
         });
         isValid = false;
@@ -54,7 +58,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (delta < -20 || delta > 20) {
         messages.push({
           type: 'warning',
-          message: 'Variants rarely express if the change in score is greater than 20. Please review the values.',
+          message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
           field: 'variant'
         });
         isValid = false;
@@ -63,7 +67,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (isNaN(wtScore)) {
         messages.push({
           type: 'error',
-          message: 'Please enter a valid number for WT score',
+          message: "Please enter a valid number for WT score.",
           field: 'WT'
         });
         isValid = false;
@@ -71,7 +75,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
       if (isNaN(variantScore)) {
         messages.push({
           type: 'error',
-          message: 'Please enter a valid number for Variant score',
+          message: "Please enter a valid number for Variant score.",
           field: 'variant'
         });
         isValid = false;
@@ -104,8 +108,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ entryData, setC
     const isValid = validateScores();
     
     const hasBlockingValidation = validationMessages.some(msg => 
-      msg.type === 'error' || 
-      (msg.type === 'warning' && !msg.message.includes('Variants rarely express if the change in score is greater than 20'))
+      msg.type === 'error' 
     );
     
     if (hasBlockingValidation) return;
