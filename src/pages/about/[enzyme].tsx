@@ -19,6 +19,7 @@ interface EnzymeGeneralInfo {
 	AlphaFold_entries: string;
 
 	subunits: number;
+	molar_mass: number;
 }
 
 interface SequenceData {
@@ -98,6 +99,7 @@ const AboutEnzymePAge = () => {
   const models = (AlphaFold_entries) ? AlphaFold_entries.split(' ') : [];
   const AlphaFold_link = (model:string):string => { return `http://alphafold.ebi.ac.uk/entry/${model}`; } 
   const subunits = (generalInfo) ?  generalInfo.subunits : 1;
+  const molar_mass = (generalInfo) ?  Intl.NumberFormat().format(generalInfo.molar_mass) : '';
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -207,8 +209,13 @@ const AboutEnzymePAge = () => {
                 <span className="text-sm text-gray-600">{subunits}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">Molar Mass:</span>
-                <span className="text-sm text-gray-600">51,573 Da</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					Molar Mass (<i>M</i>, per subunit):
+				</span>
+                <span className="text-sm text-gray-600">
+					{molar_mass}{' '}
+					<abbr title="daltons (g/mol)">Da</abbr>
+				</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (ε<sub>BglB</sub>):</span>
