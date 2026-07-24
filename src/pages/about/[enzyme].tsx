@@ -17,6 +17,8 @@ interface EnzymeGeneralInfo {
 	UniProt_number: string;
 	PDB_entries: string;
 	AlphaFold_entries: string;
+
+	subunits: number;
 }
 
 interface SequenceData {
@@ -76,7 +78,8 @@ const AboutEnzymePAge = () => {
     var txt = document.createElement("textarea");
     txt.innerHTML = html;
     return txt.value;
-}
+  }
+
 
   // Prepopulate fields or use placeholder text.
   const abbr = (generalInfo) ?  generalInfo.abbr : "XxxX";
@@ -94,6 +97,7 @@ const AboutEnzymePAge = () => {
   const AlphaFold_entries = (generalInfo) ?  generalInfo.AlphaFold_entries : "";
   const models = (AlphaFold_entries) ? AlphaFold_entries.split(' ') : [];
   const AlphaFold_link = (model:string):string => { return `http://alphafold.ebi.ac.uk/entry/${model}`; } 
+  const subunits = (generalInfo) ?  generalInfo.subunits : 1;
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -108,7 +112,7 @@ const AboutEnzymePAge = () => {
           </Breadcrumbs>
           <div className="pt-6">
             <h2 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
-              About {full_name}
+              About {full_name} ({abbr})
             </h2>
 			<p>(Added to D2D Network in {year})</p>
           </div>
@@ -193,8 +197,15 @@ const AboutEnzymePAge = () => {
               </div>
 				)}
 			</div>
+
 			<div className="space-y-2">
 			  <h3>Properties</h3>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					Subunits (in active form):
+				</span>
+                <span className="text-sm text-gray-600">{subunits}</span>
+              </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Molar Mass:</span>
                 <span className="text-sm text-gray-600">51,573 Da</span>
