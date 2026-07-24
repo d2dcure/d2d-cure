@@ -8,6 +8,11 @@ import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
 
 
+interface EnzymeGeneralInfo {
+	abbr: string;
+	full_name: string;
+}
+
 interface SequenceData {
   id: number;
   resnum: string;
@@ -19,7 +24,7 @@ interface SequenceData {
 const AboutEnzymePAge = () => {
 	const router = useRouter();
 	const { enzyme } = router.query;
-	const [generalInfo, setGeneralInfo] = useState<any[]>([]);
+	const [generalInfo, setGeneralInfo] = useState<EnzymeGeneralInfo[]>([]);
 	const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
 	const [characterizationData, setCharacterizationData] = useState<any[]>([]);
 
@@ -69,11 +74,11 @@ const AboutEnzymePAge = () => {
           <Breadcrumbs className="mb-2">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/about">About</BreadcrumbItem>
-            <BreadcrumbItem>β-glucosidase B</BreadcrumbItem>
+            <BreadcrumbItem>{generalInfo.abbr}</BreadcrumbItem>
           </Breadcrumbs>
           <div className="pt-6">
             <h1 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
-              About β-glucosidase B
+              About {generalInfo.full_name}
             </h1>
           </div>
         </div>
