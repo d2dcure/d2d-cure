@@ -16,6 +16,7 @@ interface EnzymeGeneralInfo {
 	EC_number: string;
 	UniProt_number: string;
 	PDB_entries: string;
+	AlphaFold_entries: string;
 }
 
 interface SequenceData {
@@ -89,7 +90,10 @@ const AboutEnzymePAge = () => {
   const UniProt_link = `http://www.uniprot.org/uniprotkb/${UniProt_number}`;
   const PDB_entries = (generalInfo) ?  generalInfo.PDB_entries : "";
   const pdbs = (PDB_entries) ? PDB_entries.split(' ') : [];
-  const PDB_link = (pdb:string):string => { return `http://www.rcsb.org/structure/${pdb}`; } 
+  const PDB_link = (pdb:string):string => { return `http://www.rcsb.org/structure/${pdb}`; }
+  const AlphaFold_entries = (generalInfo) ?  generalInfo.AlphaFold_entries : "";
+  const models = (AlphaFold_entries) ? AlphaFold_entries.split(' ') : [];
+  const AlphaFold_link = (model:string):string => { return `http://alphafold.ebi.ac.uk/entry/${model}`; } 
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -122,7 +126,9 @@ const AboutEnzymePAge = () => {
                 <span className="text-sm text-gray-600 italic">{species}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					<abbr title="Enzyme Commission">EC</abbr> Number:
+				</span>
                 <a
 					href={EC_link}
 					className="text-sm text-blue-500
@@ -134,7 +140,9 @@ const AboutEnzymePAge = () => {
 				</a>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">UniProt Number:</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					<abbr title="Universal Protein Resource">UniProt</abbr> Number:
+				</span>
                 <a
 					href={UniProt_link}
 					className="text-sm text-blue-500 hover:underline"
@@ -146,7 +154,9 @@ const AboutEnzymePAge = () => {
               </div>
 			  {PDB_entries && (
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">PDB Entries:</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					<abbr title="Protein Data Bank">PDB</abbr> Entries:
+				</span>
                 <div className="flex flex-wrap gap-2 text-sm">
 					{pdbs.map((pdb) => (
 						<a
@@ -157,6 +167,26 @@ const AboutEnzymePAge = () => {
 							rel="noopener noreferrer"
 						>
 							{pdb}
+						</a>
+					))}
+                </div>
+              </div>
+				)}
+			  {AlphaFold_entries && (
+              <div className="flex items-center gap-3">
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					AlphaFold Entries:
+				</span>
+                <div className="flex flex-wrap gap-2 text-sm">
+					{models.map((model) => (
+						<a
+							key={model}
+							href={AlphaFold_link(model)}
+							className="text-blue-500 hover:underline"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							AF-{model}
 						</a>
 					))}
                 </div>
