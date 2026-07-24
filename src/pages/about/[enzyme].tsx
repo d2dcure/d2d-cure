@@ -14,6 +14,7 @@ interface EnzymeGeneralInfo {
 	full_name: string;
 	species: string;
 	EC_number: string;
+	UniProt_number: string;
 }
 
 interface SequenceData {
@@ -83,6 +84,8 @@ const AboutEnzymePAge = () => {
   const EC_number = (generalInfo) ?  generalInfo.EC_number : "";
   const EC_numbers = EC_number.split('.');
   const EC_link = `http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC${EC_numbers.at(0)}/${EC_numbers.at(1)}/${EC_numbers.at(2)}/${EC_numbers.at(3)}.html`;
+  const UniProt_number = (generalInfo) ?  generalInfo.UniProt_number : "";
+  const UniProt_link = `http://www.uniprot.org/uniprotkb/${UniProt_number}`;
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -109,17 +112,33 @@ const AboutEnzymePAge = () => {
         <div className="flex flex-col lg:flex-row gap-2">
           <div className="lg:w-1/2">
             <div className="space-y-2">
+				<h3>Identifiers</h3>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
                 <span className="text-sm text-gray-600 italic">{species}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
-                <a href={EC_link} className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">{EC_number}</a>
+                <a
+					href={EC_link}
+					className="text-sm text-blue-500
+					hover:underline"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{EC_number}
+				</a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">UniProt Number:</span>
-                <a href="https://www.uniprot.org/uniprotkb/P22505" className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">P22505</a>
+                <a
+					href={UniProt_link}
+					className="text-sm text-blue-500 hover:underline"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{UniProt_number}
+				</a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">PDB Entries:</span>
