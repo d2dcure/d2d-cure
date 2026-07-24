@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
-import { getPathwayInfo } from "@/functions/database_functions";
+import { getPathwayInfo, getMechanismInfo, getAssayInfo } from "@/functions/database_functions";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
@@ -119,6 +119,8 @@ const AboutEnzymePAge = () => {
 	const coming_soon = (generalInfo) ?	generalInfo.coming_soon : false;
 
 	const PathwayInfo = getPathwayInfo(enzyme as string);
+	const MechanismInfo = getMechanismInfo(enzyme as string);
+	const AssayInfo = getAssayInfo(enzyme as string);
 
 	// TODO: Remove all the horrible hard-coding in this file!
 	return (
@@ -306,10 +308,7 @@ const AboutEnzymePAge = () => {
 								title="Reaction Mechanism"
 								className="text-gray-600 text-justify"
 							>
-								Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-								sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-								Ut enim ad minim veniam,
-								quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+								<MechanismInfo />
 							</AccordionItem>
 						</Accordion>
 						<p className="text-gray-600 text-justify mb-4">
@@ -321,10 +320,7 @@ const AboutEnzymePAge = () => {
 								title="Assay Chemistry"
 								className="text-gray-600 text-justify"
 							>
-								Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-								sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-								Ut enim ad minim veniam,
-								quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+								<AssayInfo />
 							</AccordionItem>
 						</Accordion>
 					</div>

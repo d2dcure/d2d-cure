@@ -46,7 +46,7 @@ export function getMechanismInfo(enzyme: string) {
 }
 
 
-export function getAssays(enzyme: string) {
+export function getAssayInfo(enzyme: string) {
 	switch (enzyme) {
 		case "BglB":
 			return BglBAssay;

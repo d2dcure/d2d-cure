@@ -92,7 +92,8 @@ export function BglBPathway() {
 			<p className="mb-4">
 				After cellulase cuts cellulose into smaller units, the enzyme
 				BglB assists it in the process of metabolism by breaking down
-				these smaller saccharide units and other (β1→4)-linked sugars.
+				these smaller (β1→4)-linked saccharide units—particularly,
+				cellobiose, cellotriose, or cellotetraose.
 				(Humans do not have BglB in our <em>stomachs</em>,
 				but we <em>do</em> have it in other kinds of cells.)
 			</p>
