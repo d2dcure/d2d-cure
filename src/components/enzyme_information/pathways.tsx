@@ -5,7 +5,7 @@
 // They are to be imported as components on other pages.
 
 // Imports
-import { Image, Link } from "@nextui-org/react";
+import { Image } from "@nextui-org/react";
 
 export function DefaultPathway() {
 	return (
