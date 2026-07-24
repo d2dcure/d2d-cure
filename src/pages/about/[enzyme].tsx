@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import { getPathwayInfo } from "@/functions/database_functions";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Accordion, AccordionItem, Card, CardBody, Image, Link } from "@nextui-org/react";
+import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
 
@@ -338,7 +338,7 @@ const AboutEnzymePAge = () => {
 							One-letter codes in blue have parameter data stored in our database. Hovering over any 1-letter code in the sequence will give that residues sequence numbers/positions.
 						</p>
 
-						<div className="px-6 md:px-12 lg:px-24 py-16 font-mono text-lg leading-loose break-words">
+						<div className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words">
 							{sequenceData.map((residue, index) => {
 								const hasStructure = residue.PDBresnum !== null;
 								const hasData = hasCharacterizationData(residue.Rosetta_resnum);
