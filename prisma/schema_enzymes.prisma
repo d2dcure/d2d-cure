@@ -27,4 +27,5 @@ model GeneralInfo {
   metadata          String?  @db.Text
   foldit_score      Float    @default(0) @db.Float
   active            Boolean  @default(true)
+  coming_soon       Boolean  @default(false)
 }

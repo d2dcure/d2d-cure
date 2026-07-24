@@ -23,6 +23,8 @@ interface EnzymeGeneralInfo {
 
 	pathway_desc: string;
 	assay_desc: string;
+
+	coming_soon: boolean;
 }
 
 interface SequenceData {
@@ -113,6 +115,8 @@ const AboutEnzymePAge = () => {
   const pretty_image = (enzyme) ? `/resources/images/pretty${abbr}.png` : '';
   const pretty_image_title = (enzyme) ? `3D Structure of ${enzyme}` : '';
 
+  const coming_soon = (generalInfo) ?  generalInfo.coming_soon : false;
+
   const PathwayInfo = getPathwayInfo(enzyme as string);
 
   // TODO: Remove all the horrible hard-coding in this file!
@@ -131,7 +135,12 @@ const AboutEnzymePAge = () => {
             <h2 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
               About {full_name} ({abbr})
             </h2>
-			<p>(Added to D2D Network in {year})</p>
+			{coming_soon && (
+				<p>(Coming soon!)</p>
+			)}
+			{!coming_soon && (
+				<p>(Added to D2D Network in {year})</p>
+			)}
           </div>
         </div>
       </div>

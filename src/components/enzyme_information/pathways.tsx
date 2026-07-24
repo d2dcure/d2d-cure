@@ -11,10 +11,7 @@ export function DefaultPathway() {
 	return (
 		<div>
 			<p className="text-gray-600 text-justify">
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-				sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-				Ut enim ad minim veniam,
-				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+				Details coming soon…
 			</p>
 		</div>
 	);
@@ -99,11 +96,6 @@ export function BglBPathway() {
 				(Humans do not have BglB in our <em>stomachs</em>,
 				but we <em>do</em> have it in other kinds of cells.)
 			</p>
-			<Image 
-				src=""
-				title="BglB Biochemical Pathway"
-				alt="Disaccharide to monosaccharide"
-			/>
 		</div>
 	);
 }
