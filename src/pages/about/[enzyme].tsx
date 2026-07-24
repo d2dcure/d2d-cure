@@ -13,6 +13,7 @@ interface EnzymeGeneralInfo {
 	year: number;
 	full_name: string;
 	species: string;
+	EC_number: string;
 }
 
 interface SequenceData {
@@ -79,7 +80,9 @@ const AboutEnzymePAge = () => {
   const year = (generalInfo) ?  generalInfo.year : null;
   const full_name = (generalInfo) ?  decodeHTML(generalInfo.full_name) : "the enzyme";
   const species = (generalInfo) ?  generalInfo.species : "Genus species";
-
+  const EC_number = (generalInfo) ?  generalInfo.EC_number : "";
+  const EC_numbers = EC_number.split('.');
+  const EC_link = `http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC${EC_numbers.at(0)}/${EC_numbers.at(1)}/${EC_numbers.at(2)}/${EC_numbers.at(3)}.html`;
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -112,7 +115,7 @@ const AboutEnzymePAge = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
-                <a href="http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC3/2/1/21.html" className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">3.2.1.21</a>
+                <a href={EC_link} className="text-sm text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">{EC_number}</a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">UniProt Number:</span>
