@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Card, CardBody } from "@nextui-org/react";
+import { Accordion, AccordionItem, Card, CardBody } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
 
@@ -265,9 +265,43 @@ const AboutEnzymePAge = () => {
           <p className="text-gray-600 text-justify">
             {pathway_desc}
           </p>
+		  <Accordion isCompact variant="shadow">
+			<AccordionItem
+				key="1"
+				title="Biochemical Pathway"
+				className="text-gray-600 text-justify"
+			>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+				sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				Ut enim ad minim veniam,
+				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+			</AccordionItem>
+			<AccordionItem
+				key="2"
+				title="Reaction Mechanism"
+				className="text-gray-600 text-justify"
+			>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+				sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				Ut enim ad minim veniam,
+				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+			</AccordionItem>
+		  </Accordion>
           <p className="text-gray-600 text-justify">
 				{assay_desc}
           </p>
+		  <Accordion isCompact variant="shadow">
+			<AccordionItem
+				key="3"
+				title="Assay Chemistry"
+				className="text-gray-600 text-justify"
+			>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+				sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				Ut enim ad minim veniam,
+				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+			</AccordionItem>
+		  </Accordion>
         </div>
       </div>
 
