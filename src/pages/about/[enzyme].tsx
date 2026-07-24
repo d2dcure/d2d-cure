@@ -20,6 +20,10 @@ interface EnzymeGeneralInfo {
 
 	subunits: number;
 	molar_mass: number;
+	ext_coefficient: number;
+
+	pathway_desc: string;
+	assay_desc: string;
 }
 
 interface SequenceData {
@@ -87,6 +91,7 @@ const AboutEnzymePAge = () => {
   const year = (generalInfo) ?  generalInfo.year : null;
   const full_name = (generalInfo) ?  decodeHTML(generalInfo.full_name) : "the enzyme";
   const species = (generalInfo) ?  generalInfo.species : "Genus species";
+  const species_link = (species) ? `http://en.wikipedia.org/wiki/${species}` : '';
   const EC_number = (generalInfo) ?  generalInfo.EC_number : "";
   const EC_numbers = EC_number.split('.');
   const EC_link = `http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC${EC_numbers.at(0)}/${EC_numbers.at(1)}/${EC_numbers.at(2)}/${EC_numbers.at(3)}.html`;
@@ -98,8 +103,13 @@ const AboutEnzymePAge = () => {
   const AlphaFold_entries = (generalInfo) ?  generalInfo.AlphaFold_entries : "";
   const models = (AlphaFold_entries) ? AlphaFold_entries.split(' ') : [];
   const AlphaFold_link = (model:string):string => { return `http://alphafold.ebi.ac.uk/entry/${model}`; } 
+  
   const subunits = (generalInfo) ?  generalInfo.subunits : 1;
   const molar_mass = (generalInfo) ?  Intl.NumberFormat().format(generalInfo.molar_mass) : '';
+  const ext_coefficient = (generalInfo) ?  Intl.NumberFormat().format(generalInfo.ext_coefficient) : '';
+
+  const pathway_desc = (generalInfo) ?  decodeHTML(generalInfo.pathway_desc) : "Loading description…";
+  const assay_desc = (generalInfo) ?  decodeHTML(generalInfo.assay_desc) : "Loading description…";
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -128,8 +138,18 @@ const AboutEnzymePAge = () => {
             <div className="space-y-2 mb-8">
 				<h3>Identifiers</h3>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
-                <span className="text-sm text-gray-600 italic">{species}</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					Species:
+				</span>
+                <a
+					href={species_link}
+					className="text-sm text-blue-500
+					hover:underline"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<i>{species}</i>
+				</a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">
@@ -218,11 +238,20 @@ const AboutEnzymePAge = () => {
 				</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-44 text-sm text-gray-600">Extinction Coefficient (ε<sub>BglB</sub>):</span>
-                <span className="text-sm text-gray-600">113,330 m−1 cm−1</span>
+                <span className="font-semibold w-44 text-sm text-gray-600">
+					Extinction Coefficient (ε):
+				</span>
+                <span className="text-sm text-gray-600">
+					{ext_coefficient}{' '}
+					<abbr title="inverse molar per centimeter">
+						ᴍ<sup>&minus;1</sup> cm<sup>&minus;1</sup>
+					</abbr>
+				</span>
               </div>
             </div>
           </div>
+
+		  {/* Image */}
           <div className="w-full lg:w-1/2 mt-8 lg:-mt-24 lg:-ml-32 flex justify-center lg:justify-start">
             <img 
               src="/resources/images/prettyBglB.png"
@@ -233,14 +262,11 @@ const AboutEnzymePAge = () => {
         </div>
 
         <div className="mt-12 space-y-6 max-w-3xl">
-          <p className="text-gray-600">
-            β-glucosidase B (BglB, lovingly called &quot;Bagel B&quot; by our teams) is an enzyme that catalyzes 
-            the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage. 
-            It is an essential enzyme for the degradation of cellulose by bacteria and fungi.
+          <p className="text-gray-600 text-justify">
+            {pathway_desc}
           </p>
-          <p className="text-gray-600">
-            Our computational designs and kinetic measurements will utilize para-nitrophenyl-β-ᴅ-glucopyranose (pNPG) 
-            as a colorimetric reporter substrate.
+          <p className="text-gray-600 text-justify">
+				{assay_desc}
           </p>
         </div>
       </div>
