@@ -88,7 +88,7 @@ const AboutEnzymePAge = () => {
   const UniProt_number = (generalInfo) ?  generalInfo.UniProt_number : "";
   const UniProt_link = `http://www.uniprot.org/uniprotkb/${UniProt_number}`;
   const PDB_entries = (generalInfo) ?  generalInfo.PDB_entries : "";
-  const pdbs = PDB_entries.split(' ');
+  const pdbs = (PDB_entries) ? PDB_entries.split(' ') : [];
   const PDB_link = (pdb:string):string => { return `http://www.rcsb.org/structure/${pdb}`; } 
 
   // TODO: Remove all the horrible hard-coding in this file!
@@ -144,6 +144,7 @@ const AboutEnzymePAge = () => {
 					{UniProt_number}
 				</a>
               </div>
+			  {PDB_entries && (
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">PDB Entries:</span>
                 <div className="flex flex-wrap gap-2 text-sm">
@@ -160,6 +161,7 @@ const AboutEnzymePAge = () => {
 					))}
                 </div>
               </div>
+				)}
 			</div>
 			<div className="space-y-2">
 			  <h3>Properties</h3>
