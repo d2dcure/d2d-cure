@@ -7,6 +7,7 @@
 // singleton needs to be created and imported here.
 import prismaAbcD from "../../prismaAbcDClient";
 import prismaBglB from "../../prismaBglBClient";
+import { DefaultPathway, BglBPathway } from "@/components/enzyme_information/pathways"
 
 // Look up and retrieve the Prisma client for the proper database.
 // TODO: Whenever a new enzyme is added, it needs to be added to this switch
@@ -19,5 +20,14 @@ export function getClient(enzyme: string) {
 			return prismaBglB;
 		default:
 			return prismaBglB;
+	}
+}
+
+export function getPathwayInfo(enzyme: string) {
+	switch (enzyme) {
+		case "BglB":
+			return BglBPathway;
+		default:
+			return DefaultPathway;
 	}
 }

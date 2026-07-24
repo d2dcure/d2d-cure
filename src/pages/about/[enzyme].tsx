@@ -1,14 +1,14 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
+import { getPathwayInfo } from "@/functions/database_functions";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Accordion, AccordionItem, Card, CardBody, Link } from "@nextui-org/react";
+import { Accordion, AccordionItem, Card, CardBody, Image, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
 
 
 interface EnzymeGeneralInfo {
-	abbr: string;
 	year: number;
 	full_name: string;
 	species: string;
@@ -86,7 +86,7 @@ const AboutEnzymePAge = () => {
 
 
   // Prepopulate fields or use placeholder text.
-  const abbr = (generalInfo) ?  generalInfo.abbr : "XxxX";
+  const abbr = (enzyme) ?  enzyme : "XxxX";
   const year = (generalInfo) ?  generalInfo.year : null;
   const full_name = (generalInfo) ?  decodeHTML(generalInfo.full_name) : "the enzyme";
   const species = (generalInfo) ?  generalInfo.species : "Genus species";
@@ -109,6 +109,11 @@ const AboutEnzymePAge = () => {
 
   const pathway_desc = (generalInfo) ?  decodeHTML(generalInfo.pathway_desc) : "Loading description…";
   const assay_desc = (generalInfo) ?  decodeHTML(generalInfo.assay_desc) : "Loading description…";
+
+  const pretty_image = (enzyme) ? `/resources/images/pretty${abbr}.png` : '';
+  const pretty_image_title = (enzyme) ? `3D Structure of ${enzyme}` : '';
+
+  const PathwayInfo = getPathwayInfo(enzyme as string);
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -256,9 +261,12 @@ const AboutEnzymePAge = () => {
 
 		  {/* Image */}
           <div className="w-full lg:w-1/2 mt-8 lg:-mt-24 lg:-ml-32 flex justify-center lg:justify-start">
-            <img 
-              src="/resources/images/prettyBglB.png"
-              alt="BglB Structure"
+            <Image 
+			  isZoomed
+              src={pretty_image}
+			  title={pretty_image_title}
+              alt="3D Structure"
+
               className="w-[280px] sm:w-[320px] lg:w-[350px] max-w-full"
             />
           </div>
@@ -274,10 +282,7 @@ const AboutEnzymePAge = () => {
 				title="Biochemical Pathway"
 				className="text-gray-600 text-justify"
 			>
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-				sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-				Ut enim ad minim veniam,
-				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+				<PathwayInfo />
 			</AccordionItem>
 			<AccordionItem
 				key="2"
