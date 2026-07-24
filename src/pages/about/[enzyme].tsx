@@ -124,15 +124,15 @@ const AboutEnzymePAge = () => {
     <>
       <NavBar />
       <div className="px-6 md:px-12 lg:px-24 py-8 lg:py-10 bg-white">
-        <div className="col-span-1 items-center">
-          <Breadcrumbs className="mb-2">
+        <div className="max-w-7x1 mx-auto">
+          <Breadcrumbs>
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/about">About</BreadcrumbItem>
             <BreadcrumbItem>{abbr}</BreadcrumbItem>
           </Breadcrumbs>
-
-          <div className="pt-6">
-            <h2 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
+		</div>
+		<div className="max-w-7x1 mx-auto pt-8 mb-8">
+            <h2 className="mb-2 text-3xl md:text-4xl lg:text-5xl font-inter dark:text-white">
               About {full_name} ({abbr})
             </h2>
 			{coming_soon && (
@@ -141,14 +141,11 @@ const AboutEnzymePAge = () => {
 			{!coming_soon && (
 				<p>(Added to D2D Network in {year})</p>
 			)}
-          </div>
-        </div>
-      </div>
+
 
       {/* Info Section */}
-      <div className="px-6 md:px-12 lg:px-24 py-4 bg-white">
-        <div className="flex flex-col lg:flex-row gap-2">
-          <div className="lg:w-1/2">
+        <div className="inline-grid grid-cols-2 grid-rows-1 gap-4">
+          <div>
             <div className="space-y-2 mb-8">
 				<h3>Identifiers</h3>
               <div className="flex items-center gap-3">
@@ -269,7 +266,7 @@ const AboutEnzymePAge = () => {
           </div>
 
 		  {/* Image */}
-          <div className="w-full lg:w-1/2 mt-8 lg:-mt-24 lg:-ml-32 flex justify-center lg:justify-start">
+          <div>
             <Image 
 			  isZoomed
               src={pretty_image}
@@ -321,6 +318,7 @@ const AboutEnzymePAge = () => {
 		  </Accordion>
         </div>
       </div>
+	          </div>
 
             {/* Sequence Section */}
             <div className="px-6 md:px-12 lg:px-24 py-16">
