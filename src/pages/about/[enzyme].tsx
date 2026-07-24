@@ -15,6 +15,7 @@ interface EnzymeGeneralInfo {
 	species: string;
 	EC_number: string;
 	UniProt_number: string;
+	PDB_entries: string;
 }
 
 interface SequenceData {
@@ -86,6 +87,9 @@ const AboutEnzymePAge = () => {
   const EC_link = `http://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC${EC_numbers.at(0)}/${EC_numbers.at(1)}/${EC_numbers.at(2)}/${EC_numbers.at(3)}.html`;
   const UniProt_number = (generalInfo) ?  generalInfo.UniProt_number : "";
   const UniProt_link = `http://www.uniprot.org/uniprotkb/${UniProt_number}`;
+  const PDB_entries = (generalInfo) ?  generalInfo.PDB_entries : "";
+  const pdbs = PDB_entries.split(' ');
+  const PDB_link = (pdb:string):string => { return `http://www.rcsb.org/structure/${pdb}`; } 
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -111,7 +115,7 @@ const AboutEnzymePAge = () => {
       <div className="px-6 md:px-12 lg:px-24 py-4 bg-white">
         <div className="flex flex-col lg:flex-row gap-2">
           <div className="lg:w-1/2">
-            <div className="space-y-2">
+            <div className="space-y-2 mb-8">
 				<h3>Identifiers</h3>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
@@ -143,13 +147,22 @@ const AboutEnzymePAge = () => {
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">PDB Entries:</span>
                 <div className="flex flex-wrap gap-2 text-sm">
-                  <a href="https://www.rcsb.org/structure/2JIE" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2JIE</a>
-                  <a href="https://www.rcsb.org/structure/2O9P" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9P</a>
-                  <a href="https://www.rcsb.org/structure/2O9R" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9R</a>
-                  <a href="https://www.rcsb.org/structure/2O9T" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2O9T</a>
-                  <a href="https://www.rcsb.org/structure/2Z1S" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">2Z1S</a>
+					{pdbs.map((pdb) => (
+						<a
+							key={pdb}
+							href={PDB_link(pdb)}
+							className="text-blue-500 hover:underline"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{pdb}
+						</a>
+					))}
                 </div>
               </div>
+			</div>
+			<div className="space-y-2">
+			  <h3>Properties</h3>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Molar Mass:</span>
                 <span className="text-sm text-gray-600">51,573 Da</span>
