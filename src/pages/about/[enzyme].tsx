@@ -24,7 +24,7 @@ interface SequenceData {
 const AboutEnzymePAge = () => {
 	const router = useRouter();
 	const { enzyme } = router.query;
-	const [generalInfo, setGeneralInfo] = useState<EnzymeGeneralInfo[]>([]);
+	const [generalInfo, setGeneralInfo] = useState<EnzymeGeneralInfo>();
 	const [sequenceData, setSequenceData] = useState<SequenceData[]>([]);
 	const [characterizationData, setCharacterizationData] = useState<any[]>([]);
 
@@ -65,6 +65,10 @@ const AboutEnzymePAge = () => {
     return characterizationData.some(item => item.resnum === rosettaNum);
   };
 
+  // Prepopulate fields or use placeholder text.
+  const abbr = (generalInfo) ?  generalInfo.abbr : "XxxX";
+  const full_name = (generalInfo) ?  generalInfo.full_name : "the enzyme";
+
   // TODO: Remove all the horrible hard-coding in this file!
   return (
     <>
@@ -74,11 +78,11 @@ const AboutEnzymePAge = () => {
           <Breadcrumbs className="mb-2">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/about">About</BreadcrumbItem>
-            <BreadcrumbItem>{generalInfo.abbr}</BreadcrumbItem>
+            <BreadcrumbItem>{abbr}</BreadcrumbItem>
           </Breadcrumbs>
           <div className="pt-6">
             <h1 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
-              About {generalInfo.full_name}
+              About {full_name}
             </h1>
           </div>
         </div>
