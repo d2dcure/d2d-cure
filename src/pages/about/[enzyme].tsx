@@ -1,9 +1,8 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Accordion, AccordionItem, Card, CardBody } from "@nextui-org/react";
+import { Accordion, AccordionItem, Card, CardBody, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
 
@@ -122,6 +121,7 @@ const AboutEnzymePAge = () => {
             <BreadcrumbItem href="/about">About</BreadcrumbItem>
             <BreadcrumbItem>{abbr}</BreadcrumbItem>
           </Breadcrumbs>
+
           <div className="pt-6">
             <h2 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
               About {full_name} ({abbr})
@@ -141,42 +141,43 @@ const AboutEnzymePAge = () => {
                 <span className="font-semibold w-44 text-sm text-gray-600">
 					Species:
 				</span>
-                <a
+                <Link
 					href={species_link}
-					className="text-sm text-blue-500
-					hover:underline"
-					target="_blank"
-					rel="noopener noreferrer"
+					className="text-sm text-blue-500"
+					underline="hover"
+					isExternal
+					showAnchorIcon
 				>
 					<i>{species}</i>
-				</a>
+				</Link>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">
 					<abbr title="Enzyme Commission">EC</abbr> Number:
 				</span>
-                <a
+                <Link
 					href={EC_link}
-					className="text-sm text-blue-500
-					hover:underline"
-					target="_blank"
-					rel="noopener noreferrer"
+					className="text-sm text-blue-500"
+					underline="hover"
+					isExternal
+					showAnchorIcon
 				>
 					{EC_number}
-				</a>
+				</Link>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">
 					<abbr title="Universal Protein Resource">UniProt</abbr> Number:
 				</span>
-                <a
+                <Link
 					href={UniProt_link}
-					className="text-sm text-blue-500 hover:underline"
-					target="_blank"
-					rel="noopener noreferrer"
+					className="text-sm text-blue-500"
+					underline="hover"
+					isExternal
+					showAnchorIcon
 				>
 					{UniProt_number}
-				</a>
+				</Link>
               </div>
 			  {PDB_entries && (
               <div className="flex items-center gap-3">
@@ -185,15 +186,16 @@ const AboutEnzymePAge = () => {
 				</span>
                 <div className="flex flex-wrap gap-2 text-sm">
 					{pdbs.map((pdb) => (
-						<a
+						<Link
 							key={pdb}
 							href={PDB_link(pdb)}
-							className="text-blue-500 hover:underline"
-							target="_blank"
-							rel="noopener noreferrer"
+							className="text-sm text-blue-500"
+							underline="hover"
+							isExternal
+							showAnchorIcon
 						>
 							{pdb}
-						</a>
+						</Link>
 					))}
                 </div>
               </div>
@@ -205,15 +207,16 @@ const AboutEnzymePAge = () => {
 				</span>
                 <div className="flex flex-wrap gap-2 text-sm">
 					{models.map((model) => (
-						<a
+						<Link
 							key={model}
 							href={AlphaFold_link(model)}
-							className="text-blue-500 hover:underline"
-							target="_blank"
-							rel="noopener noreferrer"
+							className="text-sm text-blue-500"
+							underline="hover"
+							isExternal
+							showAnchorIcon
 						>
 							AF-{model}
-						</a>
+						</Link>
 					))}
                 </div>
               </div>
