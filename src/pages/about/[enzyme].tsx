@@ -60,14 +60,21 @@ const AboutEnzymePAge = () => {
   }, [enzyme]);
 
   // Helper function to check if a residue has characterization data
-  const hasCharacterizationData = (rosettaNum: number | null) => {
+  const hasCharacterizationData = (rosettaNum: number | null):boolean => {
     if (!rosettaNum) return false;
     return characterizationData.some(item => item.resnum === rosettaNum);
   };
 
+  // Helper function to properly display HTML entities.
+  const decodeHTML = (html:string):string => {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+}
+
   // Prepopulate fields or use placeholder text.
   const abbr = (generalInfo) ?  generalInfo.abbr : "XxxX";
-  const full_name = (generalInfo) ?  generalInfo.full_name : "the enzyme";
+  const full_name = (generalInfo) ?  decodeHTML(generalInfo.full_name) : "the enzyme";
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
