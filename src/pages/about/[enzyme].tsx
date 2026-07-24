@@ -10,7 +10,9 @@ import React, { useEffect, useState } from "react";
 
 interface EnzymeGeneralInfo {
 	abbr: string;
+	year: number;
 	full_name: string;
+	species: string;
 }
 
 interface SequenceData {
@@ -74,7 +76,10 @@ const AboutEnzymePAge = () => {
 
   // Prepopulate fields or use placeholder text.
   const abbr = (generalInfo) ?  generalInfo.abbr : "XxxX";
+  const year = (generalInfo) ?  generalInfo.year : null;
   const full_name = (generalInfo) ?  decodeHTML(generalInfo.full_name) : "the enzyme";
+  const species = (generalInfo) ?  generalInfo.species : "Genus species";
+
 
   // TODO: Remove all the horrible hard-coding in this file!
   return (
@@ -88,9 +93,10 @@ const AboutEnzymePAge = () => {
             <BreadcrumbItem>{abbr}</BreadcrumbItem>
           </Breadcrumbs>
           <div className="pt-6">
-            <h1 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
+            <h2 className="mb-2 text-4xl md:text-4xl lg:text-4xl font-light dark:text-white">
               About {full_name}
-            </h1>
+            </h2>
+			<p>(Added to D2D Network in {year})</p>
           </div>
         </div>
       </div>
@@ -102,7 +108,7 @@ const AboutEnzymePAge = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">Species:</span>
-                <span className="text-sm text-gray-600 italic">Paenibacillus polymyxa</span>
+                <span className="text-sm text-gray-600 italic">{species}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold w-44 text-sm text-gray-600">EC Number:</span>
