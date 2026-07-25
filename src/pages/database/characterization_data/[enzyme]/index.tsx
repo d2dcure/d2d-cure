@@ -136,7 +136,7 @@ const DataPage = () => {
           element.classList.add('bg-blue-100');
           setTimeout(() => {
             element.classList.remove('bg-blue-100');
-          }, 2000);
+          }, 5000);
         }
       }
     }
@@ -1079,7 +1079,6 @@ const DataPage = () => {
       sortDir,
       showColors: colorParam,
       perPage,
-	  search,
       // other params you want to support
     } = router.query;
     
@@ -1390,7 +1389,8 @@ const DataPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
                     {/* Left side - Search, controls, and total records */}
                     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
-                      <Input
+                      {/* TODO: Make this a number input box; the input checking is too slow. */}
+					  <Input
                         type="text"
                         isClearable
                         classNames={{
