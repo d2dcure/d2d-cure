@@ -220,7 +220,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
         <div>
           <span className="font-medium text-sm">Tags</span>
 		  <div className="flex gap-2">
-			{compareAAsAndReturnTags('E', 'E').map((tag, index) => (
+			{compareAAsAndReturnTags(entryData.resid, entryData.resmut).map((tag, index) => (
 			<Tooltip
 				key={index}
 				content={tag.desc}
