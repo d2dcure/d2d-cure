@@ -330,12 +330,12 @@ const AboutEnzymePAge = () => {
 						<h3 className="mb-4 text-3xl md:text-4xl font-light">
 							Full {abbr} Sequence
 						</h3>
-					{!sequenceData && (
+					{!sequenceData.length && (
 						<p className="text-gray-600 text-justify mb-4">
 							No sequence data found for this enzyme.
 						</p>
 					)}
-					{sequenceData && (
+					{Boolean(sequenceData.length) && (
 						<>
 						<p className="text-gray-600 text-justify mb-4">
 							One-letter amino acid residue codes in plain type
@@ -345,6 +345,8 @@ const AboutEnzymePAge = () => {
 							{(pdbs[0]) ?
 								(
 									<>
+									{/* This link assumes that the first entry
+									in the list is the one used for modeling. */}
 									{" ("}<Link
 										href={PDB_link(pdbs[0])}
 										className="text-sm text-blue-500"
@@ -359,7 +361,7 @@ const AboutEnzymePAge = () => {
 								''
 							}
 							.
-							Undelrined one-letter codes are catalytic residues.
+							Overlined one-letter codes are catalytic residues.
 							Hovering over any one-letter code in the sequence
 							will give that residue’s sequence numbers/positions.
 							One-letter codes in blue have parameter data stored in our database.
@@ -368,10 +370,17 @@ const AboutEnzymePAge = () => {
 						</p>
 
 						{/* Sequence */}
-						<div className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words">
+						<div 
+							className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words"
+						>
 							{sequenceData.map((residue, index) => {
 								const hasStructure = residue.PDBresnum !== null;
 								const hasData = hasCharacterizationData(residue.Rosetta_resnum);
+								const isCatalytic = (  // TEMP
+									(residue.PDBresnum == "356") ||
+									(residue.PDBresnum == "298") ||
+									(residue.PDBresnum == "167")
+								)
 
 								return (
 									<React.Fragment key={residue.id}>
@@ -379,13 +388,15 @@ const AboutEnzymePAge = () => {
 											content={
 												<div className="text-sm">
 													{`${residue.resid}${residue.resnum}`}
+													{!hasStructure && (" (unresolved)")}
+													{isCatalytic && (" (catalytic)")}
 													{residue.Rosetta_resnum && (
 														<>
 															<br />
 															{`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
 														</>
 													)}
-													{residue.PDBresnum && (
+													{hasStructure && (
 														<>
 															<br />
 															{`PDB: ${residue.resid}${residue.PDBresnum}`}
@@ -398,6 +409,7 @@ const AboutEnzymePAge = () => {
 												className={`
 													${hasData ? 'text-blue-500 cursor-pointer' : 'text-black'}
 													${hasStructure ? 'font-bold' : ''}
+													${isCatalytic ? 'overline' : ''}
 												`}
 												onClick={() => {
 													if (hasData && residue.Rosetta_resnum) {

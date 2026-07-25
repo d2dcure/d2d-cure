@@ -20,8 +20,8 @@ export function getClient(enzyme: string) {
 			return prismaAbcD;
 		case "BglB":
 			return prismaBglB;
-		default:
-			return prismaBglB;
+		//default:
+			//return prismaBglB;
 	}
 }
 
