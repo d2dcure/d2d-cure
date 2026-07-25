@@ -163,7 +163,8 @@ export function compareAAsAndReturnTags(aa1: string, aa2: string): TagInfo[] {
 				text: "aromatic-to-aromatic",
 				color: "primary",
 				desc: good_text +
-						"as both WT and variant residues are aromatic."
+						"as both WT and variant residues are aromatic. " +
+						"Aromatic rings are often involved in pi-stacking interactions."
 			});
 		}
 		if (aa.aliphaticAAs.includes(aa2)) {
@@ -178,13 +179,6 @@ export function compareAAsAndReturnTags(aa1: string, aa2: string): TagInfo[] {
 		}
 	}
 	if (aa.aliphaticAAs.includes(aa1)) {
-		if (aa.aliphaticAAs.includes(aa2)) {
-			tags.push({
-				text: "aliphatic-to-aliphatic",
-				color: "default",
-				desc: "Both WT and variant residues are aliphatic."
-			});
-		}
 		if (aa.aromaticAAs.includes(aa2)) {
 			tags.push({
 				text: "aliphatic-to-aromatic",
@@ -196,7 +190,37 @@ export function compareAAsAndReturnTags(aa1: string, aa2: string): TagInfo[] {
 		}
 	}
 
+	// Compare size.
+	if (aa.smallAAs.includes(aa1)) {
+		if (aa.bulkyAAs.includes(aa2)) {
+			tags.push({
+				text: "small-to-bulky",
+				color: "warning",
+				desc: maybe_text +
+						"as the variant residue is much larger than the WT residue."
+			});
+		}
+	}
+	if (aa.bulkyAAs.includes(aa1)) {
+		if (aa.smallAAs.includes(aa2)) {
+			tags.push({
+				text: "bulky-to-small",
+				color: "warning",
+				desc: maybe_text +
+						`as the variant residue is much smaller than the WT residue and might create a "hole".`
+			});
+		}
+	}
 
+	// Compare changes of helix-breaking residue.
+	if ((aa.helixBreakingAAs.includes(aa1)) || (aa.helixBreakingAAs.includes(aa2))) {
+		tags.push({
+			text: "helix-breaking?",
+			color: "warning",
+			desc: maybe_text +
+					`as alanine and proline residues often are used to "break" helices.`
+		});
+	}
 
 	return tags;
 }

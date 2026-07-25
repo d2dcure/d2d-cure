@@ -30,9 +30,9 @@ export const aliphaticAAs =
 		canonicalAAs.filter((aa) => !aromaticAAs.includes(aa))
 
 
-export const helixBreakingAAs = ['G', 'P']
-
-
 export const smallAAs = ['A', 'G']
 
 export const bulkyAAs = ['E', 'F', 'H', 'I', 'K', 'L', 'M', 'Q', 'R', 'Y', 'W']
+
+
+export const helixBreakingAAs = ['G', 'P']
