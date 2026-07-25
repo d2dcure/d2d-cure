@@ -31,7 +31,7 @@ import GelUploadedView from '@/components/submission/GelUploadedView';
 const SingleVariant = () => {
   const { user } = useUser();
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
