@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
@@ -9,8 +9,31 @@ import { MdEmail } from "react-icons/md";
 import { FaLinkedin } from "react-icons/fa";
 import { Tabs, Tab } from "@nextui-org/react";
 
+
+interface EnzymeGeneralInfo {
+	year: number;
+	full_name: string;
+	species: string;
+	EC_number: string;
+	UniProt_number: string;
+	PDB_entries: string;
+	AlphaFold_entries: string;
+
+	subunits: number;
+	molar_mass: number;
+	ext_coefficient: number;
+	cat_residues: string;
+
+	pathway_desc: string;
+	assay_desc: string;
+
+	coming_soon: boolean;
+}
+
+
 const AboutD2D = () => {
-  const [selected, setSelected] = React.useState<"operations" | "consultants" | "development">("operations");
+	const [generalInfo, setGeneralInfo] = useState<EnzymeGeneralInfo>();
+  	const [selected, setSelected] = useState<"operations" | "consultants" | "development">("operations");
 
   return (
     <>
@@ -112,43 +135,62 @@ const AboutD2D = () => {
 
       {/* Enzymes Section */}
       <div className="px-6 md:px-12 lg:px-24 py-16">
-        <h2 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet Our Enzymes</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card 
-            className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
-            as={Link}
-            href="/about/BglB"
-          >
-            <img 
-              src="/resources/images/prettyBglB.png" 
-              alt="β-glucosidase B" 
-              className="w-16 h-16 mx-4 mb-4"
-            />
-            <h3 className="text-3xl font-light mx-4 mb-2">β-glucosidase B</h3>
-            <p className="text-gray-600 py-4 mx-4 ">
-              An enzyme that catalyzes the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage
-            </p>
-            <span className="text-[#06B7DB] mx-4 mb-2 hover:font-semibold">
-              Learn More {'>'}
-            </span>
-          </Card>
-          <Card 
-            className="p-6 cursor-not-allowed opacity-70 w-full"
-          >
-            <img 
-              src="/resources/images/FutureData-QuesitonMark.png" 
-              alt="Future Data" 
-              className="w-16 h-16 mx-4 mb-4"
-            />
-            <h3 className="text-3xl font-light mx-4 mb-2">Future Data</h3>
-            <p className="text-gray-600 pt-4 pb-10 mx-4">
-              We are actively seeking to identify more enzymes to expand our database.
-            </p>
-            <span className="text-gray-500 mx-4 mb-2">
-              Coming Soon
-            </span>
-          </Card>
-        </div>
+		<h3 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet Our Enzymes</h3>
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			  {[].map((item, index) => (
+				<Link href={item.link} key={index}>
+					<Card
+						isPressable
+						className="h-[150px] w-full transition-transform duration-200 hover:scale-105"
+					>
+						<CardBody className="text-3xl pt-2 font-light">
+							<h3 className="pl-4 pt-2 pb-5 text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
+								{item.title}
+							</h3>
+						</CardBody>
+						<CardFooter>
+							<span className="text-sm px-4 pb-3 text-[#06B7DB]">
+								{item.linkText} {'>'}
+							</span>
+						</CardFooter>
+					</Card>
+				</Link>
+				))}
+			<Card 
+				className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
+				as={Link}
+				href="/about/BglB"
+			>
+				<img 
+					src="/resources/images/prettyBglB.png" 
+					alt="β-glucosidase B" 
+					className="w-16 h-16 mx-4 mb-4"
+				/>
+				<h3 className="text-3xl font-light mx-4 mb-2">β-glucosidase B</h3>
+				<p className="text-gray-600 py-4 mx-4 ">
+				An enzyme that catalyzes the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage
+				</p>
+				<span className="text-[#06B7DB] mx-4 mb-2 hover:font-semibold">
+				Learn More {'>'}
+				</span>
+			</Card>
+			<Card 
+				className="p-6 cursor-not-allowed opacity-70 w-full"
+			>
+				<img 
+					src="/resources/images/FutureData-QuesitonMark.png" 
+					alt="Future Data" 
+					className="w-16 h-16 mx-4 mb-4"
+				/>
+				<h3 className="text-3xl font-light mx-4 mb-2">Future Data</h3>
+				<p className="text-gray-600 pt-4 pb-10 mx-4">
+				We are actively seeking to identify more enzymes to expand our database.
+				</p>
+				<span className="text-gray-500 mx-4 mb-2">
+				Coming Soon
+				</span>
+			</Card>
+		</div>
       </div>
 
       {/* Faculty Section */}
