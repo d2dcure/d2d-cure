@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
 import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import Link from 'next/link';
 import StatusChip from '@/components/StatusChip';
@@ -273,7 +273,7 @@ const SingleVariant = () => {
       const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
       if (!response.ok) throw new Error('Failed to fetch entry ID');
       const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/BglB/${newId}`);
+      router.push(`/submit/single_variant/${enzyme}/${newId}`);
     } catch (error) {
       console.error('Error navigating entries:', error);
     }
@@ -1014,7 +1014,7 @@ const SingleVariant = () => {
         {/* Add the bug report link below the table */}
         <div className="flex justify-end mt-4 mr-3">
           <Link 
-            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/BglB/${id}`)}`}
+            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/${enzyme}/${id}`)}`}
             className="text-sm text-gray-600 hover:text-[#06B7DB] flex items-center gap-1.5 transition-colors duration-200"
           >
             <BugIcon className="w-4 h-4" />
@@ -1047,8 +1047,7 @@ const SingleVariant = () => {
     const DetailComponent = (() => {
       switch (selectedDetail) {
         case "Protein modeled?":
-			// TEMP Hardcoding BglB for now to test framework.
-          return <ProteinModeledView enzyme="BglB" entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinModeledView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Oligonucleotide ordered?":
           return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
         case "Plasmid sequence verified?":
@@ -1137,7 +1136,7 @@ const SingleVariant = () => {
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return '';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -1181,9 +1180,7 @@ const SingleVariant = () => {
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
                       {getVariantDisplay(entryData)}
                       <Link
-                        href={`/database/characterization_data/BglB?search=${encodeURIComponent(
-                          getVariantDisplay(entryData).replace(' BglB', '').trim()
-                        )}`}
+                        href={`/database/characterization_data/${enzyme}?highlight=${entryData.resnum}`}
                         className="inline-flex items-center hover:text-[#06B7DB]"
                       >
                         <ExternalLink className="w-5 h-5 stroke-[1.5]" />
