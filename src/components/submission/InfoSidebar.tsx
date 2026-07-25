@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
-import { Button, Link, Textarea, Tooltip } from '@nextui-org/react';
+import { Button, Chip, Link, Textarea, Tooltip } from '@nextui-org/react';
 
 
 
@@ -216,6 +216,15 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 				</Link>
 			</p>
 		</div>
+
+        <div>
+          <span className="font-medium text-sm">Tags</span>
+		  <div className="flex gap-2">
+          	<Chip size="sm" color="primary">Foo</Chip>
+			<Chip size="sm" color="warning">Bar</Chip>
+			<Chip size="sm" color="danger">Woo</Chip>
+		  </div>
+        </div>
 
         <div>
           <span className="font-medium text-sm">Date Created</span>
