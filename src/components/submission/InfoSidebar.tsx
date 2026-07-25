@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
-import { Button, Textarea, Tooltip } from '@nextui-org/react';
+import { Button, Link, Textarea, Tooltip } from '@nextui-org/react';
+
 
 interface SidebarProps {
-  entryData: any;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	updateEntryData: (newData: any) => void;
 }
+
 
 const useClipboard = () => {
   const [copied, setCopied] = useState(false);
@@ -19,7 +22,9 @@ const useClipboard = () => {
   return { copied, copy };
 };
 
-const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }) => {
+const SingleVarSidebar: React.FC<SidebarProps> = (
+	{ enzyme, entryData, updateEntryData }
+) => {
   const { user } = useUser();
   const [oligosData, setOligosData] = useState<any[]>([]);
   const [possibleTeammates, setPossibleTeammates] = useState<any[]>([]);
@@ -52,7 +57,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   useEffect(() => {
     const fetchOligosData = async () => {
       try {
-        const response = await fetch('/api/getOligos?enzyme=BglB');  // TEMP
+        const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
         const data = await response.json();
         setOligosData(data);
       } catch (error) {
@@ -160,7 +165,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
           <span className="font-medium text-sm">Database ID</span>
-          <p className='text-gray-500 text-sm'>{entryData.id}</p>
+          <p className='text-gray-500 text-sm'>{enzyme}-{entryData.id}</p>
         </div>
 
         {foundOligo && (
@@ -197,6 +202,19 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
             </Tooltip>
           </div>
         )}
+
+		<div>
+			<span className="font-medium text-sm">Related Variants</span>
+			<p className="text-blue-500 text-sm">
+				<Link
+					isExternal
+					showAnchorIcon
+					href={`/database/characterization_data/${enzyme}?highlight=${entryData.resnum}`}
+				>
+					Search database
+				</Link>
+			</p>
+		</div>
 
         <div>
           <span className="font-medium text-sm">Date Created</span>

@@ -7,7 +7,6 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
-import { arrayBuffer } from "stream/consumers";
 
 
 interface EnzymeGeneralInfo {

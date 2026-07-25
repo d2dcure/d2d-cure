@@ -4,8 +4,9 @@ import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
-import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
-import Link from 'next/link';
+import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
+//import Link from 'next/link';
+import { Link } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
@@ -1175,16 +1176,11 @@ const SingleVariant = () => {
 
             <div className="pt-3">
               <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
+				{/* Page Title */}
                 {!loading && entryData && (
                   <div>
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
-                      {getVariantDisplay(entryData)}
-                      <Link
-                        href={`/database/characterization_data/${enzyme}?highlight=${entryData.resnum}`}
-                        className="inline-flex items-center hover:text-[#06B7DB]"
-                      >
-                        <ExternalLink className="w-5 h-5 stroke-[1.5]" />
-                      </Link>
+                      {getVariantDisplay(entryData)} Data Submission Portal
                     </h1>
                     <StatusChip
                       status={
@@ -1199,6 +1195,8 @@ const SingleVariant = () => {
                     />
                   </div>
                 )}
+
+				{/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   {/* Only show if conditions are met */}
                   {user?.status && 
@@ -1271,9 +1269,11 @@ const SingleVariant = () => {
               </div>
 
               <div className="flex w-full gap-4 flex-col lg:flex-row">
+				{/* */}
                 <div className="w-full lg:w-1/5">
+				  {/* TODO: Separate out InfoSidebar from TeammatesSidebar and CommentsSideBar*/}
                   <div className="lg:sticky lg:top-4">
-                    <InfoSidebar entryData={entryData} updateEntryData={updateEntryData} />
+                    <InfoSidebar enzyme={enzyme as string} entryData={entryData} updateEntryData={updateEntryData} />
                   </div>
                 </div>
 
