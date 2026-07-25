@@ -233,7 +233,7 @@ const SingleVariant = () => {
       const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
       if (!response.ok) throw new Error('Failed to fetch entry ID');
       const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/${newId}`);
+      router.push(`/submit/single_variant/BglB/${newId}`);
     } catch (error) {
       console.error('Error navigating entries:', error);
     }
@@ -770,7 +770,7 @@ const SingleVariant = () => {
         {/* Add the bug report link below the table */}
         <div className="flex justify-end mt-4 mr-3">
           <Link 
-            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/${id}`)}`}
+            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/BglB/${id}`)}`}
             className="text-sm text-gray-600 hover:text-[#06B7DB] flex items-center gap-1.5 transition-colors duration-200"
           >
             <BugIcon className="w-4 h-4" />

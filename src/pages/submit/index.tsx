@@ -147,7 +147,7 @@ const SubmitPage = () => {
       router.push(`/submit/wild_type/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
-      router.push(`/submit/single_variant/${newEntry.id}`);
+      router.push(`/submit/single_variant/BglB/${newEntry.id}`);
     }
   }, [newEntry, router]);
 
@@ -395,7 +395,7 @@ const SubmitPage = () => {
                                     {item.comments || 'No comments'}
                                   </TableCell>
                                   <TableCell>
-                                    <Link href={`/submit/single_variant/${item.id}`} className="text-[#06B7DB]">
+                                    <Link href={`/submit/single_variant/BglB/${item.id}`} className="text-[#06B7DB]">
                                       View
                                     </Link>
                                   </TableCell>

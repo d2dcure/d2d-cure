@@ -227,7 +227,7 @@ const CuratePage = () => {
                         <Link
                             href={data.resid === "X" 
                                 ? `/submit/wild_type/${data.id}`
-                                : `/submit/single_variant/${data.id}`
+                                : `/submit/single_variant/BglB/${data.id}`
                             }
                             target="_blank"
                             rel="noopener noreferrer"
