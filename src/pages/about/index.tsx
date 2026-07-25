@@ -154,6 +154,7 @@ const AboutD2D = () => {
 		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 			{enzymeInfo.filter((enzyme) => enzyme.active || enzyme.coming_soon).map((enzyme, index) => (
 			<Card
+				key={index}
 				isPressable
 				onPress={() => window.location.href = `/about/${enzyme.abbr}`}
 				className="p-2 h-[300px] w-full transition-transform duration-200 hover:scale-105 cursor-pointer"
@@ -172,6 +173,7 @@ const AboutD2D = () => {
 						)</span>
 					</div>
 				</CardHeader>
+				{/* TODO: Update Tailwind? text-ellipsis isn't working.*/}
 				<CardBody className="text-gray-600 py-2 mx-2 overflow-hidden text-ellipsis">
 					<p className="mb-4">{decodeHTML(enzyme.pathway_desc)}</p>
 					<p>{decodeHTML(enzyme.assay_desc)}</p>
