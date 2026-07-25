@@ -1,16 +1,11 @@
-import NavBar from "@/components/NavBar";
-import { useState, useEffect } from "react";
-//import "../../app/globals.css";
-import { Button } from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/react";
-import { Input } from "@nextui-org/input";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import Footer from "@/components/Footer";
+import { canonicalAAs } from "@/constants/biochemical";
 import { ErrorChecker } from "@/components/ErrorChecker";
-
-
-const canonicalAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
-		'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
+import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
+import { Input } from "@nextui-org/input";
+import { Select, SelectItem } from "@nextui-org/react";
+import { useState, useEffect } from "react";
 
 
 // Copied from InfoSidebar
