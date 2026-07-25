@@ -11,6 +11,11 @@ interface SidebarProps {
 }
 
 
+interface EnzymeGeneralInfo {
+	cat_residues: string;
+}
+
+
 const useClipboard = () => {
   const [copied, setCopied] = useState(false);
   
@@ -28,6 +33,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 ) => {
   const { user } = useUser();
   const [oligosData, setOligosData] = useState<any[]>([]);
+  const [enzymeData, setEnzymeData] = useState<EnzymeGeneralInfo>();
   const [possibleTeammates, setPossibleTeammates] = useState<any[]>([]);
   const [teammate1, setTeammate1] = useState<string | null>(entryData.teammate);
   const [teammate2, setTeammate2] = useState<string | null>(entryData.teammate2);
@@ -67,6 +73,18 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
       }
     };
 
+	const fetchEnzymeData = async () => {
+		try {
+		const response = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+			if (response.ok) {
+				const info = await response.json();
+				setEnzymeInfo(info);
+			}
+		} catch (error) {
+        	console.error("Error fetching enzyme data:", error);
+		}
+	};
+
     const fetchPossibleTeammates = async () => {
       if (user?.pi) {
         const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(user.pi)}`);
@@ -76,6 +94,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
     };
 
     fetchOligosData();
+	fetchEnzymeData();
     fetchPossibleTeammates();
   }, [enzyme, user]);
 

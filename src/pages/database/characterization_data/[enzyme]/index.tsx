@@ -166,7 +166,16 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The variant name in Rosetta/Foldit numbering.</p>
+			{useRosettaNumbering && (
+              <p>The variant name using Rosetta/Foldit numbering.</p>
+			)}
+			{!useRosettaNumbering && (
+              	<p>
+					The variant name using{' '}
+					<abbr title="Protein Data Bank">PDB</abbr>{' '}
+					numbering.
+				</p>
+			)}
               <p>Click here to sort by this column.</p>
               <p>Click any colored variant name/code to open a new window and view the raw data for that variant.</p>
             </div>
@@ -1074,7 +1083,7 @@ const DataPage = () => {
       institution, 
       curated, 
       expand, 
-      numbering, 
+      foldit_numbering, 
       sort,
       sortDir,
       showColors: colorParam,
@@ -1086,7 +1095,7 @@ const DataPage = () => {
     if (institution) setSelectedInstitution(institution as string);
     if (curated !== undefined) setShowNonCurated(curated === '1');
     if (expand !== undefined) setExpandData(expand === '1');
-    if (numbering !== undefined) setUseRosettaNumbering(numbering === '1');
+    if (foldit_numbering !== undefined) setUseRosettaNumbering(foldit_numbering === '1');
     if (colorParam !== undefined) setShowColors(colorParam === '1');
     if (perPage) setRowsPerPage(perPage === 'all' ? 0 : Number(perPage));
     
@@ -1120,7 +1129,7 @@ const DataPage = () => {
       ...(selectedInstitution ? { institution: selectedInstitution } : {}),
       ...(showNonCurated !== false ? { curated: showNonCurated ? '1' : '0' } : {}),
       ...(expandData !== false ? { expand: expandData ? '1' : '0' } : {}),
-      ...(useRosettaNumbering !== true ? { numbering: useRosettaNumbering ? '1' : '0' } : {}),
+      ...(useRosettaNumbering !== true ? { foldit_numbering: useRosettaNumbering ? '1' : '0' } : {}),
       ...(showColors !== true ? { showColors: showColors ? '1' : '0' } : {}),
       ...(sortDescriptor.column !== "variant" ? { sort: sortDescriptor.column } : {}),
       ...(sortDescriptor.direction !== "ascending" ? { sortDir: sortDescriptor.direction } : {}),
