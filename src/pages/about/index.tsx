@@ -32,8 +32,31 @@ interface EnzymeGeneralInfo {
 
 
 const AboutD2D = () => {
-	const [generalInfo, setGeneralInfo] = useState<EnzymeGeneralInfo>();
+	const [enzymeInfo, setEnzymeInfo] = useState<EnzymeGeneralInfo[]>([]);
   	const [selected, setSelected] = useState<"operations" | "consultants" | "development">("operations");
+
+
+	// Fetch data on page load.
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				// Fetch enzyme general information data.
+				const response = await fetch("/api/getEnzymes");
+				if (response.ok) {
+					const data = await response.json();
+					if (!Array.isArray(data)) {
+						throw new Error("GET /api/getEnzymes - Invalid data format: Expected array");
+					}
+					setEnzymeInfo(data);
+				}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+
+		fetchData();
+	}, []);
+
 
   return (
     <>
