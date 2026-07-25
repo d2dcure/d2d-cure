@@ -327,13 +327,47 @@ const AboutEnzymePAge = () => {
 
 					{/* Sequence Sub-Section */}
 					<div className="w-full pt-8 mb-4">
-						<h3 className="mb-4 text-3xl md:text-4xl font-light">Full BglB Sequence</h3>
-						<p className="mb-6 text-gray-600">
-							One-letter amino acid residue codes in plain type (not bold) were not resolved in the crystal structure used for our design study 
-							(<a href="http://www.rcsb.org/structure/2JIE" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">PDB #2JIE</a>). 
-							One-letter codes in blue have parameter data stored in our database. Hovering over any 1-letter code in the sequence will give that residues sequence numbers/positions.
+						<h3 className="mb-4 text-3xl md:text-4xl font-light">
+							Full {abbr} Sequence
+						</h3>
+					{!sequenceData && (
+						<p className="text-gray-600 text-justify mb-4">
+							No sequence data found for this enzyme.
+						</p>
+					)}
+					{sequenceData && (
+						<>
+						<p className="text-gray-600 text-justify mb-4">
+							One-letter amino acid residue codes in plain type
+							(not bold), if present, were not resolved in the
+							crystal structure of the enzyme used for our design
+							study
+							{(pdbs[0]) ?
+								(
+									<>
+									{" ("}<Link
+										href={PDB_link(pdbs[0])}
+										className="text-sm text-blue-500"
+										underline="hover"
+										isExternal
+										showAnchorIcon
+									>
+										PDB #{pdbs[0]}
+									</Link>{')'}
+									</>
+								) :
+								''
+							}
+							.
+							Undelrined one-letter codes are catalytic residues.
+							Hovering over any one-letter code in the sequence
+							will give that residue’s sequence numbers/positions.
+							One-letter codes in blue have parameter data stored in our database.
+							Clicking any blue one-letter code will take you to a
+							list of studied variants at that position. 
 						</p>
 
+						{/* Sequence */}
 						<div className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words">
 							{sequenceData.map((residue, index) => {
 								const hasStructure = residue.PDBresnum !== null;
@@ -379,6 +413,8 @@ const AboutEnzymePAge = () => {
 								);
 							})}
 						</div>
+						</>
+					)}
 					</div>
 
 					{/* Publications Sub-Section */}
