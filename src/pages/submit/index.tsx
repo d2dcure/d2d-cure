@@ -147,7 +147,7 @@ const SubmitPage = () => {
       router.push(`/submit/wild_type/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
-      router.push(`/submit/single_variant/BglB/${newEntry.id}`);
+      router.push(`/submit/single_variant/BglB/${newEntry.id}`);  // TEMP
     }
   }, [newEntry, router]);
 

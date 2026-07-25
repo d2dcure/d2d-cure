@@ -455,6 +455,7 @@ const Dashboard = () => {
 										<TableColumn>Actions</TableColumn>
 									</TableHeader>
 									<TableBody>
+										{/* TEMP: Hardcoding BglB for now. */}
 										{characterizationData.map((data, index) => {
 											const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
 											const viewUrl =

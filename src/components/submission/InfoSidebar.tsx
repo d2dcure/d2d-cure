@@ -3,6 +3,7 @@ import { useUser } from '@/components/UserProvider';
 import { Button, Link, Textarea, Tooltip } from '@nextui-org/react';
 
 
+
 interface SidebarProps {
 	enzyme: string;
 	entryData: any;
@@ -75,7 +76,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 
     fetchOligosData();
     fetchPossibleTeammates();
-  }, [user]);
+  }, [enzyme, user]);
 
   const formatTimestamp = (date: Date) => {
     return date.toLocaleDateString('en-US', {

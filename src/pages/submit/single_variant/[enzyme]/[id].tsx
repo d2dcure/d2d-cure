@@ -5,7 +5,6 @@ import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
 import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
-//import Link from 'next/link';
 import { Link } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";

@@ -224,6 +224,7 @@ const CuratePage = () => {
             case "variant":
                 return (
                     <div className="text-center">
+						{/* TEMP: Hardcoding BglB into URL. */}
                         <Link
                             href={data.resid === "X" 
                                 ? `/submit/wild_type/${data.id}`
