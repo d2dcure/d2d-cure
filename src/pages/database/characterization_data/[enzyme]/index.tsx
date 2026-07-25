@@ -1079,6 +1079,7 @@ const DataPage = () => {
       sortDir,
       showColors: colorParam,
       perPage,
+	  search,
       // other params you want to support
     } = router.query;
     
@@ -1114,6 +1115,8 @@ const DataPage = () => {
     
     // Create a query object with current filter state
     const query: Record<string, string> = {
+	  ...({ enzyme: enzyme as string }),
+	  
       // Only include params that differ from defaults
       ...(selectedInstitution ? { institution: selectedInstitution } : {}),
       ...(showNonCurated !== false ? { curated: showNonCurated ? '1' : '0' } : {}),
@@ -1133,13 +1136,14 @@ const DataPage = () => {
     router.push(
       {
         pathname: router.pathname,
-        query: { enzyme: `${enzyme}` },
+        query
       }, 
       undefined, 
       { shallow: true }
     );
     
   }, [
+	enzyme,
     router.isReady,
     selectedInstitution, 
     showNonCurated, 
