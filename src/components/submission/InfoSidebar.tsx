@@ -37,9 +37,10 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
   const [newComment, setNewComment] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  const foundOligo = oligosData.find(
-    (oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`
-  );
+  const foundOligo = 
+  		(oligosData.length) ?
+		oligosData.find((oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`) :
+		null;
 
   const clipboard = useClipboard();
 
