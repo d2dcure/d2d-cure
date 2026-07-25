@@ -8,15 +8,28 @@ import * as aa from "@/constants/biochemical"
 
 interface TagInfo {
 	text: string,
-	color: string
+	color: string,
+	desc: string
 }
 
 
 export function compareAAsAndReturnTags(aa1: string, aa2: string): TagInfo[] {
 	const tags: TagInfo[] = [];
+	if (aa1 == aa2) {
+		tags.push({
+				text: "WT",
+				color: "default",
+				desc: "This is the WT enzyme."
+			});
+		return tags;
+	}
 	if (aa.negativeAAs.includes(aa1)) {
 		if (aa.negativeAAs.includes(aa2)) {
-			tags.push({text: "negative-to-negative", color: "primary"});
+			tags.push({
+				text: "negative-to-negative",
+				color: "primary",
+				desc: "This is likely to be a favorable substitution"
+			});
 		}
 	}
 
