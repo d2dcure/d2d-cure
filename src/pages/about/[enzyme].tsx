@@ -6,6 +6,7 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
+import { arrayBuffer } from "stream/consumers";
 
 
 interface EnzymeGeneralInfo {
@@ -20,6 +21,7 @@ interface EnzymeGeneralInfo {
 	subunits: number;
 	molar_mass: number;
 	ext_coefficient: number;
+	cat_residues: string;
 
 	pathway_desc: string;
 	assay_desc: string;
@@ -106,9 +108,10 @@ const AboutEnzymePAge = () => {
 	const models = (AlphaFold_entries) ? AlphaFold_entries.split(' ') : [];
 	const AlphaFold_link = (model:string):string => { return `http://alphafold.ebi.ac.uk/entry/${model}`; } 
 	
-	const subunits = (generalInfo) ?	generalInfo.subunits : 1;
+	const subunits = (generalInfo) ? generalInfo.subunits : 1;
 	const molar_mass = (generalInfo) ?	Intl.NumberFormat().format(generalInfo.molar_mass) : '';
 	const ext_coefficient = (generalInfo) ?	Intl.NumberFormat().format(generalInfo.ext_coefficient) : '';
+	const cat_residues = (generalInfo) ? generalInfo.cat_residues : "";
 
 	const pathway_desc = (generalInfo) ?	decodeHTML(generalInfo.pathway_desc) : "Loading description…";
 	const assay_desc = (generalInfo) ?	decodeHTML(generalInfo.assay_desc) : "Loading description…";
@@ -276,6 +279,16 @@ const AboutEnzymePAge = () => {
 										</abbr>
 									</span>
 								</div>
+
+								<div className="flex items-center gap-3">
+									<span className="font-semibold w-44 text-sm text-gray-600">
+										Catalytic Residues:
+									</span>
+									<span className="text-sm text-gray-600">
+										{cat_residues}
+									</span>
+								</div>
+
 							</div>
 						</div>
 
@@ -376,11 +389,8 @@ const AboutEnzymePAge = () => {
 							{sequenceData.map((residue, index) => {
 								const hasStructure = residue.PDBresnum !== null;
 								const hasData = hasCharacterizationData(residue.Rosetta_resnum);
-								const isCatalytic = (  // TEMP
-									(residue.PDBresnum == "356") ||
-									(residue.PDBresnum == "298") ||
-									(residue.PDBresnum == "167")
-								)
+								const isCatalytic = 
+									cat_residues.split(", ").map(residue => residue.slice(1)).includes(String(residue.PDBresnum));
 
 								return (
 									<React.Fragment key={residue.id}>
@@ -443,7 +453,3 @@ const AboutEnzymePAge = () => {
 };
 
 export default AboutEnzymePAge;
-
-
-
-
