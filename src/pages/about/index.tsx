@@ -1,16 +1,54 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/breadcrumbs";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import {Card, CardBody, CardFooter} from "@nextui-org/react";
-import {Button} from "@nextui-org/react";
+import {Card, CardHeader, CardBody, CardFooter, Image} from "@nextui-org/react";
 import Link from 'next/link';
 import { MdEmail } from "react-icons/md";
 import { FaLinkedin } from "react-icons/fa";
 import { Tabs, Tab } from "@nextui-org/react";
+import { decodeHTML } from "@/functions/formatting_functions";
+
+
+interface EnzymeGeneralInfo {
+	abbr: string;
+	year: number;
+	full_name: string;
+
+	pathway_desc: string;
+	assay_desc: string;
+
+	active: boolean;
+	coming_soon: boolean;
+}
+
 
 const AboutD2D = () => {
-  const [selected, setSelected] = React.useState<"operations" | "consultants" | "development">("operations");
+	const [enzymeInfo, setEnzymeInfo] = useState<EnzymeGeneralInfo[]>([]);
+  	const [selected, setSelected] = useState<"operations" | "consultants" | "development">("operations");
+
+
+	// Fetch data on page load.
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				// Fetch enzyme general information data.
+				const response = await fetch("/api/getEnzymes");
+				if (response.ok) {
+					const data = await response.json();
+					if (!Array.isArray(data)) {
+						throw new Error("GET /api/getEnzymes - Invalid data format: Expected array");
+					}
+					setEnzymeInfo(data);
+				}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+
+		fetchData();
+	}, []);
+
 
   return (
     <>
@@ -112,43 +150,70 @@ const AboutD2D = () => {
 
       {/* Enzymes Section */}
       <div className="px-6 md:px-12 lg:px-24 py-16">
-        <h2 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet Our Enzymes</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card 
-            className="p-6 hover:scale-105 transition-transform cursor-pointer w-full"
-            as={Link}
-            href="/about/BglB"
-          >
-            <img 
-              src="/resources/images/prettyBglB.png" 
-              alt="β-glucosidase B" 
-              className="w-16 h-16 mx-4 mb-4"
-            />
-            <h3 className="text-3xl font-light mx-4 mb-2">β-glucosidase B</h3>
-            <p className="text-gray-600 py-4 mx-4 ">
-              An enzyme that catalyzes the hydrolysis of glucose monosaccharides from larger molecules at a β-glycosidic linkage
-            </p>
-            <span className="text-[#06B7DB] mx-4 mb-2 hover:font-semibold">
-              Learn More {'>'}
-            </span>
-          </Card>
-          <Card 
-            className="p-6 cursor-not-allowed opacity-70 w-full"
-          >
-            <img 
-              src="/resources/images/FutureData-QuesitonMark.png" 
-              alt="Future Data" 
-              className="w-16 h-16 mx-4 mb-4"
-            />
-            <h3 className="text-3xl font-light mx-4 mb-2">Future Data</h3>
-            <p className="text-gray-600 pt-4 pb-10 mx-4">
-              We are actively seeking to identify more enzymes to expand our database.
-            </p>
-            <span className="text-gray-500 mx-4 mb-2">
-              Coming Soon
-            </span>
-          </Card>
-        </div>
+		<h3 className="mb-8 text-3xl md:text-4xl font-light dark:text-white">Meet Our Enzymes</h3>
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			{enzymeInfo.filter((enzyme) => enzyme.active || enzyme.coming_soon).map((enzyme, index) => (
+			<Card
+				key={index}
+				isPressable
+				onPress={() => window.location.href = `/about/${enzyme.abbr}`}
+				className="p-2 h-[300px] w-full transition-transform duration-200 hover:scale-105 cursor-pointer"
+			>
+				<CardHeader className="flex gap-3">
+					<Image 
+						src={`/resources/images/pretty${enzyme.abbr}.png`}
+						title={`3D Structure of ${enzyme.abbr}`}
+						alt="3D Structure"
+						height={50}
+					/>
+					<div className="flex flex-col text-left">
+						<span className="text-3xl font-light mb-2">{`${decodeHTML(enzyme.full_name)} (${enzyme.abbr})`}</span>
+						<span className="text-small text-default-500">(
+							{(enzyme.active) ? `since ${enzyme.year}` : "coming soon!"}
+						)</span>
+					</div>
+				</CardHeader>
+				{/* TODO: Update Tailwind? text-ellipsis isn't working.*/}
+				<CardBody className="text-gray-600 py-2 mx-2 overflow-hidden text-ellipsis">
+					<p className="mb-4">{decodeHTML(enzyme.pathway_desc)}</p>
+					<p>{decodeHTML(enzyme.assay_desc)}</p>
+				</CardBody>
+				<CardFooter>
+					<span className="text-[#06B7DB] mx-4 mb-2 hover:font-semibold">
+						Learn More {'>'}
+					</span>
+				</CardFooter>
+			</Card>
+			))}
+			<Card
+				isBlurred
+				className="p-2 h-[300px] w-full cursor-not-allowed opacity-75"
+			>
+				<CardHeader className="flex gap-3">
+					<Image 
+						src="/resources/images/FutureData-QuesitonMark.png"
+						alt="?"
+						height={50}
+					/>
+					<div className="flex flex-col text-left">
+						<span className="text-3xl font-light mb-2">
+							Future Enzyme(s)
+						</span>
+						<span className="text-small text-default-500">
+							(coming soon!)
+						</span>
+					</div>
+				</CardHeader>
+				<CardBody className="text-gray-600 py-2 mx-2 overflow-hidden text-ellipsis">
+					<p className="mb-4">
+						We are actively seeking to identify more enzymes to expand our database.
+					</p>
+					<p>
+						Stay tuned!
+					</p>
+				</CardBody>
+			</Card>
+		</div>
       </div>
 
       {/* Faculty Section */}

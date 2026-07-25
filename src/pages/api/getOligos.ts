@@ -7,6 +7,9 @@ export default async function handler(req: any, res: any) {
 		return res.status(400).json({ error: "Enzyme is required." });
 	}
 	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 	try {
 	  const oligos = await client.oligos.findMany();
       res.status(200).json(oligos);

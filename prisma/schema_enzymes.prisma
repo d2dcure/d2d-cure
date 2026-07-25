@@ -22,9 +22,11 @@ model GeneralInfo {
   subunits          Int      @default(1) @db.UnsignedSmallInt
   molar_mass        Int      @db.UnsignedMediumInt
   ext_coefficient   Int      @db.UnsignedMediumInt
+  cat_residues      String?  @db.TinyText
   pathway_desc      String?  @db.Text
   assay_desc        String?  @db.Text
   metadata          String?  @db.Text
   foldit_score      Float    @default(0) @db.Float
   active            Boolean  @default(true)
+  coming_soon       Boolean  @default(false)
 }
