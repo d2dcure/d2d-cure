@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
 import { getPathwayInfo, getMechanismInfo, getAssayInfo } from "@/functions/database_functions";
+import { decodeHTML } from "@/functions/formatting_functions";
 import { useRouter } from "next/router";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
@@ -82,13 +83,6 @@ const AboutEnzymePAge = () => {
 		return characterizationData.some(item => item.resnum === rosettaNum);
 	};
 
-	// Helper function to properly display HTML entities.
-	const decodeHTML = (html:string):string => {
-		var txt = document.createElement("textarea");
-		txt.innerHTML = html;
-		return txt.value;
-	}
-
 
 	// Prepopulate fields or use placeholder text.
 	const abbr = (enzyme) ?	enzyme : "XxxX";
@@ -117,7 +111,7 @@ const AboutEnzymePAge = () => {
 	const assay_desc = (generalInfo) ?	decodeHTML(generalInfo.assay_desc) : "Loading description…";
 
 	const pretty_image = (enzyme) ? `/resources/images/pretty${abbr}.png` : '';
-	const pretty_image_title = (enzyme) ? `3D Structure of ${enzyme}` : '';
+	const pretty_image_title = (enzyme) ? `3D Structure of ${abbr}` : '';
 
 	const coming_soon = (generalInfo) ?	generalInfo.coming_soon : false;
 
@@ -285,7 +279,11 @@ const AboutEnzymePAge = () => {
 										Catalytic Residues:
 									</span>
 									<span className="text-sm text-gray-600">
-										{cat_residues}
+										{
+											(cat_residues) ?
+											`${cat_residues}` :
+											"Not determined"
+										}
 									</span>
 								</div>
 
@@ -390,7 +388,9 @@ const AboutEnzymePAge = () => {
 								const hasStructure = residue.PDBresnum !== null;
 								const hasData = hasCharacterizationData(residue.Rosetta_resnum);
 								const isCatalytic = 
-									cat_residues.split(", ").map(residue => residue.slice(1)).includes(String(residue.PDBresnum));
+									(cat_residues) ?
+									cat_residues.split(", ").map(residue => residue.slice(1)).includes(String(residue.PDBresnum)) :
+									false;
 
 								return (
 									<React.Fragment key={residue.id}>
