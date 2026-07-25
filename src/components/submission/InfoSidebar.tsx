@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
+import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
 import { Button, Chip, Link, Textarea, Tooltip } from '@nextui-org/react';
-
 
 
 interface SidebarProps {
@@ -220,9 +220,20 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
         <div>
           <span className="font-medium text-sm">Tags</span>
 		  <div className="flex gap-2">
-          	<Chip size="sm" color="primary">Foo</Chip>
-			<Chip size="sm" color="warning">Bar</Chip>
-			<Chip size="sm" color="danger">Woo</Chip>
+			{compareAAsAndReturnTags('E', 'E').map((tag, index) => (
+			<Tooltip
+				key={index}
+				content={tag.desc}
+			>
+				<Chip
+					
+					size="sm"
+					color={tag.color}
+				>
+						{tag.text}
+				</Chip>
+			</Tooltip>
+			))}
 		  </div>
         </div>
 

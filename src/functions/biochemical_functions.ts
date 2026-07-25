@@ -8,7 +8,8 @@ import * as aa from "@/constants/biochemical"
 
 interface TagInfo {
 	text: string,
-	color: string,
+	//color: string,
+	color: "default" | "primary" | "warning" | "danger",
 	desc: string
 }
 
