@@ -4,7 +4,7 @@ import NavBar from '@/components/NavBar';
 import "../../../../app/globals.css";
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem ,Tooltip, Chip } from '@nextui-org/react';
 import Link from 'next/link';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
@@ -13,6 +13,7 @@ import Toast from '@/components/Toast';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useUser } from '@/components/UserProvider';
 import StatusChip from '@/components/StatusChip';
+import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
 
 const DataPageView = () => {
   const router = useRouter();
@@ -339,6 +340,26 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     `${entryData1?.resid}${entryData1?.resnum}${entryData1?.resmut}`}
                 </p>
               </div>
+
+				<div>
+					<span className="font-medium text-sm">Tags</span>
+					<div className="flex flex-wrap gap-2">
+						{compareAAsAndReturnTags(entryData1.resid, entryData1.resmut).map((tag, index) => (
+						<Tooltip
+							key={index}
+							content={tag.desc}
+						>
+							<Chip
+								
+								size="sm"
+								color={tag.color}
+							>
+									{tag.text}
+							</Chip>
+						</Tooltip>
+						))}
+					</div>
+				</div>
 
               <div>
                 <span className="font-medium text-sm">Yield</span>
