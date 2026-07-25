@@ -31,7 +31,9 @@ export function BglBMechanism() {
 			<p className="mb-4">
 				To maintain the stereochemistry at carbon 1,
 				the eznyme uses what is called an <b>inverting mechansism</b>.
-				First, a nucleophile, (FooXXX in BglB,)
+				First, a nucleophile, the carboxylate side chain of{' '}
+				<abbr title="Glutamate">Glu</abbr>356
+				(Glu353 in our Foldit model) in BglB,
 				attacks carbon 1 in an{' '}
 				<abbr title="Substitution Nucleophilic Bimolecular">
 					S<sub>N</sub>2
@@ -40,7 +42,7 @@ export function BglBMechanism() {
 				leaves the glucose residue covalently attached to the enzyme.
 				S<sub>N</sub>2 steps always invert the stereochemistry of
 				the atom where a bond forms and a bond breaks,
-				so β changes to α
+				so β changes to α.
 			</p>
 			<p className="mb-4">
 				Then, water attacks carbon 1 in a second S<sub>N</sub>2,
@@ -51,11 +53,22 @@ export function BglBMechanism() {
 			</p>
 			<Image
 				className="object-center mb-4"
-				src="/resources/images/figures/BglB_pathway_fig1.png"
-				title="Two monosaccharides connected by a glycosidic bond, indicated by the blue oval."
-				alt="A disaccharide is two monosaccharides connected by a glycosidic bond."
-				width={250}
+				src="/resources/images/figures/BglB_mechanism_fig.png"
+				title="A mechanistic scheme of the BglB reaction."
+				alt="In the first step, Glu356 attacks C1. The leaving saccharide is protonated by Glu167. In the second step, Glu167 deprotonates water, which attacks C1."
+				width={1000}
 			/>
+			<p className="mb-4">
+				For BglB, two other active-site residues are also very important.{' '}
+				<abbr title="Tyrosine">Tyr</abbr>298 (Tyr295 in our Foldit model)
+				helps hold Glu356 in place and/or acts as a base to deprotonate
+				the caboxylic-acid side chain, making Glu356 into a stronger nucleophile.
+				(Tyr298 is not shown in the mechanistic scheme above.)
+				Glu167 (Glu164 in our Foldit model) first protonates the saccharide{' '}
+				<b>leaving group</b>.
+				Then, it acts as a base to make the water a better nucleophile.
+				
+			</p>
 		</div>
 	);
 }

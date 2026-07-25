@@ -311,7 +311,7 @@ const AboutEnzymePAge = () => {
 								<MechanismInfo />
 							</AccordionItem>
 						</Accordion>
-						<p className="text-gray-600 text-justify mb-4">
+						<p className="text-gray-600 text-justify pt-4 mb-4">
 							{assay_desc}
 						</p>
 						<Accordion isCompact variant="shadow">
