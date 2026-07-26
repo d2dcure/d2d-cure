@@ -10,9 +10,13 @@ interface SidebarProps {
 	updateEntryData: (newData: any) => void;
 }
 
-
 interface EnzymeGeneralInfo {
 	cat_residues: string;
+}
+
+interface SequenceData {
+	Rosetta_resnum: number;
+	PDBresnum: string;
 }
 
 
@@ -33,7 +37,8 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 ) => {
   const { user } = useUser();
   const [oligosData, setOligosData] = useState<any[]>([]);
-  const [enzymeData, setEnzymeData] = useState<EnzymeGeneralInfo>();
+  const [enzymeInfo, setEnzymeInfo] = useState<EnzymeGeneralInfo>();
+  const [sequence, setSequence] = useState<SequenceData[]>([]);
   const [possibleTeammates, setPossibleTeammates] = useState<any[]>([]);
   const [teammate1, setTeammate1] = useState<string | null>(entryData.teammate);
   const [teammate2, setTeammate2] = useState<string | null>(entryData.teammate2);
@@ -85,6 +90,18 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 		}
 	};
 
+	const fetchSequence = async () => {
+		try {
+		const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
+			if (response.ok) {
+				const sequence = await response.json();
+				setSequence(sequence);
+			}
+		} catch (error) {
+        	console.error("Error fetching sequence data:", error);
+		}
+	};
+
     const fetchPossibleTeammates = async () => {
       if (user?.pi) {
         const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(user.pi)}`);
@@ -95,8 +112,18 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 
     fetchOligosData();
 	fetchEnzymeData();
+	fetchSequence();
     fetchPossibleTeammates();
   }, [enzyme, user]);
+
+  	const isCatalyticResidue = (): boolean => {
+		if (entryData.resnum && enzymeInfo?.cat_residues) {
+			const residue_data = sequence.find(res => res.Rosetta_resnum === entryData.resnum);
+			const pdb_resnum = (residue_data) ? residue_data.PDBresnum : '';
+			return enzymeInfo.cat_residues.split(", ").map(res => res.slice(1)).includes(pdb_resnum);
+		}
+		return false;
+	};
 
   const formatTimestamp = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -240,6 +267,19 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
         <div>
           <span className="font-medium text-sm">Tags</span>
 		  <div className="flex flex-wrap gap-2">
+			{isCatalyticResidue() && (
+			<Tooltip
+				content="This is one of the known catalytic residues."
+			>
+				<Chip
+					
+					size="sm"
+					color="danger"
+				>
+					catalytic
+				</Chip>
+			</Tooltip>
+			)}
 			{compareAAsAndReturnTags(entryData.resid, entryData.resmut).map((tag, index) => (
 			<Tooltip
 				key={index}
