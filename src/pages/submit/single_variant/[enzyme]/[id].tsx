@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 import InfoSidebar from '@/components/submission/InfoSidebar';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
 import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
@@ -1289,6 +1290,7 @@ const SingleVariant = () => {
             </div>
           </div>
         </div>
+		<Footer />
       </EntryAccessChecker>
 
       {/* Toast Notifications */}
