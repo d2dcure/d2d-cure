@@ -419,7 +419,7 @@ const SubmitPage = () => {
                           className="w-full"
                         >
                           {enzymeList.map((enzyme) => (
-                            <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                            <SelectItem key={enzyme.abbr} value={enzyme.abbr}>
                               {enzyme.abbr}
                             </SelectItem>
                           ))}
