@@ -459,7 +459,7 @@ const Dashboard = () => {
 										{characterizationData.map((data, index) => {
 											const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
 											const viewUrl =
-												variant === 'WT' ? `/submit/wild_type/${data.id}` : `/submit/single_variant/BglB/${data.id}`;
+												variant === 'WT' ? `/submit/wild_type/BglB/${data.id}` : `/submit/single_variant/BglB/${data.id}`;
 
 											return (
 												<TableRow key={index}>

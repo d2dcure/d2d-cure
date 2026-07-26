@@ -24,7 +24,7 @@ const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
     setIsSubmitting(true);
     try {
       const isOrdered = oligoOrdered === 'yes';
-      const response = await fetch(`/api/updateCharacterizationDataOligoOrdered?enzyme=${enzyme}`, {
+      const response = await fetch("/api/updateCharacterizationDataOligoOrdered", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1138,7 +1138,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
   const handleEditClick = () => {
     if (!entryData1) return;
     const path = entryData1.resid === 'X' 
-      ? `/submit/wild_type/${entryData1.id}` 
+      ? `/submit/wild_type/${enzyme}/${entryData1.id}` 
       : `/submit/single_variant/${enzyme}/${entryData1.id}`;
     router.push(path);
   };

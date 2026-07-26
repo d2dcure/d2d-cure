@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { AuthChecker } from '@/components/AuthChecker';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -27,7 +26,7 @@ import GelUploadedView from '@/components/submission/GelUploadedView';
 const SingleVariant = () => {
   const { user } = useUser();
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
@@ -233,7 +232,7 @@ const SingleVariant = () => {
       const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
       if (!response.ok) throw new Error('Failed to fetch entry ID');
       const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/BglB/${newId}`);
+      router.push(`/submit/single_variant/${enzyme}/${newId}`);
     } catch (error) {
       console.error('Error navigating entries:', error);
     }
@@ -770,7 +769,7 @@ const SingleVariant = () => {
         {/* Add the bug report link below the table */}
         <div className="flex justify-end mt-4 mr-3">
           <Link 
-            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/BglB/${id}`)}`}
+            href={`/contact/report?page=${encodeURIComponent(`/submit/wild_type/${enzyme}/${id}`)}`}
             className="text-sm text-gray-600 hover:text-[#06B7DB] flex items-center gap-1.5 transition-colors duration-200"
           >
             <BugIcon className="w-4 h-4" />
@@ -798,17 +797,17 @@ const SingleVariant = () => {
     const DetailComponent = (() => {
       switch (selectedDetail) {
         case 'Protein induced':
-          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinInducedView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case 'Protein yield':
-          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinYieldView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded":
-          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <KineticAssayDataView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Thermostability assay data uploaded":
-          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ThermoAssayDataView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Melting point values uploaded":
-          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <MeltingPointView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Gel uploaded":
-          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <GelUploadedView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
           return <div>Detail view for {selectedDetail}</div>;
@@ -877,7 +876,7 @@ const SingleVariant = () => {
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return '';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -978,27 +977,8 @@ const SingleVariant = () => {
                 {!loading && entryData && (
                   <div>
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
-                      {getVariantDisplay(entryData)}
-                      <Link
-                        href={`/database/characterization_data/BglB?search=${encodeURIComponent(
-                          getVariantDisplay(entryData).replace(' BglB', '').trim()
-                        )}`}
-                        className="inline-flex items-center hover:text-[#06B7DB]"
-                      >
-                        <ExternalLink className="w-5 h-5 stroke-[1.5]" />
-                      </Link>
+                      {getVariantDisplay(entryData)} Data Submission Portal
                     </h1>
-                    <StatusChip
-                      status={
-                        entryData.curated 
-                          ? 'approved'
-                          : entryData.approved_by_pi
-                            ? 'pi_approved'
-                            : entryData.submitted_for_curation 
-                              ? 'pending_approval'
-                              : 'in_progress'
-                      }
-                    />
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
@@ -1074,8 +1054,7 @@ const SingleVariant = () => {
               <div className="flex w-full gap-4 flex-col lg:flex-row">
                 <div className="w-full lg:w-1/5">
                   <div className="lg:sticky lg:top-4">
-					{/* TEMP Hardcoding of BglB for now. */}
-                    <InfoSidebar enzyme="BglB" entryData={entryData} updateEntryData={updateEntryData} />
+                    <InfoSidebar enzyme={enzyme as string} entryData={entryData} updateEntryData={updateEntryData} />
                   </div>
                 </div>
 

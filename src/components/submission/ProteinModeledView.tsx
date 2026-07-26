@@ -16,7 +16,13 @@ interface ValidationMessage {
 	field: 'WT' | 'variant';
 }
 
-const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryData, setCurrentView, updateEntryData }) => {
+
+const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
+}) => {
 	const [folditScore, setFolditScore] = useState<number>();
 	const [startingScore, setStartingScore] = useState<number>();
 	const [endingScore, setEndingScore] = useState<number>();

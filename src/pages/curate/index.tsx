@@ -227,7 +227,7 @@ const CuratePage = () => {
 						{/* TEMP: Hardcoding BglB into URL. */}
                         <Link
                             href={data.resid === "X" 
-                                ? `/submit/wild_type/${data.id}`
+                                ? `/submit/wild_type/BglB/${data.id}`
                                 : `/submit/single_variant/BglB/${data.id}`
                             }
                             target="_blank"

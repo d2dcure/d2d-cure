@@ -144,7 +144,7 @@ const SubmitPage = () => {
   // for new dataset navigation to work 
   useEffect(() => {
     if (newEntry && newEntry.id && newEntry.resid == 'X') {
-      router.push(`/submit/wild_type/${newEntry.id}`);
+      router.push(`/submit/wild_type/BglB/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
       router.push(`/submit/single_variant/BglB/${newEntry.id}`);  // TEMP
@@ -513,7 +513,7 @@ const SubmitPage = () => {
                                   {item.comments || 'No comments'}
                                 </TableCell>
                                 <TableCell>
-                                  <Link href={`/submit/wild_type/${item.id}`} className="text-[#06B7DB]">
+                                  <Link href={`/submit/wild_type/BglB/${item.id}`} className="text-[#06B7DB]">
                                     View
                                   </Link>
                                 </TableCell>
