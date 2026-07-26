@@ -39,6 +39,8 @@ const OligoSearchPage = () => {
 
 	const clipboard = useClipboard();  // Copied from InfoSidebar
 
+
+	// Construct function to be called anytime enzyme is changed.
 	useEffect(() => {
 		const fetchEnzymes = async () => {
 			try {
@@ -129,6 +131,13 @@ const OligoSearchPage = () => {
 		}
 	}, [enzyme]);
 
+	// Construct function to be called any time enzymeVariant is changed.
+	useEffect(() => {
+		
+		//setResnum
+
+	}, [enzymeVariant]);
+
 
 	// Search the sequence data and return the one-letter residue code for the
 	// given residue number or return '?'.
@@ -163,12 +172,19 @@ const OligoSearchPage = () => {
 		}
 	};
 
+
+	// Functions to pass to child component.
 	const updateEnzyme = (new_enzyme: string) => {
     	setEnzyme(new_enzyme);
 	};
 
 	const updateEnzymeVariant = (new_variant: string) => {
-    	setEnzymeVariant(new_variant);
+		// Only update if a valid variant string.
+		if ((new_variant.at(0) != '?') && (isNaN(Number(new_variant.slice(-1))))) {
+    		setEnzymeVariant(new_variant);
+		} else {  // If not, blank the variant string.
+			setEnzymeVariant('');
+		}
 	};
 
 
@@ -317,8 +333,9 @@ const OligoSearchPage = () => {
 						</div>
 
 						{/* Search Results */}
-					{enzyme && (resnum != null) && (resnum >= 1) && 
-							(resnum <= resnumUpperBound) && resmut && (
+					{enzyme && enzymeVariant && (
+					//{enzyme && (resnum != null) && (resnum >= 1) && 
+					//		(resnum <= resnumUpperBound) && resmut && (
 						<div className="mt-8 space-y-4">
 							<h3 className="text-lg font-semibold">Results</h3>
 							<div className="text-gray-600">

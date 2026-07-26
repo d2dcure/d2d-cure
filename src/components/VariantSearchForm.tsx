@@ -46,7 +46,7 @@ export default function VariantSearchForm({
 	const [enzyme_list, setEnzymeList] = useState<Enzyme[]>([]);
 	const [sequence, setSequence] = useState<SequencePosition[]>([]);
 
-	// Call anytime enzyme is changed.
+	// Construct function to be called anytime enzyme is changed.
 	useEffect(() => {
 		async function fetchEnzymes() {
 			try {
@@ -129,6 +129,7 @@ export default function VariantSearchForm({
 						value={enzyme}
 						onChange={(e) => {
 							updateEnzyme(e.target.value);
+							updateVariant('');
 							setResID('?');
 							setResnum(undefined);
 							setResmut('');
