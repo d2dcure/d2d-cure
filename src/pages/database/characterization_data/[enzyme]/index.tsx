@@ -568,7 +568,6 @@ const DataPage = () => {
 
 				// Check each response individually
 				if (characterizationRes.ok) {
-					//throw new Error(`GET /api/getCharacterizationData ${characterizationRes.status} - Failed to fetch characterization data`);
 					const characterizationData = await characterizationRes.json();
 					if (!Array.isArray(characterizationData)) {
 						throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
@@ -576,7 +575,6 @@ const DataPage = () => {
 					setCharacterizationData(characterizationData);
 				}
 				if (sequencesRes.ok) {
-					//throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
 					const sequencesData = await sequencesRes.json();
 					if (!Array.isArray(sequencesData)) {
 						throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
@@ -584,7 +582,6 @@ const DataPage = () => {
 					setSequences(sequencesData);
 				}
 				if (publicationsRes.ok) {
-					//throw new Error(`GET /api/getPublications ${publicationsRes.status} - Failed to fetch publications`);
 					const publicationsData = await publicationsRes.json();
 					if (!Array.isArray(publicationsData)) {
 						throw new Error('GET /api/getPublications - Invalid data format: Expected array');
@@ -592,32 +589,11 @@ const DataPage = () => {
 					setPublications(publicationsData);
 				}
 
-				//const [characterizationData, sequencesData, publicationsData] = await Promise.all([
-				//  characterizationRes.json(),
-				//  sequencesRes.json(),
-				//  publicationsRes.json()
-				// ]);
-
-				// For color coding 
-				//const WT_row = characterizationData.find((row:any) => row.id === 1);
-				//if (WT_row) {
-				//	setWTValues({
-				//		//WT_KM: WT_row.KM_avg,
-				//		WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
-				//		WT_log_kcat: Math.log10(WT_row.kcat_avg),
-				//		WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
-				//		WT_T50: WT_row.T50,
-				//		WT_Tm: WT_row.Tm,
-				//		WT_Rosetta_score: WT_row.Rosetta_score
-				//  });
-				//}
 			} catch (error) {
 				console.error('Error fetching data:', error);
 				setIsError(true);
 				setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
-			} //finally {
-				//setIsLoading(false);
-			//}
+			} 
 		};
 
 		if (enzyme) {

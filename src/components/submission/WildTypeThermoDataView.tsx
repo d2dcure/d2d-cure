@@ -52,7 +52,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
   useEffect(() => {
     const fetchTempData = async () => {
       try {
-        const response = await fetch('/api/getCharacterizationData?enzyme=BglB');
+        const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
         const data = await response.json();
         const filteredData = data.filter(
           (row: any) => row.institution === entryData.institution && row.resid === 'X'
@@ -76,7 +76,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     };
 
     fetchTempData();
-  }, [entryData.institution]);
+  }, [enzyme, entryData.institution]);
 
   // 2) If we already have a WT_temp_raw_data_id, fetch that single raw data => parse CSV + plot
   useEffect(() => {
