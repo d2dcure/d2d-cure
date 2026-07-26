@@ -5,11 +5,23 @@
 
 
 // Imports
+import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 
 
-interface VariantSerachFormProps {
+// Interfaces
+interface Enzyme {
+	abbr: string;
+	active: boolean;
+}
+
+interface SequencePosition {
+	Rosetta_resnum: number;
+	resid: string;
+}
+
+interface VariantSearchFormProps {
 	enzyme: string;
 	variant: string;
 	updateEnzyme: (new_enzyme: string) => void;
@@ -17,19 +29,22 @@ interface VariantSerachFormProps {
 }
 
 
+// Main Component
 export default function VariantSearchForm({
 	enzyme,
 	variant,
 	updateEnzyme,
 	updateVariant
-}: VariantSerachFormProps) {
+}: VariantSearchFormProps) {
+	// React Components
 	// Set up stateful values and corresponding setters.
 	const [resid, setResID] = useState<string>('?');
 	const [resnum, setResnum] = useState<number>();
+	const [resnum_upper_bound, setResnumUpperBound] = useState<number>(999);	// artificial upper bound
 	const [resmut, setResmut] = useState<string>('');
-	const [enzymeList, setEnzymeList] = useState<any[]>([]);
+	const [enzyme_list, setEnzymeList] = useState<Enzyme[]>([]);
+	const [sequence, setSequence] = useState<SequencePosition[]>([]);
 
-	
 	// Call anytime enzyme is changed.
 	useEffect(() => {
 		async function fetchEnzymes() {
@@ -44,7 +59,7 @@ export default function VariantSearchForm({
 					throw new Error(
 							"GET /api/getEnzymes - Invalid data format: Expected array");
 				}
-				const activeEnzymes: any[] = [];
+				const activeEnzymes: Enzyme[] = [];
 				for (let enzyme of enzymes) {
 					if (enzyme.active === true) {
 						activeEnzymes.push(enzyme);
@@ -55,12 +70,48 @@ export default function VariantSearchForm({
 				console.error('Error fetching enzymes:', error);
 			}
 		};
+
+		async function fetchSequence() {
+			try {
+				const response = await fetch(
+						`/api/getSequenceData?enzyme=${enzyme}`);
+				if (!response.ok) {
+					throw new Error(
+							`GET /api/getSequenceData ${response.status} - Failed to fetch sequence data for ${enzyme}`);
+				}
+				const sequence = await response.json();
+				if (!Array.isArray(sequence)) {
+					throw new Error(
+							"GET /api/getSequenceData - Invalid data format: Expected array");
+				}
+				setSequence(sequence);
+				for (let i = sequence.length - 1; i >= 0; i-- ) {
+					if (sequence[i].Rosetta_resnum != null) {
+						setResnumUpperBound(sequence[i].Rosetta_resnum);
+						break;
+					}
+				}
+			} catch (error) {
+				console.error("Error fetching sequence data:", error);
+			}
+		};
+
 	fetchEnzymes();
 		if (enzyme) {
-			//fetchSequenceData();
+			fetchSequence();
 		}
 	}, [enzyme]);
 
+
+	// Helper Functions
+	// Search the sequence data and return the one-letter residue code for the
+	// given residue number or return '?'.
+	function getResID(resnum: number):string {
+		const found_residue = sequence.find(
+				residue => residue.Rosetta_resnum == resnum);
+		if (found_residue) { return found_residue.resid; }
+		else { return '?'; }
+	};
 
 	return (
 		<>
@@ -84,15 +135,53 @@ export default function VariantSearchForm({
 						placeholder="Select Enzyme"
 						className="w-full md:w-[150px]"
 					>
-					{enzymeList.map((enzyme) => (
+					{enzyme_list.map((enzyme) => (
 						<SelectItem key={enzyme.abbr} value={enzyme.abbr}>
 							{enzyme.abbr}
 						</SelectItem>
 					))}
 					</Select>
 				</div>
-			</div>
 
+
+				{/* Residue Input */}
+			{enzyme && (
+				<div>
+					<label htmlFor="residue" className="block mb-2">
+						<abbr title="Wild Type">WT</abbr> Residue
+					</label>
+					<Input
+						type="number"
+						id="resnum"
+						placeholder="#"
+						value={String(resnum)}
+						onChange={(e) => {
+							setResID(getResID(Number(e.target.value)));
+							setResnum(Number(e.target.value));
+							updateVariant(
+									getResID(
+											Number(e.target.value)) + String(e.target.value) + resmut);
+						}}
+						size="md"
+						variant="bordered"
+						className="w-full md:w-[150px]"
+						radius="sm"
+						startContent={resid}
+						isInvalid={
+							((resnum != null) &&
+									((resnum < 1) || (resnum > resnum_upper_bound))) ?
+							true :
+							false
+						}
+						errorMessage="Not a valid residue number"
+					/>
+				</div>
+		)}
+
+
+
+
+			</div>
 			<p>Result: {enzyme} {variant}</p>
 		</>
 	);

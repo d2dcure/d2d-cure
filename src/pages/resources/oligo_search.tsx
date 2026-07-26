@@ -213,12 +213,15 @@ const OligoSearchPage = () => {
 
 						{/* Playground */}
 						
+						<h3 className="text-lg font-semibold">Search Form New</h3>
 						<VariantSearchForm
 							enzyme={enzyme}
 							variant={enzymeVariant}
 							updateEnzyme={updateEnzyme}
 							updateVariant={updateEnzymeVariant}
 						/>
+
+						<br /><br /><br />
 
 						{/* Dynamic Search Form */}
 						<h3 className="text-lg font-semibold">Search Form</h3>				
