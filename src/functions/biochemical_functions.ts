@@ -6,6 +6,9 @@
 import * as aa from "@/constants/biochemical"
 
 
+//Interfaces
+
+// Colors used for variant tags.
 // Color must be one of the given values, because the Chip component only
 // accepts a limited number of strings as values.
 // Use "primary" for similar subsitutions and "warning" and "danger" for
@@ -14,6 +17,78 @@ interface TagInfo {
 	text: string,
 	color: "default" | "primary" | "warning" | "danger",
 	desc: string
+}
+
+
+// Helper functions
+
+// Return the fullname of the residue from the 1-letter code.
+export function getNameFromOneLetterCode(code: string): string {
+	switch ( code ) {
+		case 'A':
+			return "Alanine";
+		case 'C':
+			return "Cysteine";
+		case 'D':
+			return "Aspartate";
+		case 'E':
+			return "Glutamate";
+		case 'F':
+			return "Phenylalanine";
+		case 'G':
+			return "Glycine";
+		case 'H':
+			return "Histidine";
+		case 'I':
+			return "Isoleucine";
+		case 'K':
+			return "Lysine";
+		case 'L':
+			return "Leucine";
+		case 'M':
+			return "Methionine";
+		case 'N':
+			return "Asparagine";
+		case 'O':
+			return "Pyrrolysine";
+		case 'P':
+			return "Proline";
+		case 'Q':
+			return "Glutamine";
+		case 'R':
+			return "Arginine";
+		case 'S':
+			return "Serine";
+		case 'T':
+			return "Threonine";
+		case 'U':
+			return "Selenocysteine";
+		case 'V':
+			return "Valine";
+		case 'W':
+			return "Tryptophan";
+		case 'Y':
+			return "Tyrosine";
+		default:
+			return "Unnatrual";
+	}
+}
+
+// Return the properties of the residue from the 1-letter code.
+export function getPropertiesFromOneLetterCode(code: string): string[] {
+	const properties: string[] = [];
+	if (aa.negativeAAs.includes(code)) { properties.push("negative (basic)"); }
+	if (aa.positiveAAs.includes(code)) { properties.push("positive (acidic)"); }
+	if (aa.polarChargedAAs.includes(code)) { properties.push("charged polar"); }
+	if (aa.polarUnchargedAAs.includes(code)) { properties.push("uncharged polar"); }
+	if (aa.hydrophilicAAs.includes(code)) { properties.push("hydrophilic"); }
+	if (aa.hydrophobicAAs.includes(code)) { properties.push("hydrophobic"); }
+	if (aa.aromaticAAs.includes(code)) { properties.push("aromatic"); }
+	if (aa.aliphaticAAs.includes(code)) { properties.push("aliphatic"); }
+	if (aa.smallAAs.includes(code)) { properties.push("small"); }
+	if (aa.bulkyAAs.includes(code)) { properties.push("bulky"); }
+	if (aa.helixBreakingAAs.includes(code)) { properties.push("helix-breaking"); }
+	return properties;
 }
 
 
