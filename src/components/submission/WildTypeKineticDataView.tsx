@@ -3,7 +3,6 @@ import { useUser } from '@/components/UserProvider';
 import axios from 'axios';
 import Link from 'next/link';
 import Papa from 'papaparse';
-
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
 
@@ -28,16 +27,20 @@ async function fetchFileFromS3(folder: string, filename: string): Promise<Blob> 
   return fileResp.blob();
 }
 
+
 interface WildTypeKineticDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
 
@@ -429,7 +432,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
               <TableBody>
                 {kineticData.map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell>BglB</TableCell>
+                    <TableCell>{enzyme}</TableCell>
                     <TableCell>{row.assay_date}</TableCell>
                     <TableCell>{row.user_name}</TableCell>
                     <TableCell>

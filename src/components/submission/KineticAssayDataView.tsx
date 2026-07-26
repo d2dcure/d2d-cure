@@ -9,16 +9,20 @@ import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import Image from 'next/image';
 
+
 interface KineticAssayDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
+
 const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
   const router = useRouter();
@@ -356,7 +360,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   const generateFilename = (baseName: string, suffix: string = '', extension: string) => {
     const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
-    return `${user.user_name}-BglB-${variant}-${entryData.id}${suffix}.${extension}`;
+    return `${user.user_name}-${enzyme}-${variant}-${entryData.id}${suffix}.${extension}`;
   };
 
   const base64ToBlob = (base64Data: string, contentType: string) => {

@@ -2,13 +2,21 @@ import React, { useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Select, SelectItem} from "@nextui-org/select";
 
+
 interface ProteinInducedViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
-const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
+
+const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
+}) => {
   const [induced, setInduced] = useState(entryData.expressed ? 'yes' : 'no');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

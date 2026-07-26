@@ -5,12 +5,18 @@ import {Input} from "@nextui-org/input";
 import {Select, SelectItem} from "@nextui-org/select";
 
 interface ExpressedViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
-const ExpressedView: React.FC<ExpressedViewProps> = ({ entryData, setCurrentView, updateEntryData }) => {
+const ExpressedView: React.FC<ExpressedViewProps> = ({
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
+}) => {
   const [yieldAvg, setYieldAvg] = useState<string>(''); // it says 'Avg' but it's really just the regular yield value 
   const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);

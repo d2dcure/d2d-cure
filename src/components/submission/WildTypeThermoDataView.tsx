@@ -25,16 +25,20 @@ async function fetchFileFromS3(folder: string, filename: string): Promise<Blob> 
   return fileResp.blob();
 }
 
+
 interface WildTypeThermoDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const [tempData, setTempData] = useState<any[]>([]);
   const [tempRawDataEntryData, setTempRawDataEntryData] = useState<any>(null);
@@ -404,7 +408,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
               <TableBody>
                 {tempData.map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell className="whitespace-nowrap">BglB</TableCell>
+                    <TableCell className="whitespace-nowrap">{enzyme}</TableCell>
                     <TableCell className="whitespace-nowrap">{row.assay_date}</TableCell>
                     <TableCell className="whitespace-nowrap">{row.user_name}</TableCell>
                     <TableCell>

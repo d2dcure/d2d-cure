@@ -4,15 +4,15 @@ import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import { useRouter } from 'next/router';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@nextui-org/table";
 import { useDropzone } from "react-dropzone";
-import { Spinner } from "@nextui-org/react";
 import { DeleteIcon } from "@nextui-org/shared-icons";
 import Toast from '@/components/Toast';
 import Image from 'next/image';
 
 interface GelUploadedViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
 // Add new form data interface
@@ -22,10 +22,12 @@ interface UploadFormData {
   date: string;
 }
 
+
 const GelUploadedView: React.FC<GelUploadedViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
   const router = useRouter();

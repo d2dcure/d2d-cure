@@ -7,16 +7,20 @@ import { Button } from '@nextui-org/button';
 import { Checkbox } from '@nextui-org/checkbox';
 import Image from 'next/image';
 
+
 interface ThermoAssayDataViewProps {
-  setCurrentView: (view: string) => void;
-  entryData: any;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
-  setCurrentView,
-  entryData,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
 
@@ -441,7 +445,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
       const csvContent = Papa.unparse(updatedData);
 
       // 2) Create final filenames
-      const baseFileName = `${user?.user_name || 'unknown'}-BglB-${variant}-${entryData.id}-temp_assay`;
+      const baseFileName = `${user?.user_name || 'unknown'}-${enzyme}-${variant}-${entryData.id}-temp_assay`;
       const newCsvFilename = `${baseFileName}.csv`;
       const newPlotFilename = `${baseFileName}.png`;
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/components/UserProvider';
-
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 
 /**
@@ -51,16 +50,20 @@ async function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
+
 interface PlasmidSequenceVerifiedViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
   const [plasmidFile, setPlasmidFile] = useState<File | null>(null);
@@ -137,7 +140,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
     setIsSubmitting(true);
 
     // Build the final name for your S3 key
-    const newFileName = `${user?.user_name ?? 'unknown'}-BglB-${
+    const newFileName = `${user?.user_name ?? 'unknown'}-${enzyme}-${
       entryData.resid
     }${entryData.resnum}${entryData.resmut}-${entryData.id}.ab1`;
 
