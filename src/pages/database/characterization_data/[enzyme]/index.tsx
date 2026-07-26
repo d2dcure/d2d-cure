@@ -518,6 +518,8 @@ const DataPage = () => {
     setRowsPerPage(0); // "all"
   };
 
+
+  // Get institutions list once on page load.
   useEffect(() => {
     const fetchInstitutions = async () => {
       try {
@@ -529,7 +531,6 @@ const DataPage = () => {
           setErrorMessage("Invalid data format received from server");
           return;
         }
-        
         const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
         setInstitutions(sortedData);
       } catch (error) {
@@ -537,91 +538,99 @@ const DataPage = () => {
         setErrorMessage("Failed to fetch institutions data");
       }
     };
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [institutionsRes, characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
-          fetch('/api/getInstitutions'),
-          fetch(`/api/getCharacterizationData?enzyme=${enzyme}`),
-          fetch(`/api/getSequenceData?enzyme=${enzyme}`),
-          fetch('/api/getPublications')
-        ]);
-
-        // Check each response individually
-        if (!institutionsRes.ok) {
-          throw new Error(`GET /api/getInstitutions ${institutionsRes.status} - Failed to fetch institutions`);
-        }
-        if (!characterizationRes.ok) {
-          throw new Error(`GET /api/getCharacterizationData ${characterizationRes.status} - Failed to fetch characterization data`);
-        }
-        if (!sequencesRes.ok) {
-          throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
-        }
-        if (!publicationsRes.ok) {
-          throw new Error(`GET /api/getPublications ${publicationsRes.status} - Failed to fetch publications`);
-        }
-
-        const [institutionsData, characterizationData, sequencesData, publicationsData] = await Promise.all([
-          institutionsRes.json(),
-          characterizationRes.json(),
-          sequencesRes.json(),
-          publicationsRes.json()
-        ]);
-
-        // Validate data formats
-        if (!Array.isArray(institutionsData)) {
-          throw new Error('GET /api/getInstitutions - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(characterizationData)) {
-          throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(sequencesData)) {
-          throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(publicationsData)) {
-          throw new Error('GET /api/getPublications - Invalid data format: Expected array');
-        }
-
-        const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
-          a.fullname.localeCompare(b.fullname)
-        );
-        setInstitutions(sortedInstitutions);
-        setCharacterizationData(characterizationData);
-        setSequences(sequencesData);
-        setPublications(publicationsData);
-
-        // For color coding 
-        const WT_row = characterizationData.find((row:any) => row.id === 1);
-        if (WT_row) {
-          setWTValues({
-            //WT_KM: WT_row.KM_avg,
-            WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
-            WT_log_kcat: Math.log10(WT_row.kcat_avg),
-            WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
-            WT_T50: WT_row.T50,
-            WT_Tm: WT_row.Tm,
-            WT_Rosetta_score: WT_row.Rosetta_score
-          });
-        }
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setIsError(true);
-        setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData?enzyme=BglB');  //TEMP
-      const data = await response.json();
-      setSequences(data);
-    };
-
-    fetchSequences();
     fetchInstitutions();
-    fetchData();
-  }, []);
+	}, []);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			setIsLoading(true);
+			try {
+				const [characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
+					fetch(`/api/getCharacterizationData?enzyme=${enzyme}`),
+					fetch(`/api/getSequenceData?enzyme=${enzyme}`),
+					fetch('/api/getPublications')
+				]);
+
+				// Check each response individually
+				if (characterizationRes.ok) {
+					//throw new Error(`GET /api/getCharacterizationData ${characterizationRes.status} - Failed to fetch characterization data`);
+					const characterizationData = await characterizationRes.json();
+					if (!Array.isArray(characterizationData)) {
+						throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
+					}
+					setCharacterizationData(characterizationData);
+				}
+				if (sequencesRes.ok) {
+					//throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
+					const sequencesData = await sequencesRes.json();
+					if (!Array.isArray(sequencesData)) {
+						throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
+					}
+					setSequences(sequencesData);
+				}
+				if (publicationsRes.ok) {
+					//throw new Error(`GET /api/getPublications ${publicationsRes.status} - Failed to fetch publications`);
+					const publicationsData = await publicationsRes.json();
+					if (!Array.isArray(publicationsData)) {
+						throw new Error('GET /api/getPublications - Invalid data format: Expected array');
+					}
+					setPublications(publicationsData);
+				}
+
+				//const [characterizationData, sequencesData, publicationsData] = await Promise.all([
+				//  characterizationRes.json(),
+				//  sequencesRes.json(),
+				//  publicationsRes.json()
+				// ]);
+
+				// For color coding 
+				//const WT_row = characterizationData.find((row:any) => row.id === 1);
+				//if (WT_row) {
+				//	setWTValues({
+				//		//WT_KM: WT_row.KM_avg,
+				//		WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
+				//		WT_log_kcat: Math.log10(WT_row.kcat_avg),
+				//		WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
+				//		WT_T50: WT_row.T50,
+				//		WT_Tm: WT_row.Tm,
+				//		WT_Rosetta_score: WT_row.Rosetta_score
+				//  });
+				//}
+			} catch (error) {
+				console.error('Error fetching data:', error);
+				setIsError(true);
+				setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
+			} //finally {
+				//setIsLoading(false);
+			//}
+		};
+		//const fetchSequences = async () => {
+			// const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
+			// const data = await response.json();
+			// setSequences(data);
+		//};
+
+		//fetchSequences();
+		if (enzyme) {
+			fetchData();
+		}
+	}, [enzyme]);
+
+	useEffect(() => {
+		const WT_row = characterizationData.find((row:any) => row.id === 1);
+		if (WT_row) {
+			setWTValues({
+				//WT_KM: WT_row.KM_avg,
+				WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
+				WT_log_kcat: Math.log10(WT_row.kcat_avg),
+				WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
+				WT_T50: WT_row.T50,
+				WT_Tm: WT_row.Tm,
+				WT_Rosetta_score: WT_row.Rosetta_score
+			});
+		}
+		setIsLoading(false);
+	}, [characterizationData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -978,7 +987,7 @@ const DataPage = () => {
 
     if (expandData) {
       // If in expanded view, open detail page in new tab
-      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');
     } else if (row.isAggregate) {
       // If it's an aggregate row, toggle expansion
       setExpandedRows(prev => ({
@@ -987,7 +996,7 @@ const DataPage = () => {
       }));
     } else {
       // If it's any individual row (including child rows), open detail page in new tab
-      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');
     }
   };
 
@@ -1794,7 +1803,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
+                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues?.WT_log_inv_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1830,7 +1839,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
+                                          backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues?.WT_log_kcat : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1866,7 +1875,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues.WT_log_kcat_over_KM : -5),
+                                          backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues?.WT_log_kcat_over_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1904,7 +1913,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues.WT_T50) / WTValues.WT_T50 : -5),
+                                          backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues?.WT_T50) / WTValues?.WT_T50 : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1940,7 +1949,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues.WT_Tm) / WTValues.WT_Tm : -5),
+                                          backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues?.WT_Tm) / WTValues?.WT_Tm : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1958,7 +1967,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
+                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues?.WT_Rosetta_score) / Math.abs(WTValues?.WT_Rosetta_score) : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
