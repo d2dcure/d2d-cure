@@ -542,7 +542,7 @@ const DataPage = () => {
       try {
         const [institutionsRes, characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
           fetch('/api/getInstitutions'),
-          fetch('/api/getCharacterizationData'),
+          fetch(`/api/getCharacterizationData?enzyme=${enzyme}`),
           fetch(`/api/getSequenceData?enzyme=${enzyme}`),
           fetch('/api/getPublications')
         ]);

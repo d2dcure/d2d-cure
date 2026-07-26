@@ -64,7 +64,7 @@ const AboutEnzymePAge = () => {
 				}
 
 				// Fetch characterization data.
-				const charResponse = await fetch('/api/getCharacterizationData');
+				const charResponse = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
 				if (charResponse.ok) {
 					const charData = await charResponse.json();
 					setCharacterizationData(charData);

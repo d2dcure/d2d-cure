@@ -57,7 +57,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   // 1) Fetch all "characterizationData" and filter for your user/institution + resid='X'
   useEffect(() => {
     const fetchKineticWTData = async () => {
-      const response = await fetch('/api/getCharacterizationData');
+      const response = await fetch('/api/getCharacterizationData?enzyme=BglB');
       const data = await response.json();
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'

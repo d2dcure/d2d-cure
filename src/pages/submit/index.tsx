@@ -158,7 +158,7 @@ const SubmitPage = () => {
 
 	useEffect(() => {
     	const fetchData = async () => {
-        	const response = await fetch('/api/getCharacterizationData');
+        	const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
         	const data = await response.json();
         	setCharData(data);
       	};
