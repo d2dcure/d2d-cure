@@ -31,6 +31,10 @@ interface VariantSearchFormProps {
 
 
 // Main Component
+// This form updates the enzyme abbreviation and variant ID for the selected
+// variant. Variant IDs that are non-sensical will start with "?" or not end in
+// an amino acid residue 1-letter code. The parent/calling component should
+// test for this in the passed updating function.
 export default function VariantSearchForm({
 	enzyme,
 	variant,
@@ -207,12 +211,7 @@ export default function VariantSearchForm({
 					</Select>
 				</div>
 			)}
-
-
-
-
 			</div>
-			<p>Result: {enzyme} {variant}</p>
 		</>
 	);
 }

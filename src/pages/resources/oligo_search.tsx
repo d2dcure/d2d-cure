@@ -227,110 +227,13 @@ const OligoSearchPage = () => {
 							for the first and last several residues in an enzyme sequence.
 						</p>
 
-						{/* Playground */}
-						
-						<h3 className="text-lg font-semibold">Search Form New</h3>
+						<h3 className="text-lg font-semibold">Search Form</h3>
 						<VariantSearchForm
 							enzyme={enzyme}
 							variant={enzymeVariant}
 							updateEnzyme={updateEnzyme}
 							updateVariant={updateEnzymeVariant}
 						/>
-
-						<br /><br /><br />
-
-						{/* Dynamic Search Form */}
-						<h3 className="text-lg font-semibold">Search Form</h3>				
-						<div className="inline-grid grid-cols-3 grid-rows-1 gap-4">
-							{/* Enzyme Dropdown */}
-							<div>
-								<label htmlFor="enzyme" className="block mb-2">
-									Enzyme
-								</label>
-								<Select
-									isRequired
-									size="md"
-									id="enzyme"
-									value={enzyme}
-									onChange={(e) => {
-										setEnzyme(e.target.value);
-										setResID('?');
-										setResnum(undefined);
-										setResmut('');
-									}}
-									placeholder="Select Enzyme"
-									className="w-full md:w-[150px]"
-								>
-								{enzymeList.map((enzyme) => (
-									<SelectItem key={enzyme.abbr} value={enzyme.abbr}>
-										{enzyme.abbr}
-									</SelectItem>
-								))}
-								</Select>
-							</div>
-
-							{/* Residue Input */}
-						{enzyme && (
-							<div>
-								<label htmlFor="residue" className="block mb-2">
-									<abbr title="Wild Type">WT</abbr> Residue
-								</label>
-								<Input
-									type="number"
-									id="resnum"
-									placeholder="#"
-									value={String(resnum)}
-									onChange={(e) => {
-										setResID(getResID(Number(e.target.value)));
-										setResnum(Number(e.target.value));
-										setEnzymeVariant(
-										getResID(
-												Number(e.target.value)) + String(e.target.value) + resmut);
-									}}
-									size="md"
-									variant="bordered"
-									className="w-full md:w-[150px]"
-									radius="sm"
-									startContent={resID}
-									isInvalid={
-										((resnum != null) &&
-												((resnum < 1) || (resnum > resnumUpperBound))) ?
-										true :
-										false
-									}
-									errorMessage="Not a valid residue number"
-								/>
-							</div>
-						)}
-
-							{/* Variant AA Dropdown */}
-						{resnum != null && (
-							<div>
-								<label htmlFor="enzyme" className="block mb-2">
-									Variant Residue
-								</label>
-								<Select
-								isRequired
-								size="md"
-								id="resmut"
-								value={resmut}
-								onChange={(e) => {
-									setResmut(e.target.value);
-									setEnzymeVariant(
-											resID + String(resnum) + e.target.value);
-								}}
-								placeholder="Select AA"
-								className="w-full md:w-[150px]"
-								>
-								{canonicalAAs.map((canonicalAA) => (
-									<SelectItem key={canonicalAA} value={canonicalAA}>
-										{canonicalAA}
-									</SelectItem>
-								))}
-								</Select>
-							</div>
-						)}
-						</div>
 
 						{/* Search Results */}
 					{enzyme && enzymeVariant && (
