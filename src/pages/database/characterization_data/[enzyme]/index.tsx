@@ -27,6 +27,16 @@ interface SortDescriptor {
   direction: "ascending" | "descending";
 }
 
+interface WTValuesParams {
+	//WT_KM: number;
+	WT_log_inv_KM: number;
+	WT_log_kcat: number;
+	WT_log_kcat_over_KM: number;
+	WT_T50: number;
+	WT_Tm: number;
+	WT_Rosetta_score: number;
+}
+
 
 // Functions //////////////////////////////////////////////////////////////////
 const capitalize = (str: string) => {
@@ -50,7 +60,7 @@ const DataPage = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the database
-  const [WTValues, setWTValues] = useState<any>(null);
+  const [WTValues, setWTValues] = useState<WTValuesParams>();
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -542,8 +552,13 @@ const DataPage = () => {
 	}, []);
 
 	useEffect(() => {
+		if (sequences && institutions && characterizationData && publications && WTValues) {
+			setIsLoading(false);
+		}
+	}, [sequences, institutions, characterizationData, publications, WTValues]);
+
+	useEffect(() => {
 		const fetchData = async () => {
-			setIsLoading(true);
 			try {
 				const [characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
 					fetch(`/api/getCharacterizationData?enzyme=${enzyme}`),
@@ -604,32 +619,30 @@ const DataPage = () => {
 				//setIsLoading(false);
 			//}
 		};
-		//const fetchSequences = async () => {
-			// const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
-			// const data = await response.json();
-			// setSequences(data);
-		//};
 
-		//fetchSequences();
 		if (enzyme) {
 			fetchData();
 		}
 	}, [enzyme]);
 
 	useEffect(() => {
-		const WT_row = characterizationData.find((row:any) => row.id === 1);
-		if (WT_row) {
-			setWTValues({
-				//WT_KM: WT_row.KM_avg,
-				WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
-				WT_log_kcat: Math.log10(WT_row.kcat_avg),
-				WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
-				WT_T50: WT_row.T50,
-				WT_Tm: WT_row.Tm,
-				WT_Rosetta_score: WT_row.Rosetta_score
-			});
+		const getAndSetWTValues = async () => {
+			const WT_row = await characterizationData.find((row:any) => row.id === 1);
+			if (WT_row) {
+				setWTValues({
+					//WT_KM: WT_row.KM_avg,
+					WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
+					WT_log_kcat: Math.log10(WT_row.kcat_avg),
+					WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
+					WT_T50: WT_row.T50,
+					WT_Tm: WT_row.Tm,
+					WT_Rosetta_score: WT_row.Rosetta_score
+				});
+			}
 		}
-		setIsLoading(false);
+		if (characterizationData) {
+			getAndSetWTValues();
+		}
 	}, [characterizationData]);
 
   useEffect(() => {
@@ -1671,6 +1684,7 @@ const DataPage = () => {
                   </div>
 
                   {/* Add id to table for scrolling */}
+				  {!isLoading && (
                   <div id="characterization-table" className="relative">
                     <Table
                       isHeaderSticky
@@ -2037,7 +2051,7 @@ const DataPage = () => {
                       </TableBody>
                     </Table>
                   </div>
-
+				  )}
                   {isLoading && (
                     <div className="flex justify-center items-center py-8">
                       <Spinner 

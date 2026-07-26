@@ -57,7 +57,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   // 1) Fetch all "characterizationData" and filter for your user/institution + resid='X'
   useEffect(() => {
     const fetchKineticWTData = async () => {
-      const response = await fetch('/api/getCharacterizationData?enzyme=BglB');
+      const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
       const data = await response.json();
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'
@@ -68,7 +68,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       setKineticRawDataIds(ids);
     };
     fetchKineticWTData();
-  }, [user]);
+  }, [enzyme, user]);
 
   // 2) For each raw_data_id, fetch the actual "KineticRawData" objects
   useEffect(() => {
