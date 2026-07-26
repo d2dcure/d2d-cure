@@ -81,7 +81,6 @@ const SubmitPage = () => {
     );
 
     setMatchedData(filteredData);
-
   };
 
   const handleCreateNewDataset = async () => {
@@ -162,7 +161,7 @@ const SubmitPage = () => {
         	const data = await response.json();
         	setCharData(data);
       	};
-    	fetchData(); 
+    	fetchData();
 	}, [enzyme]);
 
   // Add this new useEffect to fetch related data when matchedData changes
@@ -172,7 +171,7 @@ const SubmitPage = () => {
       
       try {
         const ids = matchedData.map(item => item.id);
-        const response = await fetch('/api/getCharDataForSubmitPage', {
+        const response = await fetch('/api/getLinkedRawDataFromIDs', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -447,7 +446,11 @@ const SubmitPage = () => {
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-small text-default-400">
-                          Data for the wild-type {enzyme} enzyme have been collected {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button.
+                          Data for the wild-type {enzyme} enzyme have been
+						  collected {matchedData.length} time(s)
+						  at {user.institution}.
+						  Select which dataset you would like to modify or
+						  click the Create New Dataset button.
                           </span>
                         </div>
 

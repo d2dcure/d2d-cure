@@ -49,8 +49,8 @@ const AboutEnzymePAge = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-		// Fetch enzyme general information data.
-		const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				// Fetch enzyme general information data.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
 				if (infoResponse.ok) {
 					const infoData = await infoResponse.json();
 					setGeneralInfo(infoData);
@@ -119,7 +119,7 @@ const AboutEnzymePAge = () => {
 	const MechanismInfo = getMechanismInfo(enzyme as string);
 	const AssayInfo = getAssayInfo(enzyme as string);
 
-	// TODO: Remove all the horrible hard-coding in this file!
+
 	return (
 		<>
 			<NavBar />
