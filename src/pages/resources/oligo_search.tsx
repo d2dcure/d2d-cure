@@ -1,10 +1,7 @@
-import { canonicalAAs } from "@/constants/biochemical";
 import { ErrorChecker } from "@/components/ErrorChecker";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import VariantSearchForm from "@/components/VariantSearchForm"
 
@@ -25,11 +22,9 @@ const useClipboard = () => {
 
 
 const OligoSearchPage = () => {
-	const [enzymeList, setEnzymeList] = useState<any[]>([]);
 	const [enzyme, setEnzyme] = useState<string>('');
 	const [resID, setResID] = useState<string>('?');
 	const [resnum, setResnum] = useState<number>();
-	const [resnumUpperBound, setResnumUpperBound] = useState<number>(999);	// artificial upper bound
 	const [resmut, setResmut] = useState<string>('');
 	const [enzymeVariant, setEnzymeVariant] = useState<string>('');
 	const [sequenceData, setSequenceData] = useState<any[]>([]);
@@ -42,35 +37,6 @@ const OligoSearchPage = () => {
 
 	// Construct function to be called anytime enzyme is changed.
 	useEffect(() => {
-		const fetchEnzymes = async () => {
-			try {
-				const response = await fetch("/api/getEnzymes");
-				if (!response.ok) {
-					throw new Error(
-							`GET /api/getEnzymes ${response.status} - Failed to fetch enzymes`);
-				}
-				const enzymes = await response.json();
-				if (!Array.isArray(enzymes)) {
-					throw new Error(
-							"GET /api/getEnzymes - Invalid data format: Expected array");
-				}
-				const activeEnzymes: any[] = [];
-				for (let enzyme of enzymes) {
-					if (enzyme.active === true) {
-						activeEnzymes.push(enzyme);
-					}
-				}
-				setEnzymeList(activeEnzymes);
-			} catch (error) {
-				console.error('Error fetching enzymes:', error);
-				setIsError(true);
-				setErrorMessage(
-						error instanceof Error ? 
-						error.message :
-						"Failed to fetch enzymes");
-			}
-		};
-
 		const fetchOligosData = async () => {
 			try {
 				const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
@@ -108,12 +74,6 @@ const OligoSearchPage = () => {
 							"GET /api/getSequenceData - Invalid data format: Expected array");
 				}
 				setSequenceData(sequenceData);
-				for (let i = sequenceData.length - 1; i >= 0; i-- ) {
-					if (sequenceData[i].Rosetta_resnum != null) {
-						setResnumUpperBound(sequenceData[i].Rosetta_resnum);
-						break;
-					}
-				}
 			} catch (error) {
 				console.error("Error fetching sequence data:", error);
 				setIsError(true);
@@ -124,44 +84,31 @@ const OligoSearchPage = () => {
 			}
 		};
 
-		fetchEnzymes();
 		if (enzyme) {
 			fetchSequenceData();
 			fetchOligosData();
 		}
 	}, [enzyme]);
 
-	// Construct function to be called any time enzymeVariant is changed.
-	useEffect(() => {
-		
-		//setResnum
 
-	}, [enzymeVariant]);
-
-
-	// Search the sequence data and return the one-letter residue code for the
-	// given residue number or return '?'.
-	const getResID = (resnum: number):string => {
-		const foundResidue = sequenceData.find(
-				residue => residue.Rosetta_resnum == resnum);
-		if (foundResidue) { return foundResidue.resid; }
-		else { return '?'; }
-	};
-
-
+	// Helper functions
 	// Return the variant using PDB numbering.
 	const getPDBNumbering = ():string => {
-		const foundResidue = sequenceData.find(
-				residue => residue.Rosetta_resnum == resnum);
-		if (foundResidue) {
-			const PDBresnum = foundResidue.PDBresnum;
-			if (PDBresnum) {
-				return resID + PDBresnum + resmut;
+		if (enzymeVariant) {
+			const resid = enzymeVariant.at(0);
+			const resnum = Number(enzymeVariant.slice(1,-1));
+			const resmut = enzymeVariant.at(-1);
+			const foundResidue = sequenceData.find(
+					residue => residue.Rosetta_resnum == resnum);
+			if (foundResidue) {
+				const PDBresnum = foundResidue.PDBresnum;
+				if (PDBresnum) {
+					return resid + PDBresnum + resmut;
+				}
 			}
 		}
 		return "missing from PDB";
 	}
-
 
 	const findOligo = () => {
 		const foundOligo = oligosData.find(oligo => oligo.variant === enzymeVariant);
@@ -173,7 +120,7 @@ const OligoSearchPage = () => {
 	};
 
 
-	// Functions to pass to child component.
+	// Functions to pass to child component
 	const updateEnzyme = (new_enzyme: string) => {
     	setEnzyme(new_enzyme);
 	};
@@ -237,8 +184,6 @@ const OligoSearchPage = () => {
 
 						{/* Search Results */}
 					{enzyme && enzymeVariant && (
-					//{enzyme && (resnum != null) && (resnum >= 1) && 
-					//		(resnum <= resnumUpperBound) && resmut && (
 						<div className="mt-8 space-y-4">
 							<h3 className="text-lg font-semibold">Results</h3>
 							<div className="text-gray-600">
