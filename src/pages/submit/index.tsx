@@ -46,7 +46,7 @@ const SubmitPage = () => {
     const match = enzymeVariant.match(variantRegex);
   
     if (!match) {
-      setError('Incorrect format. Please use the format: {resid}{resnum}{resmut}.');
+      setError('Error searching database for selected variant; no match found.');
       return;
     }
   
@@ -311,6 +311,7 @@ const SubmitPage = () => {
 						/>
 
                         <Button
+						  isDisabled={(!enzyme) || (!enzymeVariant)}
                           onClick={handleSubmitSingleVar}
                           className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                           radius="sm"
