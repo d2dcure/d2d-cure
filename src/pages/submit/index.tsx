@@ -414,7 +414,10 @@ const SubmitPage = () => {
                           size="sm"
                           id="enzyme"
                           value={enzyme}
-                          onChange={(e) => setEnzyme(e.target.value)}
+                          onChange={(e) => {
+							setEnzyme(e.target.value);
+							setEntered('null');
+						  }}
                           label="Select Enzyme"
                           className="w-full"
                         >
