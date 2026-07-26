@@ -5,6 +5,7 @@
 
 
 // Imports
+import { canonicalAAs } from "@/constants/biochemical";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/react";
 import { useState, useEffect } from "react";
@@ -170,13 +171,41 @@ export default function VariantSearchForm({
 						isInvalid={
 							((resnum != null) &&
 									((resnum < 1) || (resnum > resnum_upper_bound))) ?
-							true :
-							false
+									true :
+									false
 						}
 						errorMessage="Not a valid residue number"
 					/>
 				</div>
-		)}
+			)}
+
+
+				{/* Variant AA Dropdown */}
+			{resnum != null && (
+				<div>
+					<label htmlFor="enzyme" className="block mb-2">
+						Variant Residue
+					</label>
+					<Select
+					isRequired
+					size="md"
+					id="resmut"
+					value={resmut}
+					onChange={(e) => {
+						setResmut(e.target.value);
+						updateVariant(resid + String(resnum) + e.target.value);
+					}}
+					placeholder="Select AA"
+					className="w-full md:w-[150px]"
+					>
+					{canonicalAAs.map((canonicalAA) => (
+						<SelectItem key={canonicalAA} value={canonicalAA}>
+							{canonicalAA}
+						</SelectItem>
+					))}
+					</Select>
+				</div>
+			)}
 
 
 
