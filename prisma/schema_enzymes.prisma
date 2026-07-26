@@ -23,6 +23,7 @@ model GeneralInfo {
   molar_mass        Int      @db.UnsignedMediumInt
   ext_coefficient   Int      @db.UnsignedMediumInt
   cat_residues      String?  @db.TinyText
+  disulfide_bonds   String?  @db.TinyText
   pathway_desc      String?  @db.Text
   assay_desc        String?  @db.Text
   metadata          String?  @db.Text
