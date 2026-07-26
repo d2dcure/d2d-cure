@@ -59,7 +59,7 @@ const DragAndDropUpload: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [variant, setVariant] = useState("");
+  const [uniqueLabel, setUniqueLabel] = useState("");
   const [toastInfo, setToastInfo] = useState<{
     show: boolean;
     type: "success" | "error" | "info";
@@ -122,12 +122,12 @@ const DragAndDropUpload: React.FC = () => {
       });
       return;
     }
-    if (!variant.trim()) {
+    if (!uniqueLabel.trim()) {
       setToastInfo({
         show: true,
         type: "error",
-        title: "Variant Required",
-        message: "Please enter a variant identifier",
+        title: "Unique Identifier Required",
+        message: "Please enter a unique label for the gel.",
       });
       return;
     }
@@ -144,9 +144,9 @@ const DragAndDropUpload: React.FC = () => {
         })
         .replace(/\//g, "-");
 
-      // e.g. institution-variant-username-mm-dd-yy.ext
+      // e.g. institution-uniqueLabel-username-mm-dd-yy.ext
       const extension = selectedFile.type.split("/")[1] || "png";
-      const newFileName = `${formData.institution}-${variant}-${formData.userName}-${formattedDate}.${extension}`;
+      const newFileName = `${formData.institution}-${uniqueLabel}-${formData.userName}-${formattedDate}.${extension}`;
 
       // Convert file to base64
       const fileBase64 = await fileToBase64(selectedFile);
@@ -164,7 +164,7 @@ const DragAndDropUpload: React.FC = () => {
       // Reset state
       setPreview(null);
       setSelectedFile(null);
-      setVariant("");
+      setUniqueLabel("");
     } catch (error) {
       console.error("Error uploading file:", error);
       setToastInfo({
@@ -243,13 +243,13 @@ const DragAndDropUpload: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Variant
+                      Unique Label
                     </label>
                     <input
                       type="text"
-                      value={variant}
-                      onChange={(e) => setVariant(e.target.value)}
-                      placeholder="Enter variant identifier"
+                      value={uniqueLabel}
+                      onChange={(e) => setUniqueLabel(e.target.value)}
+                      placeholder="Enter unique identifier"
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-[#06B7DB] focus:ring-1 focus:ring-[#06B7DB] outline-none"
                     />
                   </div>
