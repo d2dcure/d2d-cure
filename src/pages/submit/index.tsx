@@ -51,8 +51,6 @@ const SubmitPage = () => {
   
     const [, resid, resnum, resmut] = match;
 
-    // check if variant the user entered is valid + show list of other variants from same school
-    console.log('Variant is valid:', { resid, resnum, resmut });
     setEntered(resid); 
     setResid(resid); 
     setResnum(resnum); 
@@ -87,7 +85,6 @@ const SubmitPage = () => {
   };
 
   const handleCreateNewDataset = async () => {
-  
     try {
       const response = await fetch('/api/createNewCharacterizationDataEntry', {
         method: 'POST',
@@ -137,28 +134,36 @@ const SubmitPage = () => {
   // for new dataset navigation to work 
   useEffect(() => {
     if (newEntry && newEntry.id && newEntry.resid == 'X') {
-      router.push(`/submit/wild_type/BglB/${newEntry.id}`);
+      router.push(`/submit/wild_type/${enzyme}/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
       router.push(`/submit/single_variant/${enzyme}/${newEntry.id}`);
     }
   }, [newEntry, router]);
 
-  useEffect(() => {
-    const fetchEnzymes = async () => {
-      const response = await fetch('/api/getEnzymes');
-      const data = await response.json();
-      setEnzymeList(data);
-    };
-    const fetchData = async () => {
-        const response = await fetch('/api/getCharacterizationData');
-        const data = await response.json();
-        setCharData(data);
-      };
-  
-    fetchData(); 
-    fetchEnzymes(); 
-  }, [enzyme]);
+	useEffect(() => {
+		const fetchEnzymes = async () => {
+			const response = await fetch('/api/getEnzymes');
+			const data = await response.json();
+			const activeEnzymes= [];
+			for (let enzyme of data) {
+				if (enzyme.active === true) {
+					activeEnzymes.push(enzyme);
+				}
+			}
+			setEnzymeList(activeEnzymes); 
+		};
+		fetchEnzymes();
+	}, []);
+
+	useEffect(() => {
+    	const fetchData = async () => {
+        	const response = await fetch('/api/getCharacterizationData');
+        	const data = await response.json();
+        	setCharData(data);
+      	};
+    	fetchData(); 
+	}, [enzyme]);
 
   // Add this new useEffect to fetch related data when matchedData changes
   useEffect(() => {
@@ -230,7 +235,7 @@ const SubmitPage = () => {
                 {selection === 'single_variant' ? 
                   "Select the enzyme and choose an enzyme variant (using Rosetta/Foldit numbering). Then click Search to see if that variant has been tested at your institution." :
                 selection === 'wild_type' ? 
-                  'Submit characterization data for wild type enzyme variants.' :
+                  "Select the enzyme and click Search to see which WT datasets have been collected at your institution." :
                 'Please select one of the options to submit data or upload a gel image.'}
               </p>
 
@@ -405,6 +410,7 @@ const SubmitPage = () => {
                           Enzyme
                         </label>
                         <Select
+						  isRequired
                           size="sm"
                           id="enzyme"
                           value={enzyme}
@@ -421,6 +427,7 @@ const SubmitPage = () => {
                       </div>
 
                       <Button
+					    isDisabled={!enzyme}
                         onClick={handleSubmitWT}
                         className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                         radius="sm"
@@ -437,7 +444,7 @@ const SubmitPage = () => {
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-small text-default-400">
-                          Data for the wild-type BglB enzyme have been collected {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button.
+                          Data for the wild-type {enzyme} enzyme have been collected {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button.
                           </span>
                         </div>
 
@@ -475,7 +482,7 @@ const SubmitPage = () => {
                                     } 
                                   />
                                 </TableCell>
-                                <TableCell>BglB</TableCell>
+                                <TableCell>{enzyme}</TableCell>
                                 <TableCell>{`WT`}</TableCell>
                                 <TableCell>{item.creator || 'Unknown'}</TableCell>
                                 <TableCell>{item.id}</TableCell>
@@ -493,7 +500,7 @@ const SubmitPage = () => {
                                   {item.comments || 'No comments'}
                                 </TableCell>
                                 <TableCell>
-                                  <Link href={`/submit/wild_type/BglB/${item.id}`} className="text-[#06B7DB]">
+                                  <Link href={`/submit/wild_type/${enzyme}/${item.id}`} className="text-[#06B7DB]">
                                     View
                                   </Link>
                                 </TableCell>
