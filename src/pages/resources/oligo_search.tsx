@@ -6,6 +6,7 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/react";
 import { useState, useEffect } from "react";
+import VariantSearchForm from "@/components/VariantSearchForm"
 
 
 // Copied from InfoSidebar
@@ -162,6 +163,14 @@ const OligoSearchPage = () => {
 		}
 	};
 
+	const updateEnzyme = (new_enzyme: string) => {
+    	setEnzyme(new_enzyme);
+	};
+
+	const updateEnzymeVariant = (new_variant: string) => {
+    	setEnzymeVariant(new_variant);
+	};
+
 
 	return (
 		<ErrorChecker 
@@ -201,6 +210,15 @@ const OligoSearchPage = () => {
 							Note: Primers may not be feasible
 							for the first and last several residues in an enzyme sequence.
 						</p>
+
+						{/* Playground */}
+						
+						<VariantSearchForm
+							enzyme={enzyme}
+							variant={enzymeVariant}
+							updateEnzyme={updateEnzyme}
+							updateVariant={updateEnzymeVariant}
+						/>
 
 						{/* Dynamic Search Form */}
 						<h3 className="text-lg font-semibold">Search Form</h3>				
