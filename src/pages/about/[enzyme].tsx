@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
+import { getNameFromOneLetterCode, getPropertiesFromOneLetterCode } from "@/functions/biochemical_functions"
 import { getPathwayInfo, getMechanismInfo, getAssayInfo } from "@/functions/database_functions";
 import { decodeHTML } from "@/functions/formatting_functions";
 import { useRouter } from "next/router";
@@ -379,6 +380,7 @@ const AboutEnzymePAge = () => {
 							list of studied variants at that position. 
 						</p>
 
+						{/* TODO Move to a separate component. */}
 						{/* Sequence */}
 						<div 
 							className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words"
@@ -396,20 +398,32 @@ const AboutEnzymePAge = () => {
 										<Tooltip
 											content={
 												<div className="text-sm">
-													{`${residue.resid}${residue.resnum}`}
-													{!hasStructure && (" (unresolved)")}
-													{isCatalytic && (" (catalytic)")}
-													{residue.Rosetta_resnum && (
+													{getNameFromOneLetterCode(residue.resid)}
+													{isCatalytic && (
 														<>
-															<br />
-															{`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
+														<br />
+														<small>{"catalytic"}</small>
 														</>
 													)}
-													{hasStructure && (
+													{getPropertiesFromOneLetterCode(residue.resid).map(
+														(property) => (
 														<>
-															<br />
-															{`PDB: ${residue.resid}${residue.PDBresnum}`}
+														<br />
+														<small>{property}</small>
 														</>
+													))}
+													{residue.Rosetta_resnum && (
+														<>
+														<br />
+														{`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
+														</>
+													)}
+														<br />
+													{!hasStructure && (
+														"PDB: unresolved"
+													)}
+													{hasStructure && (
+														`PDB: ${residue.resid}${residue.PDBresnum}`
 													)}
 												</div>
 											}
