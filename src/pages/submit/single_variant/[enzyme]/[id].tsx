@@ -1050,25 +1050,25 @@ const SingleVariant = () => {
         case "Protein modeled?":
           return <ProteinModeledView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Oligonucleotide ordered?":
-          return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
+          return <OligonucleotideOrderedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
         case "Plasmid sequence verified?":
-          return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <PlasmidSequenceVerifiedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case 'Protein production induced?':
-          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinInducedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case 'Protein yield?':
-          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinYieldView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded?":
-          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <KineticAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Wild-type kinetic assay data uploaded?":
-          return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <WildTypeKineticDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Thermostability assay data uploaded?":
-          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ThermoAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Wild-type thermostability assay data uploaded?":
-          return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <WildTypeThermoDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Melting point values uploaded?":
-          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "SDS-PAGE gel uploaded?":
-          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
           return <div>Detail view for {selectedDetail}</div>;
