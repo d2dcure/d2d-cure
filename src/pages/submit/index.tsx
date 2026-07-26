@@ -1,3 +1,4 @@
+import VariantSearchForm from "@/components/VariantSearchForm";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
@@ -5,7 +6,7 @@ import { useRouter } from 'next/router';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, CardBody } from "@nextui-org/react";
+import { Select, SelectItem, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,  Card, CardBody } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import Footer from '@/components/Footer';
 
@@ -202,6 +203,22 @@ const SubmitPage = () => {
     fetchActualData();
   }, [matchedData]);
 
+
+	// Functions to pass to child component
+	const updateEnzyme = (new_enzyme: string) => {
+    	setEnzyme(new_enzyme);
+	};
+
+	const updateEnzymeVariant = (new_variant: string) => {
+		// Only update if a valid variant string.
+		if ((new_variant.at(0) != '?') && (isNaN(Number(new_variant.slice(-1))))) {
+    		setEnzymeVariant(new_variant);
+		} else {  // If not, blank the variant string.
+			setEnzymeVariant('');
+		}
+	};
+
+
   return (
     <div>
       <NavBar />
@@ -223,7 +240,7 @@ const SubmitPage = () => {
               </h1>
               <p className="text-gray-500 mb-14">
                 {selection === 'single_variant' ? 
-                  'Select the enzyme and enter an enzyme variant code (e.g., A123C) corresponding to your mutation.' :
+                  "Select the enzyme and choose an enzyme variant (using Rosetta/Foldit numbering). Then click Search to see if that variant has been tested at your institution." :
                 selection === 'wild_type' ? 
                   'Submit characterization data for wild type enzyme variants.' :
                 'Please select one of the options to submit data or upload a gel image.'}
@@ -286,42 +303,12 @@ const SubmitPage = () => {
                   {selection === 'single_variant' && (
                     <div>
                       <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
-                        <div className="w-full md:w-auto min-w-[200px]">
-                          <label htmlFor="enzyme" className="block mb-2">
-                            Enzyme
-                          </label>
-                          <Select
-                            size="sm"
-                            id="enzyme"
-                            value={enzyme}
-                            onChange={(e) => setEnzyme(e.target.value)}
-                            label="Select Enzyme"
-                            className="w-full"
-                          >
-                            {enzymeList.map((enzyme) => (
-                              <SelectItem key={enzyme.id} value={enzyme.abbr}>
-                                {enzyme.abbr}
-                              </SelectItem>
-                            ))}
-                          </Select>
-                        </div>
-
-                        <div className="w-full md:w-auto">
-                          <label htmlFor="enzymeVariant" className="block mb-2">
-                            Enzyme Variant
-                          </label>
-                          <Input
-                            type="text"
-                            id="enzymeVariant"
-                            value={enzymeVariant}
-                            onChange={(e) => setEnzymeVariant(e.target.value)}
-                            placeholder="A123C"
-                            size="lg"
-                            variant="bordered"
-                            className="w-full md:w-[200px]"
-                            radius="sm"
-                          />
-                        </div>
+						<VariantSearchForm
+							enzyme={enzyme}
+							variant={enzymeVariant}
+							updateEnzyme={updateEnzyme}
+							updateVariant={updateEnzymeVariant}
+						/>
 
                         <Button
                           onClick={handleSubmitSingleVar}

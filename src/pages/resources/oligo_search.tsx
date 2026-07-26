@@ -23,9 +23,6 @@ const useClipboard = () => {
 
 const OligoSearchPage = () => {
 	const [enzyme, setEnzyme] = useState<string>('');
-	const [resID, setResID] = useState<string>('?');
-	const [resnum, setResnum] = useState<number>();
-	const [resmut, setResmut] = useState<string>('');
 	const [enzymeVariant, setEnzymeVariant] = useState<string>('');
 	const [sequenceData, setSequenceData] = useState<any[]>([]);
 	const [oligosData, setOligosData] = useState<any[]>([]);
