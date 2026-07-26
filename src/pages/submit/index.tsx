@@ -22,7 +22,6 @@ const SubmitPage = () => {
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
   const [enzyme, setEnzyme] = useState('');
   const [enzymeVariant, setEnzymeVariant] = useState('');
-  const [sequences, setSequences] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [resid, setResid] = useState('');
   const [resnum, setResnum] = useState('');
@@ -52,13 +51,6 @@ const SubmitPage = () => {
   
     const [, resid, resnum, resmut] = match;
 
-    const sequenceMatch = sequences.find(seq => String(seq.Rosetta_resnum) === resnum && String(seq.resid) === resid);
-  
-    if (!sequenceMatch) {
-      setError('That variant combination is not possible.');
-      return;
-    }
-  
     // check if variant the user entered is valid + show list of other variants from same school
     console.log('Variant is valid:', { resid, resnum, resmut });
     setEntered(resid); 
@@ -148,7 +140,7 @@ const SubmitPage = () => {
       router.push(`/submit/wild_type/BglB/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
-      router.push(`/submit/single_variant/BglB/${newEntry.id}`);  // TEMP
+      router.push(`/submit/single_variant/${enzyme}/${newEntry.id}`);
     }
   }, [newEntry, router]);
 
@@ -158,11 +150,6 @@ const SubmitPage = () => {
       const data = await response.json();
       setEnzymeList(data);
     };
-    const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData?enzyme=BglB');  // TEMP
-      const data = await response.json();
-      setSequences(data);
-    };
     const fetchData = async () => {
         const response = await fetch('/api/getCharacterizationData');
         const data = await response.json();
@@ -170,9 +157,8 @@ const SubmitPage = () => {
       };
   
     fetchData(); 
-    fetchSequences(); 
     fetchEnzymes(); 
-  }, []);
+  }, [enzyme]);
 
   // Add this new useEffect to fetch related data when matchedData changes
   useEffect(() => {
@@ -206,7 +192,9 @@ const SubmitPage = () => {
 
 	// Functions to pass to child component
 	const updateEnzyme = (new_enzyme: string) => {
+		setEnzymeVariant('');
     	setEnzyme(new_enzyme);
+		setEntered('null');
 	};
 
 	const updateEnzymeVariant = (new_variant: string) => {
@@ -328,7 +316,11 @@ const SubmitPage = () => {
                         <div className="mt-8">
                           <div className="flex justify-between items-center mb-4">
                             <span className="text-small text-default-400">
-                              The {`${resid}${resnum}${resmut}`} BglB variant has been studied {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button. 
+                              The {`${resid}${resnum}${resmut} ${enzyme}`} variant
+							  has been studied {matchedData.length} time(s)
+							  at {user.institution}.
+							  Select which dataset you would like to modify or
+							  click the Create New Dataset button.
                             </span>
                           </div>
 
@@ -365,7 +357,7 @@ const SubmitPage = () => {
                                     } 
                                   />
                                   </TableCell>
-                                  <TableCell>BglB</TableCell>
+                                  <TableCell>{enzyme}</TableCell>
                                   <TableCell>{`${item.resid}${item.resnum}${item.resmut}`}</TableCell>
                                   <TableCell>{item.creator || 'Unknown'}</TableCell>
                                   <TableCell>{item.id}</TableCell>
@@ -383,7 +375,7 @@ const SubmitPage = () => {
                                     {item.comments || 'No comments'}
                                   </TableCell>
                                   <TableCell>
-                                    <Link href={`/submit/single_variant/BglB/${item.id}`} className="text-[#06B7DB]">
+                                    <Link href={`/submit/single_variant/${enzyme}/${item.id}`} className="text-[#06B7DB]">
                                       View
                                     </Link>
                                   </TableCell>
