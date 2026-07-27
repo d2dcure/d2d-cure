@@ -157,6 +157,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           comment: newComment,
         }),
@@ -185,6 +186,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           teammate: teammate1 || null,
           teammate2: teammate2 || null,
