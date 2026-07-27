@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
-import { useRouter } from 'next/router';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
@@ -192,7 +191,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     async function fetchKineticRawDataEntryData() {
       if (!entryData.id) return;
       const response = await axios.get('/api/getKineticRawDataEntryData', {
-        params: { parent_id: entryData.id }
+        params: { enzyme: enzyme, parent_id: entryData.id }
       });
       if (response.status === 200) {
         const data = response.data;

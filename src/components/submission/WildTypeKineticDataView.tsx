@@ -91,7 +91,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
     const fetchKineticRawDataEntryData = async () => {
       try {
         const response = await axios.get('/api/getKineticRawDataEntryDataFromWTid', {
-          params: { id: entryData.WT_raw_data_id }
+          params: { enzyme: enzyme, id: entryData.WT_raw_data_id }
         });
         if (response.status === 200) {
           const data = response.data;

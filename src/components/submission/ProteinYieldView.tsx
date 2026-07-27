@@ -26,7 +26,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
     const fetchKineticRawDataEntryData = async () => {
       try {
         const response = await axios.get('/api/getKineticRawDataEntryData', {
-          params: { parent_id: entryData.id },
+          params: { enzyme: enzyme, parent_id: entryData.id },
         });
         if (response.status === 200) {
           const data = response.data;
