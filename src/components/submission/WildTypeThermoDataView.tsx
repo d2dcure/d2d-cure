@@ -190,7 +190,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
       const response = await fetch('/api/updateCharacterizationDataWTTempRawDataId', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: entryData.id, WT_temp_raw_data_id: selectedId })
+        body: JSON.stringify({ enzyme: enzyme, id: entryData.id, WT_temp_raw_data_id: selectedId })
       });
 
       if (response.ok) {
