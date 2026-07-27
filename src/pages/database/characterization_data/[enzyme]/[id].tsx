@@ -152,7 +152,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
       setIsLoading(true);
       try {
         // Fetch CharacterizationData
-        const response1 = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response1 = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response1.ok) {
           throw new Error('Failed to fetch characterization data');
         }
@@ -203,7 +203,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
     };
 
     fetchAllData();
-  }, [id]);
+  }, [enzyme, id]);
 
   useEffect(() => {
     const fetchWtKineticData = async () => {

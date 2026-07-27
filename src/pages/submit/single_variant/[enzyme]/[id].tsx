@@ -97,7 +97,7 @@ const SingleVariant = () => {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch entry data');
         }
@@ -111,7 +111,7 @@ const SingleVariant = () => {
     };
 
     fetchEntryData();
-  }, [id]);
+  }, [enzyme, id]);
 
   // Fetch entryData2 using entryData.id
   useEffect(() => {

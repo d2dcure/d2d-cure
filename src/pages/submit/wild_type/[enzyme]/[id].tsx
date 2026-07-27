@@ -84,7 +84,7 @@ const SingleVariant = () => {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch entry data');
         }
@@ -98,7 +98,7 @@ const SingleVariant = () => {
     };
 
     fetchEntryData();
-  }, [id]);
+  }, [enzyme, id]);
 
   // Extract the fetchEntryData2 function from the useEffect so it can be called independently
   const fetchEntryData2 = async (entryId: number) => {
@@ -797,17 +797,17 @@ const SingleVariant = () => {
     const DetailComponent = (() => {
       switch (selectedDetail) {
         case 'Protein induced':
-          return <ProteinInducedView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinInducedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case 'Protein yield':
-          return <ProteinYieldView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinYieldView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded":
-          return <KineticAssayDataView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <KineticAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Thermostability assay data uploaded":
-          return <ThermoAssayDataView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ThermoAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Melting point values uploaded":
-          return <MeltingPointView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Gel uploaded":
-          return <GelUploadedView enzyme={enzyme as string}entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
           return <div>Detail view for {selectedDetail}</div>;

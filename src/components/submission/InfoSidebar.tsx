@@ -198,7 +198,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 
       alert('Teammates saved successfully!');
 
-      const updatedResponse = await fetch(`/api/getCharacterizationDataEntryFromID?id=${entryData.id}`);
+      const updatedResponse = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${entryData.id}`);
       const updatedData = await updatedResponse.json();
       updateEntryData(updatedData);  
     } catch (error) {

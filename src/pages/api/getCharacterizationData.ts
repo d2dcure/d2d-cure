@@ -1,5 +1,4 @@
 import { getClient } from "../../functions/database_functions";
-//import prismaBglB from "../../../prismaBglBClient";
 
 export default async function handler(req:any, res:any) {
 	const enzyme = (req.query.enzyme as string) || '';
