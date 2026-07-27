@@ -562,10 +562,10 @@ const DataPage = () => {
 	}, []);
 
 	useEffect(() => {
-		if (sequences && institutions && characterizationData && publications && WTValues) {
+		if (sequences.length && institutions.length && characterizationData.length && publications.length) {
 			setIsLoading(false);
 		}
-	}, [sequences, institutions, characterizationData, publications, WTValues]);
+	}, [sequences, institutions, characterizationData, publications]);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -1160,7 +1160,6 @@ const DataPage = () => {
     
   }, [
 	enzyme,
-	router,
     router.isReady,
     selectedInstitution, 
     showNonCurated, 
