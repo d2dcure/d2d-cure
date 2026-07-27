@@ -480,7 +480,8 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
         const { T50, T50_SD, k, k_SD } = calculatedValues;
         
         const updateResponse = await axios.post('/api/updateCharacterizationDataThermoStuff', {
-          parent_id: entryData.id,
+          enzyme: enzyme,
+		  parent_id: entryData.id,
           T50,
           T50_SD,
           T50_k: k,
