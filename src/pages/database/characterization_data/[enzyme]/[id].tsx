@@ -161,7 +161,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
         // Fetch WT KineticRawData if WT_raw_data_id exists
         if (data1.WT_raw_data_id) {
-          const response11 = await fetch(`/api/getKineticData?id=${data1.WT_raw_data_id}`);
+			// TODO: Rename this API.
+          const response11 = await fetch(`/api/getKineticData?enzyme=${enzyme}&id=${data1.WT_raw_data_id}`);
           if (response11.ok) {
             const data11 = await response11.json();
             setEntryData11(data11);
@@ -171,7 +172,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
         // Fetch WT TempRawData if WT_temp_raw_data_id exists
         if (data1.WT_temp_raw_data_id) {
-          const response12 = await fetch(`/api/getTempData?id=${data1.WT_temp_raw_data_id}`);
+			// TODO: Rename this API.
+          const response12 = await fetch(`/api/getTempData?enzyme=${enzyme}&id=${data1.WT_temp_raw_data_id}`);
           if (response12.ok) {
             const data12 = await response12.json();
             setEntryData12(data12);
