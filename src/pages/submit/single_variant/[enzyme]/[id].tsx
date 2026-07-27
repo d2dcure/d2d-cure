@@ -40,8 +40,8 @@ const SingleVariant = () => {
   const [entryData2, setEntryData2] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [totalEntries, setTotalEntries] = useState(0);
+  //const [currentIndex, setCurrentIndex] = useState(0);
+  //const [totalEntries, setTotalEntries] = useState(0);
 
   console.log(user)
 
@@ -118,7 +118,7 @@ const SingleVariant = () => {
     const fetchEntryData2 = async () => {
       if (!entryData.id) return;
       try {
-        const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
+        const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryData.id}`);
         if (!response.ok) {
           // Silently set data to null - this is expected for new entries
           setEntryData2(null);
@@ -133,7 +133,7 @@ const SingleVariant = () => {
     };
 
     fetchEntryData2();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
   // Mapping function to convert enum to display value (for yield_units in KineticRawData)
   const mapYieldUnitsBack = (enumValue: string): string => {
@@ -244,7 +244,7 @@ const SingleVariant = () => {
   };
 
   // Fetch total entries for pagination
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchTotalEntries = async () => {
       try {
         const response = await fetch('/api/getTotalCharacterizationEntries');
@@ -266,9 +266,9 @@ const SingleVariant = () => {
     };
 
     fetchTotalEntries();
-  }, [id]);
+  }, [id]);*/
 
-  const navigateEntry = async (direction: 'next' | 'prev') => {
+  /*const navigateEntry = async (direction: 'next' | 'prev') => {
     const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
     try {
       const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
@@ -278,7 +278,7 @@ const SingleVariant = () => {
     } catch (error) {
       console.error('Error navigating entries:', error);
     }
-  };
+  };*/
 
   const triggerConfetti = () => {
     // Left side burst
@@ -666,7 +666,7 @@ const SingleVariant = () => {
     }
   };
 
-  const renderPagination = () => (
+  /*const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
       <button
         onClick={() => navigateEntry('prev')}
@@ -686,7 +686,7 @@ const SingleVariant = () => {
         <ChevronRight className="w-5 h-5 text-[#06B7DB]" />
       </button>
     </div>
-  );
+  );*/
 
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 

@@ -179,7 +179,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
         }
 
         // Fetch KineticRawData
-        const response2 = await fetch(`/api/getKineticRawDataEntryData?parent_id=${id}`);
+        const response2 = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${id}`);
         if (response2.ok) {
           const data2 = await response2.json();
           setEntryData2(data2);

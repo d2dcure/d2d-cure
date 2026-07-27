@@ -34,8 +34,8 @@ const SingleVariant = () => {
   const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row
   const [loading, setLoading] = useState(true);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [totalEntries, setTotalEntries] = useState(0);
+  //const [currentIndex, setCurrentIndex] = useState(0);
+  //const [totalEntries, setTotalEntries] = useState(0);
 
   // Toast and modal states
   const [toastInfo, setToastInfo] = useState<{
@@ -104,7 +104,7 @@ const SingleVariant = () => {
   const fetchEntryData2 = async (entryId: number) => {
     if (!entryId) return;
     try {
-      const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryId}`);
+      const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryId}`);
       if (!response.ok) {
         // Silently set data to null - this is expected for new entries
         setEntryData2(null);
@@ -202,7 +202,7 @@ const SingleVariant = () => {
   };
 
   // Fetch total entries for pagination
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchTotalEntries = async () => {
       try {
         const response = await fetch('/api/getTotalCharacterizationEntries');
@@ -224,8 +224,9 @@ const SingleVariant = () => {
     };
 
     fetchTotalEntries();
-  }, [id]);
+  }, [id]);*/
 
+  /*
   const navigateEntry = async (direction: 'next' | 'prev') => {
     const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
     try {
@@ -237,6 +238,7 @@ const SingleVariant = () => {
       console.error('Error navigating entries:', error);
     }
   };
+  */
 
   const triggerConfetti = () => {
     // Left side burst
@@ -496,6 +498,8 @@ const SingleVariant = () => {
     }
   };
 
+  /*
+  // Was this for curation?
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
       <button
@@ -517,6 +521,7 @@ const SingleVariant = () => {
       </button>
     </div>
   );
+  */
 
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 
