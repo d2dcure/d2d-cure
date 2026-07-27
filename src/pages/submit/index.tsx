@@ -20,14 +20,14 @@ const SubmitPage = () => {
 
   // part 2 - enter the enzyme (and, if single variant, the variant)
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
-  const [enzyme, setEnzyme] = useState('');
-  const [enzymeVariant, setEnzymeVariant] = useState('');
+  const [enzyme, setEnzyme] = useState<string>('');
+  const [enzymeVariant, setEnzymeVariant] = useState<string>('');
   const [error, setError] = useState('');
   const [resid, setResid] = useState('');
   const [resnum, setResnum] = useState('');
   const [resmut, setResmut] = useState('');
 
-  // part 3 - how many records already exist, if none, then make your own 
+  // part 3 - how many records already exist, if none, then make your own
   const [entered, setEntered] = useState('null');
   const [matchedData, setMatchedData] = useState<any[]>([]);
   const [charData, setCharData] = useState<any[]>([]);
@@ -66,21 +66,20 @@ const SubmitPage = () => {
   };
 
   const handleSubmitWT = () => {
-    setError('');
-    setEntered('null');
+	setError('');
 
-    setEntered('X'); 
-    setResid('X'); 
-    setResnum('0'); 
-    setResmut('X'); 
-    const filteredData = charData.filter((data) => 
-    String(data.resid) === 'X' &&
-    String(data.resnum) === '0' &&
-    String(data.resmut) === 'X' &&
-    String(data.institution) === user?.institution 
-    );
+	setEntered('X'); 
+	setResid('X'); 
+	setResnum('0'); 
+	setResmut('X'); 
+	const filteredData = charData.filter((data) => 
+	String(data.resid) === 'X' &&
+	String(data.resnum) === '0' &&
+	String(data.resmut) === 'X' &&
+	String(data.institution) === user?.institution 
+	);
 
-    setMatchedData(filteredData);
+	setMatchedData(filteredData);
   };
 
   const handleCreateNewDataset = async () => {
@@ -161,12 +160,16 @@ const SubmitPage = () => {
         	const data = await response.json();
         	setCharData(data);
       	};
-    	fetchData();
+		if (enzyme) {
+    		fetchData();
+		} else {
+			setCharData([]);
+		}
 	}, [enzyme]);
 
   // Add this new useEffect to fetch related data when matchedData changes
   useEffect(() => {
-    const fetchActualData = async () => {
+    const fetchLinkedData = async () => {
       if (matchedData.length === 0) return;
       
       try {
@@ -190,7 +193,7 @@ const SubmitPage = () => {
       }
     };
     
-    fetchActualData();
+    fetchLinkedData();
   }, [enzyme, matchedData]);
 
 
@@ -303,7 +306,7 @@ const SubmitPage = () => {
 						/>
 
                         <Button
-						  isDisabled={(!enzyme) || (!enzymeVariant)}
+						  isDisabled={(!enzyme) || (!enzymeVariant) || (!charData.length)}
                           onClick={handleSubmitSingleVar}
                           className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                           radius="sm"
@@ -429,7 +432,7 @@ const SubmitPage = () => {
                       </div>
 
                       <Button
-					    isDisabled={!enzyme}
+					    isDisabled={!enzyme || !charData.length}
                         onClick={handleSubmitWT}
                         className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                         radius="sm"

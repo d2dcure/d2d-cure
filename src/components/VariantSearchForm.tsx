@@ -151,7 +151,7 @@ export default function VariantSearchForm({
 
 
 				{/* Residue Input */}
-			{enzyme && (
+			{enzyme && (sequence.length != 0) && (
 				<div>
 					<label htmlFor="residue" className="block mb-2">
 						<abbr title="Wild Type">WT</abbr> Residue
