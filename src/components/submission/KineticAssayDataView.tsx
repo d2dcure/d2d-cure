@@ -479,7 +479,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   
         // 9. Update CharacterizationData
         const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {
-          parent_id,
+			enzyme: enzyme,
+			parent_id,
           kcat,
           kcat_SD,
           KM,

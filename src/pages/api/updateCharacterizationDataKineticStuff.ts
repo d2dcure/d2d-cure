@@ -1,4 +1,4 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -6,6 +6,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const {
+	enzyme: enzyme,
     parent_id,
     kcat,
     kcat_SD,
@@ -17,8 +18,16 @@ export default async function handler(req: any, res: any) {
     yield: yield_value,
   } = req.body;
 
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
+
   try {
-    const updatedCharacterizationData = await prismaBglB.characterizationData.update({
+    const updatedCharacterizationData = await client.characterizationData.update({
       where: { id: parent_id },
       data: {
         yield_avg: yield_value,
