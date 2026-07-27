@@ -1,15 +1,22 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'DELETE') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { parent_id } = req.body;
+  const { enzyme, parent_id } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 
   try {
     // Delete the row with matching parent_id
-    await prismaBglB.tempRawData.deleteMany({
+    await client.tempRawData.deleteMany({
       where: {
         parent_id: parent_id,
       },

@@ -546,7 +546,7 @@ const SingleVariant = () => {
           const response2 = await fetch('/api/deleteTempData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response2.ok) {
