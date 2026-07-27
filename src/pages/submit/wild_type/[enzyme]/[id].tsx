@@ -915,7 +915,8 @@ const SingleVariant = () => {
       const response = await fetch('/api/curateData', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
+			enzyme: enzyme,
           ids: [entryData.id],
           status: user?.status 
         }),

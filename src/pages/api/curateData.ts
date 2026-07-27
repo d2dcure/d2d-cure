@@ -1,7 +1,14 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
-  const { ids, status } = req.body;
+  const { enzyme, ids, status } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 
   // ids should be an array of integers
   if (!ids || !Array.isArray(ids)) {
@@ -14,7 +21,7 @@ export default async function handler(req: any, res: any) {
     const integerIds = ids.map(id => parseInt(id, 10))
     if (req.method === 'DELETE') {
       // First get the associated data IDs
-      const rowsToDelete = await prismaBglB.characterizationData.findMany({
+      const rowsToDelete = await client.characterizationData.findMany({
         where: {
           id: { in: integerIds }
         },
@@ -26,21 +33,21 @@ export default async function handler(req: any, res: any) {
       // Delete in sequence to maintain referential integrity
       for (const row of rowsToDelete) {
         // Delete associated kinetic data
-        await prismaBglB.kineticRawData.deleteMany({
+        await client.kineticRawData.deleteMany({
           where: {
             parent_id: row.id
           }
         });
 
         // Delete associated temperature data
-        await prismaBglB.tempRawData.deleteMany({
+        await client.tempRawData.deleteMany({
           where: {
             parent_id: row.id
           }
         });
 
         // Delete the characterization data
-        await prismaBglB.characterizationData.delete({
+        await client.characterizationData.delete({
           where: { id: row.id }
         });
       }
@@ -59,7 +66,7 @@ export default async function handler(req: any, res: any) {
       }
 
       // Update the entries
-      await prismaBglB.characterizationData.updateMany({
+      await client.characterizationData.updateMany({
         where: {
           id: { in: integerIds }
         },
@@ -67,7 +74,7 @@ export default async function handler(req: any, res: any) {
       });
 
       // Fetch and return the updated entry
-      const updatedEntry = await prismaBglB.characterizationData.findFirst({
+      const updatedEntry = await client.characterizationData.findFirst({
         where: {
           id: integerIds[0]  // Since we're dealing with a single entry in this case
         }
