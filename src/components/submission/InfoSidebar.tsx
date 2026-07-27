@@ -259,7 +259,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 				<Link
 					isExternal
 					showAnchorIcon
-					href={`/database/characterization_data/${enzyme}?highlight=${entryData.resnum}`}
+					href={`/database/characterization_data/${enzyme}?highlight=${entryData.Rosetta_resnum}`}
 				>
 					Search database
 				</Link>
