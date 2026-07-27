@@ -836,7 +836,7 @@ const SingleVariant = () => {
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold"><i>T</i><sub>M</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>m</sub> =</span>
             <span>{tm} ± {tmSD}°C</span>
           </div>
         );
