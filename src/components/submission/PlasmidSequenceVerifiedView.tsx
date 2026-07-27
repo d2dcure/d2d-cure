@@ -157,6 +157,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+		enzyme: enzyme,
           id: entryData.id,
           plasmid_verified: true,
           ab1_filename: newFileName

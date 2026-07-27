@@ -119,8 +119,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 	}, [startingScore, endingScore, validateScores]);
 
   const updateRosettaScore = async () => {
-    //const isValid = validateScores();
-    
     const hasBlockingValidation = validationMessages.some(msg => 
       msg.type === 'error' 
     );
@@ -134,8 +132,9 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-				id: entryData.id,
-				Rosetta_score: endingScore - startingScore,
+					enzyme: enzyme,
+					id: entryData.id,
+					Rosetta_score: endingScore - startingScore,
 				}),
 			});
 			if (!response.ok) {
