@@ -463,6 +463,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
 
       // 5) Update DB for the raw data
       const response = await axios.post('/api/updateTempRawData', {
+		enzyme: enzyme,
         user_name: user?.user_name,
         variant,
         slope_units: slopeUnits,

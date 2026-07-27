@@ -1,4 +1,4 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 function mapSlopeUnits(value:any) {
   switch (value.trim()) {
@@ -21,6 +21,7 @@ export default async function handler(req:any, res:any) {
   }
 
   const {
+	enzyme,
     user_name, 
     variant, 
     slope_units,
@@ -32,17 +33,25 @@ export default async function handler(req:any, res:any) {
     approved_by_student,
   } = req.body;
 
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
+
   try {
     const mapped_slope_units = mapSlopeUnits(slope_units); // Map to enum value
 
     // Check if there's already a row with this parent_id
-    let tempRawData = await prismaBglB.tempRawData.findFirst({
+    let tempRawData = await client.tempRawData.findFirst({
       where: { parent_id },
     });
 
     if (tempRawData) {
       // Update existing row
-      tempRawData = await prismaBglB.tempRawData.update({
+      tempRawData = await client.tempRawData.update({
         where: { id: tempRawData.id },
         data: {
           user_name, 
@@ -57,7 +66,7 @@ export default async function handler(req:any, res:any) {
       });
     } else {
       // Create new row
-      tempRawData = await prismaBglB.tempRawData.create({
+      tempRawData = await client.tempRawData.create({
         data: {
           user_name, 
           variant, 
