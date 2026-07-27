@@ -90,6 +90,7 @@ const SubmitPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+		  enzyme: enzyme,
           username: user?.user_name, 
           institution: user?.institution, 
           pi: user?.pi || user?.given_name,
