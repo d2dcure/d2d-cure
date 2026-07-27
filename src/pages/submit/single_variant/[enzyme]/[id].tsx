@@ -463,10 +463,12 @@ const SingleVariant = () => {
 
         case 'Protein production induced?':
           // Reset induction data
+		  // TODO: Induction is NOT expression. Fix this!
           response = await fetch('/api/updateCharacterizationDataExpressed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               expressed: false, 
             })

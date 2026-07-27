@@ -30,6 +30,7 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+		  enzyme: enzyme,
           id: entryData.id,
           expressed: isExpressed
         }),
