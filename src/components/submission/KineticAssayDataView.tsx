@@ -412,6 +412,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
   
       const dataToSend = {
+		enzyme,
         user_name,
         variant,
         slope_units,
@@ -465,6 +466,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       // 7. Update filenames in dataToSend
       dataToSend.csv_filename = csvFilename;
       dataToSend.plot_filename = mentenPlotFilename;
+	  dataToSend.enzyme = enzyme;
   
       // 8. Save to KineticRawData
       const response1 = await axios.post('/api/updateKineticRawData', dataToSend);
