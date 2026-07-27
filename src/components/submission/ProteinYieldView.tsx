@@ -109,6 +109,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+		  enzyme: enzyme,
           id: entryData.id,
           yield_avg: roundedValue,
         }),
