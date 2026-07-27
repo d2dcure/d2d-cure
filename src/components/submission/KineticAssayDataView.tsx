@@ -206,7 +206,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
   
     fetchKineticRawDataEntryData();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
 
   const downloadCsvFile = async () => {

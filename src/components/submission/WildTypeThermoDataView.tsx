@@ -83,7 +83,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     const fetchTempRawDataEntryData = async () => {
       try {
         const response = await axios.get('/api/getTempRawDataEntryDataFromWTid', {
-          params: { id: entryData.WT_temp_raw_data_id }
+          params: { enzyme: enzyme, id: entryData.WT_temp_raw_data_id }
         });
         if (response.status === 200) {
           const data = response.data;
@@ -104,7 +104,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     if (entryData.WT_temp_raw_data_id) {
       fetchTempRawDataEntryData();
     }
-  }, [entryData.WT_temp_raw_data_id]);
+  }, [enzyme, entryData.WT_temp_raw_data_id]);
 
   /** 
    * Check if a parsed CSV is "horizontal" 

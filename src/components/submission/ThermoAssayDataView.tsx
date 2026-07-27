@@ -191,7 +191,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
       if (!entryData.id) return;
       try {
         const response = await axios.get('/api/getTempRawDataEntryData', {
-          params: { parent_id: entryData.id }
+          params: { enzyme: enzyme, parent_id: entryData.id }
         });
         if (response.status === 200) {
           const data = response.data;
@@ -215,7 +215,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
     }
   
     fetchTempRawDataEntryData();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
   // Helper: convert File -> text
   async function fileToText(file: File): Promise<string> {

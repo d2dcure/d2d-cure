@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
-import "../../../../app/globals.css";
+//import "../../../../app/globals.css";
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem ,Tooltip, Chip } from '@nextui-org/react';
@@ -187,7 +187,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
         // Note: 404 is ok for kinetic data, as it might not exist
 
         // Fetch TempRawData
-        const response3 = await fetch(`/api/getTempRawDataEntryData?parent_id=${id}`);
+        const response3 = await fetch(`/api/getTempRawDataEntryData?enzyme=${enzyme}&parent_id=${id}`);
         if (response3.ok) {
           const data3 = await response3.json();
           setEntryData3(data3);
