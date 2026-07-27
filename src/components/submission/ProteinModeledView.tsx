@@ -112,7 +112,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				}
 			}
 		}
-	}, [enzyme, startingScore, endingScore, folditScore]);
+	}, [enzyme, entryData.Rosetta_score, startingScore, endingScore, folditScore]);
 
 	useEffect(() => {
 		if (startingScore != null || endingScore != null) { validateScores(); }

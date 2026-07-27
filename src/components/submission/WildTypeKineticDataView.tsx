@@ -182,7 +182,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
     const response = await fetch('/api/updateCharacterizationDataWTRawDataId', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: entryData.id, WT_raw_data_id })
+      body: JSON.stringify({ enzyme: enzyme, id: entryData.id, WT_raw_data_id })
     });
     if (response.ok) {
       const updatedEntry = await response.json();

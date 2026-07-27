@@ -46,7 +46,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
     };
 
     fetchKineticRawDataEntryData();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
   const mapYieldUnits = (value: string): 'A280_' | 'mg_mL_' | 'mM_' | 'M_' => {
     switch (value.trim()) {
