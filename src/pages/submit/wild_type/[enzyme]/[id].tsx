@@ -412,7 +412,7 @@ const SingleVariant = () => {
           const response1 = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response1.ok) {
