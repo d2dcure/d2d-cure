@@ -65,7 +65,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
         const tempDataResponse = await fetch('/api/getTempRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
+          body: JSON.stringify({ enzyme, ids })
         });
 
         const tempDataResult = await tempDataResponse.json();

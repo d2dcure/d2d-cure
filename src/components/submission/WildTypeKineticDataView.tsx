@@ -77,14 +77,14 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
         const response = await fetch('/api/getKineticRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: kineticRawDataIds })
+          body: JSON.stringify({ enzyme: enzyme, ids: kineticRawDataIds })
         });
         const data = await response.json();
         setKineticData(data);
       }
     };
     fetchKineticData();
-  }, [kineticRawDataIds]);
+  }, [enzyme, kineticRawDataIds]);
 
   // 3) If there's a WT_raw_data_id, fetch that single "KineticRawData" object, parse CSV, get image
   useEffect(() => {
@@ -115,7 +115,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
     if (entryData.WT_raw_data_id) {
       fetchKineticRawDataEntryData();
     }
-  }, [entryData.WT_raw_data_id]);
+  }, [enzyme, entryData.WT_raw_data_id]);
 
   /** 
    * Download the CSV from S3 and parse with Papa
