@@ -484,6 +484,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id, 
               gel_filename: null, 
             })

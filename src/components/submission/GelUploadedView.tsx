@@ -155,6 +155,7 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
+			enzyme: enzyme,
             id: entryData.id,
             gel_filename: newFileName
           })
@@ -514,7 +515,8 @@ const GelUploadedView: React.FC<GelUploadedViewProps> = ({
                               const response = await fetch('/api/updateCharacterizationDataGelFilename', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
+                                body: JSON.stringify({
+									enzyme: enzyme,
                                   id: entryData.id, 
                                   gel_filename: filename 
                                 }),
