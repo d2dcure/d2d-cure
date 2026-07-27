@@ -164,6 +164,7 @@ const SubmitPage = () => {
     		fetchData();
 		} else {
 			setCharData([]);
+			setMatchedData([]);
 		}
 	}, [enzyme]);
 
