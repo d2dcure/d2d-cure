@@ -91,6 +91,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+		  enzyme: enzyme,
           parent_id: entryData.id,
           yield_value: roundedValue,
           yield_units: yield_units_mapped,
