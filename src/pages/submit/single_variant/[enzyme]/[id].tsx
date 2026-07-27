@@ -40,9 +40,6 @@ const SingleVariant = () => {
   const [entryData2, setEntryData2] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  //const [currentIndex, setCurrentIndex] = useState(0);
-  //const [totalEntries, setTotalEntries] = useState(0);
-
   console.log(user)
 
   // Toast and modal states
@@ -243,42 +240,6 @@ const SingleVariant = () => {
     }
   };
 
-  // Fetch total entries for pagination
-  /*useEffect(() => {
-    const fetchTotalEntries = async () => {
-      try {
-        const response = await fetch('/api/getTotalCharacterizationEntries');
-        if (!response.ok) throw new Error('Failed to fetch total entries');
-        const { total } = await response.json();
-        setTotalEntries(total);
-
-        // Find current index if id exists
-        if (id) {
-          const indexResponse = await fetch(`/api/getEntryIndex?id=${id}`);
-          if (indexResponse.ok) {
-            const { index } = await indexResponse.json();
-            setCurrentIndex(index);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching total entries:', error);
-      }
-    };
-
-    fetchTotalEntries();
-  }, [id]);*/
-
-  /*const navigateEntry = async (direction: 'next' | 'prev') => {
-    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-    try {
-      const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
-      if (!response.ok) throw new Error('Failed to fetch entry ID');
-      const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/${enzyme}/${newId}`);
-    } catch (error) {
-      console.error('Error navigating entries:', error);
-    }
-  };*/
 
   const triggerConfetti = () => {
     // Left side burst
@@ -538,6 +499,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               WT_raw_data_id: 0, 
             })
@@ -575,6 +537,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               WT_temp_raw_data_id: 0, 
             })
@@ -655,6 +618,7 @@ const SingleVariant = () => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+			enzyme: enzyme,
           ids: [entryData.id],
           status: user?.status 
         }),
