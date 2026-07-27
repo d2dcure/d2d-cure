@@ -176,7 +176,7 @@ const SubmitPage = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ ids }),
+          body: JSON.stringify({ enzyme, ids }),
         });
         
         if (!response.ok) {
@@ -191,7 +191,7 @@ const SubmitPage = () => {
     };
     
     fetchActualData();
-  }, [matchedData]);
+  }, [enzyme, matchedData]);
 
 
 	// Functions to pass to child component
