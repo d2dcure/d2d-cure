@@ -138,7 +138,7 @@ const SubmitPage = () => {
     else if (newEntry && newEntry.id) {
       router.push(`/submit/single_variant/${enzyme}/${newEntry.id}`);
     }
-  }, [newEntry, router]);
+  }, [enzyme, newEntry, router]);
 
 	useEffect(() => {
 		const fetchEnzymes = async () => {

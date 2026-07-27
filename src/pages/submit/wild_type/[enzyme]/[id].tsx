@@ -124,7 +124,7 @@ const SingleVariant = () => {
     if (entryData.id) {
       fetchEntryData2(entryData.id);
     }
-  }, [entryData.id]);
+  }, [entryData.id, fetchEntryData2]);
 
   // Mapping function to convert enum to display value (for yield_units in KineticRawData)
   const mapYieldUnitsBack = (enumValue: string): string => {

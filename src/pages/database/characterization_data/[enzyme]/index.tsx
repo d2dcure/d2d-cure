@@ -60,7 +60,17 @@ const DataPage = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the database
-  const [WTValues, setWTValues] = useState<WTValuesParams>();
+  const [WTValues, setWTValues] = useState<WTValuesParams>(
+	{
+		//WT_KM: 0,
+		WT_log_inv_KM: 0,
+		WT_log_kcat: 0,
+		WT_log_kcat_over_KM: 0,
+		WT_T50: 0,
+		WT_Tm: 0,
+		WT_Rosetta_score: 0
+	}	
+  );
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -1150,6 +1160,7 @@ const DataPage = () => {
     
   }, [
 	enzyme,
+	router,
     router.isReady,
     selectedInstitution, 
     showNonCurated, 
