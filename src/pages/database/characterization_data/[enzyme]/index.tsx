@@ -27,6 +27,16 @@ interface SortDescriptor {
   direction: "ascending" | "descending";
 }
 
+interface WTValuesParams {
+	//WT_KM: number;
+	WT_log_inv_KM: number;
+	WT_log_kcat: number;
+	WT_log_kcat_over_KM: number;
+	WT_T50: number;
+	WT_Tm: number;
+	WT_Rosetta_score: number;
+}
+
 
 // Functions //////////////////////////////////////////////////////////////////
 const capitalize = (str: string) => {
@@ -50,7 +60,17 @@ const DataPage = () => {
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [characterizationData, setCharacterizationData] = useState<any[]>([]); // This holds all the rows in the CharacterizationData table in the database
-  const [WTValues, setWTValues] = useState<any>(null);
+  const [WTValues, setWTValues] = useState<WTValuesParams>(
+	{
+		//WT_KM: 0,
+		WT_log_inv_KM: 0,
+		WT_log_kcat: 0,
+		WT_log_kcat_over_KM: 0,
+		WT_T50: 0,
+		WT_Tm: 0,
+		WT_Rosetta_score: 0
+	}	
+  );
   const [showColors, setShowColors] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -136,7 +156,7 @@ const DataPage = () => {
           element.classList.add('bg-blue-100');
           setTimeout(() => {
             element.classList.remove('bg-blue-100');
-          }, 2000);
+          }, 5000);
         }
       }
     }
@@ -166,7 +186,16 @@ const DataPage = () => {
         <Tooltip 
           content={
             <div className="space-y-2">
-              <p>The variant name in Rosetta/Foldit numbering.</p>
+			{useRosettaNumbering && (
+              <p>The variant name using Rosetta/Foldit numbering.</p>
+			)}
+			{!useRosettaNumbering && (
+              	<p>
+					The variant name using{' '}
+					<abbr title="Protein Data Bank">PDB</abbr>{' '}
+					numbering.
+				</p>
+			)}
               <p>Click here to sort by this column.</p>
               <p>Click any colored variant name/code to open a new window and view the raw data for that variant.</p>
             </div>
@@ -509,6 +538,8 @@ const DataPage = () => {
     setRowsPerPage(0); // "all"
   };
 
+
+  // Get institutions list once on page load.
   useEffect(() => {
     const fetchInstitutions = async () => {
       try {
@@ -520,7 +551,6 @@ const DataPage = () => {
           setErrorMessage("Invalid data format received from server");
           return;
         }
-        
         const sortedData = data.sort((a:any, b:any) => a.fullname.localeCompare(b.fullname));
         setInstitutions(sortedData);
       } catch (error) {
@@ -528,91 +558,78 @@ const DataPage = () => {
         setErrorMessage("Failed to fetch institutions data");
       }
     };
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [institutionsRes, characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
-          fetch('/api/getInstitutions'),
-          fetch('/api/getCharacterizationData'),
-          fetch('/api/getSequenceData?enzyme=BglB'),  // TEMP
-          fetch('/api/getPublications')
-        ]);
-
-        // Check each response individually
-        if (!institutionsRes.ok) {
-          throw new Error(`GET /api/getInstitutions ${institutionsRes.status} - Failed to fetch institutions`);
-        }
-        if (!characterizationRes.ok) {
-          throw new Error(`GET /api/getCharacterizationData ${characterizationRes.status} - Failed to fetch characterization data`);
-        }
-        if (!sequencesRes.ok) {
-          throw new Error(`GET /api/getSequenceData ${sequencesRes.status} - Failed to fetch sequence data`);
-        }
-        if (!publicationsRes.ok) {
-          throw new Error(`GET /api/getPublications ${publicationsRes.status} - Failed to fetch publications`);
-        }
-
-        const [institutionsData, characterizationData, sequencesData, publicationsData] = await Promise.all([
-          institutionsRes.json(),
-          characterizationRes.json(),
-          sequencesRes.json(),
-          publicationsRes.json()
-        ]);
-
-        // Validate data formats
-        if (!Array.isArray(institutionsData)) {
-          throw new Error('GET /api/getInstitutions - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(characterizationData)) {
-          throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(sequencesData)) {
-          throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
-        }
-        if (!Array.isArray(publicationsData)) {
-          throw new Error('GET /api/getPublications - Invalid data format: Expected array');
-        }
-
-        const sortedInstitutions = institutionsData.sort((a:any, b:any) => 
-          a.fullname.localeCompare(b.fullname)
-        );
-        setInstitutions(sortedInstitutions);
-        setCharacterizationData(characterizationData);
-        setSequences(sequencesData);
-        setPublications(publicationsData);
-
-        // For color coding 
-        const WT_row = characterizationData.find((row:any) => row.id === 1);
-        if (WT_row) {
-          setWTValues({
-            //WT_KM: WT_row.KM_avg,
-            WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
-            WT_log_kcat: Math.log10(WT_row.kcat_avg),
-            WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
-            WT_T50: WT_row.T50,
-            WT_Tm: WT_row.Tm,
-            WT_Rosetta_score: WT_row.Rosetta_score
-          });
-        }
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setIsError(true);
-        setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData?enzyme=BglB');  //TEMP
-      const data = await response.json();
-      setSequences(data);
-    };
-
-    fetchSequences();
     fetchInstitutions();
-    fetchData();
-  }, []);
+	}, []);
+
+	useEffect(() => {
+		if (sequences.length && institutions.length && characterizationData.length && publications.length) {
+			setIsLoading(false);
+		}
+	}, [sequences, institutions, characterizationData, publications]);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const [characterizationRes, sequencesRes, publicationsRes] = await Promise.all([
+					fetch(`/api/getCharacterizationData?enzyme=${enzyme}`),
+					fetch(`/api/getSequenceData?enzyme=${enzyme}`),
+					fetch('/api/getPublications')
+				]);
+
+				// Check each response individually
+				if (characterizationRes.ok) {
+					const characterizationData = await characterizationRes.json();
+					if (!Array.isArray(characterizationData)) {
+						throw new Error('GET /api/getCharacterizationData - Invalid data format: Expected array');
+					}
+					setCharacterizationData(characterizationData);
+				}
+				if (sequencesRes.ok) {
+					const sequencesData = await sequencesRes.json();
+					if (!Array.isArray(sequencesData)) {
+						throw new Error('GET /api/getSequenceData - Invalid data format: Expected array');
+					}
+					setSequences(sequencesData);
+				}
+				if (publicationsRes.ok) {
+					const publicationsData = await publicationsRes.json();
+					if (!Array.isArray(publicationsData)) {
+						throw new Error('GET /api/getPublications - Invalid data format: Expected array');
+					}
+					setPublications(publicationsData);
+				}
+
+			} catch (error) {
+				console.error('Error fetching data:', error);
+				setIsError(true);
+				setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
+			} 
+		};
+
+		if (enzyme) {
+			fetchData();
+		}
+	}, [enzyme]);
+
+	useEffect(() => {
+		const getAndSetWTValues = async () => {
+			const WT_row = await characterizationData.find((row:any) => row.id === 1);
+			if (WT_row) {
+				setWTValues({
+					//WT_KM: WT_row.KM_avg,
+					WT_log_inv_KM: Math.log10(1 / WT_row.KM_avg),
+					WT_log_kcat: Math.log10(WT_row.kcat_avg),
+					WT_log_kcat_over_KM: Math.log10(WT_row.kcat_over_KM),
+					WT_T50: WT_row.T50,
+					WT_Tm: WT_row.Tm,
+					WT_Rosetta_score: WT_row.Rosetta_score
+				});
+			}
+		}
+		if (characterizationData) {
+			getAndSetWTValues();
+		}
+	}, [characterizationData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -969,7 +986,7 @@ const DataPage = () => {
 
     if (expandData) {
       // If in expanded view, open detail page in new tab
-      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');
     } else if (row.isAggregate) {
       // If it's an aggregate row, toggle expansion
       setExpandedRows(prev => ({
@@ -978,7 +995,7 @@ const DataPage = () => {
       }));
     } else {
       // If it's any individual row (including child rows), open detail page in new tab
-      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');  // TEMP
+      window.open(`/database/characterization_data/${enzyme}/${row.id}`, '_blank');
     }
   };
 
@@ -1074,7 +1091,7 @@ const DataPage = () => {
       institution, 
       curated, 
       expand, 
-      numbering, 
+      foldit_numbering, 
       sort,
       sortDir,
       showColors: colorParam,
@@ -1086,7 +1103,7 @@ const DataPage = () => {
     if (institution) setSelectedInstitution(institution as string);
     if (curated !== undefined) setShowNonCurated(curated === '1');
     if (expand !== undefined) setExpandData(expand === '1');
-    if (numbering !== undefined) setUseRosettaNumbering(numbering === '1');
+    if (foldit_numbering !== undefined) setUseRosettaNumbering(foldit_numbering === '1');
     if (colorParam !== undefined) setShowColors(colorParam === '1');
     if (perPage) setRowsPerPage(perPage === 'all' ? 0 : Number(perPage));
     
@@ -1114,11 +1131,13 @@ const DataPage = () => {
     
     // Create a query object with current filter state
     const query: Record<string, string> = {
+	  ...({ enzyme: enzyme as string }),
+	  
       // Only include params that differ from defaults
       ...(selectedInstitution ? { institution: selectedInstitution } : {}),
       ...(showNonCurated !== false ? { curated: showNonCurated ? '1' : '0' } : {}),
       ...(expandData !== false ? { expand: expandData ? '1' : '0' } : {}),
-      ...(useRosettaNumbering !== true ? { numbering: useRosettaNumbering ? '1' : '0' } : {}),
+      ...(useRosettaNumbering !== true ? { foldit_numbering: useRosettaNumbering ? '1' : '0' } : {}),
       ...(showColors !== true ? { showColors: showColors ? '1' : '0' } : {}),
       ...(sortDescriptor.column !== "variant" ? { sort: sortDescriptor.column } : {}),
       ...(sortDescriptor.direction !== "ascending" ? { sortDir: sortDescriptor.direction } : {}),
@@ -1133,13 +1152,14 @@ const DataPage = () => {
     router.push(
       {
         pathname: router.pathname,
-        query: { enzyme: `${enzyme}` },
+        query
       }, 
       undefined, 
       { shallow: true }
     );
     
   }, [
+	enzyme,
     router.isReady,
     selectedInstitution, 
     showNonCurated, 
@@ -1386,7 +1406,8 @@ const DataPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between gap-3 mb-4">
                     {/* Left side - Search, controls, and total records */}
                     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
-                      <Input
+                      {/* TODO: Make this a number input box; the input checking is too slow. */}
+					  <Input
                         type="text"
                         isClearable
                         classNames={{
@@ -1649,6 +1670,7 @@ const DataPage = () => {
                   </div>
 
                   {/* Add id to table for scrolling */}
+				  {!isLoading && (
                   <div id="characterization-table" className="relative">
                     <Table
                       isHeaderSticky
@@ -1781,7 +1803,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues.WT_log_inv_KM : -5),
+                                          backgroundColor: getColorForValue(data.KM_avg !== null && !isNaN(data.KM_avg) ? Math.log10(1 / data.KM_avg) - WTValues?.WT_log_inv_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1817,7 +1839,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues.WT_log_kcat : -5),
+                                          backgroundColor: getColorForValue(data.kcat_avg !== null && !isNaN(data.kcat_avg) ? Math.log10(data.kcat_avg) - WTValues?.WT_log_kcat : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1853,7 +1875,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues.WT_log_kcat_over_KM : -5),
+                                          backgroundColor: getColorForValue(data.kcat_over_KM !== null && !isNaN(data.kcat_over_KM) ? Math.log10(data.kcat_over_KM) - WTValues?.WT_log_kcat_over_KM : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1891,7 +1913,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues.WT_T50) / WTValues.WT_T50 : -5),
+                                          backgroundColor: getColorForValue(data.T50 !== null && !isNaN(data.T50) ? (data.T50 - WTValues?.WT_T50) / WTValues?.WT_T50 : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1927,7 +1949,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues.WT_Tm) / WTValues.WT_Tm : -5),
+                                          backgroundColor: getColorForValue(data.Tm !== null && !isNaN(data.Tm) ? (data.Tm - WTValues?.WT_Tm) / WTValues?.WT_Tm : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -1945,7 +1967,7 @@ const DataPage = () => {
                                     cell = (
                                       <TableCell key={column.uid}>
                                         <div style={{
-                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues.WT_Rosetta_score) / Math.abs(WTValues.WT_Rosetta_score) : -5),
+                                          backgroundColor: getColorForValue(data.Rosetta_score !== null && !isNaN(data.Rosetta_score) ? (data.Rosetta_score - WTValues?.WT_Rosetta_score) / Math.abs(WTValues?.WT_Rosetta_score) : -5),
                                           borderRadius: '4px',
                                           padding: '1px 6px',
                                           textAlign: 'right',
@@ -2015,7 +2037,7 @@ const DataPage = () => {
                       </TableBody>
                     </Table>
                   </div>
-
+				  )}
                   {isLoading && (
                     <div className="flex justify-center items-center py-8">
                       <Spinner 

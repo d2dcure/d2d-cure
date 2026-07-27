@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
+import { getNameFromOneLetterCode, getPropertiesFromOneLetterCode } from "@/functions/biochemical_functions"
 import { getPathwayInfo, getMechanismInfo, getAssayInfo } from "@/functions/database_functions";
 import { decodeHTML } from "@/functions/formatting_functions";
 import { useRouter } from "next/router";
@@ -7,7 +8,6 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { Accordion, AccordionItem, Image, Link } from "@nextui-org/react";
 import { Tooltip } from "@nextui-org/tooltip";
 import React, { useEffect, useState } from "react";
-import { arrayBuffer } from "stream/consumers";
 
 
 interface EnzymeGeneralInfo {
@@ -49,8 +49,8 @@ const AboutEnzymePAge = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-		// Fetch enzyme general information data.
-		const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				// Fetch enzyme general information data.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
 				if (infoResponse.ok) {
 					const infoData = await infoResponse.json();
 					setGeneralInfo(infoData);
@@ -64,7 +64,7 @@ const AboutEnzymePAge = () => {
 				}
 
 				// Fetch characterization data.
-				const charResponse = await fetch('/api/getCharacterizationData');
+				const charResponse = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
 				if (charResponse.ok) {
 					const charData = await charResponse.json();
 					setCharacterizationData(charData);
@@ -119,7 +119,7 @@ const AboutEnzymePAge = () => {
 	const MechanismInfo = getMechanismInfo(enzyme as string);
 	const AssayInfo = getAssayInfo(enzyme as string);
 
-	// TODO: Remove all the horrible hard-coding in this file!
+
 	return (
 		<>
 			<NavBar />
@@ -380,6 +380,7 @@ const AboutEnzymePAge = () => {
 							list of studied variants at that position. 
 						</p>
 
+						{/* TODO Move to a separate component. */}
 						{/* Sequence */}
 						<div 
 							className="px-6 md:px-12 lg:px-24 py-6 font-mono text-lg leading-loose break-words"
@@ -397,20 +398,32 @@ const AboutEnzymePAge = () => {
 										<Tooltip
 											content={
 												<div className="text-sm">
-													{`${residue.resid}${residue.resnum}`}
-													{!hasStructure && (" (unresolved)")}
-													{isCatalytic && (" (catalytic)")}
-													{residue.Rosetta_resnum && (
+													{getNameFromOneLetterCode(residue.resid)}
+													{isCatalytic && (
 														<>
-															<br />
-															{`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
+														<br />
+														<small>{"catalytic"}</small>
 														</>
 													)}
-													{hasStructure && (
+													{getPropertiesFromOneLetterCode(residue.resid).map(
+														(property) => (
 														<>
-															<br />
-															{`PDB: ${residue.resid}${residue.PDBresnum}`}
+														<br />
+														<small>{property}</small>
 														</>
+													))}
+													{residue.Rosetta_resnum && (
+														<>
+														<br />
+														{`Rosetta/Foldit: ${residue.resid}${residue.Rosetta_resnum}`}
+														</>
+													)}
+														<br />
+													{!hasStructure && (
+														"PDB: unresolved"
+													)}
+													{hasStructure && (
+														`PDB: ${residue.resid}${residue.PDBresnum}`
 													)}
 												</div>
 											}

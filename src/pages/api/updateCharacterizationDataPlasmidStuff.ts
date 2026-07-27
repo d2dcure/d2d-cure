@@ -1,10 +1,18 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req:any, res:any) {
   if (req.method === 'POST') {
-    const { id, ab1_filename, plasmid_verified } = req.body;
+    const { enzyme, id, ab1_filename, plasmid_verified } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
+
     try {
-      const updatedEntry = await prismaBglB.characterizationData.update({
+      const updatedEntry = await client.characterizationData.update({
         where: { id },
         data: { 
           plasmid_verified: plasmid_verified === true,

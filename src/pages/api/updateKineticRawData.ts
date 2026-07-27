@@ -1,4 +1,4 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -6,6 +6,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const {
+	enzyme,
     user_name,
     variant,
     slope_units,
@@ -20,13 +21,21 @@ export default async function handler(req: any, res: any) {
     approved_by_student,
   } = req.body;
 
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
+
   try {
     // Map units
     const mapped_slope_units = mapSlopeUnits(slope_units);
     const mapped_yield_units = mapYieldUnits(yield_units);
 
     // Insert or update KineticRawData
-    let kineticRawData = await prismaBglB.kineticRawData.findFirst({
+    let kineticRawData = await client.kineticRawData.findFirst({
       where: {
         parent_id,
       },
@@ -34,7 +43,7 @@ export default async function handler(req: any, res: any) {
 
     if (kineticRawData) {
       // Update existing row
-      kineticRawData = await prismaBglB.kineticRawData.update({
+      kineticRawData = await client.kineticRawData.update({
         where: { id: kineticRawData.id },
         data: {
           user_name,
@@ -53,7 +62,7 @@ export default async function handler(req: any, res: any) {
       });
     } else {
       // Create new row
-      kineticRawData = await prismaBglB.kineticRawData.create({
+      kineticRawData = await client.kineticRawData.create({
         data: {
           user_name,
           variant,

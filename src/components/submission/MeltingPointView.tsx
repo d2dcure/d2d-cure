@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Input} from "@nextui-org/input";
 
+
 interface MeltingPointViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
+
 const MeltingPointView: React.FC<MeltingPointViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const [tmMean, setTmMean] = useState<string>(entryData.Tm || '');
   const [tmStdDev, setTmStdDev] = useState<string>(entryData.Tm_SD || '');
@@ -38,6 +42,7 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+		  enzyme: enzyme,
           id: entryData.id,
           tm_mean: tmMean,
           tm_std_dev: tmStdDev,

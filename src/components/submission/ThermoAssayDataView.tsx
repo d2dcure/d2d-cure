@@ -7,16 +7,20 @@ import { Button } from '@nextui-org/button';
 import { Checkbox } from '@nextui-org/checkbox';
 import Image from 'next/image';
 
+
 interface ThermoAssayDataViewProps {
-  setCurrentView: (view: string) => void;
-  entryData: any;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
-  setCurrentView,
-  entryData,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
 
@@ -187,7 +191,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
       if (!entryData.id) return;
       try {
         const response = await axios.get('/api/getTempRawDataEntryData', {
-          params: { parent_id: entryData.id }
+          params: { enzyme: enzyme, parent_id: entryData.id }
         });
         if (response.status === 200) {
           const data = response.data;
@@ -211,7 +215,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
     }
   
     fetchTempRawDataEntryData();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
   // Helper: convert File -> text
   async function fileToText(file: File): Promise<string> {
@@ -441,7 +445,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
       const csvContent = Papa.unparse(updatedData);
 
       // 2) Create final filenames
-      const baseFileName = `${user?.user_name || 'unknown'}-BglB-${variant}-${entryData.id}-temp_assay`;
+      const baseFileName = `${user?.user_name || 'unknown'}-${enzyme}-${variant}-${entryData.id}-temp_assay`;
       const newCsvFilename = `${baseFileName}.csv`;
       const newPlotFilename = `${baseFileName}.png`;
 
@@ -459,6 +463,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
 
       // 5) Update DB for the raw data
       const response = await axios.post('/api/updateTempRawData', {
+		enzyme: enzyme,
         user_name: user?.user_name,
         variant,
         slope_units: slopeUnits,
@@ -476,7 +481,8 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
         const { T50, T50_SD, k, k_SD } = calculatedValues;
         
         const updateResponse = await axios.post('/api/updateCharacterizationDataThermoStuff', {
-          parent_id: entryData.id,
+          enzyme: enzyme,
+		  parent_id: entryData.id,
           T50,
           T50_SD,
           T50_k: k,

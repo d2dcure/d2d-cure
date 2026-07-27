@@ -1,10 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prismaBglB from '../../../prismaBglBClient';
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { parent_id, yield_value, yield_units } = req.body;
-
+    const { enzyme, parent_id, yield_value, yield_units } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
     if (parent_id === undefined || yield_value === undefined || yield_units === undefined) {
       return res.status(400).json({ error: 'parent_id, yield_value, and yield_units are required' });
     }
@@ -14,13 +20,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const mapped_yield_units = yield_units;
 
       // Check if a KineticRawData entry exists for the parent_id
-      let kineticRawData = await prismaBglB.kineticRawData.findFirst({
+      let kineticRawData = await client.kineticRawData.findFirst({
         where: { parent_id: parentId },
       });
 
       if (kineticRawData) {
         // Update existing row
-        kineticRawData = await prismaBglB.kineticRawData.update({
+        kineticRawData = await client.kineticRawData.update({
           where: { id: kineticRawData.id },
           data: {
             yield: yield_value,
@@ -29,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       } else {
         // Create new row
-        kineticRawData = await prismaBglB.kineticRawData.create({
+        kineticRawData = await client.kineticRawData.create({
           data: {
             parent_id: parentId,
             yield: yield_value,

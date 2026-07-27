@@ -1,10 +1,19 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req:any, res:any) {
-  const { username, institution, pi, resid, resnum, resmut } = req.body;
+  const { enzyme, username, institution, pi, resid, resnum, resmut } = req.body;
 
   try {
-    const newDataEntry = await prismaBglB.characterizationData.create({
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	// Get proper database client.
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
+
+    const newDataEntry = await client.characterizationData.create({
       data: {
         resid,
         resnum: parseInt(resnum),

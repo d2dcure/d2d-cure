@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
-import "../../../../app/globals.css";
+//import "../../../../app/globals.css";
 import Papa from 'papaparse';
 import { Card, CardBody } from '@nextui-org/card';
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem } from '@nextui-org/react';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skeleton, Breadcrumbs, BreadcrumbItem ,Tooltip, Chip } from '@nextui-org/react';
 import Link from 'next/link';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
@@ -13,6 +13,7 @@ import Toast from '@/components/Toast';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useUser } from '@/components/UserProvider';
 import StatusChip from '@/components/StatusChip';
+import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
 
 const DataPageView = () => {
   const router = useRouter();
@@ -151,7 +152,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
       setIsLoading(true);
       try {
         // Fetch CharacterizationData
-        const response1 = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response1 = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response1.ok) {
           throw new Error('Failed to fetch characterization data');
         }
@@ -160,7 +161,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
         // Fetch WT KineticRawData if WT_raw_data_id exists
         if (data1.WT_raw_data_id) {
-          const response11 = await fetch(`/api/getKineticData?id=${data1.WT_raw_data_id}`);
+			// TODO: Rename this API.
+          const response11 = await fetch(`/api/getKineticData?enzyme=${enzyme}&id=${data1.WT_raw_data_id}`);
           if (response11.ok) {
             const data11 = await response11.json();
             setEntryData11(data11);
@@ -170,7 +172,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
         // Fetch WT TempRawData if WT_temp_raw_data_id exists
         if (data1.WT_temp_raw_data_id) {
-          const response12 = await fetch(`/api/getTempData?id=${data1.WT_temp_raw_data_id}`);
+			// TODO: Rename this API.
+          const response12 = await fetch(`/api/getTempData?enzyme=${enzyme}&id=${data1.WT_temp_raw_data_id}`);
           if (response12.ok) {
             const data12 = await response12.json();
             setEntryData12(data12);
@@ -178,7 +181,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
         }
 
         // Fetch KineticRawData
-        const response2 = await fetch(`/api/getKineticRawDataEntryData?parent_id=${id}`);
+        const response2 = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${id}`);
         if (response2.ok) {
           const data2 = await response2.json();
           setEntryData2(data2);
@@ -186,7 +189,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
         // Note: 404 is ok for kinetic data, as it might not exist
 
         // Fetch TempRawData
-        const response3 = await fetch(`/api/getTempRawDataEntryData?parent_id=${id}`);
+        const response3 = await fetch(`/api/getTempRawDataEntryData?enzyme=${enzyme}&parent_id=${id}`);
         if (response3.ok) {
           const data3 = await response3.json();
           setEntryData3(data3);
@@ -202,7 +205,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
     };
 
     fetchAllData();
-  }, [id]);
+  }, [enzyme, id]);
 
   useEffect(() => {
     const fetchWtKineticData = async () => {
@@ -339,6 +342,26 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     `${entryData1?.resid}${entryData1?.resnum}${entryData1?.resmut}`}
                 </p>
               </div>
+
+				<div>
+					<span className="font-medium text-sm">Tags</span>
+					<div className="flex flex-wrap gap-2">
+						{compareAAsAndReturnTags(entryData1.resid, entryData1.resmut).map((tag, index) => (
+						<Tooltip
+							key={index}
+							content={tag.desc}
+						>
+							<Chip
+								
+								size="sm"
+								color={tag.color}
+							>
+									{tag.text}
+							</Chip>
+						</Tooltip>
+						))}
+					</div>
+				</div>
 
               <div>
                 <span className="font-medium text-sm">Yield</span>
@@ -1117,8 +1140,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
   const handleEditClick = () => {
     if (!entryData1) return;
     const path = entryData1.resid === 'X' 
-      ? `/submit/wild_type/${entryData1.id}` 
-      : `/submit/single_variant/${entryData1.id}`;
+      ? `/submit/wild_type/${enzyme}/${entryData1.id}` 
+      : `/submit/single_variant/${enzyme}/${entryData1.id}`;
     router.push(path);
   };
 

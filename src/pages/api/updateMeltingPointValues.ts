@@ -1,17 +1,23 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prismaBglB from '../../../prismaBglBClient';
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { id, tm_mean, tm_std_dev } = req.body;
-
+    const { enzyme, id, tm_mean, tm_std_dev } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
     if (!id || tm_mean === undefined || tm_std_dev === undefined) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
     try {
       // Update the CharacterizationData table row with the new Tm and Tm_SD values
-      const updatedEntry = await prismaBglB.characterizationData.update({
+      const updatedEntry = await client.characterizationData.update({
         where: { id },
         data: {
           Tm: parseFloat(tm_mean), // Ensure these are stored as numbers

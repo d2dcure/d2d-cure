@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
-import { Button, Textarea, Tooltip } from '@nextui-org/react';
+import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
+import { Button, Chip, Link, Textarea, Tooltip } from '@nextui-org/react';
+
 
 interface SidebarProps {
-  entryData: any;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	updateEntryData: (newData: any) => void;
 }
+
+interface EnzymeGeneralInfo {
+	cat_residues: string;
+}
+
+interface SequenceData {
+	Rosetta_resnum: number;
+	PDBresnum: string;
+}
+
 
 const useClipboard = () => {
   const [copied, setCopied] = useState(false);
@@ -19,9 +32,13 @@ const useClipboard = () => {
   return { copied, copy };
 };
 
-const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }) => {
+const SingleVarSidebar: React.FC<SidebarProps> = (
+	{ enzyme, entryData, updateEntryData }
+) => {
   const { user } = useUser();
   const [oligosData, setOligosData] = useState<any[]>([]);
+  const [enzymeInfo, setEnzymeInfo] = useState<EnzymeGeneralInfo>();
+  const [sequence, setSequence] = useState<SequenceData[]>([]);
   const [possibleTeammates, setPossibleTeammates] = useState<any[]>([]);
   const [teammate1, setTeammate1] = useState<string | null>(entryData.teammate);
   const [teammate2, setTeammate2] = useState<string | null>(entryData.teammate2);
@@ -31,9 +48,10 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   const [newComment, setNewComment] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  const foundOligo = oligosData.find(
-    (oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`
-  );
+  const foundOligo = 
+  		(oligosData.length) ?
+		oligosData.find((oligo) => oligo.variant === `${entryData.resid}${entryData.resnum}${entryData.resmut}`) :
+		null;
 
   const clipboard = useClipboard();
 
@@ -52,13 +70,37 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
   useEffect(() => {
     const fetchOligosData = async () => {
       try {
-        const response = await fetch('/api/getOligos?enzyme=BglB');  // TEMP
+        const response = await fetch(`/api/getOligos?enzyme=${enzyme}`);
         const data = await response.json();
         setOligosData(data);
       } catch (error) {
         console.error('Error fetching oligos data:', error);
       }
     };
+
+	const fetchEnzymeData = async () => {
+		try {
+		const response = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+			if (response.ok) {
+				const info = await response.json();
+				setEnzymeInfo(info);
+			}
+		} catch (error) {
+        	console.error("Error fetching enzyme data:", error);
+		}
+	};
+
+	const fetchSequence = async () => {
+		try {
+		const response = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
+			if (response.ok) {
+				const sequence = await response.json();
+				setSequence(sequence);
+			}
+		} catch (error) {
+        	console.error("Error fetching sequence data:", error);
+		}
+	};
 
     const fetchPossibleTeammates = async () => {
       if (user?.pi) {
@@ -69,8 +111,19 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
     };
 
     fetchOligosData();
+	fetchEnzymeData();
+	fetchSequence();
     fetchPossibleTeammates();
-  }, [user]);
+  }, [enzyme, user]);
+
+  	const isCatalyticResidue = (): boolean => {
+		if (entryData.resnum && enzymeInfo?.cat_residues) {
+			const residue_data = sequence.find(res => res.Rosetta_resnum === entryData.resnum);
+			const pdb_resnum = (residue_data) ? residue_data.PDBresnum : '';
+			return enzymeInfo.cat_residues.split(", ").map(res => res.slice(1)).includes(pdb_resnum);
+		}
+		return false;
+	};
 
   const formatTimestamp = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -104,6 +157,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           comment: newComment,
         }),
@@ -132,6 +186,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           teammate: teammate1 || null,
           teammate2: teammate2 || null,
@@ -145,7 +200,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
 
       alert('Teammates saved successfully!');
 
-      const updatedResponse = await fetch(`/api/getCharacterizationDataEntryFromID?id=${entryData.id}`);
+      const updatedResponse = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${entryData.id}`);
       const updatedData = await updatedResponse.json();
       updateEntryData(updatedData);  
     } catch (error) {
@@ -160,7 +215,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
           <span className="font-medium text-sm">Database ID</span>
-          <p className='text-gray-500 text-sm'>{entryData.id}</p>
+          <p className='text-gray-500 text-sm'>{enzyme}-{entryData.id}</p>
         </div>
 
         {foundOligo && (
@@ -197,6 +252,52 @@ const SingleVarSidebar: React.FC<SidebarProps> = ({ entryData, updateEntryData }
             </Tooltip>
           </div>
         )}
+
+		<div>
+			<span className="font-medium text-sm">Related Variants</span>
+			<p className="text-blue-500 text-sm">
+				<Link
+					isExternal
+					showAnchorIcon
+					href={`/database/characterization_data/${enzyme}?highlight=${entryData.resnum}`}
+				>
+					Search database
+				</Link>
+			</p>
+		</div>
+
+        <div>
+          <span className="font-medium text-sm">Tags</span>
+		  <div className="flex flex-wrap gap-2">
+			{isCatalyticResidue() && (
+			<Tooltip
+				content="This is one of the known catalytic residues."
+			>
+				<Chip
+					
+					size="sm"
+					color="danger"
+				>
+					catalytic
+				</Chip>
+			</Tooltip>
+			)}
+			{compareAAsAndReturnTags(entryData.resid, entryData.resmut).map((tag, index) => (
+			<Tooltip
+				key={index}
+				content={tag.desc}
+			>
+				<Chip
+					
+					size="sm"
+					color={tag.color}
+				>
+						{tag.text}
+				</Chip>
+			</Tooltip>
+			))}
+		  </div>
+        </div>
 
         <div>
           <span className="font-medium text-sm">Date Created</span>

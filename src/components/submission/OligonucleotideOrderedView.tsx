@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Select, SelectItem} from "@nextui-org/select";
 
+
 interface OligonucleotideOrderedViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
+
 const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData,
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData,
 }) => {
   const [oligoOrdered, setOligoOrdered] = useState<any>('no');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,10 +24,11 @@ const OligonucleotideOrderedView: React.FC<OligonucleotideOrderedViewProps> = ({
     setIsSubmitting(true);
     try {
       const isOrdered = oligoOrdered === 'yes';
-      const response = await fetch('/api/updateCharacterizationDataOligoOrdered', {
+      const response = await fetch("/api/updateCharacterizationDataOligoOrdered", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           oligo_ordered: isOrdered,
         }),

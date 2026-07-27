@@ -3,7 +3,6 @@ import { useUser } from '@/components/UserProvider';
 import axios from 'axios';
 import Link from 'next/link';
 import Papa from 'papaparse';
-
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
 
@@ -28,16 +27,20 @@ async function fetchFileFromS3(folder: string, filename: string): Promise<Blob> 
   return fileResp.blob();
 }
 
+
 interface WildTypeKineticDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
 
@@ -54,7 +57,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
   // 1) Fetch all "characterizationData" and filter for your user/institution + resid='X'
   useEffect(() => {
     const fetchKineticWTData = async () => {
-      const response = await fetch('/api/getCharacterizationData');
+      const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
       const data = await response.json();
       const filteredData = data.filter(
         (row: any) => row.institution === user?.institution && row.resid === 'X'
@@ -65,7 +68,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
       setKineticRawDataIds(ids);
     };
     fetchKineticWTData();
-  }, [user]);
+  }, [enzyme, user]);
 
   // 2) For each raw_data_id, fetch the actual "KineticRawData" objects
   useEffect(() => {
@@ -74,21 +77,21 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
         const response = await fetch('/api/getKineticRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: kineticRawDataIds })
+          body: JSON.stringify({ enzyme: enzyme, ids: kineticRawDataIds })
         });
         const data = await response.json();
         setKineticData(data);
       }
     };
     fetchKineticData();
-  }, [kineticRawDataIds]);
+  }, [enzyme, kineticRawDataIds]);
 
   // 3) If there's a WT_raw_data_id, fetch that single "KineticRawData" object, parse CSV, get image
   useEffect(() => {
     const fetchKineticRawDataEntryData = async () => {
       try {
         const response = await axios.get('/api/getKineticRawDataEntryDataFromWTid', {
-          params: { id: entryData.WT_raw_data_id }
+          params: { enzyme: enzyme, id: entryData.WT_raw_data_id }
         });
         if (response.status === 200) {
           const data = response.data;
@@ -112,7 +115,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
     if (entryData.WT_raw_data_id) {
       fetchKineticRawDataEntryData();
     }
-  }, [entryData.WT_raw_data_id]);
+  }, [enzyme, entryData.WT_raw_data_id]);
 
   /** 
    * Download the CSV from S3 and parse with Papa
@@ -429,7 +432,7 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
               <TableBody>
                 {kineticData.map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell>BglB</TableCell>
+                    <TableCell>{enzyme}</TableCell>
                     <TableCell>{row.assay_date}</TableCell>
                     <TableCell>{row.user_name}</TableCell>
                     <TableCell>

@@ -3,11 +3,9 @@ import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { AuthChecker } from '@/components/AuthChecker';
 import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
-import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import Link from 'next/link';
-import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
 import confetti from 'canvas-confetti';
@@ -24,10 +22,10 @@ import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
 
 
-const SingleVariant = () => {
+const SingleVariant = () => {  // TODO Is this correct?
   const { user } = useUser();
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
@@ -35,8 +33,8 @@ const SingleVariant = () => {
   const [entryData2, setEntryData2] = useState<any>(null); // KineticRawData row
   const [loading, setLoading] = useState(true);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [totalEntries, setTotalEntries] = useState(0);
+  //const [currentIndex, setCurrentIndex] = useState(0);
+  //const [totalEntries, setTotalEntries] = useState(0);
 
   // Toast and modal states
   const [toastInfo, setToastInfo] = useState<{
@@ -58,12 +56,12 @@ const SingleVariant = () => {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const checklistItems = [
-    'Protein induced',
-    'Protein yield',
-    'Kinetic assay data uploaded',
-    'Thermostability assay data uploaded',
-    'Melting point values uploaded',
-    'Gel uploaded',
+    "Protein production induced?",
+    "Protein yield?",
+    "Kinetic assay data uploaded?",
+    "Thermostability assay data uploaded?",
+    "Melting point values uploaded?",
+    "SDS-PAGE gel uploaded?",
   ];
 
   // Helper function to show toast
@@ -85,7 +83,7 @@ const SingleVariant = () => {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch entry data');
         }
@@ -99,13 +97,13 @@ const SingleVariant = () => {
     };
 
     fetchEntryData();
-  }, [id]);
+  }, [enzyme, id]);
 
   // Extract the fetchEntryData2 function from the useEffect so it can be called independently
   const fetchEntryData2 = async (entryId: number) => {
     if (!entryId) return;
     try {
-      const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryId}`);
+      const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryId}`);
       if (!response.ok) {
         // Silently set data to null - this is expected for new entries
         setEntryData2(null);
@@ -125,7 +123,7 @@ const SingleVariant = () => {
     if (entryData.id) {
       fetchEntryData2(entryData.id);
     }
-  }, [entryData.id]);
+  }, [entryData.id, fetchEntryData2]);
 
   // Mapping function to convert enum to display value (for yield_units in KineticRawData)
   const mapYieldUnitsBack = (enumValue: string): string => {
@@ -159,22 +157,22 @@ const SingleVariant = () => {
   const checkItemCompletion = (oldData: any, newData: any) => {
     // Check each field to see if it changed from incomplete to complete
     if (oldData.expressed === null && newData.expressed !== null) {
-      return 'Protein induced';
+      return "Protein production induced?";
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
-      return 'Protein yield';
+      return "Protein yield?";
     }
-    if (oldData.KM_avg === null && newData.KM_avg !== null) {
-      return 'Kinetic assay data uploaded';
+    if (oldData.kcat_over_KM === null && newData.kcat_over_KM !== null) {
+      return 'Kinetic assay data uploaded?';
     }
     if (oldData.T50 === null && newData.T50 !== null) {
-      return 'Thermostability assay data uploaded';
+      return "Thermostability assay data uploaded?";
     }
     if (oldData.Tm === null && newData.Tm !== null) {
-      return 'Melting point values uploaded';
+      return "Melting point values uploaded?";
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
-      return 'Gel uploaded';
+      return "SDS-PAGE gel uploaded?";
     }
     return null;
   };
@@ -203,7 +201,7 @@ const SingleVariant = () => {
   };
 
   // Fetch total entries for pagination
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchTotalEntries = async () => {
       try {
         const response = await fetch('/api/getTotalCharacterizationEntries');
@@ -225,19 +223,21 @@ const SingleVariant = () => {
     };
 
     fetchTotalEntries();
-  }, [id]);
+  }, [id]);*/
 
+  /*
   const navigateEntry = async (direction: 'next' | 'prev') => {
     const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
     try {
       const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
       if (!response.ok) throw new Error('Failed to fetch entry ID');
       const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/${newId}`);
+      router.push(`/submit/single_variant/${enzyme}/${newId}`);
     } catch (error) {
       console.error('Error navigating entries:', error);
     }
   };
+  */
 
   const triggerConfetti = () => {
     // Left side burst
@@ -308,7 +308,7 @@ const SingleVariant = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ enzyme, id }),
       });
 
       if (!response.ok) {
@@ -346,7 +346,7 @@ const SingleVariant = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ enzyme, id }),
       });
 
       if (!response.ok) {
@@ -368,24 +368,26 @@ const SingleVariant = () => {
     try {
       let response;
       switch (itemToDelete) {
-        case 'Protein induced':
+        case "Protein production induced?":
           // Reset induction data
           response = await fetch('/api/updateCharacterizationDataExpressed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               expressed: false, 
             })
           });
           break;
 
-        case 'Protein yield':
+        case "Protein yield?":
           // First update KineticRawData
           response = await fetch('/api/updateKineticRawDataYield', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               parent_id: entryData.id,
               yield_value: null,
               yield_units: null,
@@ -397,18 +399,19 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               yield_avg: null,
             }),
           });
           break;
 
-        case 'Kinetic assay data uploaded':
+        case "Kinetic assay data uploaded?":
           // First delete the KineticRawData entry
           const response1 = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response1.ok) {
@@ -417,6 +420,7 @@ const SingleVariant = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+				enzyme: enzyme,
                 parent_id: entryData.id,
                 kcat: null,
                 kcat_SD: null,
@@ -432,12 +436,12 @@ const SingleVariant = () => {
           break;
 
 
-        case 'Thermostability assay data uploaded':
+        case "Thermostability assay data uploaded?":
           // First delete the TempRawData entry
           const response2 = await fetch('/api/deleteTempData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response2.ok) {
@@ -446,6 +450,7 @@ const SingleVariant = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+				enzyme: enzyme,
                 parent_id: entryData.id, 
                 T50: null, 
                 T50_SD: null, 
@@ -458,12 +463,13 @@ const SingleVariant = () => {
           break;
 
 
-        case 'Melting point values uploaded':
+        case "Melting point values uploaded?":
           // Reset melting point data
           response = await fetch('/api/updateMeltingPointValues', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               tm_mean: null, 
               tm_std_dev: null,
@@ -471,12 +477,13 @@ const SingleVariant = () => {
           });
           break;
 
-        case 'Gel uploaded':
+        case "SDS-PAGE gel uploaded?":
           // Reset gel data
           response = await fetch('/api/updateCharacterizationDataGelFilename', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id, 
               gel_filename: null, 
             })
@@ -497,6 +504,8 @@ const SingleVariant = () => {
     }
   };
 
+  /*
+  // Was this for curation?
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
       <button
@@ -518,32 +527,33 @@ const SingleVariant = () => {
       </button>
     </div>
   );
+  */
 
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
       switch (item) {
-        case "Protein induced":
+        case "Protein production induced?":
           return entryData.expressed === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Protein yield":
+        case "Protein yield?":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Kinetic assay data uploaded":
-          return entryData.KM_avg === null
+        case "Kinetic assay data uploaded?":
+          return entryData.kcat_over_KM === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Thermostability assay data uploaded":
+        case "Thermostability assay data uploaded?":
           return entryData.T50 === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Melting point values uploaded":
+        case "Melting point values uploaded?":
           return entryData.Tm === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
-        case "Gel uploaded":
+        case "SDS-PAGE gel uploaded?":
           return entryData.gel_filename === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
@@ -553,70 +563,89 @@ const SingleVariant = () => {
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein yield" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
+      if (item === "Protein yield?" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
         const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">c =</span>
+            <span className="font-semibold"><i>c</i> =</span>
             <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
           </div>
         );
       }
 
-      if (item === "Kinetic assay data uploaded" && entryData.KM_avg !== null && entryData.kcat_avg !== null) {
-        const kmAvg = parseFloat(entryData.KM_avg);
-        const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
-        const kcatAvg = parseFloat(entryData.kcat_avg);
-        const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
+      if (item === "Kinetic assay data uploaded?" && entryData.kcat_over_KM !== null) {
+		if (entryData.KM_avg !== null && entryData.kcat_avg !== null) {
+			const kmAvg = parseFloat(entryData.KM_avg);
+			const kmSd = entryData.KM_SD !== null ? parseFloat(entryData.KM_SD) : null;
+			const kcatAvg = parseFloat(entryData.kcat_avg);
+			const kcatSd = entryData.kcat_SD !== null ? parseFloat(entryData.kcat_SD) : null;
 
-        const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
-        const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
-        const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
-        const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
+			const kmAvgRounded = isNaN(kmAvg) ? '' : kmAvg.toFixed(2);
+			const kmSdRounded = kmSd !== null && !isNaN(kmSd) ? kmSd.toFixed(2) : null;
+			const kcatAvgRounded = isNaN(kcatAvg) ? '' : kcatAvg.toFixed(1);
+			const kcatSdRounded = kcatSd !== null && !isNaN(kcatSd) ? kcatSd.toFixed(1) : null;
 
-        return (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1">
-              <span className="font-semibold">K<sub>M</sub> =</span>
-              <span>
-                {kmAvgRounded}
-                {kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-semibold">k<sub>cat</sub> =</span>
-              <span>
-                {kcatAvgRounded}
-                {kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
-              </span>
-            </div>
-          </div>
-        );
+			return (
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-1">
+					<span className="font-semibold"><i>K</i><sub>M</sub> =</span>
+					<span>
+						{kmAvgRounded}
+						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+					</span>
+					</div>
+					<div className="flex items-center gap-1">
+					<span className="font-semibold"><i>k</i><sub>cat</sub> =</span>
+					<span>
+						{kcatAvgRounded}
+						{kcatSdRounded !== null && <> ± {kcatSdRounded}</>} min<sup>-1</sup>
+					</span>
+					</div>
+				</div>
+			);
+		} else {
+			const kcatOverKM = parseFloat(entryData.kcat_over_KM);
+			const kcatOverKMSD = entryData.kcat_over_KM !== null ? parseFloat(entryData.kcat_over_KM_SD) : null;
+			const kcatOverKMRounded = isNaN(kcatOverKM) ? '' : kcatOverKM.toFixed(2);
+			const kcatOverKMSDRounded = kcatOverKMSD !== null && !isNaN(kcatOverKMSD) ? kcatOverKMSD.toFixed(2) : null;
+
+			return (
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-1">
+					<span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
+					<span>
+						{kcatOverKMRounded}
+						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
+					</span>
+					</div>
+				</div>
+			);
+		}
       }
 
-      if (item === "Thermostability assay data uploaded" && entryData.T50 !== null) {
+      if (item === "Thermostability assay data uploaded?" && entryData.T50 !== null) {
         const t50 = parseFloat(entryData.T50).toFixed(1); 
         const t50sd = parseFloat(entryData.T50_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>50</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>50</sub> =</span>
             <span>{t50} ± {t50sd}°C</span>
           </div>
         );
       }
 
-      if (item === "Melting point values uploaded" && entryData.Tm !== null) {
+      if (item === "Melting point values uploaded?" && entryData.Tm !== null) {
         const tm = parseFloat(entryData.Tm).toFixed(1); 
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold">T<sub>M</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>m</sub> =</span>
             <span>{tm} ± {tmSD}°C</span>
           </div>
         );
       }
 
-      if (item === "Gel uploaded" && entryData.gel_filename) {
+      if (item === "SDS-PAGE gel uploaded?" && entryData.gel_filename) {
         return (
           <div className="flex items-center gap-2">
             <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
@@ -644,16 +673,16 @@ const SingleVariant = () => {
     // Helper function to determine if an item should be accessible
     const isItemAccessible = (item: string) => {
       switch (item) {
-        case 'Protein induced':
+        case "Protein production induced?":
           return true;
         
-        case 'Protein yield':
-        case 'Gel uploaded':
+        case "Protein yield?":
+        case "SDS-PAGE gel uploaded?":
           return entryData.expressed === true;
         
-        case 'Kinetic assay data uploaded':
-        case 'Thermostability assay data uploaded':
-        case 'Melting point values uploaded':
+        case "Kinetic assay data uploaded?":
+        case "Thermostability assay data uploaded?":
+        case "Melting point values uploaded?":
           return entryData.yield_avg !== null;
         
         default:
@@ -674,9 +703,9 @@ const SingleVariant = () => {
           }}
         >
           <TableHeader>
-            <TableColumn>Status</TableColumn>
+            <TableColumn align="center">Status</TableColumn>
             <TableColumn>Checklist Item</TableColumn>
-            <TableColumn align="start">Additional Info</TableColumn>
+            <TableColumn align="start">Data</TableColumn>
             <TableColumn align="center">Actions</TableColumn>
           </TableHeader>
           <TableBody>
@@ -745,12 +774,12 @@ const SingleVariant = () => {
                       >
                         <span 
                           className={`text-lg ${
-                            !accessible || entryData.curated || entryData.approved_by_pi
+                             (!accessible || entryData.curated || getStatusStyle(item).text == "Incomplete")
                               ? "text-gray-300 cursor-not-allowed"
                               : "text-danger cursor-pointer active:opacity-50"
                           }`}
                           onClick={() => {
-                            if (accessible && !entryData.curated && !entryData.approved_by_pi) {
+                            if (accessible && !entryData.curated) {
                               setItemToDelete(item);
                               setShowDeleteItemModal(true);
                             }
@@ -770,7 +799,7 @@ const SingleVariant = () => {
         {/* Add the bug report link below the table */}
         <div className="flex justify-end mt-4 mr-3">
           <Link 
-            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/${id}`)}`}
+            href={`/contact/report?page=${encodeURIComponent(`/submit/wild_type/${enzyme}/${id}`)}`}
             className="text-sm text-gray-600 hover:text-[#06B7DB] flex items-center gap-1.5 transition-colors duration-200"
           >
             <BugIcon className="w-4 h-4" />
@@ -783,12 +812,12 @@ const SingleVariant = () => {
 
   const renderDetailView = () => {
     const checklistItems = [
-      'Protein induced',
-      'Protein yield',
-      "Kinetic assay data uploaded",
-      "Thermostability assay data uploaded",
-      "Melting point values uploaded",
-      "Gel uploaded"
+      "Protein production induced?",
+      "Protein yield?",
+      "Kinetic assay data uploaded?",
+      "Thermostability assay data uploaded?",
+      "Melting point values uploaded?",
+      "SDS-PAGE gel uploaded"
     ];
 
     const currentIndex = checklistItems.indexOf(selectedDetail);
@@ -797,18 +826,18 @@ const SingleVariant = () => {
 
     const DetailComponent = (() => {
       switch (selectedDetail) {
-        case 'Protein induced':
-          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case 'Protein yield':
-          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Kinetic assay data uploaded":
-          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-        case "Thermostability assay data uploaded":
-          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Melting point values uploaded":
-          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
-        case "Gel uploaded":
-          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Protein production induced?":
+          return <ProteinInducedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Protein yield?":
+          return <ProteinYieldView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Kinetic assay data uploaded?":
+          return <KineticAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+        case "Thermostability assay data uploaded?":
+          return <ThermoAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "Melting point values uploaded?":
+          return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+        case "SDS-PAGE gel uploaded?":
+          return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
           return <div>Detail view for {selectedDetail}</div>;
@@ -877,7 +906,7 @@ const SingleVariant = () => {
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return '';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -904,7 +933,8 @@ const SingleVariant = () => {
       const response = await fetch('/api/curateData', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
+			enzyme: enzyme,
           ids: [entryData.id],
           status: user?.status 
         }),
@@ -933,7 +963,8 @@ const SingleVariant = () => {
       const response = await fetch('/api/updateCharacterizationDataCurated', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
+			enzyme: enzyme,
           id: entryData.id,
           curated: false 
         }),
@@ -978,27 +1009,8 @@ const SingleVariant = () => {
                 {!loading && entryData && (
                   <div>
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
-                      {getVariantDisplay(entryData)}
-                      <Link
-                        href={`/database/characterization_data/BglB?search=${encodeURIComponent(
-                          getVariantDisplay(entryData).replace(' BglB', '').trim()
-                        )}`}
-                        className="inline-flex items-center hover:text-[#06B7DB]"
-                      >
-                        <ExternalLink className="w-5 h-5 stroke-[1.5]" />
-                      </Link>
+                      {getVariantDisplay(entryData)} Data Submission Portal
                     </h1>
-                    <StatusChip
-                      status={
-                        entryData.curated 
-                          ? 'approved'
-                          : entryData.approved_by_pi
-                            ? 'pi_approved'
-                            : entryData.submitted_for_curation 
-                              ? 'pending_approval'
-                              : 'in_progress'
-                      }
-                    />
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
@@ -1074,7 +1086,7 @@ const SingleVariant = () => {
               <div className="flex w-full gap-4 flex-col lg:flex-row">
                 <div className="w-full lg:w-1/5">
                   <div className="lg:sticky lg:top-4">
-                    <InfoSidebar entryData={entryData} updateEntryData={updateEntryData} />
+                    <InfoSidebar enzyme={enzyme as string} entryData={entryData} updateEntryData={updateEntryData} />
                   </div>
                 </div>
 

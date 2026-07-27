@@ -2,26 +2,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import axios from 'axios';
 import { useUser } from '@/components/UserProvider';
-import { useRouter } from 'next/router';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@nextui-org/table";
 import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import Image from 'next/image';
 
+
 interface KineticAssayDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void; 
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void; 
 }
 
+
 const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const { user } = useUser();
-  const router = useRouter();
 
   const [kineticAssayData, setKineticAssayData] = useState<any[][]>([]);
   const [mentenImageUrl, setMentenImageUrl] = useState<string | null>(null);
@@ -39,9 +41,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
 
-  const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%236b7280' font-family='sans-serif' font-size='16'%3EGraph will appear here%3C/text%3E%3C/svg%3E";
-
-  const [isDragging, setIsDragging] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState('');
 
   // Add a new state for loading
@@ -191,7 +191,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     async function fetchKineticRawDataEntryData() {
       if (!entryData.id) return;
       const response = await axios.get('/api/getKineticRawDataEntryData', {
-        params: { parent_id: entryData.id }
+        params: { enzyme: enzyme, parent_id: entryData.id }
       });
       if (response.status === 200) {
         const data = response.data;
@@ -206,7 +206,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
   
     fetchKineticRawDataEntryData();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
 
   const downloadCsvFile = async () => {
@@ -356,7 +356,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   const generateFilename = (baseName: string, suffix: string = '', extension: string) => {
     const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
-    return `${user.user_name}-BglB-${variant}-${entryData.id}${suffix}.${extension}`;
+    return `${user.user_name}-${enzyme}-${variant}-${entryData.id}${suffix}.${extension}`;
   };
 
   const base64ToBlob = (base64Data: string, contentType: string) => {
@@ -412,6 +412,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const { kcat, kcat_SD, KM, KM_SD, kcat_over_KM, kcat_over_KM_SD } = kineticConstants;
   
       const dataToSend = {
+		enzyme,
         user_name,
         variant,
         slope_units,
@@ -465,6 +466,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       // 7. Update filenames in dataToSend
       dataToSend.csv_filename = csvFilename;
       dataToSend.plot_filename = mentenPlotFilename;
+	  dataToSend.enzyme = enzyme;
   
       // 8. Save to KineticRawData
       const response1 = await axios.post('/api/updateKineticRawData', dataToSend);
@@ -475,7 +477,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   
         // 9. Update CharacterizationData
         const response2 = await axios.post('/api/updateCharacterizationDataKineticStuff', {
-          parent_id,
+			enzyme: enzyme,
+			parent_id,
           kcat,
           kcat_SD,
           KM,

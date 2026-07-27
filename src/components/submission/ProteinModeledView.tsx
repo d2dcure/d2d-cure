@@ -16,7 +16,13 @@ interface ValidationMessage {
 	field: 'WT' | 'variant';
 }
 
-const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryData, setCurrentView, updateEntryData }) => {
+
+const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
+}) => {
 	const [folditScore, setFolditScore] = useState<number>();
 	const [startingScore, setStartingScore] = useState<number>();
 	const [endingScore, setEndingScore] = useState<number>();
@@ -106,15 +112,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 				}
 			}
 		}
-	}, [startingScore, endingScore, folditScore]);
+	}, [enzyme, startingScore, endingScore, folditScore]);
 
 	useEffect(() => {
 		if (startingScore != null || endingScore != null) { validateScores(); }
 	}, [startingScore, endingScore, validateScores]);
 
   const updateRosettaScore = async () => {
-    //const isValid = validateScores();
-    
     const hasBlockingValidation = validationMessages.some(msg => 
       msg.type === 'error' 
     );
@@ -128,8 +132,9 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({ enzyme, entryDa
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-				id: entryData.id,
-				Rosetta_score: endingScore - startingScore,
+					enzyme: enzyme,
+					id: entryData.id,
+					Rosetta_score: endingScore - startingScore,
 				}),
 			});
 			if (!response.ok) {

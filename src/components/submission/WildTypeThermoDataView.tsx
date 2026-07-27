@@ -25,16 +25,20 @@ async function fetchFileFromS3(folder: string, filename: string): Promise<Blob> 
   return fileResp.blob();
 }
 
+
 interface WildTypeThermoDataViewProps {
-  entryData: any;
-  setCurrentView: (view: string) => void;
-  updateEntryData: (newData: any) => void;
+	enzyme: string;
+	entryData: any;
+	setCurrentView: (view: string) => void;
+	updateEntryData: (newData: any) => void;
 }
 
+
 const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
-  entryData,
-  setCurrentView,
-  updateEntryData
+	enzyme,
+	entryData,
+	setCurrentView,
+	updateEntryData
 }) => {
   const [tempData, setTempData] = useState<any[]>([]);
   const [tempRawDataEntryData, setTempRawDataEntryData] = useState<any>(null);
@@ -48,7 +52,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
   useEffect(() => {
     const fetchTempData = async () => {
       try {
-        const response = await fetch('/api/getCharacterizationData');
+        const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
         const data = await response.json();
         const filteredData = data.filter(
           (row: any) => row.institution === entryData.institution && row.resid === 'X'
@@ -61,7 +65,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
         const tempDataResponse = await fetch('/api/getTempRawDataFromIDs', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
+          body: JSON.stringify({ enzyme, ids })
         });
 
         const tempDataResult = await tempDataResponse.json();
@@ -72,14 +76,14 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     };
 
     fetchTempData();
-  }, [entryData.institution]);
+  }, [enzyme, entryData.institution]);
 
   // 2) If we already have a WT_temp_raw_data_id, fetch that single raw data => parse CSV + plot
   useEffect(() => {
     const fetchTempRawDataEntryData = async () => {
       try {
         const response = await axios.get('/api/getTempRawDataEntryDataFromWTid', {
-          params: { id: entryData.WT_temp_raw_data_id }
+          params: { enzyme: enzyme, id: entryData.WT_temp_raw_data_id }
         });
         if (response.status === 200) {
           const data = response.data;
@@ -100,7 +104,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
     if (entryData.WT_temp_raw_data_id) {
       fetchTempRawDataEntryData();
     }
-  }, [entryData.WT_temp_raw_data_id]);
+  }, [enzyme, entryData.WT_temp_raw_data_id]);
 
   /** 
    * Check if a parsed CSV is "horizontal" 
@@ -404,7 +408,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
               <TableBody>
                 {tempData.map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell className="whitespace-nowrap">BglB</TableCell>
+                    <TableCell className="whitespace-nowrap">{enzyme}</TableCell>
                     <TableCell className="whitespace-nowrap">{row.assay_date}</TableCell>
                     <TableCell className="whitespace-nowrap">{row.user_name}</TableCell>
                     <TableCell>

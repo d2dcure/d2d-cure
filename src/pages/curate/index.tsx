@@ -224,10 +224,11 @@ const CuratePage = () => {
             case "variant":
                 return (
                     <div className="text-center">
+						{/* TEMP: Hardcoding BglB into URL. */}
                         <Link
                             href={data.resid === "X" 
-                                ? `/submit/wild_type/${data.id}`
-                                : `/submit/single_variant/${data.id}`
+                                ? `/submit/wild_type/BglB/${data.id}`
+                                : `/submit/single_variant/BglB/${data.id}`
                             }
                             target="_blank"
                             rel="noopener noreferrer"
@@ -433,7 +434,7 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ids: selectedIds, status: viewAs }),
+            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to approve data, server responded with ' + response.status);
@@ -476,7 +477,7 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ids: selectedIds, status: viewAs }),
+            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to reject data, server responded with ' + response.status);

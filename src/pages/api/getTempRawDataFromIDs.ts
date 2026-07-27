@@ -1,11 +1,18 @@
 // used in single variant submission process, when the user is going to select the temp assay WT 
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req:any, res:any) {
-  const { ids } = req.body; 
+  const { enzyme, ids } = req.body; 
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 
   try {
-    const data = await prismaBglB.tempRawData.findMany({
+    const data = await client.tempRawData.findMany({
       where: {
         id: {
           in: ids.map((id:any) => parseInt(id)),
@@ -15,6 +22,7 @@ export default async function handler(req:any, res:any) {
         id: true,
         user_name: true,
         // slope_units is not included in the select. Something's wrong with the enum defined in the schema 
+		// TODO: Fix this!
         assay_date: true,
         cell_data: true,
       }

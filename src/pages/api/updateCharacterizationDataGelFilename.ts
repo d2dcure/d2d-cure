@@ -1,13 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prismaBglB from '../../../prismaBglBClient';
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { id, gel_filename } = req.body;
+    const { enzyme, id, gel_filename } = req.body;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 
     try {
       // Update the gel_filename in CharacterizationData table
-      const updatedEntry = await prismaBglB.characterizationData.update({
+      const updatedEntry = await client.characterizationData.update({
         where: { id },
         data: {
           gel_filename,

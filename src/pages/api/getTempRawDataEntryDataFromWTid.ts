@@ -1,18 +1,25 @@
-import prismaBglB from "../../../prismaBglBClient";
+import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { id } = req.query;
+  const { enzyme, id } = req.query;
+	if (enzyme == '') {
+		return res.status(400).json({ error: "Enzyme is required." });
+	}
+	const client = getClient(enzyme);
+	if (!client) {
+		return res.status(400).json({ error: "Enzyme does not have a database." });
+	}
 
   if (!id) {
     return res.status(400).json({ error: 'id is required' });
   }
 
   try {
-    const tempRawDataEntry = await prismaBglB.tempRawData.findFirst({
+    const tempRawDataEntry = await client.tempRawData.findFirst({
       where: { id: parseInt(id) },
     });
 

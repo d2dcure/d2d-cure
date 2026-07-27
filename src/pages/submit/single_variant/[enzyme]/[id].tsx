@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
-import { ExternalLink, ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
+import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
+import { Link } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import { EditIcon } from "@/components/icons/EditIcon";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
@@ -31,16 +32,13 @@ import GelUploadedView from '@/components/submission/GelUploadedView';
 const SingleVariant = () => {
   const { user } = useUser();
   const router = useRouter();
-  const { id } = router.query;
+  const { enzyme, id } = router.query;
 
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
   const [entryData, setEntryData] = useState<any>({});
   const [entryData2, setEntryData2] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [totalEntries, setTotalEntries] = useState(0);
 
   console.log(user)
 
@@ -96,7 +94,7 @@ const SingleVariant = () => {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await fetch(`/api/getCharacterizationDataEntryFromID?id=${id}`);
+        const response = await fetch(`/api/getCharacterizationDataEntryFromID?enzyme=${enzyme}&id=${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch entry data');
         }
@@ -110,14 +108,14 @@ const SingleVariant = () => {
     };
 
     fetchEntryData();
-  }, [id]);
+  }, [enzyme, id]);
 
   // Fetch entryData2 using entryData.id
   useEffect(() => {
     const fetchEntryData2 = async () => {
       if (!entryData.id) return;
       try {
-        const response = await fetch(`/api/getKineticRawDataEntryData?parent_id=${entryData.id}`);
+        const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryData.id}`);
         if (!response.ok) {
           // Silently set data to null - this is expected for new entries
           setEntryData2(null);
@@ -132,7 +130,7 @@ const SingleVariant = () => {
     };
 
     fetchEntryData2();
-  }, [entryData.id]);
+  }, [enzyme, entryData.id]);
 
   // Mapping function to convert enum to display value (for yield_units in KineticRawData)
   const mapYieldUnitsBack = (enumValue: string): string => {
@@ -242,42 +240,6 @@ const SingleVariant = () => {
     }
   };
 
-  // Fetch total entries for pagination
-  useEffect(() => {
-    const fetchTotalEntries = async () => {
-      try {
-        const response = await fetch('/api/getTotalCharacterizationEntries');
-        if (!response.ok) throw new Error('Failed to fetch total entries');
-        const { total } = await response.json();
-        setTotalEntries(total);
-
-        // Find current index if id exists
-        if (id) {
-          const indexResponse = await fetch(`/api/getEntryIndex?id=${id}`);
-          if (indexResponse.ok) {
-            const { index } = await indexResponse.json();
-            setCurrentIndex(index);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching total entries:', error);
-      }
-    };
-
-    fetchTotalEntries();
-  }, [id]);
-
-  const navigateEntry = async (direction: 'next' | 'prev') => {
-    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-    try {
-      const response = await fetch(`/api/getEntryIdByIndex?index=${newIndex}`);
-      if (!response.ok) throw new Error('Failed to fetch entry ID');
-      const { id: newId } = await response.json();
-      router.push(`/submit/single_variant/${newId}`);
-    } catch (error) {
-      console.error('Error navigating entries:', error);
-    }
-  };
 
   const triggerConfetti = () => {
     // Left side burst
@@ -362,7 +324,7 @@ const SingleVariant = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ enzyme, id }),
       });
 
       if (!response.ok) {
@@ -400,7 +362,7 @@ const SingleVariant = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ enzyme, id }),
       });
 
       if (!response.ok) {
@@ -429,6 +391,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               Rosetta_score: null,
             })
@@ -441,6 +404,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               oligo_ordered: false,
             })
@@ -453,6 +417,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               ab1_filename: null,
               plasmid_verified: false, 
@@ -462,10 +427,12 @@ const SingleVariant = () => {
 
         case 'Protein production induced?':
           // Reset induction data
+		  // TODO: Induction is NOT expression. Fix this!
           response = await fetch('/api/updateCharacterizationDataExpressed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               expressed: false, 
             })
@@ -478,6 +445,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               parent_id: entryData.id,
               yield_value: null,
               yield_units: null,
@@ -489,6 +457,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               yield_avg: null,
             }),
@@ -500,7 +469,7 @@ const SingleVariant = () => {
           const response1 = await fetch('/api/deleteKineticData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response1.ok) {
@@ -509,6 +478,7 @@ const SingleVariant = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+				enzyme: enzyme,
                 parent_id: entryData.id,
                 kcat: null,
                 kcat_SD: null,
@@ -529,6 +499,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               WT_raw_data_id: 0, 
             })
@@ -540,7 +511,7 @@ const SingleVariant = () => {
           const response2 = await fetch('/api/deleteTempData', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parent_id: entryData.id })
+            body: JSON.stringify({ enzyme: enzyme, parent_id: entryData.id })
           });
 
           if (response2.ok) {
@@ -549,6 +520,7 @@ const SingleVariant = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+				enzyme: enzyme,
                 parent_id: entryData.id, 
                 T50: null, 
                 T50_SD: null, 
@@ -565,6 +537,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id,
               WT_temp_raw_data_id: 0, 
             })
@@ -577,6 +550,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+			  enzyme: enzyme,
               id: entryData.id,
               tm_mean: null, 
               tm_std_dev: null,
@@ -590,6 +564,7 @@ const SingleVariant = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+				enzyme: enzyme,
               id: entryData.id, 
               gel_filename: null, 
             })
@@ -617,6 +592,7 @@ const SingleVariant = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+			enzyme: enzyme,
           id: entryData.id,
           curated: false 
         }),
@@ -642,6 +618,7 @@ const SingleVariant = () => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+			enzyme: enzyme,
           ids: [entryData.id],
           status: user?.status 
         }),
@@ -665,7 +642,7 @@ const SingleVariant = () => {
     }
   };
 
-  const renderPagination = () => (
+  /*const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-4">
       <button
         onClick={() => navigateEntry('prev')}
@@ -685,7 +662,7 @@ const SingleVariant = () => {
         <ChevronRight className="w-5 h-5 text-[#06B7DB]" />
       </button>
     </div>
-  );
+  );*/
 
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 
@@ -826,7 +803,7 @@ const SingleVariant = () => {
         const tmSD = parseFloat(entryData.Tm_SD).toFixed(1); 
         return (
           <div className="flex items-center gap-1">
-            <span className="font-semibold"><i>T</i><sub>M</sub> =</span>
+            <span className="font-semibold"><i>T</i><sub>m</sub> =</span>
             <span>{tm} ± {tmSD}°C</span>
           </div>
         );
@@ -1014,7 +991,7 @@ const SingleVariant = () => {
         {/* Add the bug report link below the table */}
         <div className="flex justify-end mt-4 mr-3">
           <Link 
-            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/${id}`)}`}
+            href={`/contact/report?page=${encodeURIComponent(`/submit/single_variant/${enzyme}/${id}`)}`}
             className="text-sm text-gray-600 hover:text-[#06B7DB] flex items-center gap-1.5 transition-colors duration-200"
           >
             <BugIcon className="w-4 h-4" />
@@ -1047,28 +1024,27 @@ const SingleVariant = () => {
     const DetailComponent = (() => {
       switch (selectedDetail) {
         case "Protein modeled?":
-			// TEMP Hardcoding BglB for now to test framework.
-          return <ProteinModeledView enzyme="BglB" entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinModeledView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Oligonucleotide ordered?":
-          return <OligonucleotideOrderedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
+          return <OligonucleotideOrderedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData}  />;
         case "Plasmid sequence verified?":
-          return <PlasmidSequenceVerifiedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <PlasmidSequenceVerifiedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case 'Protein production induced?':
-          return <ProteinInducedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinInducedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case 'Protein yield?':
-          return <ProteinYieldView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ProteinYieldView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Kinetic assay data uploaded?":
-          return <KineticAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <KineticAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Wild-type kinetic assay data uploaded?":
-          return <WildTypeKineticDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <WildTypeKineticDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         case "Thermostability assay data uploaded?":
-          return <ThermoAssayDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <ThermoAssayDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Wild-type thermostability assay data uploaded?":
-          return <WildTypeThermoDataView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <WildTypeThermoDataView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "Melting point values uploaded?":
-          return <MeltingPointView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
+          return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "SDS-PAGE gel uploaded?":
-          return <GelUploadedView entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
+          return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
 
         default:
           return <div>Detail view for {selectedDetail}</div>;
@@ -1137,7 +1113,7 @@ const SingleVariant = () => {
   const getVariantDisplay = (data: any) => {
     if (!data || !data.resid) return '';
     const variant = data.resid === 'X' ? 'WT' : `${data.resid}${data.resnum}${data.resmut}`;
-    return `${variant} BglB`;
+    return `${variant} ${enzyme}`;
   };
 
   const getBreadcrumbDisplay = (data: any) => {
@@ -1176,18 +1152,11 @@ const SingleVariant = () => {
 
             <div className="pt-3">
               <div className="flex justify-between items-start mb-4 flex-col sm:flex-row gap-4">
+				{/* Page Title */}
                 {!loading && entryData && (
                   <div>
                     <h1 className="text-4xl font-inter dark:text-white mb-2 flex items-center gap-2">
-                      {getVariantDisplay(entryData)}
-                      <Link
-                        href={`/database/characterization_data/BglB?search=${encodeURIComponent(
-                          getVariantDisplay(entryData).replace(' BglB', '').trim()
-                        )}`}
-                        className="inline-flex items-center hover:text-[#06B7DB]"
-                      >
-                        <ExternalLink className="w-5 h-5 stroke-[1.5]" />
-                      </Link>
+                      {getVariantDisplay(entryData)} Data Submission Portal
                     </h1>
                     <StatusChip
                       status={
@@ -1202,6 +1171,8 @@ const SingleVariant = () => {
                     />
                   </div>
                 )}
+
+				{/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[300px]">
                   {/* Only show if conditions are met */}
                   {user?.status && 
@@ -1274,9 +1245,11 @@ const SingleVariant = () => {
               </div>
 
               <div className="flex w-full gap-4 flex-col lg:flex-row">
+				{/* */}
                 <div className="w-full lg:w-1/5">
+				  {/* TODO: Separate out InfoSidebar from TeammatesSidebar and CommentsSideBar*/}
                   <div className="lg:sticky lg:top-4">
-                    <InfoSidebar entryData={entryData} updateEntryData={updateEntryData} />
+                    <InfoSidebar enzyme={enzyme as string} entryData={entryData} updateEntryData={updateEntryData} />
                   </div>
                 </div>
 
@@ -1293,6 +1266,7 @@ const SingleVariant = () => {
             </div>
           </div>
         </div>
+		<Footer />
       </EntryAccessChecker>
 
       {/* Toast Notifications */}

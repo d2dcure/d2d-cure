@@ -1,3 +1,4 @@
+import VariantSearchForm from "@/components/VariantSearchForm";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
@@ -5,7 +6,7 @@ import { useRouter } from 'next/router';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { Select, SelectItem, Button, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, CardBody } from "@nextui-org/react";
+import { Select, SelectItem, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,  Card, CardBody } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
 import Footer from '@/components/Footer';
 
@@ -19,15 +20,14 @@ const SubmitPage = () => {
 
   // part 2 - enter the enzyme (and, if single variant, the variant)
   const [enzymeList, setEnzymeList] = useState<any[]>([]);
-  const [enzyme, setEnzyme] = useState('');
-  const [enzymeVariant, setEnzymeVariant] = useState('');
-  const [sequences, setSequences] = useState<any[]>([]);
+  const [enzyme, setEnzyme] = useState<string>('');
+  const [enzymeVariant, setEnzymeVariant] = useState<string>('');
   const [error, setError] = useState('');
   const [resid, setResid] = useState('');
   const [resnum, setResnum] = useState('');
   const [resmut, setResmut] = useState('');
 
-  // part 3 - how many records already exist, if none, then make your own 
+  // part 3 - how many records already exist, if none, then make your own
   const [entered, setEntered] = useState('null');
   const [matchedData, setMatchedData] = useState<any[]>([]);
   const [charData, setCharData] = useState<any[]>([]);
@@ -45,21 +45,12 @@ const SubmitPage = () => {
     const match = enzymeVariant.match(variantRegex);
   
     if (!match) {
-      setError('Incorrect format. Please use the format: {resid}{resnum}{resmut}.');
+      setError('Error searching database for selected variant; no match found.');
       return;
     }
   
     const [, resid, resnum, resmut] = match;
 
-    const sequenceMatch = sequences.find(seq => String(seq.Rosetta_resnum) === resnum && String(seq.resid) === resid);
-  
-    if (!sequenceMatch) {
-      setError('That variant combination is not possible.');
-      return;
-    }
-  
-    // check if variant the user entered is valid + show list of other variants from same school
-    console.log('Variant is valid:', { resid, resnum, resmut });
     setEntered(resid); 
     setResid(resid); 
     setResnum(resnum); 
@@ -75,26 +66,23 @@ const SubmitPage = () => {
   };
 
   const handleSubmitWT = () => {
-    setError('');
-    setEntered('null');
+	setError('');
 
-    setEntered('X'); 
-    setResid('X'); 
-    setResnum('0'); 
-    setResmut('X'); 
-    const filteredData = charData.filter((data) => 
-    String(data.resid) === 'X' &&
-    String(data.resnum) === '0' &&
-    String(data.resmut) === 'X' &&
-    String(data.institution) === user?.institution 
-    );
+	setEntered('X'); 
+	setResid('X'); 
+	setResnum('0'); 
+	setResmut('X'); 
+	const filteredData = charData.filter((data) => 
+	String(data.resid) === 'X' &&
+	String(data.resnum) === '0' &&
+	String(data.resmut) === 'X' &&
+	String(data.institution) === user?.institution 
+	);
 
-    setMatchedData(filteredData);
-
+	setMatchedData(filteredData);
   };
 
   const handleCreateNewDataset = async () => {
-  
     try {
       const response = await fetch('/api/createNewCharacterizationDataEntry', {
         method: 'POST',
@@ -102,6 +90,7 @@ const SubmitPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+		  enzyme: enzyme,
           username: user?.user_name, 
           institution: user?.institution, 
           pi: user?.pi || user?.given_name,
@@ -144,48 +133,55 @@ const SubmitPage = () => {
   // for new dataset navigation to work 
   useEffect(() => {
     if (newEntry && newEntry.id && newEntry.resid == 'X') {
-      router.push(`/submit/wild_type/${newEntry.id}`);
+      router.push(`/submit/wild_type/${enzyme}/${newEntry.id}`);
     } 
     else if (newEntry && newEntry.id) {
-      router.push(`/submit/single_variant/${newEntry.id}`);
+      router.push(`/submit/single_variant/${enzyme}/${newEntry.id}`);
     }
-  }, [newEntry, router]);
+  }, [enzyme, newEntry, router]);
 
-  useEffect(() => {
-    const fetchEnzymes = async () => {
-      const response = await fetch('/api/getEnzymes');
-      const data = await response.json();
-      setEnzymeList(data);
-    };
-    const fetchSequences = async () => {
-      const response = await fetch('/api/getSequenceData?enzyme=BglB');  // TEMP
-      const data = await response.json();
-      setSequences(data);
-    };
-    const fetchData = async () => {
-        const response = await fetch('/api/getCharacterizationData');
-        const data = await response.json();
-        setCharData(data);
-      };
-  
-    fetchData(); 
-    fetchSequences(); 
-    fetchEnzymes(); 
-  }, []);
+	useEffect(() => {
+		const fetchEnzymes = async () => {
+			const response = await fetch('/api/getEnzymes');
+			const data = await response.json();
+			const activeEnzymes= [];
+			for (let enzyme of data) {
+				if (enzyme.active === true) {
+					activeEnzymes.push(enzyme);
+				}
+			}
+			setEnzymeList(activeEnzymes); 
+		};
+		fetchEnzymes();
+	}, []);
+
+	useEffect(() => {
+    	const fetchData = async () => {
+        	const response = await fetch(`/api/getCharacterizationData?enzyme=${enzyme}`);
+        	const data = await response.json();
+        	setCharData(data);
+      	};
+		if (enzyme) {
+    		fetchData();
+		} else {
+			setCharData([]);
+			setMatchedData([]);
+		}
+	}, [enzyme]);
 
   // Add this new useEffect to fetch related data when matchedData changes
   useEffect(() => {
-    const fetchActualData = async () => {
+    const fetchLinkedData = async () => {
       if (matchedData.length === 0) return;
       
       try {
         const ids = matchedData.map(item => item.id);
-        const response = await fetch('/api/getCharDataForSubmitPage', {
+        const response = await fetch('/api/getLinkedRawDataFromIDs', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ ids }),
+          body: JSON.stringify({ enzyme, ids }),
         });
         
         if (!response.ok) {
@@ -199,8 +195,26 @@ const SubmitPage = () => {
       }
     };
     
-    fetchActualData();
-  }, [matchedData]);
+    fetchLinkedData();
+  }, [enzyme, matchedData]);
+
+
+	// Functions to pass to child component
+	const updateEnzyme = (new_enzyme: string) => {
+		setEnzymeVariant('');
+    	setEnzyme(new_enzyme);
+		setEntered('null');
+	};
+
+	const updateEnzymeVariant = (new_variant: string) => {
+		// Only update if a valid variant string.
+		if ((new_variant.at(0) != '?') && (isNaN(Number(new_variant.slice(-1))))) {
+    		setEnzymeVariant(new_variant);
+		} else {  // If not, blank the variant string.
+			setEnzymeVariant('');
+		}
+	};
+
 
   return (
     <div>
@@ -223,9 +237,9 @@ const SubmitPage = () => {
               </h1>
               <p className="text-gray-500 mb-14">
                 {selection === 'single_variant' ? 
-                  'Select the enzyme and enter an enzyme variant code (e.g., A123C) corresponding to your mutation.' :
+                  "Select the enzyme and choose an enzyme variant (using Rosetta/Foldit numbering). Then click Search to see if that variant has been tested at your institution." :
                 selection === 'wild_type' ? 
-                  'Submit characterization data for wild type enzyme variants.' :
+                  "Select the enzyme and click Search to see which WT datasets have been collected at your institution." :
                 'Please select one of the options to submit data or upload a gel image.'}
               </p>
 
@@ -286,44 +300,15 @@ const SubmitPage = () => {
                   {selection === 'single_variant' && (
                     <div>
                       <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:items-end md:space-x-4">
-                        <div className="w-full md:w-auto min-w-[200px]">
-                          <label htmlFor="enzyme" className="block mb-2">
-                            Enzyme
-                          </label>
-                          <Select
-                            size="sm"
-                            id="enzyme"
-                            value={enzyme}
-                            onChange={(e) => setEnzyme(e.target.value)}
-                            label="Select Enzyme"
-                            className="w-full"
-                          >
-                            {enzymeList.map((enzyme) => (
-                              <SelectItem key={enzyme.id} value={enzyme.abbr}>
-                                {enzyme.abbr}
-                              </SelectItem>
-                            ))}
-                          </Select>
-                        </div>
-
-                        <div className="w-full md:w-auto">
-                          <label htmlFor="enzymeVariant" className="block mb-2">
-                            Enzyme Variant
-                          </label>
-                          <Input
-                            type="text"
-                            id="enzymeVariant"
-                            value={enzymeVariant}
-                            onChange={(e) => setEnzymeVariant(e.target.value)}
-                            placeholder="A123C"
-                            size="lg"
-                            variant="bordered"
-                            className="w-full md:w-[200px]"
-                            radius="sm"
-                          />
-                        </div>
+						<VariantSearchForm
+							enzyme={enzyme}
+							variant={enzymeVariant}
+							updateEnzyme={updateEnzyme}
+							updateVariant={updateEnzymeVariant}
+						/>
 
                         <Button
+						  isDisabled={(!enzyme) || (!enzymeVariant) || (!charData.length)}
                           onClick={handleSubmitSingleVar}
                           className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                           radius="sm"
@@ -340,7 +325,11 @@ const SubmitPage = () => {
                         <div className="mt-8">
                           <div className="flex justify-between items-center mb-4">
                             <span className="text-small text-default-400">
-                              The {`${resid}${resnum}${resmut}`} BglB variant has been studied {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button. 
+                              The {`${resid}${resnum}${resmut} ${enzyme}`} variant
+							  has been studied {matchedData.length} time(s)
+							  at {user.institution}.
+							  Select which dataset you would like to modify or
+							  click the Create New Dataset button.
                             </span>
                           </div>
 
@@ -377,7 +366,7 @@ const SubmitPage = () => {
                                     } 
                                   />
                                   </TableCell>
-                                  <TableCell>BglB</TableCell>
+                                  <TableCell>{enzyme}</TableCell>
                                   <TableCell>{`${item.resid}${item.resnum}${item.resmut}`}</TableCell>
                                   <TableCell>{item.creator || 'Unknown'}</TableCell>
                                   <TableCell>{item.id}</TableCell>
@@ -395,7 +384,7 @@ const SubmitPage = () => {
                                     {item.comments || 'No comments'}
                                   </TableCell>
                                   <TableCell>
-                                    <Link href={`/submit/single_variant/${item.id}`} className="text-[#06B7DB]">
+                                    <Link href={`/submit/single_variant/${enzyme}/${item.id}`} className="text-[#06B7DB]">
                                       View
                                     </Link>
                                   </TableCell>
@@ -425,15 +414,19 @@ const SubmitPage = () => {
                           Enzyme
                         </label>
                         <Select
+						  isRequired
                           size="sm"
                           id="enzyme"
                           value={enzyme}
-                          onChange={(e) => setEnzyme(e.target.value)}
+                          onChange={(e) => {
+							setEnzyme(e.target.value);
+							setEntered('null');
+						  }}
                           label="Select Enzyme"
                           className="w-full"
                         >
                           {enzymeList.map((enzyme) => (
-                            <SelectItem key={enzyme.id} value={enzyme.abbr}>
+                            <SelectItem key={enzyme.abbr} value={enzyme.abbr}>
                               {enzyme.abbr}
                             </SelectItem>
                           ))}
@@ -441,6 +434,7 @@ const SubmitPage = () => {
                       </div>
 
                       <Button
+					    isDisabled={!enzyme || !charData.length}
                         onClick={handleSubmitWT}
                         className="h-[45px] bg-[#06B7DB] text-white w-full md:w-auto"
                         radius="sm"
@@ -457,7 +451,11 @@ const SubmitPage = () => {
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
                           <span className="text-small text-default-400">
-                          Data for the wild-type BglB enzyme have been collected {matchedData.length} time(s) at {user.institution}. Select which dataset you would like to modify or click the Create New Dataset button.
+                          Data for the wild-type {enzyme} enzyme have been
+						  collected {matchedData.length} time(s)
+						  at {user.institution}.
+						  Select which dataset you would like to modify or
+						  click the Create New Dataset button.
                           </span>
                         </div>
 
@@ -495,7 +493,7 @@ const SubmitPage = () => {
                                     } 
                                   />
                                 </TableCell>
-                                <TableCell>BglB</TableCell>
+                                <TableCell>{enzyme}</TableCell>
                                 <TableCell>{`WT`}</TableCell>
                                 <TableCell>{item.creator || 'Unknown'}</TableCell>
                                 <TableCell>{item.id}</TableCell>
@@ -513,7 +511,7 @@ const SubmitPage = () => {
                                   {item.comments || 'No comments'}
                                 </TableCell>
                                 <TableCell>
-                                  <Link href={`/submit/wild_type/${item.id}`} className="text-[#06B7DB]">
+                                  <Link href={`/submit/wild_type/${enzyme}/${item.id}`} className="text-[#06B7DB]">
                                     View
                                   </Link>
                                 </TableCell>
