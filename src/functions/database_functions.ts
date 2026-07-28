@@ -7,6 +7,7 @@
 // singleton needs to be created and imported here.
 import prismaAbcD from "../../prismaAbcDClient";
 import prismaBglB from "../../prismaBglBClient";
+import prismaLdhBA from "../../prismaLdhBAClient";
 import { DefaultPathway, BglBPathway } from "@/components/enzyme_information/pathways"
 import { DefaultMechanism, BglBMechanism } from "@/components/enzyme_information/mechanisms"
 import { DefaultAssay, BglBAssay } from "@/components/enzyme_information/assays"
@@ -20,6 +21,8 @@ export function getClient(enzyme: string) {
 			return prismaAbcD;
 		case "BglB":
 			return prismaBglB;
+		case "LdhBA":
+			return prismaLdhBA;
 		//default:
 			//return prismaBglB;
 	}
