@@ -1,0 +1,134 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "./generated/client_LdhBA"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_LDHBA")
+}
+
+model CharacterizationData {
+  id                        Int       @id @default(autoincrement()) @db.UnsignedMediumInt
+  resid                     String    @db.Char(1)
+  resnum                    Int       @db.UnsignedSmallInt
+  resmut                    String    @db.Char(1)
+  oligo_ordered             Boolean   @default(false)
+  plasmid_verified          Boolean   @default(false)
+  induced                   Boolean   @default(false)
+  expressed                 Boolean?
+  yield_avg                 Float?    @db.Float
+  KM_avg                    Float?    @db.Float
+  KM_SD                     Float?    @db.Float
+  KM_ref                    Float?    @db.Float
+  kcat_avg                  Float?    @db.Float
+  kcat_SD                   Float?    @db.Float
+  kcat_ref                  Float?    @db.Float
+  kcat_over_KM              Float?    @db.Float
+  kcat_over_KM_SD           Float?    @db.Float
+  kcat_over_KM_ref          Float?    @db.Float
+  T50                       Float?    @db.Float
+  T50_SD                    Float?    @db.Float
+  T50_ref                   Float?    @db.Float
+  T50_k                     Float?    @db.Float
+  T50_k_SD                  Float?    @db.Float
+  T50_k_ref                 Float?    @db.Float
+  Tm                        Float?    @db.Float
+  Tm_SD                     Float?    @db.Float
+  Tm_ref                    Float?    @db.Float
+  Rosetta_score             Float?    @db.Float
+  raw_data_id               Int       @default(0) @db.UnsignedMediumInt
+  temp_raw_data_id          Int       @default(0) @db.UnsignedMediumInt
+  WT_raw_data_id            Int       @default(0) @db.UnsignedMediumInt
+  WT_temp_raw_data_id       Int       @default(0) @db.UnsignedMediumInt
+  ab1_filename              String?   @db.VarChar(84)
+  gel_filename              String?   @db.VarChar(84)
+  creator                   String    @default("unknown") @db.VarChar(30)
+  created_date              DateTime  @default(now()) @db.Date
+  teammate                  String?   @db.VarChar(30)
+  teammate2                 String?   @db.VarChar(30)
+  teammate3                 String?   @db.VarChar(30)
+  pi                        String    @db.VarChar(30)
+  institution               String    @db.VarChar(50)
+  submitted_for_curation    Boolean   @default(false)
+  submitted_date            DateTime? @db.Date
+  approved_by_pi            Boolean   @default(false)
+  curated                   Boolean   @default(false)
+  reference1                Int       @default(0) @db.UnsignedTinyInt
+  reference2                Int       @default(0) @db.UnsignedTinyInt
+  reference3                Int       @default(0) @db.UnsignedTinyInt
+  comments                  String?   @db.TinyText
+}
+
+model KineticRawData {
+  id                  Int                        @id @default(autoincrement()) @db.UnsignedMediumInt
+  user_name           String?                    @db.VarChar(30)
+  plate_num           String?                    @db.VarChar(24)
+  variant             String?                    @db.VarChar(6)
+  cell_data           Bytes?                     @db.Blob
+  slope_units         KineticRawData_slope_units
+  yield               Float?                     @db.Float
+  yield_units         KineticRawData_yield_units
+  dilution            Float?                     @db.Float
+  substrate_dilution  Int                        @default(3) @db.UnsignedTinyInt
+  purification_date   String                     @db.TinyText
+  assay_date          String                     @db.TinyText
+  csv_filename        String                     @db.VarChar(84)
+  plot_filename       String                     @db.VarChar(84)
+  updated             DateTime                   @default(now()) @db.DateTime(0)
+  parent_id           Int                        @db.UnsignedMediumInt
+  approved_by_student Boolean                    @default(false)
+}
+
+model Oligos {
+  id      Int    @id @default(autoincrement()) @db.UnsignedSmallInt
+  variant String @db.VarChar(5)
+  oligo   String @db.VarChar(33)
+}
+
+model Sequence {
+  id             Int     @id @db.UnsignedSmallInt
+  resnum         String  @db.VarChar(6)
+  Rosetta_resnum Int?    @db.UnsignedSmallInt
+  PDBresnum      String? @db.VarChar(6)
+  resid          String  @db.Char(1)
+}
+
+model TempRawData {
+  id                  Int                     @id @default(autoincrement()) @db.UnsignedMediumInt
+  user_name           String?                 @db.VarChar(30)
+  plate_num           String?                 @db.VarChar(24)
+  variant             String?                 @db.VarChar(6)
+  temp_values         Bytes?                  @db.Blob
+  cell_data           Bytes?                  @db.Blob
+  slope_units         TempRawData_slope_units
+  purification_date   String                  @db.TinyText
+  assay_date          String                  @db.TinyText
+  csv_filename        String                  @db.VarChar(84)
+  plot_filename       String                  @db.VarChar(84)
+  updated             DateTime                @default(now()) @db.DateTime(0)
+  parent_id           Int                     @db.UnsignedMediumInt
+  approved_by_student Boolean                 @default(false)
+}
+
+enum KineticRawData_slope_units {
+  min_1min_Kin @map("(1/min)")
+  s_1s_Kin     @map("(1/s)")
+  min_3min_Kin @map("(10^-3/min)")
+  s_10s_Kin    @map("(10^-3/s)")
+}
+
+enum TempRawData_slope_units {
+  min_3min_Temp @map("(10^-3/min)")
+  s_3s_Temp     @map("(10^-3/s)")
+  min_1min_Temp @map("(1/min)")
+  s_1s_Temp     @map("(1/s)")
+}
+
+enum KineticRawData_yield_units {
+  A280_  @map("A280*")
+  mg_mL_ @map("(mg/mL)")
+  mM_    @map("(mM)")
+  M_     @map("(M)")
+}
