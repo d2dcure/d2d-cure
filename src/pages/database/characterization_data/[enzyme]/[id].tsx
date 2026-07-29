@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skelet
 import Link from 'next/link';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
-import { Download, Share, Printer, BugIcon } from 'lucide-react';
+import { DownloadIcon, ShareIcon, PrinterIcon, BugIcon } from 'lucide-react';
 import Toast from '@/components/Toast';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useUser } from '@/components/UserProvider';
@@ -410,9 +410,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     onClick={() => handleDownloadCSV(entryData2.csv_filename, 'kinetic_assays/raw')}
                     className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
+                    <DownloadIcon className="w-4 h-4" />
                     <span>Kinetic Data CSV</span>
                   </button>
                 )}
@@ -421,17 +419,13 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     onClick={() => handleDownloadCSV(entryData3.csv_filename, 'temperature_assays/raw')}
                     className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
+                    <DownloadIcon className="w-4 h-4" />
                     <span>Thermostability Data CSV</span>
                   </button>
                 )}
                 {entryData1?.ab1_filename && (
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <DownloadIcon className="w-4 h-4 text-gray-400" />
                     <button
                       onClick={() => handleAB1Download(entryData1.ab1_filename)}
                       className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -451,7 +445,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                   onClick={handleShare}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
                 >
-                  <Share className="w-4 h-4" />
+                  <ShareIcon className="w-4 h-4" />
                   <span>Share</span>
                 </button>
                 
@@ -459,7 +453,7 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                   onClick={() => window.print()}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#06B7DB] transition-colors"
                 >
-                  <Printer className="w-4 h-4" />
+                  <PrinterIcon className="w-4 h-4" />
                   <span>Print</span>
                 </button>
 

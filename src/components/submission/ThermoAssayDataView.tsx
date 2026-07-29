@@ -6,7 +6,7 @@ import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Button } from '@nextui-org/button';
 import { Checkbox } from '@nextui-org/checkbox';
 import Image from 'next/image';
-import { ArrowLeftIcon, FileTextIcon, DownloadIcon, XIcon, FileTextIcon as FileTextIconAlias, AlertTriangleIcon, RefreshCwIcon, InfoIcon, LoaderIcon } from 'lucide-react';
+import { ArrowLeftIcon, FileTextIcon, DownloadIcon, XIcon, AlertTriangleIcon, RefreshCwIcon, InfoIcon, LoaderIcon, FileIcon, CalendarIcon, ThermometerIcon, UserIcon } from 'lucide-react';
 
 
 interface ThermoAssayDataViewProps {
@@ -952,18 +952,14 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
               {thermoRawDataEntryData && (
                 <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-4">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
+                    <FileTextIcon className="w-5 h-5 text-gray-600" />
                     <h3 className="font-medium text-gray-900">Experiment Details</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
+                        <FileIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" />
                         <div>
                           <span className="text-sm text-gray-500">Slope Units</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -974,9 +970,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                        <CalendarIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" />
                         <div>
                           <span className="text-sm text-gray-500">Dates</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -996,10 +990,8 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
 
                   {/* Add new Thermal Stability Constants section */}
                   <div className="space-y-4 col-span-2 pt-3 border-t border-gray-200 mt-4">
-                    <div className="flex items-start gap-2">
-                      <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
+                      <div className="flex items-start gap-2">
+                        <ThermometerIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" />
                       <div>
                         <span className="text-sm text-gray-500">Thermostability Constants</span>
                         <p className="text-sm font-medium text-gray-900">
@@ -1017,9 +1009,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
                   </div>
 
                   <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
-                    <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    <UserIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" />
                     <div>
                       <span className="text-sm text-gray-500">Last Update</span>
                       <p className="text-sm font-medium text-gray-900">
@@ -1056,26 +1046,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
         >
           {isSubmitting ? (
             <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
+              <LoaderIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
               Saving...
             </>
           ) : (
