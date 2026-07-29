@@ -10,6 +10,7 @@ import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
+import { SearchIcon } from 'lucide-react';
 
 
 // Interfaces /////////////////////////////////////////////////////////////////
