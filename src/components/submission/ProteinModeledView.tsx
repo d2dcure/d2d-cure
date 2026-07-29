@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, ArrowLeftIcon, AlertTriangleIcon, CheckIcon, LoaderCircleIcon } from 'lucide-react';
 
 
 interface ProteinModeledViewProps {
@@ -171,9 +171,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeftIcon className="w-4 h-4" />
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
@@ -214,9 +212,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
                   msg.type === 'error' ? 'text-red-600' : 'text-yellow-700'
                 }`}
               >
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <AlertTriangleIcon className="w-3.5 h-3.5 flex-shrink-0" />
                 {msg.message}
               </div>
             ))}
@@ -243,9 +239,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
                   msg.type === 'error' ? 'text-red-600' : 'text-yellow-700'
                 }`}
               >
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <AlertTriangleIcon className="w-3.5 h-3.5 flex-shrink-0" />
                 {msg.message}
               </div>
             ))}
@@ -254,7 +248,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 
         {/* Simplified current score display */}
           <div className="text-sm text-gray-600 flex items-center gap-2">
-			<InfoIcon className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+            <InfoIcon className="w-3.5 h-3.5 text-gray-400" />
         {entryData.Rosetta_score !== null && (
             <p>
 				Current ΔΔ<i>G</i> ={" "}
@@ -284,10 +278,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           >
             {isSubmitting ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <LoaderCircleIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                 Saving...
               </>
             ) : (
@@ -298,9 +289,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           {/* Move success message here */}
           {allChecksPass() && (
             <div className="text-sm text-green-600 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+                <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
               All checks passed!
             </div>
           )}

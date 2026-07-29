@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/components/UserProvider';
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
+import { ArrowLeftIcon, FileTextIcon, DownloadIcon, XIcon, LoaderIcon, AlertTriangleIcon } from 'lucide-react';
 
 /**
  * Helper to get a presigned download URL from /api/s3, then fetch the file
@@ -219,9 +220,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeftIcon className="w-4 h-4" />
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
@@ -248,19 +247,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
                 <div className="mb-4">
                   <div className="flex items-center justify-between bg-white p-2 rounded-md shadow-sm border border-gray-200">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <svg
-                        className="w-5 h-5 text-[#06B7DB]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
+                      <FileTextIcon className="w-5 h-5 text-[#06B7DB]" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{selectedFileName}</p>
                         {plasmidFile && (
@@ -277,14 +264,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
                           onClick={() => downloadFile(selectedFileName)}
                           className="text-xs font-medium text-[#06B7DB] bg-[#06B7DB]/10 px-3 py-1.5 rounded-full hover:bg-[#06B7DB]/20 transition-colors inline-flex items-center gap-1"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
+                          <DownloadIcon className="w-4 h-4" />
                           Download
                         </button>
                       )}
@@ -293,9 +273,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
                         className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
                         title="Remove file"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <XIcon className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -317,20 +295,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
                   onDrop={handleDrop}
                 >
                   <div className="text-center">
-                    <svg
-                      className="mx-auto h-8 w-8 text-gray-400 mb-2"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <FileTextIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                     <div className="flex flex-col items-center">
                       <label className="cursor-pointer text-sm font-medium text-[#06B7DB] hover:text-[#05a5c6]">
                         Upload a file
@@ -350,19 +315,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
 
             {fileError && (
               <div className="mt-2 text-sm flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded-md">
-                <svg
-                  className="w-4 h-4 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
+                <AlertTriangleIcon className="w-4 h-4 flex-shrink-0" />
                 {fileError}
               </div>
             )}
@@ -379,26 +332,7 @@ const PlasmidSequenceVerifiedView: React.FC<PlasmidSequenceVerifiedViewProps> = 
           >
             {isSubmitting ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C9.545 0 5.965 3.93 4.95 8.87c-.197.813.302 1.623.805 2.126A8.07 8.07 0 0112 20c.966 0 1.897-.165 2.754-.479 1.952-1.07 3.36-2.59 3.81-4.574C18.728 13.186 16.524 11 14 11h-2v2h2c.567 0 1.098.149 1.574.426.476.277.815.684 1.005 1.184.427 1.17 1.057 2.097 1.993 2.823 1.329 1.322 2.878 2.002 4.597 2.002 1.719 0 3.268-.68 4.597-2.002 1.329-1.322 2.002-2.878 2.002-4.597 0-1.719-.68-3.268-2.002-4.597-1.329-1.322-2.878-2.002-4.597-2.002-1.719 0-3.268.68-4.597 2.002z"
-                  />
-                </svg>
+                <LoaderIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                 Submitting
               </>
             ) : (
