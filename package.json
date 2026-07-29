@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_AbcD.prisma && prisma generate --schema=./prisma/schema_LdhBA.prisma && prisma generate --schema=./prisma/schema_BglB.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma && next build",
+    "build": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_AbcD.prisma && prisma generate --schema=./prisma/schema_BglB.prisma && prisma generate --schema=./prisma/schema_LdhBA.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma && next build",
     "start": "next start",
     "lint": "next lint",
-    "setup": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_AbcD.prisma && prisma generate --schema=./prisma/schema_BglB.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma",
+    "setup": "prisma generate --schema=./prisma/schema_users.prisma && prisma generate --schema=./prisma/schema_AbcD.prisma && prisma generate --schema=./prisma/schema_BglB.prisma && prisma generate --schema=./prisma/schema_LdhBA.prisma && prisma generate --schema=./prisma/schema_publications.prisma && prisma generate --schema=./prisma/schema_enzymes.prisma",
     "dev:setup": "npm run setup && npm run dev"
   },
   "dependencies": {
