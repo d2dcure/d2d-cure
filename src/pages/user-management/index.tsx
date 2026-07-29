@@ -19,7 +19,6 @@ import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
 import { format } from 'date-fns';
-import { AlertTriangleIcon } from 'lucide-react';
 
 function UserManagement() {
   const [institutions, setInstitutionsList] = useState<any[]>([]);
@@ -423,7 +422,7 @@ const handleDeleteFirebase = async () => {
     onClear={() => setSearchTerm("")}
     onValueChange={(value) => setSearchTerm(value)}
     startContent={
-      <AlertTriangleIcon
+      <svg
         aria-hidden="true"
         fill="none"
         focusable="false"
@@ -434,7 +433,10 @@ const handleDeleteFirebase = async () => {
         strokeWidth="2"
         viewBox="0 0 24 24"
         width="1em"
-       />
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" x2="16.65" y1="21" y2="16.65" />
+      </svg>
     }
   />
   <div className="flex gap-2">

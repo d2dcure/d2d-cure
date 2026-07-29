@@ -14,7 +14,6 @@ import { Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
-import { AlertTriangleIcon } from 'lucide-react';
 
 interface Institution {
   id: number;
@@ -240,7 +239,7 @@ function InstitutionManagement() {
                 onClear={() => setSearchTerm("")}
                 onValueChange={(value) => setSearchTerm(value)}
                 startContent={
-                  <AlertTriangleIcon
+                  <svg
                     aria-hidden="true"
                     fill="none"
                     focusable="false"
@@ -251,7 +250,10 @@ function InstitutionManagement() {
                     strokeWidth="2"
                     viewBox="0 0 24 24"
                     width="1em"
-                   />
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" x2="16.65" y1="21" y2="16.65" />
+                  </svg>
                 }
               />
               <Button

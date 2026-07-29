@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Skelet
 import Link from 'next/link';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
-import { Download, Share, Printer, BugIcon, AlertTriangleIcon } from 'lucide-react';
+import { Download, Share, Printer, BugIcon } from 'lucide-react';
 import Toast from '@/components/Toast';
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useUser } from '@/components/UserProvider';
@@ -410,7 +410,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     onClick={() => handleDownloadCSV(entryData2.csv_filename, 'kinetic_assays/raw')}
                     className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
                   >
-                    <AlertTriangleIcon className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
                     <span>Kinetic Data CSV</span>
                   </button>
                 )}
@@ -419,13 +421,17 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     onClick={() => handleDownloadCSV(entryData3.csv_filename, 'temperature_assays/raw')}
                     className="text-sm text-[#06B7DB] hover:text-[#05a5c6] flex items-center gap-2"
                   >
-                    <AlertTriangleIcon className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
                     <span>Thermostability Data CSV</span>
                   </button>
                 )}
                 {entryData1?.ab1_filename && (
                   <div className="flex items-center gap-2">
-                    <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                     <button
                       onClick={() => handleAB1Download(entryData1.ab1_filename)}
                       className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -506,12 +512,15 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                         </p>
                         <p className="text-xs text-gray-500">Click to view full size</p>
                       </div>
-                      <AlertTriangleIcon 
+                      <svg 
                         className="w-5 h-5 text-gray-400 group-hover:text-[#06B7DB] transition-colors duration-200 ml-2" 
                         fill="none" 
                         viewBox="0 0 24 24" 
                         stroke="currentColor"
-                       />
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -535,7 +544,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-4">
                           <div className="flex items-start gap-2">
-                            <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
                             <div>
                               <span className="text-sm text-gray-500">Yield</span>
                               <p className="text-sm font-medium text-gray-900">
@@ -544,7 +555,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
-                            <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
                             <div>
                               <span className="text-sm text-gray-500">Dilution</span>
                               <p className="text-sm font-medium text-gray-900">{entryData2?.dilution}x</p>
@@ -554,7 +567,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
                         <div className="space-y-4">
                           <div className="flex items-start gap-2">
-                            <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
                             <div>
                               <span className="text-sm text-gray-500">Dates</span>
                               <p className="text-sm font-medium text-gray-900">
@@ -569,7 +584,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                       </div>
 
                       <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
-                        <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                         <div>
                           <span className="text-sm text-gray-500">Last Update</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -582,7 +599,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     <div className="p-4 bg-gray-50 rounded-xl">
                       <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                       <div className="flex items-center gap-2">
-                        <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                         <button
                           onClick={() => handleDownloadCSV(entryData2?.csv_filename, 'kinetic_assays/raw')}
                           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -656,7 +675,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-4">
                           <div className="flex items-start gap-2">
-                            <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                            <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
                             <div>
                               <span className="text-sm text-gray-500">Dates</span>
                               <p className="text-sm font-medium text-gray-900">
@@ -670,7 +691,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                         </div>
 
                         <div className="flex items-start gap-2">
-                          <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
                           <div>
                             <span className="text-sm text-gray-500">Last Update</span>
                             <p className="text-sm font-medium text-gray-900">
@@ -684,7 +707,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     <div className="p-4 bg-gray-50 rounded-xl">
                       <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                       <div className="flex items-center gap-2">
-                        <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                         <button
                           onClick={() => handleDownloadCSV(entryData3?.csv_filename, 'temperature_assays/raw')}
                           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -728,7 +753,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-start gap-2">
-                          <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
                           <div>
                             <span className="text-sm text-gray-500">Yield</span>
                             <p className="text-sm font-medium text-gray-900">
@@ -737,7 +764,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                           </div>
                         </div>
                         <div className="flex items-start gap-2">
-                          <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                          </svg>
                           <div>
                             <span className="text-sm text-gray-500">Dilution</span>
                             <p className="text-sm font-medium text-gray-900">{entryData11?.dilution}x</p>
@@ -747,7 +776,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
                       <div className="space-y-4">
                         <div className="flex items-start gap-2">
-                          <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
                           <div>
                             <span className="text-sm text-gray-500">Dates</span>
                             <p className="text-sm font-medium text-gray-900">
@@ -762,7 +793,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     </div>
 
                     <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
-                      <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                      <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
                       <div>
                         <span className="text-sm text-gray-500">Last Update</span>
                         <p className="text-sm font-medium text-gray-900">
@@ -775,7 +808,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                   <div className="p-4 bg-gray-50 rounded-xl">
                     <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                     <div className="flex items-center gap-2">
-                      <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                       <button
                         onClick={() => handleDownloadCSV(entryData11?.csv_filename, 'kinetic_assays/raw')}
                         className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -846,7 +881,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-start gap-2">
-                          <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                          <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
                           <div>
                             <span className="text-sm text-gray-500">Dates</span>
                             <p className="text-sm font-medium text-gray-900">
@@ -860,7 +897,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <AlertTriangleIcon className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                         <div>
                           <span className="text-sm text-gray-500">Last Update</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -874,7 +913,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
                   <div className="p-4 bg-gray-50 rounded-xl">
                     <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                     <div className="flex items-center gap-2">
-                      <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                       <button
                         onClick={() => handleDownloadCSV(entryData12?.csv_filename, 'temperature_assays/raw')}
                         className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"
@@ -924,7 +965,9 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
 
 {entryData1?.ab1_filename && (
   <div className="flex items-center gap-2">
-    <AlertTriangleIcon className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
     <button
       onClick={() => handleAB1Download(entryData1.ab1_filename)}
       className="text-[#06B7DB] hover:text-[#05a5c6] text-sm"

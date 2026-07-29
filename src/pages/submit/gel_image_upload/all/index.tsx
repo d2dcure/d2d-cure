@@ -10,7 +10,6 @@ import { useUser } from '@/components/UserProvider';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import Footer from '@/components/Footer';
-import { AlertTriangleIcon } from 'lucide-react';
 
 interface GelImage {
   key: string;
@@ -323,7 +322,7 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                     onClear={() => setSearchTerm("")}
                     onValueChange={(value) => setSearchTerm(value)}
                     startContent={
-                      <AlertTriangleIcon 
+                      <svg 
                         aria-hidden="true" 
                         fill="none" 
                         focusable="false" 
@@ -334,7 +333,10 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                         strokeWidth="2" 
                         viewBox="0 0 24 24" 
                         width="1em"
-                       />
+                      >
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" x2="16.65" y1="21" y2="16.65" />
+                      </svg>
                     }
                   />
                 </div>
@@ -486,7 +488,9 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                         handlePrevImage();
                       }}
                     >
-                      <AlertTriangleIcon className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
 
                     <button
@@ -497,7 +501,9 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                         handleNextImage();
                       }}
                     >
-                      <AlertTriangleIcon className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </button>
 
                     {/* Left side - Image */}
@@ -517,7 +523,9 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                             handlePrevImage();
                           }}
                         >
-                          <AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
                         </button>
                         <button
                           className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
@@ -526,7 +534,9 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                             handleNextImage();
                           }}
                         >
-                          <AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
                         </button>
                       </div>
                       
@@ -549,7 +559,9 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                           className="text-gray-400 hover:text-gray-600 transition-colors"
                           onClick={() => setSelectedImageData(null)}
                         >
-                          <AlertTriangleIcon className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
                       </div>
 
@@ -584,7 +596,10 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                             className="flex items-center justify-center gap-2 w-full bg-[#06B7DB] text-white py-2.5 px-4 
                               rounded-lg hover:bg-[#05a5c6] transition-colors font-medium"
                           >
-                            <AlertTriangleIcon className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
                             Download Image
                           </a>
                           
@@ -599,7 +614,10 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                                 Delete Image
                               </button>
                               <div className="flex items-center gap-2 text-sm text-gray-500 px-1">
-                                <AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 As the uploader, you can delete this image
                               </div>
                             </>

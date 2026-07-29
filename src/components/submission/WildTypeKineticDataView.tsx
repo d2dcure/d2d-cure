@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Papa from 'papaparse';
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
-import { AlertTriangleIcon } from 'lucide-react';
 
 /** 
  * Helper function: fetch a file from S3, returning a Blob.
@@ -201,7 +200,9 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
-          <AlertTriangleIcon className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
@@ -231,12 +232,19 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
-                        <AlertTriangleIcon
+                        <svg
                           className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
-                         />
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
                         <div>
                           <span className="text-sm text-gray-500">Yield</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -247,12 +255,19 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <AlertTriangleIcon
+                        <svg
                           className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
-                         />
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                          />
+                        </svg>
                         <div>
                           <span className="text-sm text-gray-500">Dilution</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -264,12 +279,19 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
 
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
-                        <AlertTriangleIcon
+                        <svg
                           className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
-                         />
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
                         <div>
                           <span className="text-sm text-gray-500">Dates</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -286,12 +308,14 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                   </div>
 
                   <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
-                    <AlertTriangleIcon
+                    <svg
                       className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                     />
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                     <div>
                       <span className="text-sm text-gray-500">Last Update</span>
                       <p className="text-sm font-medium text-gray-900">
@@ -307,12 +331,19 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                   <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
-                      <AlertTriangleIcon
+                      <svg
                         className="w-4 h-4 text-gray-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                       />
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
                       <span className="text-sm text-gray-500">Selected File:</span>
                       <button onClick={downloadCSV} className="text-[#06B7DB] hover:text-[#05a5c6] text-sm">
                         {kineticRawDataEntryData.csv_filename}
@@ -320,12 +351,14 @@ const WildTypeKineticDataView: React.FC<WildTypeKineticDataViewProps> = ({
                     </div>
 
                     <div className="flex items-start gap-2 pt-3 border-t border-gray-200">
-                      <AlertTriangleIcon
+                      <svg
                         className="w-5 h-5 text-gray-400 mt-0.5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                       />
+                      >
+                        <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                       <div>
                         <p className="text-sm text-gray-600">
                           Need to change the wild type data?

@@ -24,7 +24,6 @@ import { ErrorChecker } from '@/components/ErrorChecker';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { AlertTriangleIcon } from 'lucide-react';
 
 /** Helper: List objects by calling GET /api/s3?folder=gel-images */
 async function listS3Objects(folder: string) {
@@ -538,7 +537,7 @@ const Dashboard = () => {
 									<div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
 										<div className="flex items-center">
 											<div className="flex-shrink-0">
-												<AlertTriangleIcon
+												<svg
 													className="h-5 w-5 text-gray-600"
 													xmlns="http://www.w3.org/2000/svg"
 													viewBox="0 0 24 24"
@@ -547,7 +546,12 @@ const Dashboard = () => {
 													strokeWidth="2"
 													strokeLinecap="round"
 													strokeLinejoin="round"
-												 />
+												>
+													<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+													<polyline points="14 2 14 8 20 8" />
+													<line x1="12" y1="18" x2="12" y2="12" />
+													<line x1="9" y1="15" x2="15" y2="15" />
+												</svg>
 											</div>
 											<div className="ml-3">
 												<p className="text-sm text-gray-600">
@@ -652,12 +656,14 @@ const Dashboard = () => {
 								handlePrevImage();
 							}}
 						>
-							<AlertTriangleIcon
+							<svg
 								className="w-5 h-5 group-hover:scale-110 transition-transform"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
-							 />
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+							</svg>
 						</button>
 
 						<button
@@ -668,12 +674,14 @@ const Dashboard = () => {
 								handleNextImage();
 							}}
 						>
-							<AlertTriangleIcon
+							<svg
 								className="w-5 h-5 group-hover:scale-110 transition-transform"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
-							 />
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+							</svg>
 						</button>
 
 						{/* Left side - Image */}
@@ -693,7 +701,9 @@ const Dashboard = () => {
 										handlePrevImage();
 									}}
 								>
-									<AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+									</svg>
 								</button>
 								<button
 									className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
@@ -702,7 +712,9 @@ const Dashboard = () => {
 										handleNextImage();
 									}}
 								>
-									<AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+									</svg>
 								</button>
 							</div>
 
@@ -730,7 +742,9 @@ const Dashboard = () => {
 									className="text-gray-400 hover:text-gray-600 transition-colors"
 									onClick={() => setSelectedImageData(null)}
 								>
-									<AlertTriangleIcon className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+									<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
 								</button>
 							</div>
 
@@ -763,7 +777,14 @@ const Dashboard = () => {
 										className="flex items-center justify-center gap-2 w-full bg-[#06B7DB] text-white py-2.5 px-4 
 											rounded-lg hover:bg-[#05a5c6] transition-colors font-medium"
 									>
-										<AlertTriangleIcon className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+										<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+											/>
+										</svg>
 										Download Image
 									</a>
 
@@ -778,7 +799,9 @@ const Dashboard = () => {
 												Delete Image
 											</button>
 											<div className="flex items-center gap-2 text-sm text-gray-500 px-1">
-												<AlertTriangleIcon className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+												</svg>
 												As the uploader, you can delete this image.
 											</div>
 										</>
