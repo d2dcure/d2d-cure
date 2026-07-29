@@ -93,10 +93,6 @@ const DatabasePage = () => {
                     Data Analysis & Submission
                   </p>
                 </div>
-                  <p className="text-4xl text-base text-gray-500 font-light lg:text-3xl">
-                    Data Analysis & Submission
-                  </p>
-                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
                   <Card 
