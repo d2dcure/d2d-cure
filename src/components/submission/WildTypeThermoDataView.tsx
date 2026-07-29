@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Papa from 'papaparse';
 import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/card';
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@nextui-org/table';
+import { AlertTriangleIcon } from 'lucide-react';
 
 /** 
  * Helper to fetch a file from S3 by calling /api/s3?folder=...&download=..., 
@@ -269,9 +270,7 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <AlertTriangleIcon className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
@@ -300,19 +299,12 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-start gap-2">
-                        <svg
+                        <AlertTriangleIcon
                           className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
+                         />
                         <div>
                           <span className="text-sm text-gray-500">Dates</span>
                           <p className="text-sm font-medium text-gray-900">
@@ -329,14 +321,12 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
                   </div>
 
                   <div className="flex items-start gap-2 pt-3 border-t border-gray-200 mt-4">
-                    <svg
+                    <AlertTriangleIcon
                       className="w-4 h-4 mt-0.5 text-gray-400 shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                     />
                     <div>
                       <span className="text-sm text-gray-500">Last Update</span>
                       <p className="text-sm font-medium text-gray-900">
@@ -352,19 +342,12 @@ const WildTypeThermoDataView: React.FC<WildTypeThermoDataViewProps> = ({
                   <h3 className="font-medium text-gray-900 mb-4">File Information</h3>
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
-                      <svg
+                      <AlertTriangleIcon
                         className="w-4 h-4 text-gray-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
+                       />
                       <span className="text-sm text-gray-500">Selected File:</span>
                       <button onClick={downloadCSV} className="text-[#06B7DB] hover:text-[#05a5c6] text-sm">
                         {tempRawDataEntryData.csv_filename}

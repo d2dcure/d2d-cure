@@ -9,6 +9,7 @@ import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { AlertTriangleIcon } from 'lucide-react';
 
 // Render formatted column names for Columns selection list.
 const getFormattedColumnName = (column: any) => {
@@ -565,7 +566,7 @@ const CuratePage = () => {
                                         onClear={() => setSearchTerm("")}
                                         onValueChange={(value) => setSearchTerm(value)}
                                         startContent={
-                                            <svg
+                                            <AlertTriangleIcon
                                                 aria-hidden="true"
                                                 fill="none"
                                                 focusable="false"
@@ -576,10 +577,7 @@ const CuratePage = () => {
                                                 strokeWidth="2"
                                                 viewBox="0 0 24 24"
                                                 width="1em"
-                                            >
-                                                <circle cx="11" cy="11" r="8" />
-                                                <line x1="21" x2="16.65" y1="21" y2="16.65" />
-                                            </svg>
+                                             />
                                         }
                                     />
                                     <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
@@ -761,9 +759,7 @@ const CuratePage = () => {
                                                     variant="flat"
                                                     className="w-full"
                                                     endContent={
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                            <path d="M4 6L8 10L12 6" stroke="#11181C" stroke-linecap="round" stroke-linejoin="round"/>
-                                                        </svg>
+                                                        <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" />
                                                     }
                                                 >
                                                     More Actions

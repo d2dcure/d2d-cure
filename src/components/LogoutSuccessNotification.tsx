@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { AlertTriangleIcon } from 'lucide-react';
 
 const LogoutSuccessNotification = () => {
   const [showSuccessNotif, setShowSuccessNotif] = useState(false);
@@ -61,9 +62,7 @@ const LogoutSuccessNotification = () => {
         <div className="p-4">
           <div className="flex gap-3">
             <div className="h-[42px] w-[42px] rounded-full bg-[#06B7DB]/10 flex-shrink-0 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#06B7DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
             </div>
             
             <div className="flex-grow pr-8">
@@ -88,9 +87,7 @@ const LogoutSuccessNotification = () => {
             onClick={handleClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" />
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Modal, ModalContent, ModalBody, ModalHeader, ModalFooter, Button } from "@nextui-org/react";
 import Link from "next/link";
+import { AlertTriangleIcon } from 'lucide-react';
 
 interface ErrorCheckerProps {
   children: ReactNode;
@@ -128,9 +129,7 @@ export const ErrorChecker: React.FC<ErrorCheckerProps> = ({
         <ModalBody className="py-8">
           <div className="flex flex-col items-center text-center">
             <p className="p-3 text-sm font-medium text-[#06B7DB] rounded-full bg-blue-50 dark:bg-gray-800">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d={message.icon} />
-              </svg>
+              <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6" />
             </p>
             <h1 className="mt-3 text-2xl font-semibold text-gray-800 dark:text-white md:text-3xl">
               {message.title}
@@ -145,9 +144,7 @@ export const ErrorChecker: React.FC<ErrorCheckerProps> = ({
                   onClick={message.secondaryButton.onClick}
                   className="flex items-center justify-center px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 rtl:rotate-180">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-                  </svg>
+                  <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 rtl:rotate-180" />
                   <span>{message.secondaryButton.text}</span>
                 </button>
               ) : (
@@ -155,9 +152,7 @@ export const ErrorChecker: React.FC<ErrorCheckerProps> = ({
                   href={message.secondaryButton.href} 
                   className="flex items-center justify-center px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 rtl:rotate-180">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-                  </svg>
+                  <AlertTriangleIcon xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 rtl:rotate-180" />
                   <span>{message.secondaryButton.text}</span>
                 </Link>
               )}
