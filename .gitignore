@@ -40,3 +40,7 @@ next-env.d.ts
 # prisma
 /prisma/generated
 node_modules
+
+# python
+.venv/
+__pycache__/
