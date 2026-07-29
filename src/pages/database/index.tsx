@@ -7,6 +7,7 @@ import Link from 'next/link';
 import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import Spinner from '@/components/Spinner';
+import { DatabaseIcon, GlobeIcon, FolderIcon } from 'lucide-react';
 
 const DatabasePage = () => {
   const { user, loading } = useUser();
@@ -46,9 +47,7 @@ const DatabasePage = () => {
             
             {/* Characterization Data Section */}
             <div className="flex items-center gap-3 mt-12 mb-8">
-              <svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 0C5.27125 0 0 3.075 0 7V19C0 22.925 5.27125 26 12 26C18.7288 26 24 22.925 24 19V7C24 3.075 18.7288 0 12 0ZM22 13C22 14.2025 21.015 15.4288 19.2987 16.365C17.3662 17.4188 14.7738 18 12 18C9.22625 18 6.63375 17.4188 4.70125 16.365C2.985 15.4288 2 14.2025 2 13V10.92C4.1325 12.795 7.77875 14 12 14C16.2213 14 19.8675 12.79 22 10.92V13ZM4.70125 3.635C6.63375 2.58125 9.22625 2 12 2C14.7738 2 17.3662 2.58125 19.2987 3.635C21.015 4.57125 22 5.7975 22 7C22 8.2025 21.015 9.42875 19.2987 10.365C17.3662 11.4187 14.7738 12 12 12C9.22625 12 6.63375 11.4187 4.70125 10.365C2.985 9.42875 2 8.2025 2 7C2 5.7975 2.985 4.57125 4.70125 3.635ZM19.2987 22.365C17.3662 23.4188 14.7738 24 12 24C9.22625 24 6.63375 23.4188 4.70125 22.365C2.985 21.4287 2 20.2025 2 19V16.92C4.1325 18.795 7.77875 20 12 20C16.2213 20 19.8675 18.79 22 16.92V19C22 20.2025 21.015 21.4287 19.2987 22.365Z" fill="#06B7DB"/>
-              </svg>
+              <DatabaseIcon className="w-6 h-6 text-[#06B7DB]" />
               <p className="text-4xl text-base text-gray-500 font-light lg:text-3xl">
                 Characterization Data
               </p>
@@ -153,9 +152,7 @@ const DatabasePage = () => {
             {user?.status === "professor" || user?.status === "ADMIN" ? (
               <>
                 <div className="flex items-center gap-3 mt-12 mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
-  <path d="M28 8H19.3337L15.8663 5.4C15.5196 5.14132 15.0988 5.00107 14.6663 5H9C8.46957 5 7.96086 5.21071 7.58579 5.58579C7.21071 5.96086 7 6.46957 7 7V9H5C4.46957 9 3.96086 9.21071 3.58579 9.58579C3.21071 9.96086 3 10.4696 3 11V25C3 25.5304 3.21071 26.0391 3.58579 26.4142C3.96086 26.7893 4.46957 27 5 27H24.1112C24.612 26.9993 25.092 26.8001 25.4461 26.4461C25.8001 26.092 25.9993 25.612 26 25.1112V23H28.1112C28.612 22.9993 29.092 22.8001 29.4461 22.4461C29.8001 22.092 29.9993 21.612 30 21.1112V10C30 9.46957 29.7893 8.96086 29.4142 8.58579C29.0391 8.21071 28.5304 8 28 8ZM24 25H5V11H10.6663L14.4 13.8C14.5731 13.9298 14.7836 14 15 14H24V25ZM28 21H26V14C26 13.4696 25.7893 12.9609 25.4142 12.5858C25.0391 12.2107 24.5304 12 24 12H15.3337L11.8663 9.4C11.5196 9.14132 11.0988 9.00107 10.6663 9H9V7H14.6663L18.4 9.8C18.5731 9.92982 18.7836 10 19 10H28V21Z" fill="#06B7DB"/>
-</svg>
+                  <FolderIcon className="w-8 h-8 text-[#06B7DB]" />
                   <p className="text-4xl text-base text-gray-500 font-light lg:text-3xl">
                     Curation of Data
                   </p>

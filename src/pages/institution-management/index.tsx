@@ -11,7 +11,7 @@ import {
   TableCell
 } from "@nextui-org/table";
 import { Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { ArrowDownIcon, ArrowUpIcon, SearchIcon } from 'lucide-react';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
 
@@ -239,21 +239,7 @@ function InstitutionManagement() {
                 onClear={() => setSearchTerm("")}
                 onValueChange={(value) => setSearchTerm(value)}
                 startContent={
-                  <svg
-                    aria-hidden="true"
-                    fill="none"
-                    focusable="false"
-                    height="1em"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    width="1em"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" x2="16.65" y1="21" y2="16.65" />
-                  </svg>
+                  <SearchIcon className="w-4 h-4 text-gray-500" />
                 }
               />
               <Button
@@ -284,7 +270,7 @@ function InstitutionManagement() {
                     <div className="flex items-center gap-1">
                       Institution Name
                       {sortConfig.key === "fullname" && (
-                        sortConfig.direction === "asc" ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />
+                        sortConfig.direction === "asc" ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />
                       )}
                     </div>
                   </TableColumn>
@@ -297,7 +283,7 @@ function InstitutionManagement() {
                     <div className="flex items-center gap-1">
                       Abbreviation
                       {sortConfig.key === "abbr" && (
-                        sortConfig.direction === "asc" ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />
+                        sortConfig.direction === "asc" ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />
                       )}
                     </div>
                   </TableColumn>
@@ -310,7 +296,7 @@ function InstitutionManagement() {
                     <div className="flex items-center gap-1">
                       State
                       {sortConfig.key === "state" && (
-                        sortConfig.direction === "asc" ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />
+                        sortConfig.direction === "asc" ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />
                       )}
                     </div>
                   </TableColumn>
@@ -323,7 +309,7 @@ function InstitutionManagement() {
                     <div className="flex items-center gap-1">
                       Country
                       {sortConfig.key === "country_code" && (
-                        sortConfig.direction === "asc" ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />
+                        sortConfig.direction === "asc" ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />
                       )}
                     </div>
                   </TableColumn>
@@ -336,7 +322,7 @@ function InstitutionManagement() {
                     <div className="flex items-center gap-1">
                       Website
                       {sortConfig.key === "url" && (
-                        sortConfig.direction === "asc" ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />
+                        sortConfig.direction === "asc" ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />
                       )}
                     </div>
                   </TableColumn>

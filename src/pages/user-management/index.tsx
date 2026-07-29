@@ -15,7 +15,7 @@ import {
 import { useAsyncList } from "@react-stately/data";
 import { Button, Link, Checkbox, Input, Pagination } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { ArrowDownIcon, ArrowUpIcon, SearchIcon } from 'lucide-react';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
 import { format } from 'date-fns';
@@ -422,21 +422,7 @@ const handleDeleteFirebase = async () => {
     onClear={() => setSearchTerm("")}
     onValueChange={(value) => setSearchTerm(value)}
     startContent={
-      <svg
-        aria-hidden="true"
-        fill="none"
-        focusable="false"
-        height="1em"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        width="1em"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" x2="16.65" y1="21" y2="16.65" />
-      </svg>
+      <SearchIcon className="w-4 h-4 text-gray-500" />
     }
   />
   <div className="flex gap-2">

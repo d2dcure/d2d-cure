@@ -4,7 +4,7 @@ import NavBar from '@/components/NavBar';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { useRouter } from 'next/router';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, Input, Pagination, Select, SelectItem } from "@nextui-org/react";
-import { EyeIcon, TrashIcon, ArrowLeftIcon, ArrowRightIcon, ArrowDownIcon, ArrowUpIcon, XIcon, DownloadIcon, InfoIcon } from 'lucide-react';
+import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, DownloadIcon, EyeIcon, InfoIcon, SearchIcon, TrashIcon, XIcon } from 'lucide-react';
 import { useUser } from '@/components/UserProvider';
 import Toast from '@/components/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -321,21 +321,7 @@ const ViewAllGelImages: React.FC<ViewAllGelImagesProps> = ({ embedded = false })
                     onClear={() => setSearchTerm("")}
                     onValueChange={(value) => setSearchTerm(value)}
                     startContent={
-                      <svg 
-                        aria-hidden="true" 
-                        fill="none" 
-                        focusable="false" 
-                        height="1em" 
-                        stroke="currentColor" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth="2" 
-                        viewBox="0 0 24 24" 
-                        width="1em"
-                      >
-                        <circle cx="11" cy="11" r="8" />
-                        <line x1="21" x2="16.65" y1="21" y2="16.65" />
-                      </svg>
+                      <SearchIcon className="w-4 h-4 text-gray-500" />
                     }
                   />
                 </div>
