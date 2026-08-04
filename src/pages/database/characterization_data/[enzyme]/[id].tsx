@@ -1129,7 +1129,8 @@ async function getPresignedUrl(folder: string, fileName: string): Promise<string
   // Determine if the user can edit
   const canEdit = useMemo(() => {
     if (!user || !entryData1) return false;
-    return user.status === 'ADMIN' || 
+    return user.status === "ADMIN" || 
+			(user.status === "professor" && user.institution === entryData1.institution) ||
            user.user_name === entryData1.creator || 
            user.user_name === entryData1.teammate || 
            user.user_name === entryData1.teammate2 || 
