@@ -1,87 +1,86 @@
-import os
+from os import environ
 from flask import Flask, request, jsonify
-import matplotlib
 from flask_cors import CORS
+import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import io
+from matplotlib.pyplot import close, figure, plot, ylabel, xlabel, title, savefig, gca, legend, ylim
+from io import BytesIO
 import re
-from numpy import sqrt, exp
-from numpy import diag, linspace, inf
+from numpy import diag, sqrt, linspace, inf, exp
 from scipy.optimize import curve_fit
 import pandas as pd
-import base64
+from base64 import b64encode
 from statistics import mean
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-debug_mode = False
+
+# Turn debug mode on or off
+debug_mode = True
+
 
 # ------------------------------
 # Kinetic assay helpers & route
 # ------------------------------
 
+# Functions to fit and/or plot
 def kobs_f(S, kcat, KM):
-    """Michaelis-Menten-like equation."""
+    '''The Michaelis-Menton-like equation.'''
     return (kcat * S) / (KM + S)
 
 def high_KM_kobs_f(S, kcat_over_KM):
-    """Linear fit for high-KM systems."""
+    '''The linear equation for systems where KM is very large.'''
     return kcat_over_KM * S
 
 def inv_v(inv_S, inv_vmax, KM):
-    """Lineweaver-Burk equation."""
+    '''The Lineweaver-Burk plot equation'''
     return KM * inv_vmax * inv_S + inv_vmax
 
-@app.route('/plot_kinetic', methods=['POST'])
+
+@app.route("/plot_kinetic", methods=["POST"])
 def plot_kinetic():
-    print('BAR')  # TEMP
     if debug_mode:
         with open("plot_script_log", 'a') as log_file:
             log_file.write("\nSTART LOG\n")
 
-    variant_name = request.form.get('variant-name', 'WT')
+    variant_name = request.form.get("variant-name", "WT")
     if variant_name == "X0X":
         variant_name = "WT"
 
-    if 'file' not in request.files:
-        return 'No file part', 400
+    if "file" not in request.files:
+        return "No file part", 400
 
-    file = request.files['file']
+    file = request.files["file"]
     if file.filename == '':
-        return 'No selected file', 400
+        return "No selected file", 400
 
-    # Read CSV
+    # Read the CSV file.
     df = pd.read_csv(file, header=None, encoding='iso-8859-1')
 
-    # Extract data
-    string_of_data = ",".join([
-        f"{float(x):.5E}" if pd.notnull(x) else ''
-        for x in df.iloc[4:12, 2:5].values.flatten()
-    ])
+    # Grab experimental details from the datafile.
+    slope_u = df.iloc[1, 4]
+    cleaned_yield = re.sub(r'[^\x00-\x7F]+', '', str(df.iloc[2, 6])).strip()
+    yld = float(cleaned_yield)
+    yld_u = df.iloc[1, 6].strip()
+    dil = float(df.iloc[2, 7])  # "Traditionally", either 10 or 100
 
-    cleaned_value = re.sub(r'[^\x00-\x7F]+', '', str(df.iloc[2, 6])).strip()
-    yield_ = cleaned_value
-    dil_factor = df.iloc[2, 7]
 
-    instrument_units = df.iloc[1, 4]
-    yield_units = df.iloc[1, 6]
+    # Constant values
+    # TODO: Read these from a database file in preparation for future systems.
+    epsilon_enz = 113330  # M^-1 cm^-1 for BglB at 280 nm, according to Expasy
+    epsilon_byprod = 10660  # M^-1 cm^-1 for PNP^-1 at pH 7.5 and 420 nm (calculated by Ashley)
+    molar_mass_enz = 51395.85  # Ashley calculated from Expasy
+    assay_cell_length = 0.572  # cm, calculated by Ashley
+    A280_cell_length = 1  # cm  (It is actually 0.5 mm, but the reported A280 values are pre-adjusted for 1 cm.)
+    assay_vol = 0.0001  # L (100 microliters)
+    enz_vol = 0.000025  # L (25 microliters)
 
-    slope_u = instrument_units
 
-    yld = float(yield_)
-    yld_u = yield_units.strip()
-    dil = float(dil_factor)
-
-    epsilon_enz = 113330
-    epsilon_byprod = 10660
-    molar_mass_enz = 51395.85
-    assay_cell_length = 0.572
-    A280_cell_length = 1
-    assay_vol = 0.0001
-    enz_vol = 0.000025
-
+    # Set up assay data to fit and plot.
+    # The concentration of substrate will be on the x axis,
+    # and the values are constant and determined by the assay.
+    # The kobs values are on the y axis and will be calculated from the raw slope data below.
     c_substrate = [
         75.000, 75.000, 75.000,
         25.000, 25.000, 25.000,
@@ -90,116 +89,203 @@ def plot_kinetic():
         0.926,  0.926,  0.926,
         0.309,  0.309,  0.309,
         0.103,  0.103,  0.103,
-        0.000,  0.000,  0.000
-    ]
+        0.000,  0.000,  0.000]  # millimolar
+    
+    # Extract data from the datafile.
+    # This must be a comma-delimited string of slopes for cells A1,A2,A3,B1,B2,B3,... etc.
+    # If the value is empty, it means that it was removed as an outlier.
+    string_of_data = ','.join([
+        f"{float(x):.5E}" if pd.notnull(x) else ''
+        for x in df.iloc[4:12, 2:5].values.flatten()])
 
     empty_cells = []
-    slopes = []
+    slopes = []  # TODO: Is there a guarantee that this is going to be 24 cells?
     for i, slope in enumerate(string_of_data.split(',')):
         if slope == '':
             empty_cells.append(i)
         else:
             slopes.append(float(slope))
 
-    # Remove those from c_substrate
+    # Remove cell from array of substrate concentrations if slope is empty.
     c_substrate = [c_substrate[i] for i in range(len(c_substrate)) if i not in empty_cells]
 
-    if '10^-3' in slope_u:
+    # Convert all slopes into units of inverse minutes.
+    if "10^-3" in slope_u:	# Scale by 1,000 if needed.
         slopes = [s / 1000 for s in slopes]
-    if slope_u.endswith('/s)'):
+    if slope_u.endswith("/s)"):  # Convert inverse seconds to inverse minutes.
         slopes = [s * 60 for s in slopes]
 
+    # Convert yield into common units.
     diluted_yld = yld / dil
     c_enz_molar = 0
-    c_enz_mg_per_mL = 0
-    if yld_u == 'A280*':
+    c_enz_mg_per_mL = 0  # equivalent to c in g/L
+    if yld_u == "A280*":
+        # Calculate enzyme concentrations, using Beer's law.
         c_enz_molar = diluted_yld / (epsilon_enz * A280_cell_length)
         c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == '(mg/mL)':
+    elif yld_u == "(mg/mL)":
         c_enz_molar = diluted_yld / molar_mass_enz
         c_enz_mg_per_mL = diluted_yld
-    elif yld_u == '(M)':
+    elif yld_u == "(M)":
         c_enz_molar = diluted_yld
         c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == '(mM)':
+    elif yld_u == "(mM)":
         c_enz_molar = diluted_yld / 1000
         c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == '(uM)':
+    elif yld_u == "(uM)":
         c_enz_molar = diluted_yld / 1e6
         c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
 
-    rates = [s / (epsilon_byprod * assay_cell_length) for s in slopes]
-    kobs = [(r * assay_vol) / (c_enz_molar * enz_vol) for r in rates]
+    if debug_mode:
+        with open("plot_script_log", 'a') as log_file:
+            log_file.write("c_enz_molar: ")
+            log_file.write(str(c_enz_molar))
+            log_file.write("\n")
+            log_file.write("c_enz_mg_per_mL: ")
+            log_file.write(str(c_enz_mg_per_mL))
+            log_file.write("\n")
 
-    # Fit
-    initial_guesses = (max(kobs), 3)
+    # Calculate the rate of byproduct formation for each slope.
+    rates = [s / (epsilon_byprod * assay_cell_length) for s in slopes]  # values in M/min
+    
+    if debug_mode:
+        with open("plot_script_log", 'a') as log_file:
+            log_file.write("rates: ")
+            for rate in rates:
+                log_file.write(str(rate))
+                log_file.write(", ")
+            log_file.write("\n")
+
+    # Optional: Calculate the activities of the enzyme for each rate.
+    #activities_mol_per_min = [rate * assay_vol for rate in rates]  # values in mol/min
+    #activities_U = [activity * 1000000 for activity in activities_mol_per_min]  # values in U (micromole/min)
+    #specific_activities = [activity / (c_enz_mg_per_mL * enz_vol * 1000) for activity in activities_U]  # values in U/mg
+
+    # Calculate turnover numbers (kobs) from specific activities.
+    #kobs = [specific_activity * molar_mass_enz / 1000 for specific_activity in specific_activities]  # values in 1/min
+
+    # Calculate turnover numbers (kobs) from rates directly.
+    kobs = [(r * assay_vol) / (c_enz_molar * enz_vol) for r in rates]  # direct calculation from molarity
+
+    if debug_mode:
+        with open("plot_script_log", 'a') as log_file:
+            log_file.write("kobs: ")
+            for kob in kobs:
+                log_file.write(str(kob))
+                log_file.write(", ")
+            log_file.write("\n")
+
+    # Try to fit a curve.
+    # popt is the list of optimized parameters.
+    # pcov is the estimated covariance of each optimized parameter.
+    # pSD is the standard deviation of each optimized parameter.
+    initial_guesses = (max(kobs), 3)  # for kcat and KM, respectively
     try:
         popt, pcov = curve_fit(kobs_f, c_substrate, kobs,
                                p0=initial_guesses, bounds=(0, inf))
         pSD = sqrt(diag(pcov))
-
-        kcat = popt[0]
-        KM = popt[1]
-        kcat_SD = pSD[0]
-        KM_SD = pSD[1]
-
-        kcat_over_KM = kcat / KM
-        kcat_over_KM_SD = kcat_over_KM * sqrt(
-            (kcat_SD / kcat) ** 2 + (KM_SD / KM) ** 2
-        )
-
-        vmax = kcat * c_enz_molar * 1000
     except RuntimeError:
         return 'Error in curve fitting', 400
 
-    high_KM = False
-    if KM > 75:
-        high_KM = True
-        popt, pcov = curve_fit(high_KM_kobs_f, c_substrate, kobs,
-                               p0=[kcat_over_KM], bounds=(0, inf))
-        pSD = sqrt(diag(pcov))
+    # Rename the values to something readable.
+    kcat = popt[0]  # 1/min
+    KM = popt[1]  # millimolar
+    kcat_SD = pSD[0]
+    KM_SD = pSD[1]
+
+    # Calculate kcat/KM with its standard deviation and vmax for comparison.
+    kcat_over_KM = kcat / KM
+    kcat_over_KM_SD = kcat_over_KM * sqrt((kcat_SD / kcat)**2 + (KM_SD / KM)**2)
+
+    vmax = kcat * c_enz_molar * 1000  # millimolar per minute
+
+    if debug_mode:
+        with open("plot_script_log", 'a') as log_file:
+            log_file.write("kcat: ")
+            log_file.write(str(kcat))
+            log_file.write("\n")
+            log_file.write("kcat_SD: ")
+            log_file.write(str(kcat_SD))
+            log_file.write("\n")
+            log_file.write("KM: ")
+            log_file.write(str(KM))
+            log_file.write("\n")
+            log_file.write("KM_SD: ")
+            log_file.write(str(KM_SD))
+            log_file.write("\n")
+            log_file.write("kcat_over_KM: ")
+            log_file.write(str(kcat_over_KM))
+            log_file.write("\n")
+            log_file.write("kcat_over_KM_SD: ")
+            log_file.write(str(kcat_over_KM_SD))
+            log_file.write("\n")
+            log_file.write("vmax: ")
+            log_file.write(str(vmax))
+            log_file.write("\n")
+
+    # Check for especially large KM values.
+    high_KM = True if KM > 75 else False
+    if high_KM:
+        # Try to fit a linear plot to find kcat/KM, instead.
+        try:
+            popt, pcov = curve_fit(high_KM_kobs_f, c_substrate, kobs,
+                                   p0=[kcat_over_KM], bounds=(0, inf))
+            pSD = sqrt(diag(pcov))
+        except RuntimeError:
+            return 'Error in linear curve fitting', 400
+        
         kcat_over_KM = popt[0]
         kcat_over_KM_SD = pSD[0]
+        
+        if debug_mode:
+            with open("plot_script_log", 'a') as log_file:
+                log_file.write("   LINEAR FIT: kcat_over_KM: ")
+                log_file.write(str(kcat_over_KM))
+                log_file.write("\n")
+                log_file.write("kcat_over_KM_SD: ")
+                log_file.write(str(kcat_over_KM_SD))
+                log_file.write("\n")
 
-    # Generate Michaelis-Menten / linear
-    buf1 = io.BytesIO()
-    if not high_KM:
-        plt.figure(figsize=(5, 5))
-        fakex = linspace(0, max(c_substrate)*1.1, 100)
-        plt.plot(fakex, kobs_f(fakex, kcat, KM), 'k-')
+    # Now generate an image of the plot.
+    buf1 = BytesIO()
+    fakex = linspace(0, max(c_substrate) * 1.1, 100)    # 100 x values to plot for [S] in the range
+    if not high_KM:  # Michaelis-Menton-like plot
+        figure(figsize=(5, 5))
+        plot(fakex, kobs_f(fakex, kcat, KM), "k-")  # the main curve, solid line
 
-        plt.plot(fakex, [kcat]*len(fakex), 'k:',
-                 label=rf'$k_{{cat}} = {kcat:.1f} \pm {kcat_SD:.1f}\,\mathrm{{min}}^{{-1}}$')
-        plt.plot([], [], " ",
-                 label=rf'$(v_{{max}} = {vmax:.4f}\,\mathrm{{mM/min}})$')
-        plt.plot([], [], " ", label=" ")
-        plt.plot([KM, KM], [0, kcat/2], 'k--',
-                 label=rf'$K_{{M}} = {KM:.2f} \pm {KM_SD:.2f}\,\mathrm{{mM}}$')
-        plt.plot([0, KM], [kcat/2, kcat/2], 'k--')
+        fakey = [kcat]*100
+        plot(fakex, fakey, "k:",  # reference line for kcat, dotted line
+             label=rf'$k_{{cat}} = {kcat:.1f} \pm {kcat_SD:.1f}\,\mathrm{{min}}^{{-1}}$')
+        plot([], [], ' ',  # Plot nothing to create an additional label for the legend.
+             label=rf'$(v_{{max}} = {vmax:.4f}\,\mathrm{{mᴍ/min}})$')
+        plot([], [], ' ', label=' ')  # Plot nothing to create a gap in the legend.
+        plot([KM, KM], [0, kcat/2], 'k--',  # vertical reference line for KM, dashed line
+             label=rf'$K_{{M}} = {KM:.2f} \pm {KM_SD:.2f}\,\mathrm{{mᴍ}}$')
+        plot([0, KM], [kcat/2, kcat/2], 'k--')  # horizontal reference line for KM, dashed line
 
-        plt.plot(c_substrate, kobs, 'bo')
-        plt.title(variant_name + 'foo', fontsize=20)
-        plt.xlabel('[S] (mM)', fontsize=16)
-        plt.ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
-        plt.legend(fontsize=12, loc='lower right')
-    else:
-        plt.figure(figsize=(5, 5))
-        fakex = linspace(0, max(c_substrate)*1.1, 100)
-        plt.plot(fakex, high_KM_kobs_f(fakex, kcat_over_KM), 'k-',
-                 label=rf'$k_{{cat}}/K_{{M}} = {kcat_over_KM:.2f} \pm {kcat_over_KM_SD:.2f}\,\mathrm{{mM}}^{{-1}}\,\mathrm{{min}}^{{-1}}$')
-        plt.plot(c_substrate, kobs, 'bo')
-        plt.title(variant_name + ' (Linear Fit)', fontsize=20)
-        plt.xlabel('[S] (mM)', fontsize=16)
-        plt.ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
-        plt.legend(fontsize=12)
+        plot(c_substrate, kobs, 'bo')  # Plot raw data with solid blue circles.
 
-    plt.savefig(buf1, format='png', bbox_inches='tight')
-    plt.close()
+        title(variant_name, fontsize=20)
+        xlabel('[S] (mᴍ)', fontsize=16)
+        ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
+        legend(fontsize=12, loc="lower right")
+    else:  # linear plot
+        figure(figsize=(5, 5))
+        plot(fakex, high_KM_kobs_f(fakex, kcat_over_KM), 'k-',  # the main curve, solid line
+             label=rf'$k_{{cat}}/K_{{M}} = {kcat_over_KM:.2f} \pm {kcat_over_KM_SD:.2f}\,\mathrm{{mᴍ}}^{{-1}}\,\mathrm{{min}}^{{-1}}$')
+        plot(c_substrate, kobs, 'bo')  # Plot raw data with solid blue circles.
+        title(variant_name + " (Linear Fit)", fontsize=20)
+        xlabel("[S] (mᴍ)", fontsize=16)
+        ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
+        legend(fontsize=12)
+
+    savefig(buf1, format="png", bbox_inches="tight")
+    close()
     buf1.seek(0)
-    image1_base64 = base64.b64encode(buf1.read()).decode('utf-8')
+    image1_base64 = b64encode(buf1.read()).decode("utf-8")
 
-    # Generate Lineweaver-Burk
-    buf2 = io.BytesIO()
+    # Now, we'll plot Lineweaver-Burk for comparison.
+    buf2 = BytesIO()
     rates_mm = [k * c_enz_molar * 1000 for k in kobs]
     inv_s = []
     inv_rates = []
@@ -231,8 +317,8 @@ def plot_kinetic():
         else:
             popt_lb = [0, 0]
 
-    plt.figure(figsize=(5, 5))
-    axes = plt.gca()
+    figure(figsize=(5, 5))
+    axes = gca()
     axes.spines['left'].set_position('zero')
     axes.spines['right'].set_color('none')
     axes.spines['bottom'].set_position('zero')
@@ -246,30 +332,30 @@ def plot_kinetic():
     fakex = linspace(-max_inv_s_plot/7, max_inv_s_plot, 100)
 
     if not high_KM and KM <= 75:
-        plt.plot(fakex,
+        plot(fakex,
                  inv_v(fakex, 1/vmax, KM),
                  'k--',
                  label=rf'$\frac{{1}}{{v}} = \frac{{{KM:.2f}\,\mathrm{{mM}}}}{{{vmax:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{vmax:.4f}}}$')
 
-    plt.plot(fakex,
+    plot(fakex,
              inv_v(fakex, popt_lb[0], popt_lb[1]),
              'k-',
              label=rf'$\frac{{1}}{{v}} = \frac{{{popt_lb[1]:.2f}\,\mathrm{{mM}}}}{{{1/popt_lb[0]:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{1/popt_lb[0]:.4f}}}$')
 
     if removed_points:
-        plt.plot(inv_s[:-removed_points], inv_rates[:-removed_points], 'bo')
+        plot(inv_s[:-removed_points], inv_rates[:-removed_points], 'bo')
     else:
-        plt.plot(inv_s, inv_rates, 'bo')
+        plot(inv_s, inv_rates, 'bo')
 
-    plt.title(variant_name, fontsize=20)
-    plt.xlabel('1/[S] (1/mM)', fontsize=16)
-    plt.ylabel(r'$1/v$ (min/mM)', fontsize=16)
-    plt.legend(fontsize=10, loc='upper center')
+    title(variant_name, fontsize=20)
+    xlabel('1/[S] (1/mM)', fontsize=16)
+    ylabel(r'$1/v$ (min/mM)', fontsize=16)
+    legend(fontsize=10, loc='upper center')
 
-    plt.savefig(buf2, format='png', bbox_inches='tight')
-    plt.close()
+    savefig(buf2, format='png', bbox_inches='tight')
+    close()
     buf2.seek(0)
-    image2_base64 = base64.b64encode(buf2.read()).decode('utf-8')
+    image2_base64 = b64encode(buf2.read()).decode('utf-8')
 
     response_data = {
         'menten_plot': image1_base64,
@@ -401,27 +487,27 @@ def plot_temperature():
     T50_SD = sqrt(diag(pcov))[1]
     k_SD = sqrt(diag(pcov))[0]
 
-    plt.figure(figsize=(5, 5))
-    plt.plot(temperature_data, normalized_slopes, 'bo')
+    figure(figsize=(5, 5))
+    plot(temperature_data, normalized_slopes, 'bo')
     x_values = linspace(30, 50, 100)
-    plt.plot(x_values, func(x_values, *k_T50_pair), 'r-')
-    plt.plot([T50]*50, linspace(-0.05, 1.05, 50), 'k--',
+    plot(x_values, func(x_values, *k_T50_pair), 'r-')
+    plot([T50]*50, linspace(-0.05, 1.05, 50), 'k--',
              label=f'T50 = {T50:.2f} ± {T50_SD:.2f}°C')
     a = k / 4
     x_k_values = linspace(30, 50, 50)
-    plt.plot(x_k_values, line(x_k_values, a, (0.5 - a*T50)), 'k:',
+    plot(x_k_values, line(x_k_values, a, (0.5 - a*T50)), 'k:',
              label=f'k = {k:.2f}')
-    plt.title(variant_name, fontsize=20)
-    plt.xlabel('T (°C)', fontsize=16)
-    plt.ylabel('Normalized product formation rate', fontsize=16)
-    plt.legend(fontsize=12)
-    plt.ylim(-0.05, 1.25)
+    title(variant_name, fontsize=20)
+    xlabel('T (°C)', fontsize=16)
+    ylabel('Normalized product formation rate', fontsize=16)
+    legend(fontsize=12)
+    ylim(-0.05, 1.25)
 
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='png')
+    buffer = BytesIO()
+    savefig(buffer, format='png')
     buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-    plt.close()
+    image_base64 = b64encode(buffer.read()).decode('utf-8')
+    close()
     buffer.close()
 
     response = {
@@ -434,6 +520,5 @@ def plot_temperature():
     return jsonify(response)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5002))
-    print('Woo')  # TEMP
+    port = int(environ.get('PORT', 5002))
     app.run(host='0.0.0.0', port=port)
