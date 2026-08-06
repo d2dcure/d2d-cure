@@ -36,6 +36,7 @@ def inv_v(inv_S, inv_vmax, KM):
 
 @app.route('/plot_kinetic', methods=['POST'])
 def plot_kinetic():
+    print('BAR')  # TEMP
     if debug_mode:
         with open("plot_script_log", 'a') as log_file:
             log_file.write("\nSTART LOG\n")
@@ -177,7 +178,7 @@ def plot_kinetic():
         plt.plot([0, KM], [kcat/2, kcat/2], 'k--')
 
         plt.plot(c_substrate, kobs, 'bo')
-        plt.title(variant_name, fontsize=20)
+        plt.title(variant_name + 'foo', fontsize=20)
         plt.xlabel('[S] (mM)', fontsize=16)
         plt.ylabel(r'$k_\mathrm{obs}$ (min$^{-1}$)', fontsize=16)
         plt.legend(fontsize=12, loc='lower right')
@@ -434,4 +435,5 @@ def plot_temperature():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5002))
+    print('Woo')  # TEMP
     app.run(host='0.0.0.0', port=port)
