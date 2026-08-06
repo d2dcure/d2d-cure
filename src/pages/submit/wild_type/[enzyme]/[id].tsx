@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
@@ -99,8 +99,11 @@ const SingleVariant = () => {  // TODO Is this correct?
     fetchEntryData();
   }, [enzyme, id]);
 
-  // Extract the fetchEntryData2 function from the useEffect so it can be called independently
-  const fetchEntryData2 = async (entryId: number) => {
+  // Extract the fetchEntryData2 function from the useEffect so it can be called independently.
+  // Memoized so its reference is stable across renders; otherwise the effect below (which lists it
+  // as a dependency) would re-run on every render and hammer /api/getKineticRawDataEntryData in an
+  // infinite loop whenever the record exists (i.e. after a yield is entered).
+  const fetchEntryData2 = useCallback(async (entryId: number) => {
     if (!entryId) return;
     try {
       const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryId}`);
@@ -116,7 +119,8 @@ const SingleVariant = () => {  // TODO Is this correct?
       showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
       setEntryData2(null);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enzyme]);
 
   // Update the useEffect to use the extracted function
   useEffect(() => {
