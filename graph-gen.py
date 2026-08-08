@@ -255,12 +255,12 @@ def plot_kinetic():
 
         fakey = [kcat]*100
         plot(fakex, fakey, "k:",  # reference line for kcat, dotted line
-             label=rf'$k_{{cat}} = {kcat:.1f} \pm {kcat_SD:.1f}\,\mathrm{{min}}^{{-1}}$')
+             label=rf'$k_\mathrm{{cat}} = {kcat:.1f} \pm {kcat_SD:.1f}\,\mathrm{{min}}^{{-1}}$')
         plot([], [], ' ',  # Plot nothing to create an additional label for the legend.
-             label=rf'$(v_{{max}} = {vmax:.4f}\,\mathrm{{mᴍ/min}})$')
+             label=rf'$(v_\mathrm{{max}} = {vmax:.4f}\,\mathrm{{mᴍ/min}})$')
         plot([], [], ' ', label=' ')  # Plot nothing to create a gap in the legend.
         plot([KM, KM], [0, kcat/2], 'k--',  # vertical reference line for KM, dashed line
-             label=rf'$K_{{M}} = {KM:.2f} \pm {KM_SD:.2f}\,\mathrm{{mᴍ}}$')
+             label=rf'$K_\mathrm{{M}} = {KM:.2f} \pm {KM_SD:.2f}\,\mathrm{{mᴍ}}$')
         plot([0, KM], [kcat/2, kcat/2], 'k--')  # horizontal reference line for KM, dashed line
 
         plot(c_substrate, kobs, 'bo')  # Plot raw data with solid blue circles.
@@ -272,7 +272,7 @@ def plot_kinetic():
     else:  # linear plot
         figure(figsize=(5, 5))
         plot(fakex, high_KM_kobs_f(fakex, kcat_over_KM), 'k-',  # the main curve, solid line
-             label=rf'$k_{{cat}}/K_{{M}} = {kcat_over_KM:.2f} \pm {kcat_over_KM_SD:.2f}\,\mathrm{{mᴍ}}^{{-1}}\,\mathrm{{min}}^{{-1}}$')
+             label=rf'$k_\mathrm{{cat}}/K_\mathrm{{M}} = {kcat_over_KM:.2f} \pm {kcat_over_KM_SD:.2f}\,\mathrm{{mᴍ}}^{{-1}}\,\mathrm{{min}}^{{-1}}$')
         plot(c_substrate, kobs, 'bo')  # Plot raw data with solid blue circles.
         title(variant_name + " (Linear Fit)", fontsize=20)
         xlabel("[S] (mᴍ)", fontsize=16)
@@ -286,8 +286,8 @@ def plot_kinetic():
 
     # Now, we'll plot Lineweaver-Burk for comparison.
     buf2 = BytesIO()
-    rates_mm = [k * c_enz_molar * 1000 for k in kobs]
-    inv_s = []
+    rates_mm = [k * c_enz_molar * 1000 for k in kobs]  # millimolar per minute
+    inv_s = []  # inverse molar
     inv_rates = []
     for cs, r in zip(c_substrate, rates_mm):
         if cs > 0 and r > 0:
@@ -306,6 +306,11 @@ def plot_kinetic():
         popt_lb, pcov_lb = curve_fit(inv_v, inv_s, inv_rates,
                                      p0=initial_guesses, bounds=(0, inf))
     except RuntimeError:
+        # If the curve can't be fit, the smallest concentrations are probably
+        # too close to zero.  Toss them one at a time and try again.
+        if debug_mode:
+            with open("plot_script_log", 'a') as log_file:
+                log_file.write("ERROR: Could not fit LB plot; removing smallest values and retrying...\n")
         for i in range(1, len(inv_s)):
             try:
                 popt_lb, pcov_lb = curve_fit(inv_v, inv_s[:-i], inv_rates[:-i],
@@ -319,28 +324,29 @@ def plot_kinetic():
 
     figure(figsize=(5, 5))
     axes = gca()
-    axes.spines['left'].set_position('zero')
-    axes.spines['right'].set_color('none')
-    axes.spines['bottom'].set_position('zero')
-    axes.spines['top'].set_color('none')
+    axes.spines["left"].set_position("zero")
+    axes.spines["right"].set_color("none")
+    axes.spines["bottom"].set_position("zero")
+    axes.spines["top"].set_color("none")
 
     if removed_points:
         max_inv_s_plot = max(inv_s[:-removed_points]) if (len(inv_s) > removed_points) else 1
     else:
         max_inv_s_plot = max(inv_s) if inv_s else 1
 
+	# 100 x values to plot for 1/[S] in the range.
     fakex = linspace(-max_inv_s_plot/7, max_inv_s_plot, 100)
 
-    if not high_KM and KM <= 75:
+    if not high_KM:
         plot(fakex,
-                 inv_v(fakex, 1/vmax, KM),
-                 'k--',
-                 label=rf'$\frac{{1}}{{v}} = \frac{{{KM:.2f}\,\mathrm{{mM}}}}{{{vmax:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{vmax:.4f}}}$')
+             inv_v(fakex, 1/vmax, KM),
+             'k--',
+             label=rf'$\frac{{1}}{{v}} = \frac{{{KM:.2f}\,\mathrm{{mᴍ}}}}{{{vmax:.4f}\,\mathrm{{mᴍ/min}}}}\frac{{1}}{{\mathrm{{[S]}}}} + \frac{{1}}{{{vmax:.4f}\,\mathrm{{mᴍ/min}}}}$')
 
     plot(fakex,
-             inv_v(fakex, popt_lb[0], popt_lb[1]),
-             'k-',
-             label=rf'$\frac{{1}}{{v}} = \frac{{{popt_lb[1]:.2f}\,\mathrm{{mM}}}}{{{1/popt_lb[0]:.4f}\,\mathrm{{mM/min}}}}\frac{{1}}{{[S]}} + \frac{{1}}{{{1/popt_lb[0]:.4f}}}$')
+         inv_v(fakex, popt_lb[0], popt_lb[1]),
+         'k-',
+         label=rf'$\frac{{1}}{{v}} = \frac{{{popt_lb[1]:.2f}\,\mathrm{{mᴍ}}}}{{{1/popt_lb[0]:.4f}\,\mathrm{{mᴍ/min}}}}\frac{{1}}{{\mathrm{{[S]}}}} + \frac{{1}}{{{1/popt_lb[0]:.4f}\,\mathrm{{mᴍ/min}}}}$')
 
     if removed_points:
         plot(inv_s[:-removed_points], inv_rates[:-removed_points], 'bo')
@@ -348,15 +354,16 @@ def plot_kinetic():
         plot(inv_s, inv_rates, 'bo')
 
     title(variant_name, fontsize=20)
-    xlabel('1/[S] (1/mM)', fontsize=16)
-    ylabel(r'$1/v$ (min/mM)', fontsize=16)
-    legend(fontsize=10, loc='upper center')
+    xlabel('1/[S] (1/mᴍ)', fontsize=16)
+    ylabel(r'$1/v$ (min/mᴍ)', fontsize=16)
+    legend(fontsize=10, loc="upper center")
 
-    savefig(buf2, format='png', bbox_inches='tight')
+    savefig(buf2, format="png", bbox_inches="tight")
     close()
     buf2.seek(0)
-    image2_base64 = b64encode(buf2.read()).decode('utf-8')
+    image2_base64 = b64encode(buf2.read()).decode("utf-8")
 
+    # Output the kinetic constants in a dictionary to be input back into the webpage.
     response_data = {
         'menten_plot': image1_base64,
         'lineweaver_plot': image2_base64,
