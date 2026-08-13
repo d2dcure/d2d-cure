@@ -11,6 +11,7 @@ from scipy.optimize import curve_fit
 import pandas as pd
 from base64 import b64encode
 from statistics import mean
+from mysql.connector import connect, Error
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -19,6 +20,21 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 # Turn debug mode on or off
 debug_mode = True
 
+
+# TEMP Local access to database
+config_gen = {
+    "host": "prodd2ddb.cq1eq4w4mcef.us-east-1.rds.amazonaws.com",
+    "port": 3306,
+    "user": "admin",
+    "password": "hAyjS0Ny2do",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci"}  # Use compatible collation
+enzyme_database = dict(config_gen, database="enzymes")
+query_for_enzyme_info = '''
+    SELECT molar_mass, ext_coefficient 
+    FROM GeneralInfo 
+    WHERE abbr = "BglB"
+    '''
 
 # ------------------------------
 # Kinetic assay helpers & route
@@ -65,6 +81,19 @@ def plot_kinetic():
     yld_u = df.iloc[1, 6].strip()
     dil = float(df.iloc[2, 7])  # "Traditionally", either 10 or 100
 
+    # Read experimental constants from the database.
+    try:
+        connection = connect(**enzyme_database)
+    except Error as err:
+        print(err)
+    else:
+        cursor_for_query = connection.cursor(dictionary=True)
+        cursor_for_query.execute(query_for_enzyme_info)
+        enzyme_info = cursor_for_query.fetchone()
+        print(enzyme_info["molar_mass"])
+        print(enzyme_info["ext_coefficient"])
+        cursor_for_query.close()
+        connection.close()
 
     # Constant values
     # TODO: Read these from a database file in preparation for future systems.
