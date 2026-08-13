@@ -1,4 +1,5 @@
-from os import environ
+from os import environ, getenv
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import matplotlib
@@ -13,20 +14,22 @@ from base64 import b64encode
 from statistics import mean
 from mysql.connector import connect, Error
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-
 # Turn debug mode on or off
 debug_mode = True
 
+# Load environment variables from .env for database access.
+load_dotenv()
 
-# TEMP Local access to database
+# Set up the WSGI framework.
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+# Configure connections to the MySQL database.
 config_gen = {
-    "host": "prodd2ddb.cq1eq4w4mcef.us-east-1.rds.amazonaws.com",
-    "port": 3306,
-    "user": "admin",
-    "password": "hAyjS0Ny2do",
+    "host": getenv("DATABASE_HOST"),
+    "port": int(getenv("DATABASE_PORT")),
+    "user": getenv("DATABASE_USER"),
+    "password": getenv("DATABASE_PASSWORD"),
     "charset": "utf8mb4",
     "collation": "utf8mb4_unicode_ci"}  # Use compatible collation
 enzyme_database = dict(config_gen, database="enzymes")
@@ -90,8 +93,8 @@ def plot_kinetic():
         cursor_for_query = connection.cursor(dictionary=True)
         cursor_for_query.execute(query_for_enzyme_info)
         enzyme_info = cursor_for_query.fetchone()
-        print(enzyme_info["molar_mass"])
-        print(enzyme_info["ext_coefficient"])
+        print(enzyme_info["molar_mass"])  # TEMP
+        print(enzyme_info["ext_coefficient"])  # TEMP
         cursor_for_query.close()
         connection.close()
 
