@@ -34,10 +34,16 @@ config_gen = {
     "collation": "utf8mb4_unicode_ci"}  # Use compatible collation
 enzyme_database = dict(config_gen, database="enzymes")
 query_for_enzyme_info = '''
-    SELECT molar_mass, ext_coefficient 
+    SELECT molar_mass, ext_coefficient, byproduct_ext_coefficient, experimental_number
     FROM GeneralInfo 
     WHERE abbr = "BglB"
     '''
+query_for_experimental_info = '''
+    SELECT assay_well_len, assay_vol, enz_vol
+    FROM ExperimentalInfo
+    WHERE id = 1
+    '''
+
 
 # ------------------------------
 # Kinetic assay helpers & route
