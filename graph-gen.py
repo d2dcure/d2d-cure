@@ -41,7 +41,7 @@ query_for_enzyme_info = '''
 query_for_experimental_info = '''
     SELECT assay_well_len, assay_vol, enz_vol
     FROM ExperimentalInfo
-    WHERE id = 1
+    WHERE id = %(exp_id)s
     '''
 
 
@@ -94,14 +94,29 @@ def plot_kinetic():
     try:
         connection = connect(**enzyme_database)
     except Error as err:
-        print(err)
+        return "Unable to connect to database to access enzyme parameters: " + str(err), 400
     else:
         cursor_for_query = connection.cursor(dictionary=True)
-        cursor_for_query.execute(query_for_enzyme_info)
-        enzyme_info = cursor_for_query.fetchone()
-        print(enzyme_info["molar_mass"])  # TEMP
-        print(enzyme_info["ext_coefficient"])  # TEMP
-        cursor_for_query.close()
+        try:
+            cursor_for_query.execute(query_for_enzyme_info)
+            enzyme_info = cursor_for_query.fetchone()
+            print(enzyme_info["molar_mass"])  # TEMP
+            print(enzyme_info["ext_coefficient"])  # TEMP
+            print(enzyme_info["byproduct_ext_coefficient"])  # TEMP
+            print(enzyme_info["experimental_number"])  # TEMP
+        except Error as err:
+            return "Unable to read enzyme parameters: " + str(err), 400
+
+        try:
+            cursor_for_query.execute(query_for_experimental_info,
+                                     {"exp_id": enzyme_info["experimental_number"]})
+            exp_info = cursor_for_query.fetchone()
+            print(exp_info["assay_well_len"])  # TEMP
+            print(exp_info["assay_vol"])  # TEMP
+            print(exp_info["enz_vol"])  # TEMP
+        except Error as err:
+            return "Unable to read experimental parameters: " + str(err), 400
+    finally:
         connection.close()
 
     # Constant values
