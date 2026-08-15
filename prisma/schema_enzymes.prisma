@@ -35,8 +35,10 @@ model GeneralInfo {
 }
 
 model ExperimentalInfo {
-  id              Int    @id @default(autoincrement()) @db.UnsignedTinyInt
-  assay_well_len  Float  @db.Float
-  assay_vol       Float  @db.Float
-  enz_vol         Float  @db.Float
+  id                    Int    @id @default(autoincrement()) @db.UnsignedTinyInt
+  assay_well_len        Float  @db.Float
+  assay_vol             Float  @db.Float
+  enz_vol               Float  @db.Float
+  max_c_substrate       Float  @db.Float
+  c_substrate_dilution  Int    @db.UnsignedTinyInt
 }
