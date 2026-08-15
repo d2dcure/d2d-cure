@@ -36,7 +36,7 @@ enzyme_database = dict(config_gen, database="enzymes")
 query_for_enzyme_info = '''
     SELECT molar_mass, ext_coefficient, byproduct_ext_coefficient, experimental_number
     FROM GeneralInfo 
-    WHERE abbr = "BglB"
+    WHERE abbr = %(enzyme)s
     '''
 query_for_experimental_info = '''
     SELECT assay_well_len, assay_vol, enz_vol, max_c_substrate, c_substrate_dilution
@@ -98,7 +98,8 @@ def plot_kinetic():
     else:
         cursor_for_query = connection.cursor(dictionary=True)
         try:
-            cursor_for_query.execute(query_for_enzyme_info)
+            cursor_for_query.execute(query_for_enzyme_info,
+                                     {"enzyme": request.form.get("enzyme")})
             enzyme_info = cursor_for_query.fetchone()
         except Error as err:
             return "Unable to read enzyme parameters: " + str(err), 400

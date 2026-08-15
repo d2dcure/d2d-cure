@@ -97,6 +97,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
 
     formData.append('file', sanitizedFile);
+	formData.append("enzyme", enzyme);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -135,6 +136,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     const formData = new FormData();
     formData.append('file', editedFile);
+	formData.append("enzyme", enzyme);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
