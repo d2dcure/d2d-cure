@@ -120,15 +120,13 @@ def plot_kinetic():
         connection.close()
 
     # Constant values
-    # TODO: Read these from a database file in preparation for future systems.
-    epsilon_enz = 113330  # M^-1 cm^-1 for BglB at 280 nm, according to Expasy
-    epsilon_byprod = 10660  # M^-1 cm^-1 for PNP^-1 at pH 7.5 and 420 nm (calculated by Ashley)
-    molar_mass_enz = 51395.85  # Ashley calculated from Expasy
-    assay_cell_length = 0.572  # cm, calculated by Ashley
+    epsilon_enz = enzyme_info["ext_coefficient"]  # M^-1 cm^-1
+    epsilon_byprod = enzyme_info["byproduct_ext_coefficient"]  # M^-1 cm^-1
+    molar_mass_enz = enzyme_info["molar_mass"]  # g/mol
+    assay_cell_length = exp_info["assay_well_len"]  # cm
     A280_cell_length = 1  # cm  (It is actually 0.5 mm, but the reported A280 values are pre-adjusted for 1 cm.)
-    assay_vol = 0.0001  # L (100 microliters)
-    enz_vol = 0.000025  # L (25 microliters)
-
+    assay_vol = exp_info["assay_vol"]  # L
+    enz_vol = exp_info["enz_vol"]  # L
 
     # Set up assay data to fit and plot.
     # The concentration of substrate will be on the x axis,
