@@ -31,7 +31,7 @@ config_gen = {
     "user": getenv("DATABASE_USER"),
     "password": getenv("DATABASE_PASSWORD"),
     "charset": "utf8mb4",
-    "collation": "utf8mb4_unicode_ci"}  # Use compatible collation
+    "collation": "utf8mb4_unicode_ci"}  # Use compatible collation.
 enzyme_database = dict(config_gen, database="enzymes")
 query_for_enzyme_info = '''
     SELECT molar_mass, ext_coefficient, byproduct_ext_coefficient, experimental_number
@@ -39,7 +39,7 @@ query_for_enzyme_info = '''
     WHERE abbr = "BglB"
     '''
 query_for_experimental_info = '''
-    SELECT assay_well_len, assay_vol, enz_vol
+    SELECT assay_well_len, assay_vol, enz_vol, max_c_substrate, c_substrate_dilution
     FROM ExperimentalInfo
     WHERE id = %(exp_id)s
     '''
@@ -100,10 +100,6 @@ def plot_kinetic():
         try:
             cursor_for_query.execute(query_for_enzyme_info)
             enzyme_info = cursor_for_query.fetchone()
-            print(enzyme_info["molar_mass"])  # TEMP
-            print(enzyme_info["ext_coefficient"])  # TEMP
-            print(enzyme_info["byproduct_ext_coefficient"])  # TEMP
-            print(enzyme_info["experimental_number"])  # TEMP
         except Error as err:
             return "Unable to read enzyme parameters: " + str(err), 400
 
@@ -111,15 +107,12 @@ def plot_kinetic():
             cursor_for_query.execute(query_for_experimental_info,
                                      {"exp_id": enzyme_info["experimental_number"]})
             exp_info = cursor_for_query.fetchone()
-            print(exp_info["assay_well_len"])  # TEMP
-            print(exp_info["assay_vol"])  # TEMP
-            print(exp_info["enz_vol"])  # TEMP
         except Error as err:
             return "Unable to read experimental parameters: " + str(err), 400
     finally:
         connection.close()
 
-    # Constant values
+    # Set constant values
     epsilon_enz = enzyme_info["ext_coefficient"]  # M^-1 cm^-1
     epsilon_byprod = enzyme_info["byproduct_ext_coefficient"]  # M^-1 cm^-1
     molar_mass_enz = enzyme_info["molar_mass"]  # g/mol
@@ -132,15 +125,13 @@ def plot_kinetic():
     # The concentration of substrate will be on the x axis,
     # and the values are constant and determined by the assay.
     # The kobs values are on the y axis and will be calculated from the raw slope data below.
-    c_substrate = [
-        75.000, 75.000, 75.000,
-        25.000, 25.000, 25.000,
-        8.333,  8.333,  8.333,
-        2.778,  2.778,  2.778,
-        0.926,  0.926,  0.926,
-        0.309,  0.309,  0.309,
-        0.103,  0.103,  0.103,
-        0.000,  0.000,  0.000]  # millimolar
+    c_substrate = [0.000]*24  # There are 3×8 wells per assay.
+    factor = 1  # First row of three will be at max concentration.
+    max_concentration = exp_info["max_c_substrate"]  # millimolar
+    dilution = exp_info["c_substrate_dilution"]  # amount to dilute each row
+    for i in range(21):  # The final row of three has 0 millimolar.
+        if i and i % 3 == 0: factor = factor / dilution 
+        c_substrate[i] = max_concentration * factor
     
     # Extract data from the datafile.
     # This must be a comma-delimited string of slopes for cells A1,A2,A3,B1,B2,B3,... etc.
