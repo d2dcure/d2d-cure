@@ -15,7 +15,7 @@ from statistics import mean
 from mysql.connector import connect, Error
 
 # Turn debug mode on or off
-debug_mode = True
+debug_mode = False
 
 # Load environment variables from .env for database access.
 load_dotenv()
