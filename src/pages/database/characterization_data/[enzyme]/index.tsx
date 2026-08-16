@@ -1681,29 +1681,18 @@ const DataPage = () => {
                       }}
                       classNames={{
                         th: [
-                          "text-default-500", 
-                          "bg-white", // Solid background to prevent see-through
-                          "font-medium", 
+                          "text-default-500",
+                          "bg-white",
+                          "font-medium",
                           "py-3 px-4",
-                          "before:content-['']",
-                          "before:absolute",
-                          "before:left-0",
-                          "before:top-0",
-                          "before:w-full",
-                          "before:h-full",
-                          "before:bg-default-100/50",
-                          "before:z-[-1]",
+                          // Do not use before:absolute + before:h-full here.
+                          // On Safari, sticky header cells treat that as the full table height,
+                          // so the header background covers every row.
                         ].join(" "),
-                        //base: "overflow-visible",
-                        base: "max-h-[800px] max-w-[1200px] overflow-scroll",
-                        thead: "z-40",
-                        wrapper: "overflow-visible",
+                        base: "max-w-[1200px]",
+                        wrapper: "max-h-[800px] overflow-auto",
+                        thead: "[&>tr]:h-auto",
                         tr: "hover:bg-default-100/50 hover:cursor-pointer hover:shadow-sm hover:rounded-lg",
-                      }}
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10
                       }}
                     >
                       <TableHeader>
