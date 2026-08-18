@@ -347,7 +347,7 @@ const ThermoAssayDataView: React.FC<ThermoAssayDataViewProps> = ({
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_temperature`,
+        'https://d2dcure-ed1280e9442d.herokuapp.com/plot_temperature',
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

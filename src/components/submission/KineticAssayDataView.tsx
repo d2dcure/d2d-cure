@@ -97,14 +97,13 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
 
     formData.append('file', sanitizedFile);
-	formData.append("enzyme", enzyme);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
     );
 
     try {
-		const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -135,14 +134,13 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     const formData = new FormData();
     formData.append('file', editedFile);
-	formData.append("enzyme", enzyme);
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
     );
 
     try {
-		const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
+      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -313,13 +311,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           
           const formData = new FormData();
           formData.append('file', sanitizedFile);
-		  formData.append("enzyme", enzyme);
           formData.append(
             'variant-name',
             `${entryData.resid}${entryData.resnum}${entryData.resmut}`
           );
 
-			const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
+          const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true,
           });
