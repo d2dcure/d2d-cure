@@ -5,7 +5,7 @@ import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import StatusChip from '@/components/StatusChip';
 import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip } from "@nextui-org/react";
-import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
+import { SearchIcon, ColumnsIcon, FilterIcon, InfoIcon, ArrowUpIcon, ArrowDownIcon, ChevronDownIcon } from 'lucide-react';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -565,21 +565,7 @@ const CuratePage = () => {
                                         onClear={() => setSearchTerm("")}
                                         onValueChange={(value) => setSearchTerm(value)}
                                         startContent={
-                                            <svg
-                                                aria-hidden="true"
-                                                fill="none"
-                                                focusable="false"
-                                                height="1em"
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                viewBox="0 0 24 24"
-                                                width="1em"
-                                            >
-                                                <circle cx="11" cy="11" r="8" />
-                                                <line x1="21" x2="16.65" y1="21" y2="16.65" />
-                                            </svg>
+                                            <SearchIcon className="w-4 h-4" />
                                         }
                                     />
                                     <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
@@ -592,7 +578,7 @@ const CuratePage = () => {
                                                     size="sm"
                                                     variant="flat"
                                                     className="w-full"
-                                                    startContent={<FaColumns className="text-small" />}
+                                                    startContent={<ColumnsIcon className="text-small" />}
                                                 >
                                                     Columns
                                                 </Button>
@@ -622,7 +608,7 @@ const CuratePage = () => {
                                                     size="sm"
                                                     variant="flat"
                                                     className="w-full"
-                                                    startContent={<FaFilter className="text-small" />}
+                                                    startContent={<FilterIcon className="text-small" />}
                                                 >
                                                     Filters
                                                 </Button>
@@ -761,9 +747,7 @@ const CuratePage = () => {
                                                     variant="flat"
                                                     className="w-full"
                                                     endContent={
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                            <path d="M4 6L8 10L12 6" stroke="#11181C" stroke-linecap="round" stroke-linejoin="round"/>
-                                                        </svg>
+                                                        <ChevronDownIcon className="w-4 h-4" />
                                                     }
                                                 >
                                                     More Actions

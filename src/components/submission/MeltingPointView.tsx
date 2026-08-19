@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Input} from "@nextui-org/input";
+import { InfoIcon, ArrowLeftIcon, LoaderIcon } from 'lucide-react';
 
 
 interface MeltingPointViewProps {
@@ -71,9 +72,7 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
           onClick={() => setCurrentView('checklist')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeftIcon className="w-4 h-4" />
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
@@ -120,9 +119,7 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
           {/* Current values display */}
           {(entryData.Tm || entryData.Tm_SD) && (
             <div className="text-sm text-gray-600 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <InfoIcon className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" />
               Current values: 
               <span className="font-medium text-gray-900">
                 {entryData.Tm ? `${entryData.Tm}°C` : 'N/A'} ± {entryData.Tm_SD ? `${entryData.Tm_SD}°C` : 'N/A'}
@@ -140,10 +137,7 @@ const MeltingPointView: React.FC<MeltingPointViewProps> = ({
         >
           {isSubmitting ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <LoaderIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
               Saving...
             </>
           ) : (

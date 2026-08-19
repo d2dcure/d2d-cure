@@ -15,7 +15,8 @@ import {
   BookOpen,
   Settings,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  MenuIcon
 } from 'lucide-react';
 
 const NavBar = () => {
@@ -370,14 +371,7 @@ const NavBar = () => {
               className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
             >
               <span className="sr-only">Open main menu</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={isMobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-                />
-              </svg>
+              <MenuIcon className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" />
             </button>
           </div>
         </div>

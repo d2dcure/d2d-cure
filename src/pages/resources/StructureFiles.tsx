@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
 import { useUser } from '@/components/UserProvider';
 import { Link } from "@nextui-org/react";
+import { LockIcon } from 'lucide-react';
 
 interface ResourceCard {
   id: number;
@@ -118,20 +119,7 @@ const Test = () => {
           <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-start space-x-4">
               <div className="p-2 bg-[#06B7DB]/10 rounded-lg">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-6 w-6 text-[#06B7DB]" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
-                  />
-                </svg>
+                <LockIcon className="h-6 w-6 text-[#06B7DB]" />
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-medium text-gray-900 mb-2">

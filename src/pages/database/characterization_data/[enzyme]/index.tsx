@@ -10,6 +10,7 @@ import { HiChevronRight } from "react-icons/hi";
 import { Tooltip } from "@nextui-org/react";
 import { ErrorChecker } from '@/components/ErrorChecker';
 import { useRouter } from 'next/router';
+import { SearchIcon } from 'lucide-react';
 
 
 // Interfaces /////////////////////////////////////////////////////////////////
@@ -1423,21 +1424,7 @@ const DataPage = () => {
                           setSearchTerm(input.value.replace(/\D/g, ""));
                         }}
                         startContent={
-                          <svg 
-                            aria-hidden="true" 
-                            fill="none" 
-                            focusable="false" 
-                            height="1em" 
-                            stroke="currentColor" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth="2" 
-                            viewBox="0 0 24 24" 
-                            width="1em"
-                          >
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" x2="16.65" y1="21" y2="16.65" />
-                          </svg>
+                          <SearchIcon className="w-4 h-4 text-current" aria-hidden="true" />
                         }
                       />
                       <Button
