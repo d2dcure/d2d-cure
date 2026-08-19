@@ -7,6 +7,7 @@ import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@
 import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import Image from 'next/image';
+import { int } from 'aws-sdk/clients/datapipeline';
 
 
 interface KineticAssayDataViewProps {
@@ -14,6 +15,21 @@ interface KineticAssayDataViewProps {
 	entryData: any;
 	setCurrentView: (view: string) => void;
 	updateEntryData: (newData: any) => void; 
+}
+
+interface EnzymeParameters {
+	molar_mass: number;
+	ext_coefficient: number;
+	byproduct_ext_coefficient: number;
+	experimental_number: int | 0;
+}
+
+interface ExperimentalParameters {
+	assay_well_len: number;
+	assay_vol: number;
+	enz_vol: number;
+	max_c_substrate: number;
+	c_substrate_dilution: int;
 }
 
 
@@ -29,6 +45,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   const [mentenImageUrl, setMentenImageUrl] = useState<string | null>(null);
   const [lineweaverImageUrl, setLineweaverImageUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
+  const [experimentalParameters, setExperimentalParameters] = useState<ExperimentalParameters>();
 
   const [kineticConstants, setKineticConstants] = useState({
     kcat: null,
@@ -52,6 +70,42 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   // Add these state variables at the top with other states
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
+
+  	// Fetch enzyme and experimental parameters needed for proper plotting.
+	useEffect(() => {
+		const fetchEnzymeInfo = async () => {
+			try {
+				// Fetch enzyme general parameters.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				if (infoResponse.ok) {
+					const infoData = await infoResponse.json();
+					setEnzymeParameters(infoData);
+				}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+		const fetchExperimentalInfo = async () => {
+			try {
+				// Fetch experimental parameters.
+				const expResponse = await fetch(
+					`/api/getExperimentalInfo?exp_id=${enzymeParameters?.experimental_number}`);
+				if (expResponse.ok) {
+					const expData = await expResponse.json();
+					setExperimentalParameters(expData);
+				}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+
+		if (! enzymeParameters) {
+			fetchEnzymeInfo();
+		}
+		if ((! experimentalParameters) && (enzymeParameters?.experimental_number)) {
+			fetchExperimentalInfo();
+		}
+	}, [enzyme, enzymeParameters, experimentalParameters]);
 
 
    // -------------------------------
@@ -97,13 +151,22 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const sanitizedFile = new File([sanitizedCsv], 'data.csv', { type: 'text/csv' });
 
     formData.append('file', sanitizedFile);
+	formData.append("enzyme", enzyme);
+	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+	formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+	formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+	formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+	formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
     );
 
     try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+		const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -134,13 +197,22 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     const formData = new FormData();
     formData.append('file', editedFile);
+	formData.append("enzyme", enzyme);
+	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+	formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+	formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+	formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+	formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
     );
 
     try {
-      const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+		const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -311,12 +383,21 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           
           const formData = new FormData();
           formData.append('file', sanitizedFile);
+		  formData.append("enzyme", enzyme);
+		  formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+		  formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+		  formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+		  formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+		  formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+		  formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+		  formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+		  formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
           formData.append(
             'variant-name',
             `${entryData.resid}${entryData.resnum}${entryData.resmut}`
           );
 
-          const response = await axios.post('https://d2dcure-ed1280e9442d.herokuapp.com/plot_kinetic', formData, {
+			const response = await axios.post(`${process.env.NEXT_PUBLIC_PLOT_GENERATOR}/plot_kinetic`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true,
           });
