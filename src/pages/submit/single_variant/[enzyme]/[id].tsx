@@ -1043,8 +1043,8 @@ const SingleVariant = () => {
           <button
             onClick={() => prevItem && setSelectedDetail(prevItem)}
             className={`flex items-center gap-2 transition-colors ${
-              prevItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+              (prevItem && isItemAccessible(prevItem))
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
 			disabled={(!prevItem) || (!isItemAccessible(prevItem)) }
@@ -1078,8 +1078,8 @@ const SingleVariant = () => {
           <button
             onClick={() => nextItem && setSelectedDetail(nextItem)}
             className={`flex items-center gap-2 transition-colors ${
-              nextItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+              (nextItem && isItemAccessible(nextItem)) 
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
             disabled={(!nextItem) || (!isItemAccessible(nextItem)) }
