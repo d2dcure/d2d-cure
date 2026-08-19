@@ -1,5 +1,4 @@
 from os import environ, getenv
-from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import matplotlib
@@ -12,37 +11,13 @@ from scipy.optimize import curve_fit
 import pandas as pd
 from base64 import b64encode
 from statistics import mean
-from mysql.connector import connect, Error
 
 # Turn debug mode on or off
 debug_mode = False
 
-# Load environment variables from .env for database access.
-load_dotenv()
-
 # Set up the WSGI framework.
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-# Configure connections to the MySQL database.
-config_gen = {
-    "host": getenv("DATABASE_HOST"),
-    "port": int(getenv("DATABASE_PORT")),
-    "user": getenv("DATABASE_USER"),
-    "password": getenv("DATABASE_PASSWORD"),
-    "charset": "utf8mb4",
-    "collation": "utf8mb4_unicode_ci"}  # Use compatible collation.
-enzyme_database = dict(config_gen, database="enzymes")
-query_for_enzyme_info = '''
-    SELECT molar_mass, ext_coefficient, byproduct_ext_coefficient, experimental_number
-    FROM GeneralInfo 
-    WHERE abbr = %(enzyme)s
-    '''
-query_for_experimental_info = '''
-    SELECT assay_well_len, assay_vol, enz_vol, max_c_substrate, c_substrate_dilution
-    FROM ExperimentalInfo
-    WHERE id = %(exp_id)s
-    '''
 
 
 # ------------------------------
@@ -89,29 +64,6 @@ def plot_kinetic():
     yld = float(cleaned_yield)
     yld_u = df.iloc[1, 6].strip()
     dil = float(df.iloc[2, 7])  # "Traditionally", either 10 or 100
-
-    # Read experimental constants from the database.
-    try:
-        connection = connect(**enzyme_database)
-    except Error as err:
-        return "Unable to connect to database to access enzyme parameters: " + str(err), 400
-    else:
-        cursor_for_query = connection.cursor(dictionary=True)
-        try:
-            cursor_for_query.execute(query_for_enzyme_info,
-                                     {"enzyme": request.form.get("enzyme")})
-            enzyme_info = cursor_for_query.fetchone()
-        except Error as err:
-            return "Unable to read enzyme parameters: " + str(err), 400
-
-        try:
-            cursor_for_query.execute(query_for_experimental_info,
-                                     {"exp_id": enzyme_info["experimental_number"]})
-            exp_info = cursor_for_query.fetchone()
-        except Error as err:
-            return "Unable to read experimental parameters: " + str(err), 400
-    finally:
-        connection.close()
 
     # Set constant values
     epsilon_enz = float(request.form.get("epsilon_enz"))  # M^-1 cm^-1
