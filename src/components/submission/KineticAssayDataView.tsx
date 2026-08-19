@@ -21,7 +21,15 @@ interface EnzymeParameters {
 	molar_mass: number;
 	ext_coefficient: number;
 	byproduct_ext_coefficient: number;
-	experimental_number: int;
+	experimental_number: int | 0;
+}
+
+interface ExperimentalParameters {
+	assay_well_len: number;
+	assay_vol: number;
+	enz_vol: number;
+	max_c_substrate: number;
+	c_substrate_dilution: int;
 }
 
 
@@ -38,6 +46,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   const [lineweaverImageUrl, setLineweaverImageUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
+  const [experimentalParameters, setExperimentalParameters] = useState<ExperimentalParameters>();
 
   const [kineticConstants, setKineticConstants] = useState({
     kcat: null,
@@ -64,28 +73,39 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
   	// Fetch enzyme and experimental parameters needed for proper plotting.
 	useEffect(() => {
-		const fetchData = async () => {
+		const fetchEnzymeInfo = async () => {
 			try {
-				// Fetch enzyme general information data.
+				// Fetch enzyme general parameters.
 				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
 				if (infoResponse.ok) {
 					const infoData = await infoResponse.json();
 					setEnzymeParameters(infoData);
 				}
-
-				// Fetch sequence data.
-				//const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
-				//if (seqResponse.ok) {
-				//	const seqData = await seqResponse.json();
-				//	setSequenceData(seqData);
-				//}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+		const fetchExperimentalInfo = async () => {
+			try {
+				// Fetch experimental parameters.
+				const expResponse = await fetch(
+					`/api/getExperimentalInfo?exp_id=${enzymeParameters?.experimental_number}`);
+				if (expResponse.ok) {
+					const expData = await expResponse.json();
+					setExperimentalParameters(expData);
+				}
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
 		};
 
-		fetchData();
-	}, [enzyme]);
+		if (! enzymeParameters) {
+			fetchEnzymeInfo();
+		}
+		if ((! experimentalParameters) && (enzymeParameters?.experimental_number)) {
+			fetchExperimentalInfo();
+		}
+	}, [enzyme, enzymeParameters, experimentalParameters]);
 
 
    // -------------------------------
