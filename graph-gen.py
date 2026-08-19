@@ -117,13 +117,10 @@ def plot_kinetic():
     epsilon_enz = float(request.form.get("epsilon_enz"))  # M^-1 cm^-1
     epsilon_byprod = float(request.form.get("epsilon_byprod"))  # M^-1 cm^-1
     molar_mass_enz = float(request.form.get("molar_mass_enz"))  # g/mol
-    #epsilon_enz = enzyme_info["ext_coefficient"]  # M^-1 cm^-1
-    #epsilon_byprod = enzyme_info["byproduct_ext_coefficient"]  # M^-1 cm^-1
-    #molar_mass_enz = enzyme_info["molar_mass"]  # g/mol
-    assay_cell_length = exp_info["assay_well_len"]  # cm
+    assay_cell_length = float(request.form.get("assay_well_len"))  # cm
     A280_cell_length = 1  # cm  (It is actually 0.5 mm, but the reported A280 values are pre-adjusted for 1 cm.)
-    assay_vol = exp_info["assay_vol"]  # L
-    enz_vol = exp_info["enz_vol"]  # L
+    assay_vol = float(request.form.get("assay_vol"))  # L
+    enz_vol = float(request.form.get("enz_vol"))  # L
 
     # Set up assay data to fit and plot.
     # The concentration of substrate will be on the x axis,
@@ -131,8 +128,8 @@ def plot_kinetic():
     # The kobs values are on the y axis and will be calculated from the raw slope data below.
     c_substrate = [0.000]*24  # There are 3×8 wells per assay.
     factor = 1  # First row of three will be at max concentration.
-    max_concentration = exp_info["max_c_substrate"]  # millimolar
-    dilution = exp_info["c_substrate_dilution"]  # amount to dilute each row
+    max_concentration = float(request.form.get("max_c_substrate"))  # millimolar
+    dilution = float(request.form.get("c_substrate_dilution"))  # amount to dilute each row
     for i in range(21):  # The final row of three has 0 millimolar.
         if i and i % 3 == 0: factor = factor / dilution 
         c_substrate[i] = max_concentration * factor

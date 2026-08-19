@@ -155,6 +155,11 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
 	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+	formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+	formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+	formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+	formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -196,6 +201,11 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
 	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+	formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+	formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+	formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+	formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -377,6 +387,11 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 		  formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
 		  formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 		  formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
+		  formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
+		  formData.append("assay_vol", String(experimentalParameters?.assay_vol));
+		  formData.append("enz_vol", String(experimentalParameters?.enz_vol));
+		  formData.append("max_c_substrate", String(experimentalParameters?.max_c_substrate));
+		  formData.append("c_substrate_dilution", String(experimentalParameters?.c_substrate_dilution));
           formData.append(
             'variant-name',
             `${entryData.resid}${entryData.resnum}${entryData.resmut}`
