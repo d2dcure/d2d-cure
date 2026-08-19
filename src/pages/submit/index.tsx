@@ -1,14 +1,19 @@
 import VariantSearchForm from "@/components/VariantSearchForm";
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useUser } from '@/components/UserProvider';
-import { useRouter } from 'next/router';
-import { AuthChecker } from '@/components/AuthChecker';
-import NavBar from '@/components/NavBar';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useUser } from "@/components/UserProvider";
+import { useRouter } from "next/router";
+import { AuthChecker } from "@/components/AuthChecker";
+import NavBar from "@/components/NavBar";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import { Select, SelectItem, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,  Card, CardBody } from "@nextui-org/react";
-import StatusChip from '@/components/StatusChip';
-import Footer from '@/components/Footer';
+import {
+	Select, SelectItem,
+	Button,
+	Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
+	Card, CardBody
+} from "@nextui-org/react";
+import StatusChip from "@/components/StatusChip";
+import Footer from "@/components/Footer";
 
 const SubmitPage = () => {
   const { user } = useUser();
