@@ -328,16 +328,33 @@ const SubmitPage = () => {
 
                       {entered !== 'null' && (
                         <div className="mt-8">
-                          <div className="flex justify-between items-center mb-4">
-                            <span className="text-small text-default-400">
+                            <p className="mb-4">
                               The {`${resid}${resnum}${resmut} ${enzyme}`} variant
 							  has been studied {matchedData.length} time(s)
-							  at {user.institution}.
-							  Select which dataset you would like to modify or
-							  click the Create New Dataset button.
-                            </span>
-                          </div>
+							  at {user.institution}.{' '}
+							</p>
+							{matchedData.length != 0 && (
+								<p className="mb-4">
+									Select which dataset you would like to modify or
+									click the <code>Create New Dataset</code> button.
+								</p>
+							)}
+							{matchedData.length == 0 && (
+								<>
+								<p className="mb-4">
+									Click the <code>Create New Dataset</code> button,
+									if you would like
+									to create a new database record for this variant.
+								</p>
+								<p className="text-small mb-4">
+									(You may create a new record,
+									even if you do not intend
+									to submit any data for curation.)
+								</p>
+								</>
+							)}
 
+						{matchedData.length != 0 && (
                           <Table 
                             aria-label="Variant records"
                             classNames={{
@@ -390,13 +407,14 @@ const SubmitPage = () => {
                                   </TableCell>
                                   <TableCell>
                                     <Link href={`/submit/single_variant/${enzyme}/${item.id}`} className="text-[#06B7DB]">
-                                      View
+                                      View/Edit
                                     </Link>
                                   </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
                           </Table>
+						)}
 
                           <Button
                             className="mt-6 border border-[#06B7DB] text-[#06B7DB] hover:bg-[#06B7DB] hover:text-white"
