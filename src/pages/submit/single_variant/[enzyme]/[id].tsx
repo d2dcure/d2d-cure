@@ -94,6 +94,33 @@ const SingleVariant = () => {
     });
   };
 
+    // Helper function to determine if an item should be accessible
+    const isItemAccessible = (item: string) => {
+      switch (item) {
+        case 'Protein modeled?':
+        case 'Oligonucleotide ordered?':
+        case 'Protein production induced?':
+          return true;
+        
+        case 'Plasmid sequence verified?':
+          return entryData.oligo_ordered === true;
+        
+        case 'Protein yield?':
+        case 'SDS-PAGE gel uploaded?':
+          return entryData.expressed === true;
+        
+        case 'Kinetic assay data uploaded?':
+        case 'Wild-type kinetic assay data uploaded?':
+        case 'Thermostability assay data uploaded?':
+        case 'Wild-type thermostability assay data uploaded?':
+        case 'Melting point values uploaded?':
+          return entryData.yield_avg !== null;
+        
+        default:
+          return false;
+      }
+    };
+
   useEffect(() => {
     const fetchEntryData = async () => {
       if (!id) return;
@@ -830,33 +857,6 @@ const SingleVariant = () => {
       return null;
     };
 
-    // Helper function to determine if an item should be accessible
-    const isItemAccessible = (item: string) => {
-      switch (item) {
-        case 'Protein modeled?':
-        case 'Oligonucleotide ordered?':
-        case 'Protein production induced?':
-          return true;
-        
-        case 'Plasmid sequence verified?':
-          return entryData.oligo_ordered === true;
-        
-        case 'Protein yield?':
-        case 'SDS-PAGE gel uploaded?':
-          return entryData.expressed === true;
-        
-        case 'Kinetic assay data uploaded?':
-        case 'Wild-type kinetic assay data uploaded?':
-        case 'Thermostability assay data uploaded?':
-        case 'Wild-type thermostability assay data uploaded?':
-        case 'Melting point values uploaded?':
-          return entryData.yield_avg !== null;
-        
-        default:
-          return false;
-      }
-    };
-
     return (
       <>
         <Table 
@@ -1047,7 +1047,7 @@ const SingleVariant = () => {
                 ? 'text-gray-600 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!prevItem}
+			disabled={(!prevItem) || (!isItemAccessible(prevItem)) }
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="text-sm hidden sm:inline">{prevItem}</span>
@@ -1082,7 +1082,7 @@ const SingleVariant = () => {
                 ? 'text-gray-600 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!nextItem}
+            disabled={(!nextItem) || (!isItemAccessible(nextItem)) }
           >
             <span className="text-sm hidden sm:inline">{nextItem}</span>
             <ChevronRight className="w-4 h-4" />
