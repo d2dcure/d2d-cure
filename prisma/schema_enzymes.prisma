@@ -10,35 +10,24 @@ datasource db {
 }
 
 model GeneralInfo {
-  id                         Int      @id @default(autoincrement()) @db.UnsignedTinyInt
-  abbr                       String   @db.VarChar(5)
-  full_name                  String   @db.TinyText
-  year                       Int      @db.Year
-  species                    String   @db.TinyText
-  EC_number                  String   @db.VarChar(14)
-  UniProt_number             String   @db.VarChar(10)
-  PDB_entries                String?  @db.TinyText
-  AlphaFold_entries          String?  @db.TinyText
-  subunits                   Int?     @default(1) @db.UnsignedTinyInt
-  molar_mass                 Float    @db.Float
-  ext_coefficient            Float    @db.Float
-  byproduct_ext_coefficient  Float    @db.Float
-  experimental_number        Int?	  @default(1) @db.UnsignedTinyInt
-  cat_residues               String?  @db.TinyText
-  disulfide_bonds            String?  @db.TinyText
-  pathway_desc               String?  @db.Text
-  assay_desc                 String?  @db.Text
-  metadata                   String?  @db.Text
-  foldit_score               Float?   @db.Float
-  active                     Boolean  @default(true)
-  coming_soon                Boolean  @default(false)
-}
-
-model ExperimentalInfo {
-  id                    Int    @id @default(autoincrement()) @db.UnsignedTinyInt
-  assay_well_len        Float  @db.Float
-  assay_vol             Float  @db.Float
-  enz_vol               Float  @db.Float
-  max_c_substrate       Float  @db.Float
-  c_substrate_dilution  Int    @db.UnsignedTinyInt
+  id                Int      @id @default(autoincrement()) @db.UnsignedTinyInt
+  abbr              String   @db.VarChar(5)
+  full_name         String   @db.TinyText
+  year              Int      @db.Year
+  species           String   @db.TinyText
+  EC_number         String   @db.VarChar(14)
+  UniProt_number    String   @db.VarChar(10)
+  PDB_entries       String?  @db.TinyText
+  AlphaFold_entries String?  @db.TinyText
+  subunits          Int      @default(1) @db.UnsignedSmallInt
+  molar_mass        Int      @db.UnsignedMediumInt
+  ext_coefficient   Int      @db.UnsignedMediumInt
+  cat_residues      String?  @db.TinyText
+  disulfide_bonds   String?  @db.TinyText
+  pathway_desc      String?  @db.Text
+  assay_desc        String?  @db.Text
+  metadata          String?  @db.Text
+  foldit_score      Float    @default(0) @db.Float
+  active            Boolean  @default(true)
+  coming_soon       Boolean  @default(false)
 }

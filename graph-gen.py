@@ -1,4 +1,4 @@
-from os import environ, getenv
+from os import environ
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import matplotlib
