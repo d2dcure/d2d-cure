@@ -7,6 +7,7 @@ import {Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@
 import {Button} from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import Image from 'next/image';
+import { int } from 'aws-sdk/clients/datapipeline';
 
 
 interface KineticAssayDataViewProps {
@@ -14,6 +15,13 @@ interface KineticAssayDataViewProps {
 	entryData: any;
 	setCurrentView: (view: string) => void;
 	updateEntryData: (newData: any) => void; 
+}
+
+interface EnzymeParameters {
+	molar_mass: number;
+	ext_coefficient: number;
+	byproduct_ext_coefficient: number;
+	experimental_number: int;
 }
 
 
@@ -29,6 +37,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   const [mentenImageUrl, setMentenImageUrl] = useState<string | null>(null);
   const [lineweaverImageUrl, setLineweaverImageUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
 
   const [kineticConstants, setKineticConstants] = useState({
     kcat: null,
@@ -52,6 +61,31 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   // Add these state variables at the top with other states
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
+
+  	// Fetch enzyme and experimental parameters needed for proper plotting.
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				// Fetch enzyme general information data.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				if (infoResponse.ok) {
+					const infoData = await infoResponse.json();
+					setEnzymeParameters(infoData);
+				}
+
+				// Fetch sequence data.
+				//const seqResponse = await fetch(`/api/getSequenceData?enzyme=${enzyme}`);
+				//if (seqResponse.ok) {
+				//	const seqData = await seqResponse.json();
+				//	setSequenceData(seqData);
+				//}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
+
+		fetchData();
+	}, [enzyme]);
 
 
    // -------------------------------
@@ -98,6 +132,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     formData.append('file', sanitizedFile);
 	formData.append("enzyme", enzyme);
+	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -136,6 +173,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const formData = new FormData();
     formData.append('file', editedFile);
 	formData.append("enzyme", enzyme);
+	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
     formData.append(
       'variant-name',
       `${entryData.resid}${entryData.resnum}${entryData.resmut}`
@@ -314,6 +354,9 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           const formData = new FormData();
           formData.append('file', sanitizedFile);
 		  formData.append("enzyme", enzyme);
+		  formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+		  formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
+		  formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
           formData.append(
             'variant-name',
             `${entryData.resid}${entryData.resnum}${entryData.resmut}`

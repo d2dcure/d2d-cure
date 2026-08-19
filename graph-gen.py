@@ -114,9 +114,12 @@ def plot_kinetic():
         connection.close()
 
     # Set constant values
-    epsilon_enz = enzyme_info["ext_coefficient"]  # M^-1 cm^-1
-    epsilon_byprod = enzyme_info["byproduct_ext_coefficient"]  # M^-1 cm^-1
-    molar_mass_enz = enzyme_info["molar_mass"]  # g/mol
+    epsilon_enz = float(request.form.get("epsilon_enz"))  # M^-1 cm^-1
+    epsilon_byprod = float(request.form.get("epsilon_byprod"))  # M^-1 cm^-1
+    molar_mass_enz = float(request.form.get("molar_mass_enz"))  # g/mol
+    #epsilon_enz = enzyme_info["ext_coefficient"]  # M^-1 cm^-1
+    #epsilon_byprod = enzyme_info["byproduct_ext_coefficient"]  # M^-1 cm^-1
+    #molar_mass_enz = enzyme_info["molar_mass"]  # g/mol
     assay_cell_length = exp_info["assay_well_len"]  # cm
     A280_cell_length = 1  # cm  (It is actually 0.5 mm, but the reported A280 values are pre-adjusted for 1 cm.)
     assay_vol = exp_info["assay_vol"]  # L
