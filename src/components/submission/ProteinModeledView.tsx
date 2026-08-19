@@ -40,7 +40,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
 				field: 'WT'
 				});
-				//isValid = false;
 			}
 
 			if (startingScore === endingScore) {
@@ -49,7 +48,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 
 			const delta = endingScore - startingScore;
@@ -59,7 +57,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 		} else {
 			if (startingScore == null) {
@@ -68,7 +65,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: "Please enter a valid number for WT score.",
 				field: 'WT'
 				});
-				//isValid = false;
 			}
 			if (endingScore == null) {
 				messages.push({
@@ -76,12 +72,10 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: "Please enter a valid number for Variant score.",
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 		}
 
 		setValidationMessages(messages);
-		//return isValid;
 	}, [startingScore, endingScore, folditScore]);
 
 	useEffect(() => {

@@ -4,7 +4,12 @@ import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
+import {
+	Breadcrumbs, BreadcrumbItem,
+	Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
+	Tooltip,
+	Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
+} from "@nextui-org/react";
 import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import { Link } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
@@ -642,28 +647,6 @@ const SingleVariant = () => {
     }
   };
 
-  /*const renderPagination = () => (
-    <div className="flex items-center justify-end gap-2 mt-4">
-      <button
-        onClick={() => navigateEntry('prev')}
-        disabled={currentIndex <= 0}
-        className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="w-5 h-5 text-[#06B7DB]" />
-      </button>
-      <span className="text-sm text-gray-600">
-        {currentIndex + 1} of {totalEntries}
-      </span>
-      <button
-        onClick={() => navigateEntry('next')}
-        disabled={currentIndex >= totalEntries - 1}
-        className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="w-5 h-5 text-[#06B7DB]" />
-      </button>
-    </div>
-  );*/
-
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
@@ -1002,13 +985,14 @@ const SingleVariant = () => {
     );
   };
 
+  // Generate the "Subview".
   const renderDetailView = () => {
     const checklistItems = [
       "Protein modeled?",
       "Oligonucleotide ordered?",
       "Plasmid sequence verified?",
-      'Protein production induced?',
-      'Protein yield?',
+      "Protein production induced?",
+      "Protein yield?",
       "Kinetic assay data uploaded?",
       "Wild-type kinetic assay data uploaded?",
       "Thermostability assay data uploaded?",
@@ -1053,10 +1037,8 @@ const SingleVariant = () => {
 
     return (
       <div className="flex flex-col">
-        {DetailComponent}
-        
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+        <div className="flex justify-between items-center mb-2 pb-2">
           {/* Previous Button */}
           <button
             onClick={() => prevItem && setSelectedDetail(prevItem)}
@@ -1106,6 +1088,8 @@ const SingleVariant = () => {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+		{DetailComponent}
       </div>
     );
   };
