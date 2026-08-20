@@ -157,7 +157,9 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 		  and <strong>be sure to also select the correct units</strong>{' '}
 		  from the dropdown menu.{' '}
 		  {'('}Measurements can be provided as absorbances
-		  or concentrations.{')'}
+		  or concentrations.
+		  Absorbances will automatically be converted to concentrations
+		  using Beer&apos;s Law.{')'}
         </p>
       </CardHeader>
 
@@ -167,9 +169,9 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
             <Input
 				isRequired
               type="number"
-              label="Yield"
+              label="Value"
               value={yieldVal?.toString()}
-              onChange={(e) => setYieldVal(e.target.value)}
+              onChange={(e) => setYieldVal(Number(e.target.value))}
               step="0.01"
               classNames={{
                 label: "text-default-600 text-small",
@@ -177,6 +179,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               }}
             />
             <Select
+				isRequired
               label="Units"
               selectedKeys={selectedUnit ? [selectedUnit] : []}
               onChange={(e) => setSelectedUnit(e.target.value)}
@@ -216,6 +219,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				any assays performed.
 				Submission of data for individual assays will include a field
 				for recording dilution factors used for that assay.
+				{selectedUnit}
 		  </p>
         </div>
       </CardBody>
@@ -224,7 +228,12 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
         <button 
           onClick={updateYieldAverage}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!yieldVal || isSubmitting || entryData.curated}
+          disabled={
+			!yieldVal ||
+			!selectedUnit ||
+			isSubmitting ||
+			entryData.curated
+			}
         >
           {isSubmitting ? (
             <>
