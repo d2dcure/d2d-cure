@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
-import {Select, SelectItem} from "@nextui-org/select";
+import {RadioGroup, Radio} from "@nextui-org/radio";
 
 
 interface ProteinInducedViewProps {
@@ -17,45 +17,44 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-  const [induced, setInduced] = useState(entryData.expressed ? 'yes' : 'no');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+	const [induced, setInduced] = useState(entryData.induced);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateProteinInduced = async () => {
-    setIsSubmitting(true);
-    const isExpressed = induced === 'yes';
-    try {
-      const response = await fetch('/api/updateCharacterizationDataExpressed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-		  enzyme: enzyme,
-          id: entryData.id,
-          expressed: isExpressed
-        }),
-      });
+	const updateProteinInduced = async () => {
+		setIsSubmitting(true);
+		try {
+			const response = await fetch("/api/updateCharacterizationDataInduced", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					induced: induced
+				}),
+			});
 
-      if (!response.ok) {
-        throw new Error('Failed to update protein induced status');
-      }
-      
-      const updatedEntry = await response.json();
-      updateEntryData(updatedEntry);
-      setCurrentView('checklist');
-    } catch (error) {
-      console.error('Error updating protein induced status:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+			if (!response.ok) {
+				throw new Error("Failed to update protein induced status.");
+			}
+			
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating protein induced status:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
         <button 
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
-          onClick={() => setCurrentView('checklist')}
+          onClick={() => setCurrentView("checklist")}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -63,32 +62,32 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-800">Protein Induced Status</h2>
+          <h2 className="text-xl font-bold text-gray-800">Protein-Induction Status</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
-            entryData.expressed 
+            entryData.induced 
               ? "text-green-700 bg-green-100" 
               : "text-yellow-700 bg-yellow-100"
           }`}>
-            {entryData.expressed ? "Complete" : "Incomplete"}
+            {entryData.induced ? "Complete" : "Incomplete"}
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Update the protein induced status
+          Was protein production induced by addition of{' '}
+		  <abbr title="IsoPropyl β-ᴅ-1-ThioGalactopyranoside">IPTG</abbr>?
         </p>
       </CardHeader>
 
       <CardBody className="px-6 py-6 space-y-6">
         <div className="space-y-4">
-          <Select
-            label="Induced Status"
-            placeholder={`${entryData.expressed ? 'Yes' : 'No'}`}
-            value={induced}
-            onChange={(e) => setInduced(e.target.value)}
-            className="max-w-xs"
-          >
-            <SelectItem key="yes" value="yes">Yes</SelectItem>
-            <SelectItem key="no" value="no">No</SelectItem>
-          </Select>
+			<RadioGroup
+				label="Induced?"
+				defaultValue={`${entryData.induced ? "yes" : "no"}`}
+				orientation="horizontal"
+				onChange={(e) => setInduced(e.target.value === "yes")}
+			>
+				<Radio value="yes">Yes</Radio>
+				<Radio value="no">No</Radio>
+			</RadioGroup>
         </div>
       </CardBody>
 
@@ -104,16 +103,12 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Saving...
+              Submitting&hellip;
             </>
           ) : (
-            'Submit'
+            "Submit"
           )}
         </button>
-        
-        <span className="text-xs text-gray-500">
-          Selection required
-        </span>
       </CardFooter>
     </Card>
   );

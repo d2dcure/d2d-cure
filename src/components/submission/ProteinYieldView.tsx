@@ -109,7 +109,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
         <button 
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
-          onClick={() => setCurrentView('checklist')}
+          onClick={() => setCurrentView("checklist")}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

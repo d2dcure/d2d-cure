@@ -107,7 +107,7 @@ const SingleVariant = () => {
         
         case 'Protein yield?':
         case 'SDS-PAGE gel uploaded?':
-          return entryData.expressed === true;
+          return entryData.induced === true;
         
         case 'Kinetic assay data uploaded?':
         case 'Wild-type kinetic assay data uploaded?':
@@ -186,7 +186,7 @@ const SingleVariant = () => {
       data.Rosetta_score !== null &&
       data.oligo_ordered === true &&
       data.plasmid_verified === true &&
-      data.expressed !== null &&
+      data.induced !== null &&
       data.yield_avg !== null &&
       data.KM_avg !== null &&
       data.WT_raw_data_id !== 0 &&
@@ -209,7 +209,7 @@ const SingleVariant = () => {
     if (oldData.plasmid_verified === false && newData.plasmid_verified === true) {
       return 'Plasmid sequence verified?';
     }
-    if (oldData.expressed === null && newData.expressed !== null) {
+    if (oldData.induced === null && newData.induced !== null) {
       return 'Protein production induced?';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
@@ -459,14 +459,13 @@ const SingleVariant = () => {
 
         case 'Protein production induced?':
           // Reset induction data
-		  // TODO: Induction is NOT expression. Fix this!
-          response = await fetch('/api/updateCharacterizationDataExpressed', {
+          response = await fetch('/api/updateCharacterizationDataInduced', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
 			  enzyme: enzyme,
               id: entryData.id,
-              expressed: false, 
+              induced: false, 
             })
           });
           break;
@@ -691,7 +690,7 @@ const SingleVariant = () => {
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein production induced?":
-          return entryData.expressed === null
+          return entryData.induced === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein yield?":
