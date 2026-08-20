@@ -17,7 +17,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-  const [yieldAvg, setYieldAvg] = useState<string>(''); // it says 'Avg' but it's really just the regular yield value 
+  const [yieldVal, setYieldVal] = useState<string>(''); 
   const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,7 +32,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           const data = response.data;
           setKineticRawDataEntryData(data);
           if (data.yield !== null) {
-            setYieldAvg(data.yield.toString());
+            setYieldVal(data.yield.toString());
           }
           if (data.yield_units) {
             setSelectedUnit(mapYieldUnitsBack(data.yield_units));
@@ -80,7 +80,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
 
   const updateYieldAverage = async () => {
     setIsSubmitting(true);
-    const roundedValue = parseFloat(parseFloat(yieldAvg).toFixed(2));
+    const roundedValue = parseFloat(parseFloat(yieldVal).toFixed(2));
     try {
       const yield_units_mapped = mapYieldUnits(selectedUnit);
 
@@ -103,7 +103,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
       }
 
       // Update CharacterizationData
-      const response2 = await fetch('/api/updateCharacterizationDataYieldAvg', {
+      const response2 = await fetch('/api/updateCharacterizationDataYieldVal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,8 +162,8 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
             <Input
               type="number"
               label="Yield"
-              value={yieldAvg}
-              onChange={(e) => setYieldAvg(e.target.value)}
+              value={yieldVal}
+              onChange={(e) => setYieldVal(e.target.value)}
               step="0.01"
               className="flex-1"
               classNames={{
@@ -210,7 +210,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
         <button 
           onClick={updateYieldAverage}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!yieldAvg || isSubmitting || entryData.curated}
+          disabled={!yieldVal || isSubmitting || entryData.curated}
         >
           {isSubmitting ? (
             <>
