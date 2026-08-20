@@ -159,17 +159,18 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               onChange={(e) => setSelectedUnit(e.target.value)}
               className="w-32"
             >
-              <SelectItem key="mg/mL" value="mg/mL">mg/mL</SelectItem>
-              	<SelectItem key="A280*" value="A280*">
+              	<SelectItem key="mg_per_mL" value="mg_per_mL">mg/mL</SelectItem>
+              	<SelectItem key="absorbance" value="absorbance">
 					&#120328;&#8322;&#8328;&#8320;&dagger;
 				</SelectItem>
-              <SelectItem key="mM" value="mM">mᴍ</SelectItem>
-              <SelectItem key="M" value="M">ᴍ</SelectItem>
+				<SelectItem key="molar" value="molar">ᴍ</SelectItem>
+              	<SelectItem key="millimolar" value="millimolar">mᴍ</SelectItem>
+				<SelectItem key="micromolar" value="micromolar">μᴍ</SelectItem>
             </Select>
           </div>
           
           {/* Add the new informational text for A280 */}
-          {selectedUnit === 'A280*' && (
+          {selectedUnit === "absorbance" && (
             <div className="text-small text-gray-600 italic">
               <sup>&dagger;</sup>If used,
 			  raw A<sub>280</sub> values should be preadjusted for a path length of 1 cm.
@@ -198,7 +199,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 						<i>c</i>
 					</abbr> ={" "}
 					<span className="font-medium text-gray-900">
-						{entryData.yield_avg.toFixed(2)}
+						{calculateConcentration(yieldVal, selectedUnit).toFixed(2)}
 					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
 				</p>
 			)}
