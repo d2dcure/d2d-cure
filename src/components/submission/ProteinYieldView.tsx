@@ -147,6 +147,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               value={yieldVal.toString()}
               onChange={(e) => setYieldVal(Number(e.target.value))}
               step="0.01"
+			  isInvalid={yieldVal < 0}
+				errorMessage="Negative values for yield are impossible."
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -176,6 +178,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 			  endContent="cm"
               onChange={(e) => setPathLength(Number(e.target.value))}
               step="0.01"
+			  isInvalid={pathLength <= 0}
+				errorMessage="Negative or null values for path length are impossible."
               classNames={{
 				base: "w-48",
                 label: "text-default-600 text-small",
@@ -262,6 +266,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={
 			!selectedUnit ||
+			yieldVal < 0 ||
+			pathLength <= 0 ||
 			isSubmitting ||
 			entryData.curated
 			}
