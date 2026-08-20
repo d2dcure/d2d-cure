@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
 import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Select, SelectItem} from "@nextui-org/select";
+
 
 interface ProteinYieldViewProps {
 	enzyme: string;
@@ -10,6 +10,12 @@ interface ProteinYieldViewProps {
 	setCurrentView: (view: string) => void;
 	updateEntryData: (newData: any) => void; 
 }
+
+interface EnzymeParameters {
+	molar_mass: number;
+	ext_coefficient: number;
+}
+
 
 const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	enzyme,
@@ -19,35 +25,26 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 }) => {
 	const [yieldVal, setYieldVal] = useState<number>(); 
 	const [selectedUnit, setSelectedUnit] = useState<string>('');
-	const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
+	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	// TODO: Come back and remove connection to KineticRawData.
+	// Fetch enzyme parameters needed for Beer's Law calculations of conc.
 	useEffect(() => {
-		const fetchKineticRawDataEntryData = async () => {
+		const fetchEnzymeInfo = async () => {
 			try {
-				const response = await axios.get('/api/getKineticRawDataEntryData', {
-					params: { enzyme: enzyme, parent_id: entryData.id },
-				});
-				if (response.status === 200) {
-					const data = response.data;
-					setKineticRawDataEntryData(data);
-					if (data.yield !== null) {
-						setYieldVal(data.yield);
-					}
-					if (data.yield_units) {
-						setSelectedUnit(mapYieldUnitsBack(data.yield_units));
-					} else {
-						setSelectedUnit("mg/mL");
-					}
+				// Fetch enzyme general parameters.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				if (infoResponse.ok) {
+					const infoData = await infoResponse.json();
+					setEnzymeParameters(infoData);
 				}
 			} catch (error) {
-				console.error("Error fetching KineticRawData entry:", error);
+				console.error("Error fetching data:", error);
 			}
 		};
 
-		fetchKineticRawDataEntryData();
-	}, [enzyme, entryData.id]);
+		fetchEnzymeInfo();
+	}, [enzyme]);
 
 	const mapYieldUnits = (value: string): "A280_" | "mg_mL_" | "mM_" | "M_" => {
 		switch (value.trim()) {
@@ -79,7 +76,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 		}
 	};
 
-  const updateYieldAverage = async () => {
+  const updateYield = async () => {
     setIsSubmitting(true);
     //const roundedValue = parseFloat(parseFloat(yieldVal.toFixed(2));
     try {
@@ -245,7 +242,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
         <button 
-          onClick={updateYieldAverage}
+          onClick={updateYield}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={
 			!yieldVal ||
