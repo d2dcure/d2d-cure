@@ -310,7 +310,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
         </div>
         
         <span className="text-xs text-gray-500">
-          *All fields are required
+          *All fields are required.
         </span>
       </CardFooter>
     </Card>
