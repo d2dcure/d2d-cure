@@ -12,8 +12,8 @@ interface ProteinYieldViewProps {
 }
 
 interface EnzymeParameters {
-	molar_mass: number;
-	ext_coefficient: number;
+	molar_mass: number;  // g/mol
+	ext_coefficient: number;  // M^-1 cm^-1
 }
 
 
@@ -27,6 +27,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	const [selectedUnit, setSelectedUnit] = useState<string>('');
 	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const A280_CELL_LENGTH = 1;  // cm  (It is actually not one, but the system currently assumes that all instruments will report a pre-adjusted A280 value.)
 
 	// Fetch enzyme parameters needed for Beer's Law calculations of conc.
 	useEffect(() => {
@@ -46,53 +47,62 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 		fetchEnzymeInfo();
 	}, [enzyme]);
 
-	const mapYieldUnits = (value: string): "A280_" | "mg_mL_" | "mM_" | "M_" => {
-		switch (value.trim()) {
-			case "A280*":
-				return "A280_";
-			case "mg/mL":
-				return "mg_mL_";
-			case "mM":
-				return "mM_";
-			case "M":
-				return "M_";
+	// Helper function that calculates concentration given a value and units.
+	// If aborbance is passed, Beers's Law is used.
+	// If molarity is passed, uses molar mass.
+	// Returns a value in mg/mL.
+	const calculateConcentration = (yieldValue: number, yieldUnits: string): number => {
+		const epsilon_enz = enzymeParameters?.ext_coefficient;
+		const molar_mass_enz = enzymeParameters?.molar_mass;
+		if (!epsilon_enz || !molar_mass_enz) { return 0; }
+		switch(yieldUnits) {
+			case "mg_per_mL":
+				// already in the correct units
+				return yieldValue;
+			case "absorbance":
+				// Use Beer's Law.
+				const c_enz_molar = yieldValue / (epsilon_enz * A280_CELL_LENGTH);
+				return c_enz_molar * molar_mass_enz;
+			case "molar":
+				return yieldValue * molar_mass_enz;  // mg/mL = g/L
+			case "millimolar":
+				return yieldValue * molar_mass_enz / 1000;
+			case "micromolar":
+				return yieldValue * molar_mass_enz / 1000000;
 			default:
-				throw new Error(`Invalid yield_units value: ${value}`);
-		}
+				return 0;  // shopuld never reach here
+		} 
 	};
 
-  const updateYield = async () => {
-    setIsSubmitting(true);
-    //const roundedValue = parseFloat(parseFloat(yieldVal.toFixed(2));
-    try {
-      const yield_units_mapped = mapYieldUnits(selectedUnit);
+	const updateYield = async () => {
+		setIsSubmitting(true);
+		try {
+			// Update CharacterizationData
+			const response2 = await fetch("/api/updateCharacterizationDataYieldAvg", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					yield_avg: yieldVal,
+				}),
+			});
 
-      // Update CharacterizationData
-      const response2 = await fetch('/api/updateCharacterizationDataYieldAvg', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-		  enzyme: enzyme,
-          id: entryData.id,
-          yield_avg: yieldVal,
-        }),
-      });
+			if (!response2.ok) {
+				throw new Error("Failed to update yield average in CharacterizationData.");
+			}
 
-      if (!response2.ok) {
-        throw new Error('Failed to update yield average in CharacterizationData');
-      }
-
-      const updatedEntry = await response2.json();
-      updateEntryData(updatedEntry);
-      setCurrentView('checklist');
-    } catch (error) {
-      console.error('Error updating yield average:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+			const updatedEntry = await response2.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating yield average:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
   return (
     <Card className="bg-white">
