@@ -61,44 +61,11 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 		}
 	};
 
-	const mapYieldUnitsBack = (enumValue: string): string => {
-		switch (enumValue.trim()) {
-			case "A280_":
-				return "A280*";
-			case 'mg_mL_':
-				return "mg/mL";
-			case "mM_":
-				return "mM";
-			case "M_":
-				return "M";
-			default:
-				return enumValue;
-		}
-	};
-
   const updateYield = async () => {
     setIsSubmitting(true);
     //const roundedValue = parseFloat(parseFloat(yieldVal.toFixed(2));
     try {
       const yield_units_mapped = mapYieldUnits(selectedUnit);
-
-      // Update KineticRawData
-      const response1 = await fetch('/api/updateKineticRawDataYield', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-		  enzyme: enzyme,
-          parent_id: entryData.id,
-          yield_value: yieldVal,
-          yield_units: yield_units_mapped,
-        }),
-      });
-
-      if (!response1.ok) {
-        throw new Error('Failed to update yield average in KineticRawData');
-      }
 
       // Update CharacterizationData
       const response2 = await fetch('/api/updateCharacterizationDataYieldAvg', {
