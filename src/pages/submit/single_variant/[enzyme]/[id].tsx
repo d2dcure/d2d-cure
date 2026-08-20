@@ -114,7 +114,7 @@ const SingleVariant = () => {
         case 'Thermostability assay data uploaded?':
         case 'Wild-type thermostability assay data uploaded?':
         case 'Melting point values uploaded?':
-          return entryData.yield_avg !== null;
+          return entryData.expressed === true;
         
         default:
           return false;

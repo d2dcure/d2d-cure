@@ -51,24 +51,24 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	// If aborbance is passed, Beers's Law is used.
 	// If molarity is passed, uses molar mass.
 	// Returns a value in mg/mL.
-	const calculateConcentration = (yieldValue: number, yieldUnits: string): number => {
+	const calculateConcentration = (): number => {
 		const epsilon_enz = enzymeParameters?.ext_coefficient;
 		const molar_mass_enz = enzymeParameters?.molar_mass;
 		if (!epsilon_enz || !molar_mass_enz) { return 0; }
-		switch(yieldUnits) {
+		switch(selectedUnit) {
 			case "mg_per_mL":
 				// already in the correct units
-				return yieldValue;
+				return yieldVal;
 			case "absorbance":
 				// Use Beer's Law.
-				const c_enz_molar = yieldValue / (epsilon_enz * pathLength);
+				const c_enz_molar = yieldVal / (epsilon_enz * pathLength);
 				return c_enz_molar * molar_mass_enz;
 			case "molar":
-				return yieldValue * molar_mass_enz;  // mg/mL = g/L
+				return yieldVal * molar_mass_enz;  // mg/mL = g/L
 			case "millimolar":
-				return yieldValue * molar_mass_enz / 1000;
+				return yieldVal * molar_mass_enz / 1000;
 			case "micromolar":
-				return yieldValue * molar_mass_enz / 1000000;
+				return yieldVal * molar_mass_enz / 1000000;
 			default:
 				return 0;  // should never reach here
 		} 
@@ -77,8 +77,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	const updateYield = async () => {
 		setIsSubmitting(true);
 		try {
-			// Update CharacterizationData
-			const response2 = await fetch("/api/updateCharacterizationDataYieldAvg", {
+			// Update yield.
+			const response = await fetch("/api/updateCharacterizationDataYieldAvg", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -86,15 +86,42 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				body: JSON.stringify({
 					enzyme: enzyme,
 					id: entryData.id,
-					yield_avg: calculateConcentration(yieldVal, selectedUnit),
+					yield_avg: calculateConcentration(),
 				}),
 			});
 
-			if (!response2.ok) {
+			if (!response.ok) {
 				throw new Error("Failed to update yield average in CharacterizationData.");
 			}
 
-			const updatedEntry = await response2.json();
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating yield average:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+
+		try {
+			// Update expressed flag.
+			const response = await fetch("/api/updateCharacterizationDataExpressed", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					expressed: calculateConcentration() >= 0.2,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update yield average in CharacterizationData.");
+			}
+
+			const updatedEntry = await response.json();
 			updateEntryData(updatedEntry);
 			setCurrentView("checklist");
 		} catch (error) {
@@ -228,14 +255,14 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 						<i>c</i>
 					</abbr> ={" "}
 					<span className="font-medium text-gray-900">
-						{calculateConcentration(yieldVal, selectedUnit).toFixed(2)}
+						{calculateConcentration().toFixed(2)}
 					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
 				</p>
 			)}
 			</div>
 
 		  {/* Extra explanatory material */}
-		  {selectedUnit && (yieldVal < 0.2) && (
+		  {selectedUnit && (calculateConcentration() < 0.2) && (
 			<p className="text-sm text-gray-600">
 				A protein with a concentration less than 0.2 mg/mL in yield
 				is considered <em>not</em> to have expressed,{' '}
