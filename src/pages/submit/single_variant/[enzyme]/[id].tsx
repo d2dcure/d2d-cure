@@ -77,6 +77,7 @@ const SingleVariant = () => {
     'Wild-type thermostability assay data uploaded?',
     'Melting point values uploaded?',
     'SDS-PAGE gel uploaded?',
+	'Protein band visible?',
   ];
 
   // Helper function to show toast
@@ -115,6 +116,9 @@ const SingleVariant = () => {
         case 'Melting point values uploaded?':
           return entryData.expressed === true;
         
+		case 'Protein band visible?':
+			return entryData.gel_filename !== null;
+
         default:
           return false;
       }
@@ -148,7 +152,8 @@ const SingleVariant = () => {
       data.Rosetta_score !== null &&
       data.oligo_ordered === true &&
       data.plasmid_verified === true &&
-      data.induced !== null &&
+      data.induced === true &&
+	  data.expressed !== null &&
       data.yield_avg !== null &&
       data.KM_avg !== null &&
       data.WT_raw_data_id !== 0 &&
@@ -684,6 +689,10 @@ const SingleVariant = () => {
           return entryData.gel_filename === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
+        case "Protein band visible?":
+          return true
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         default:
           return { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" };
       }
@@ -705,6 +714,17 @@ const SingleVariant = () => {
 					</span>
 				</div>
 			);
+		}
+
+		if ((item === "Oligonucleotide ordered?" && entryData.oligo_ordered) ||
+				(item === "Protein production induced?" && entryData.induced)) {
+			return (<div className="flex items-center gap-2">✔ yes </div>);
+		}
+
+		if (item === "Protein band visible?") {
+			return entryData.visible_band
+			? (<div className="flex items-center gap-2">✔ yes </div>)
+			: (<div className="flex items-center gap-2">❌ no </div>);
 		}
 
 		if (item === "Protein yield?" && entryData.yield_avg !== null) {
@@ -839,7 +859,7 @@ const SingleVariant = () => {
         <Table 
           aria-label="Checklist items"
           classNames={{
-            base: "max-h-[700px]",
+            base: "max-h-[800px]",
             table: "min-h-[100px]",
             td: "h-[52px]",
             th: "h-[52px] text-sm",
@@ -975,7 +995,8 @@ const SingleVariant = () => {
       "Thermostability assay data uploaded?",
       "Wild-type thermostability assay data uploaded?",
       "Melting point values uploaded?",
-      "SDS-PAGE gel uploaded?"
+      "SDS-PAGE gel uploaded?",
+	  "Protein band visible?"
     ];
 
     const currentIndex = checklistItems.indexOf(selectedDetail);
