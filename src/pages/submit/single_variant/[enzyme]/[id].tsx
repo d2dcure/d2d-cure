@@ -329,7 +329,8 @@ const SingleVariant = () => {
 
   // Determine if the "Submit For Curation" button should be disabled
   const isSubmitDisabled = useMemo(() => {
-    if (!entryData) return true;
+    if (!entryData) { return true };
+	if (!entryData.induced) { return true; }
     const status = entryData.curated 
       ? 'Curated'
       : entryData.approved_by_pi
