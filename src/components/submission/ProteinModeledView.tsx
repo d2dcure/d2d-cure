@@ -246,7 +246,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           </div>
         </div>
 
-        {/* Simplified current score display */}
+        {/* Current score display */}
           <div className="text-sm text-gray-600 flex items-center gap-2">
 			{/* TODO: Remove hardcoded icons like this. */}
             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,16 +254,20 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
             </svg>
         {entryData.Rosetta_score !== null && (
             <p>
-				Current ΔΔ<i>G</i> ={" "}
+				Current <abbr title="change in change in Gibbʼs free energy">
+					ΔΔ<i>G</i>
+				</abbr> ={" "}
 				<span className="font-medium text-gray-900">
-					{entryData.Rosetta_score}
+					{entryData.Rosetta_score.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
         )}
 
 		{startingScore != null && endingScore != null && (
 			<p>
-				New ΔΔ<i>G</i> ={" "}
+				New <abbr title="change in change in Gibbʼs free energy">
+					ΔΔ<i>G</i>
+				</abbr> ={" "}
 				<span className="font-medium text-gray-900">
 					{(endingScore - startingScore)?.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
@@ -291,14 +295,14 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Saving...
+                Saving&hellip;
               </>
             ) : (
               'Submit'
             )}
           </button>
 
-          {/* Move success message here */}
+          {/* Validation success message */}
           {allChecksPass() && (
             <div className="text-sm text-green-600 flex items-center gap-2">
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

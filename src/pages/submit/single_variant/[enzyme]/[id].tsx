@@ -728,24 +728,39 @@ const SingleVariant = () => {
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold">ΔΔ<i>G</i> =</span>
-            <span>{entryData.Rosetta_score} <abbr title="Rosetta Energy Units">REU</abbr></span>
-          </div>
-        );
-      }
+		if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
+			return (
+				<div className="flex items-center gap-1">
+					<span className="font-semibold">
+						<abbr title="change in change in Gibbʼs free energy">
+							ΔΔ<i>G</i>
+						</abbr>
+						{' '}={' '}
+					</span>
+					<span>
+						{entryData.Rosetta_score?.toFixed(3)}&nbsp;
+						<abbr title="Rosetta Energy Units">REU</abbr>
+					</span>
+				</div>
+			);
+		}
 
-      if (item === "Protein yield?" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
-        const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold"><i>c</i> =</span>
-            <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
-          </div>
-        );
-      }
+		if (item === "Protein yield?" && entryData.yield_avg !== null) {
+			return (
+				<div className="flex items-center gap-1">
+					<span className="font-semibold">
+						<abbr title="concentration">
+							<i>c</i>
+						</abbr>
+						{' '}={' '}
+					</span>
+					<span>
+						{entryData.yield_avg?.toFixed(2)}&nbsp;
+						<abbr title="milligrams per milliliter">mg/mL</abbr>
+					</span>
+				</div>
+			);
+		}
 
       if (item === "Kinetic assay data uploaded?" && entryData.kcat_over_KM !== null) {
 		if (entryData.KM_avg !== null && entryData.kcat_avg !== null) {

@@ -112,7 +112,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
         body: JSON.stringify({
 		  enzyme: enzyme,
           id: entryData.id,
-          yield_avg: roundedValue,
+          yield_avg: yieldVal,
         }),
       });
 
@@ -203,18 +203,34 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
           )}
 
           {/* Current value display */}
-          {kineticRawDataEntryData && kineticRawDataEntryData.yield !== null && (
-            <div className="text-sm text-gray-600 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Current yield: 
-              <span className="font-medium text-gray-900">
-                {`${kineticRawDataEntryData.yield} ${mapYieldUnitsBack(kineticRawDataEntryData.yield_units)}`}
-              </span>
-            </div>
-          )}
+			<div className="text-sm text-gray-600 flex items-center gap-2">
+				<svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+			{entryData.yield_avg !== null && (
+				<p>
+					Current <abbr title="concentration">
+						<i>c</i>
+					</abbr> ={" "}
+					<span className="font-medium text-gray-900">
+						{entryData.yield_avg.toFixed(2)}
+					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
+				</p>
+			)}
 
+			{yieldVal && selectedUnit && (
+				<p>
+					New <abbr title="concentration">
+						<i>c</i>
+					</abbr> ={" "}
+					<span className="font-medium text-gray-900">
+						{entryData.yield_avg.toFixed(2)}
+					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
+				</p>
+			)}
+			</div>
+
+		  {/* Extra explanatory material */}
 		  <p className="text-sm text-gray-600">
 		  		<strong>Note:</strong>{' '}
 				Enter the initial protein yield here,{' '}
