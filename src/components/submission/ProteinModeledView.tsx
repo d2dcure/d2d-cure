@@ -224,6 +224,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 			  placeholder="loading values&hellip;"
 			  endContent="REU"
               onChange={(e) => setEndingScore(Number(e.target.value))}
+			  step="0.001"
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",

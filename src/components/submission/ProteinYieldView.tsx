@@ -1,86 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
-import {Input} from "@nextui-org/input";
+import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Select, SelectItem} from "@nextui-org/select";
 
-interface ExpressedViewProps {
+interface ProteinYieldViewProps {
 	enzyme: string;
 	entryData: any;
 	setCurrentView: (view: string) => void;
 	updateEntryData: (newData: any) => void; 
 }
 
-const ExpressedView: React.FC<ExpressedViewProps> = ({
+const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	enzyme,
 	entryData,
 	setCurrentView,
 	updateEntryData
 }) => {
-  const [yieldVal, setYieldVal] = useState<string>(''); 
-  const [selectedUnit, setSelectedUnit] = useState<string>('');
-  const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+	const [yieldVal, setYieldVal] = useState<number>(); 
+	const [selectedUnit, setSelectedUnit] = useState<string>('');
+	const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchKineticRawDataEntryData = async () => {
-      try {
-        const response = await axios.get('/api/getKineticRawDataEntryData', {
-          params: { enzyme: enzyme, parent_id: entryData.id },
-        });
-        if (response.status === 200) {
-          const data = response.data;
-          setKineticRawDataEntryData(data);
-          if (data.yield !== null) {
-            setYieldVal(data.yield.toString());
-          }
-          if (data.yield_units) {
-            setSelectedUnit(mapYieldUnitsBack(data.yield_units));
-          } else {
-            setSelectedUnit('mg/mL');
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching KineticRawData entry:', error);
-      }
-    };
+	// TODO: Come back and remove connection to KineticRawData.
+	useEffect(() => {
+		const fetchKineticRawDataEntryData = async () => {
+			try {
+				const response = await axios.get('/api/getKineticRawDataEntryData', {
+					params: { enzyme: enzyme, parent_id: entryData.id },
+				});
+				if (response.status === 200) {
+					const data = response.data;
+					setKineticRawDataEntryData(data);
+					if (data.yield !== null) {
+						setYieldVal(data.yield);
+					}
+					if (data.yield_units) {
+						setSelectedUnit(mapYieldUnitsBack(data.yield_units));
+					} else {
+						setSelectedUnit("mg/mL");
+					}
+				}
+			} catch (error) {
+				console.error("Error fetching KineticRawData entry:", error);
+			}
+		};
 
-    fetchKineticRawDataEntryData();
-  }, [enzyme, entryData.id]);
+		fetchKineticRawDataEntryData();
+	}, [enzyme, entryData.id]);
 
-  const mapYieldUnits = (value: string): 'A280_' | 'mg_mL_' | 'mM_' | 'M_' => {
-    switch (value.trim()) {
-      case 'A280*':
-        return 'A280_';
-      case 'mg/mL':
-        return 'mg_mL_';
-      case 'mM':
-        return 'mM_';
-      case 'M':
-        return 'M_';
-      default:
-        throw new Error(`Invalid yield_units value: ${value}`);
-    }
-  };
+	const mapYieldUnits = (value: string): "A280_" | "mg_mL_" | "mM_" | "M_" => {
+		switch (value.trim()) {
+			case "A280*":
+				return "A280_";
+			case "mg/mL":
+				return "mg_mL_";
+			case "mM":
+				return "mM_";
+			case "M":
+				return "M_";
+			default:
+				throw new Error(`Invalid yield_units value: ${value}`);
+		}
+	};
 
-  const mapYieldUnitsBack = (enumValue: string): string => {
-    switch (enumValue.trim()) {
-      case 'A280_':
-        return 'A280*';
-      case 'mg_mL_':
-        return 'mg/mL';
-      case 'mM_':
-        return 'mM';
-      case 'M_':
-        return 'M';
-      default:
-        return enumValue;
-    }
-  };
+	const mapYieldUnitsBack = (enumValue: string): string => {
+		switch (enumValue.trim()) {
+			case "A280_":
+				return "A280*";
+			case 'mg_mL_':
+				return "mg/mL";
+			case "mM_":
+				return "mM";
+			case "M_":
+				return "M";
+			default:
+				return enumValue;
+		}
+	};
 
   const updateYieldAverage = async () => {
     setIsSubmitting(true);
-    const roundedValue = parseFloat(parseFloat(yieldVal).toFixed(2));
+    //const roundedValue = parseFloat(parseFloat(yieldVal.toFixed(2));
     try {
       const yield_units_mapped = mapYieldUnits(selectedUnit);
 
@@ -93,7 +94,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
         body: JSON.stringify({
 		  enzyme: enzyme,
           parent_id: entryData.id,
-          yield_value: roundedValue,
+          yield_value: yieldVal,
           yield_units: yield_units_mapped,
         }),
       });
@@ -103,7 +104,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
       }
 
       // Update CharacterizationData
-      const response2 = await fetch('/api/updateCharacterizationDataYieldVal', {
+      const response2 = await fetch('/api/updateCharacterizationDataYieldAvg', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +143,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-800">Expressed Yield</h2>
+          <h2 className="text-xl font-bold text-gray-800">Protein Yield</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
             entryData.yield_avg !== null 
               ? "text-green-700 bg-green-100" 
@@ -152,7 +153,11 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the expressed yield value and units
+          Enter the value of your measurement of protein yield,
+		  and <strong>be sure to also select the correct units</strong>{' '}
+		  from the dropdown menu.{' '}
+		  {'('}Measurements can be provided as absorbances
+		  or concentrations.{')'}
         </p>
       </CardHeader>
 
@@ -160,12 +165,12 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
         <div className="space-y-6">
           <div className="flex gap-4">
             <Input
+				isRequired
               type="number"
               label="Yield"
-              value={yieldVal}
+              value={yieldVal?.toString()}
               onChange={(e) => setYieldVal(e.target.value)}
               step="0.01"
-              className="flex-1"
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -203,6 +208,15 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
               </span>
             </div>
           )}
+
+		  <p className="text-sm text-gray-600">
+		  		<strong>Note:</strong>{' '}
+				Enter the initial protein yield here,{' '}
+				<em>not</em> whatever diluted concentration that you used for
+				any assays performed.
+				Submission of data for individual assays will include a field
+				for recording dilution factors used for that assay.
+		  </p>
         </div>
       </CardBody>
 
@@ -233,4 +247,4 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
   );
 };
 
-export default ExpressedView;
+export default ProteinYieldView;
