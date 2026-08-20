@@ -42,7 +42,6 @@ const SingleVariant = () => {
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
   const [entryData, setEntryData] = useState<any>({});
-  const [entryData2, setEntryData2] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   console.log(user)
@@ -142,43 +141,6 @@ const SingleVariant = () => {
     fetchEntryData();
   }, [enzyme, id]);
 
-  // Fetch entryData2 using entryData.id
-  useEffect(() => {
-    const fetchEntryData2 = async () => {
-      if (!entryData.id) return;
-      try {
-        const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryData.id}`);
-        if (!response.ok) {
-          // Silently set data to null - this is expected for new entries
-          setEntryData2(null);
-          return;
-        }
-        const data = await response.json();
-        setEntryData2(data);
-      } catch (error) {
-        showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
-        setEntryData2(null);
-      }
-    };
-
-    fetchEntryData2();
-  }, [enzyme, entryData.id]);
-
-  // Mapping function to convert enum to display value (for yield_units in KineticRawData)
-  const mapYieldUnitsBack = (enumValue: string): string => {
-    switch (enumValue.trim()) {
-      case 'A280_':
-        return 'A280*';
-      case 'mg_mL_':
-        return 'mg/mL';
-      case 'mM_':
-        return 'mM';
-      case 'M_':
-        return 'M';
-      default:
-        return enumValue;
-    }
-  };
 
   // Function to check if all items are complete
   const checkAllComplete = (data: any) => {
