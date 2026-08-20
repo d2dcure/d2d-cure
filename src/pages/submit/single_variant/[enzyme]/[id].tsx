@@ -32,6 +32,7 @@ import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
 import WildTypeThermoDataView from '@/components/submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
+import ProteinBandVisibleView from '@/components/submission/ProteinBandVisibleView';
 
 
 const SingleVariant = () => {
@@ -160,7 +161,8 @@ const SingleVariant = () => {
       data.T50 !== null &&
       data.WT_temp_raw_data_id !== 0 &&
       data.Tm !== null &&
-      data.gel_filename !== null
+      data.gel_filename !== null &&
+	  data.band_visible !== null
     );
   };
 
@@ -199,6 +201,9 @@ const SingleVariant = () => {
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
       return 'SDS-PAGE gel uploaded?';
+    }
+    if (oldData.band_visible === null && newData.band_visible !== null) {
+      return 'Protein band visible?';
     }
     return null;
   };
@@ -569,6 +574,19 @@ const SingleVariant = () => {
             })
           });
           break;
+
+        case 'Protein band visible?':
+          // Reset band-visibility data
+          response = await fetch('/api/updateCharacterizationDataBandVisible', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+				enzyme: enzyme,
+              id: entryData.id, 
+              band_visible: null, 
+            })
+          });
+          break;
       }
 
       if (response && response.status == 200) {
@@ -690,7 +708,7 @@ const SingleVariant = () => {
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein band visible?":
-          return true
+          return entryData.band_visible === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         default:
@@ -721,8 +739,8 @@ const SingleVariant = () => {
 			return (<div className="flex items-center gap-2">✔ yes </div>);
 		}
 
-		if (item === "Protein band visible?") {
-			return entryData.visible_band
+		if (item === "Protein band visible?" && entryData.band_visible !== null) {
+			return entryData.band_visible
 			? (<div className="flex items-center gap-2">✔ yes </div>)
 			: (<div className="flex items-center gap-2">❌ no </div>);
 		}
@@ -1027,7 +1045,8 @@ const SingleVariant = () => {
           return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "SDS-PAGE gel uploaded?":
           return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-
+		case "Protein band visible?":
+          return <ProteinBandVisibleView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         default:
           return <div>Detail view for {selectedDetail}</div>;
       }
