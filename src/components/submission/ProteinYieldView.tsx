@@ -26,8 +26,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	const [yieldVal, setYieldVal] = useState<number>(entryData.yield_avg ? entryData.yield_avg : 0); 
 	const [selectedUnit, setSelectedUnit] = useState<string>(entryData.yield_avg != null ? "mg_per_mL" : '');
 	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const A280_CELL_LENGTH = 1;  // cm  (It is actually not one, but the system currently assumes that all instruments will report a pre-adjusted A280 value.)
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+	const [pathLength, setPathLength] = useState<number>(1);  // cm
 
 	// Fetch enzyme parameters needed for Beer's Law calculations of conc.
 	useEffect(() => {
@@ -61,7 +61,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				return yieldValue;
 			case "absorbance":
 				// Use Beer's Law.
-				const c_enz_molar = yieldValue / (epsilon_enz * A280_CELL_LENGTH);
+				const c_enz_molar = yieldValue / (epsilon_enz * pathLength);
 				return c_enz_molar * molar_mass_enz;
 			case "molar":
 				return yieldValue * molar_mass_enz;  // mg/mL = g/L
@@ -144,7 +144,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				isRequired
               type="number"
               label="Value"
-              value={yieldVal?.toString()}
+              value={yieldVal.toString()}
               onChange={(e) => setYieldVal(Number(e.target.value))}
               step="0.01"
               classNames={{
@@ -157,7 +157,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               label="Units"
               selectedKeys={selectedUnit ? [selectedUnit] : []}
               onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-32"
+              className="w-48"
             >
               	<SelectItem key="mg_per_mL" value="mg_per_mL">mg/mL</SelectItem>
               	<SelectItem key="absorbance" value="absorbance">
@@ -167,13 +167,38 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               	<SelectItem key="millimolar" value="millimolar">mᴍ</SelectItem>
 				<SelectItem key="micromolar" value="micromolar">μᴍ</SelectItem>
             </Select>
+			{selectedUnit === "absorbance" && (
+            <Input
+				isRequired
+              type="number"
+              label="Path length"
+              value={pathLength.toString()}
+			  endContent="cm"
+              onChange={(e) => setPathLength(Number(e.target.value))}
+              step="0.01"
+              classNames={{
+				base: "w-48",
+                label: "text-default-600 text-small",
+                input: "text-small",
+              }}
+            />
+			)}
           </div>
           
           {/* Add the new informational text for A280 */}
           {selectedUnit === "absorbance" && (
-            <div className="text-small text-gray-600 italic">
-              <sup>&dagger;</sup>If used,
-			  raw A<sub>280</sub> values should be preadjusted for a path length of 1 cm.
+            <div className="text-small text-gray-600">
+              <sup>&dagger;</sup>Raw <i>A</i><sub>280</sub> values can only be used
+			  to report on protein yield if the path length is also known.{' '}
+			  <em>Some</em> instruments preadjust the reported value of <i>A</i>{' '}
+			  for a path length of 1&nbsp;cm,
+			  even if that is not the actual path length.
+			  If that is the case for your instrument,
+			  set the path length here to <code>1&nbsp;cm</code>.
+			  Otherwise, enter the path length for your case.{' '}
+			  <strong>
+				It is imperative that the path length not be misreported!
+			  </strong>
             </div>
           )}
 
