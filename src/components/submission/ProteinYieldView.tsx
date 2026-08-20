@@ -23,7 +23,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-	const [yieldVal, setYieldVal] = useState<number>(); 
+	const [yieldVal, setYieldVal] = useState<number>(0); 
 	const [selectedUnit, setSelectedUnit] = useState<string>('');
 	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +70,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 			case "micromolar":
 				return yieldValue * molar_mass_enz / 1000000;
 			default:
-				return 0;  // shopuld never reach here
+				return 0;  // should never reach here
 		} 
 	};
 
@@ -86,7 +86,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				body: JSON.stringify({
 					enzyme: enzyme,
 					id: entryData.id,
-					yield_avg: yieldVal,
+					yield_avg: calculateConcentration(yieldVal, selectedUnit),
 				}),
 			});
 
@@ -193,7 +193,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 				</p>
 			)}
 
-			{yieldVal && selectedUnit && (
+			{selectedUnit && (
 				<p>
 					New <abbr title="concentration">
 						<i>c</i>
@@ -223,7 +223,6 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
           onClick={updateYield}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={
-			!yieldVal ||
 			!selectedUnit ||
 			isSubmitting ||
 			entryData.curated
