@@ -23,8 +23,8 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-	const [yieldVal, setYieldVal] = useState<number>(0); 
-	const [selectedUnit, setSelectedUnit] = useState<string>('');
+	const [yieldVal, setYieldVal] = useState<number>(entryData.yield_avg ? entryData.yield_avg : 0); 
+	const [selectedUnit, setSelectedUnit] = useState<string>(entryData.yield_avg != null ? "mg_per_mL" : '');
 	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const A280_CELL_LENGTH = 1;  // cm  (It is actually not one, but the system currently assumes that all instruments will report a pre-adjusted A280 value.)
@@ -206,6 +206,19 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 			</div>
 
 		  {/* Extra explanatory material */}
+		  {selectedUnit && (yieldVal < 0.2) && (
+			<p className="text-sm text-gray-600">
+				A protein with a concentration less than 0.2 mg/mL in yield
+				is considered <em>not</em> to have expressed,{' '}
+				<em>unless</em> a potein band is clearly visible in the
+				uploaded{' '}
+				<abbr title="Sodium Dodecyl Sulfate–PolyacrylAmide Gel Electrophoresis">
+					SDS-PAGE
+				</abbr> gel.
+				A protein not expressing is <strong>still useful data!</strong>
+				{' '}Please <em>do</em> submit this dataset for curation.
+			</p>
+		  )}
 		  <p className="text-sm text-gray-600">
 		  		<strong>Note:</strong>{' '}
 				Enter the initial protein yield here,{' '}
@@ -237,7 +250,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
               Submitting&hellip;
             </>
           ) : (
-            'Submit'
+            "Submit"
           )}
         </button>
         

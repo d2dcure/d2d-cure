@@ -933,7 +933,7 @@ const SingleVariant = () => {
                             ? "Complete prerequisites first"
                             : entryData.curated
                               ? "Cannot edit after curation; recall dataset first" 
-                              : "Edit"
+                              : (getStatusStyle(item).text === "Incomplete" ? "Set" : "Edit")
                         }
                       >
                         <span 
