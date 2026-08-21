@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import StatusChip from '@/components/StatusChip';
-import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip } from "@nextui-org/react";
-import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
+import { 
+	Breadcrumbs, BreadcrumbItem,
+	Button,
+	Dropdown, DropdownItem, DropdownMenu, DropdownTrigger,
+	Input, Select, SelectItem,
+	Spinner,
+	Table, TableBody, TableCell, TableColumn, TableHeader, TableRow,
+	Tooltip
+} from "@nextui-org/react";
+import { FaFilter, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -96,11 +103,23 @@ const columns = [
 ];
 
 interface StatusChipProps {
-    status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
+    status:
+		"in_progress" |
+		"pending_approval" |
+		"needs_revision" |
+		"approved" |
+		"awaiting_replication" |
+		"pi_approved" |
+		"rejected";
 }
 
 const CuratePage = () => {
-    const { user, loading } = useUser();
+    interface Institution {
+        abbr: string;
+        fullname: string;
+    }
+
+	const { user } = useUser();
 
     const [data, setData] = useState<any[]>([]);
     const [viewableData, setViewableData] = useState<any[]>([]);
@@ -110,20 +129,14 @@ const CuratePage = () => {
     });
     const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
     const [viewAs, setViewAs] = useState<string>("")
-    const [isLoading, setIsLoading] = useState(true);
-
-    interface Institution {
-        abbr: string;
-        fullname: string;
-    }
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [institutions, setInstitutions] = useState<Institution[]>([]);
 	const [showOnlyNoComments, setShowOnlyNoComments] = useState(false);
     const [showNonSubmitted, setShowNonSubmitted] = useState(false);
     const [selectedInstitution, setSelectedInstitution] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", "date", 
+        "status", "id", "variant", "creator", "created_date", 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
@@ -434,7 +447,7 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
+            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP assume BglB
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to approve data, server responded with ' + response.status);
@@ -467,7 +480,7 @@ const CuratePage = () => {
         })
     }
 
-    const rejectData = () => {
+    const deleteData = () => {
         // TODO: handle checkedItems === "all" properly!
         if (checkedItems === "all") return;
         const selectedIds = getSelectedIds();
@@ -477,7 +490,7 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
+            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP assume BglB
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to reject data, server responded with ' + response.status);
@@ -532,12 +545,11 @@ const CuratePage = () => {
                                 <h2 className="text-xl">Data from the {user?.user_name} Lab or other labs at {user?.institution}</h2>
                             }
                             { viewAs === "ADMIN" &&
-                                <h2 className="text-xl">Data from the D2D Network</h2>
+                                <h2 className="text-xl">Data from the full D2D Network</h2>
                             }
-                            <p className='text'>Please approve or reject the data below.</p>
+                            <p className='text'>Please approve, reject, or delete the data below.</p>
                             <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
                             <p className='text'>Hovering over any kinetic or thermodynamic parameter will provide details on the specific assay used to obtain the values.</p>
-                            {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
                                 <div>
@@ -741,18 +753,22 @@ const CuratePage = () => {
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                     <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
-                                        <Button
-                                            size="sm"
-                                            variant="solid"
-                                            className="w-full bg-[#06B7DB]"
-                                            isDisabled={isCheckedItemsEmpty()}
-                                            onClick={approveData}
-                                        >
-                                            {viewAs === "ADMIN" 
-                                              ? "Curate"
-                                              : "Approve as PI"
-                                            }
-                                        </Button>
+                                        <Tooltip
+											content="Approve dataset(s) to make visible to the public as curated data by default."
+										>
+											<Button
+												size="sm"
+												variant="solid"
+												className="w-full bg-[#06B7DB]"
+												isDisabled={isCheckedItemsEmpty()}
+												onClick={approveData}
+											>
+												{viewAs === "ADMIN" 
+												? "Curate/Approve"
+												: "Approve as PI"
+												}
+											</Button>
+										</Tooltip>
 
                                         <Dropdown>
                                             <DropdownTrigger>
@@ -760,6 +776,7 @@ const CuratePage = () => {
                                                     size="sm"
                                                     variant="flat"
                                                     className="w-full"
+													isDisabled={isCheckedItemsEmpty()}
                                                     endContent={
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                             <path d="M4 6L8 10L12 6" stroke="#11181C" stroke-linecap="round" stroke-linejoin="round"/>
@@ -774,19 +791,47 @@ const CuratePage = () => {
                                                 closeOnSelect={true}
                                                 selectionMode="single"
                                             >
-                                                <DropdownItem
-                                                    color="danger"
-                                                    className="text-danger"
-                                                    onClick={rejectData}
-                                                >
-                                                    Delete Datasets
-                                                </DropdownItem>
+												<DropdownItem
+													color="danger"
+													className="text-danger"
+													onClick={deleteData}
+												>
+													<Tooltip
+														content="Permanently remove dataset(s) from the database (cannot be undone)."
+													>
+														Delete Datasets
+													</Tooltip>
+												</DropdownItem>
+												<DropdownItem>
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) so that other users can see that the variant(s) needs replication.<br />
+															It/They will remain in the curation list.
+														</p>)}
+													>
+														Mark as &quot;Awaiting Replication&quot;
+													</Tooltip>
+												</DropdownItem>
                                                 <DropdownItem>
-                                                    Mark as &quot;Awaiting Replication&quot;
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) so that other users can see that revision is needed.<br />
+															It/they will also be marked as incomplete and will need to be resubmitted for curation.
+														</p>)}
+													>
+                                                    	Mark as &quot;Needs Revision&quot;
+													</Tooltip>
                                                 </DropdownItem>
-                                                <DropdownItem>
-                                                    Mark as &quot;Needs Revision&quot;
-                                                </DropdownItem>
+												<DropdownItem>
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) as rejected data.<br />
+															It/they will no longer remain in the curation list by default but will not be deleted.
+														</p>)}
+													>
+														Reject
+													</Tooltip>
+												</DropdownItem>
                                             </DropdownMenu>
                                         </Dropdown>
                                     </div>
