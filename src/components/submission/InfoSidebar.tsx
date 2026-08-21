@@ -103,8 +103,10 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 	};
 
     const fetchPossibleTeammates = async () => {
-      if (user?.pi) {
-        const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(user.pi)}`);
+		let pi = user?.pi;
+		if (user?.status === "professor") { pi = user?.given_name; }
+      if (pi) {
+        const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(pi)}`);
         const data = await response.json();
         setPossibleTeammates(data);
       }
