@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
+import Image from 'next/image';
 import {RadioGroup, Radio} from "@nextui-org/radio";
 
 
@@ -80,23 +81,38 @@ const ProteinBandVisibleView: React.FC<ProteinBandVisibleViewProps> = ({
         </p>
       </CardHeader>
 
-      <CardBody className="px-6 py-6 space-y-6">
-        <div className="space-y-4">
-			<RadioGroup
-				isRequired
-				label="Band visible?"
-				defaultValue={
-					(entryData.band_visible !== null)
-					? `${entryData.band_visible ? "yes" : "no"}`
-					: ''
-				}
-				orientation="horizontal"
-				onChange={(e) => setBandVisible(e.target.value === "yes")}
-			>
-				<Radio value="yes">Yes</Radio>
-				<Radio value="no">No</Radio>
-			</RadioGroup>
-        </div>
+      <CardBody className="mb-3 px-6 py-6 space-y-6">
+		<div className="flex gap-4">
+			<div className="space-y-4">
+				<RadioGroup
+					isRequired
+					label="Band visible?"
+					defaultValue={
+						(entryData.band_visible !== null)
+						? `${entryData.band_visible ? "yes" : "no"}`
+						: ''
+					}
+					orientation="horizontal"
+					onChange={(e) => setBandVisible(e.target.value === "yes")}
+				>
+					<Radio value="yes">Yes</Radio>
+					<Radio value="no">No</Radio>
+				</RadioGroup>
+			</div>
+			<div className="space-y-4 bg-gray-50 rounded-lg border border-gray-100">
+				<Image
+					src={`https://d2dcurebucketprod.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
+					alt="Gel"
+					height={300}
+					width={300}
+					className="inset-0 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+					onError={(e) => {
+						console.error('Error loading gel image');
+						e.currentTarget.style.display = 'none';
+					}}
+				/>
+			</div>
+		</div>
       </CardBody>
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
