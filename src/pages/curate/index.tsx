@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 import StatusChip from '@/components/StatusChip';
 import { 
 	Breadcrumbs, BreadcrumbItem,
@@ -854,7 +855,8 @@ const CuratePage = () => {
                                 sortDescriptor={sortDescriptor}
                                 onSortChange={handleColumnClick}
                                 //className="mt-2 mb-8 sm:mb-12"
-                                className="table-fixed"
+                                //className="table-fixed"
+								className="max-h-[800px] overflow-scroll"
                             >
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
@@ -882,11 +884,11 @@ const CuratePage = () => {
                         </div>
                     </div>
                 </div>
+
             </AuthChecker>
+		<Footer />
         </div>
-
-
-    )
-}
+    );
+};
 
 export default CuratePage;
