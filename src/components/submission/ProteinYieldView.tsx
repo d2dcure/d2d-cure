@@ -1,140 +1,145 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
-import {Input} from "@nextui-org/input";
+import {Input} from "@nextui-org/input";  // TODO: Change to NumberInput to remove up-down stepper.
 import {Select, SelectItem} from "@nextui-org/select";
 
-interface ExpressedViewProps {
+
+interface ProteinYieldViewProps {
 	enzyme: string;
 	entryData: any;
 	setCurrentView: (view: string) => void;
 	updateEntryData: (newData: any) => void; 
 }
 
-const ExpressedView: React.FC<ExpressedViewProps> = ({
+interface EnzymeParameters {
+	molar_mass: number;  // g/mol
+	ext_coefficient: number;  // M^-1 cm^-1
+}
+
+
+const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 	enzyme,
 	entryData,
 	setCurrentView,
 	updateEntryData
 }) => {
-  const [yieldAvg, setYieldAvg] = useState<string>(''); // it says 'Avg' but it's really just the regular yield value 
-  const [selectedUnit, setSelectedUnit] = useState<string>('');
-  const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+	const [yieldVal, setYieldVal] = useState<number>(entryData.yield_avg ? entryData.yield_avg : 0); 
+	const [selectedUnit, setSelectedUnit] = useState<string>(entryData.yield_avg != null ? "mg_per_mL" : '');
+	const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+	const [pathLength, setPathLength] = useState<number>(1);  // cm
 
-  useEffect(() => {
-    const fetchKineticRawDataEntryData = async () => {
-      try {
-        const response = await axios.get('/api/getKineticRawDataEntryData', {
-          params: { enzyme: enzyme, parent_id: entryData.id },
-        });
-        if (response.status === 200) {
-          const data = response.data;
-          setKineticRawDataEntryData(data);
-          if (data.yield !== null) {
-            setYieldAvg(data.yield.toString());
-          }
-          if (data.yield_units) {
-            setSelectedUnit(mapYieldUnitsBack(data.yield_units));
-          } else {
-            setSelectedUnit('mg/mL');
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching KineticRawData entry:', error);
-      }
-    };
+	// Fetch enzyme parameters needed for Beer's Law calculations of conc.
+	useEffect(() => {
+		const fetchEnzymeInfo = async () => {
+			try {
+				// Fetch enzyme general parameters.
+				const infoResponse = await fetch(`/api/getEnzymeGeneralInfo?enzyme=${enzyme}`);
+				if (infoResponse.ok) {
+					const infoData = await infoResponse.json();
+					setEnzymeParameters(infoData);
+				}
+			} catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		};
 
-    fetchKineticRawDataEntryData();
-  }, [enzyme, entryData.id]);
+		fetchEnzymeInfo();
+	}, [enzyme]);
 
-  const mapYieldUnits = (value: string): 'A280_' | 'mg_mL_' | 'mM_' | 'M_' => {
-    switch (value.trim()) {
-      case 'A280*':
-        return 'A280_';
-      case 'mg/mL':
-        return 'mg_mL_';
-      case 'mM':
-        return 'mM_';
-      case 'M':
-        return 'M_';
-      default:
-        throw new Error(`Invalid yield_units value: ${value}`);
-    }
-  };
+	// Helper function that calculates concentration given a value and units.
+	// If aborbance is passed, Beers's Law is used.
+	// If molarity is passed, uses molar mass.
+	// Returns a value in mg/mL.
+	const calculateConcentration = (): number => {
+		const epsilon_enz = enzymeParameters?.ext_coefficient;
+		const molar_mass_enz = enzymeParameters?.molar_mass;
+		if (!epsilon_enz || !molar_mass_enz) { return 0; }
+		switch(selectedUnit) {
+			case "mg_per_mL":
+				// already in the correct units
+				return yieldVal;
+			case "absorbance":
+				// Use Beer's Law.
+				const c_enz_molar = yieldVal / (epsilon_enz * pathLength);
+				return c_enz_molar * molar_mass_enz;
+			case "molar":
+				return yieldVal * molar_mass_enz;  // mg/mL = g/L
+			case "millimolar":
+				return yieldVal * molar_mass_enz / 1000;
+			case "micromolar":
+				return yieldVal * molar_mass_enz / 1000000;
+			default:
+				return 0;  // should never reach here
+		} 
+	};
 
-  const mapYieldUnitsBack = (enumValue: string): string => {
-    switch (enumValue.trim()) {
-      case 'A280_':
-        return 'A280*';
-      case 'mg_mL_':
-        return 'mg/mL';
-      case 'mM_':
-        return 'mM';
-      case 'M_':
-        return 'M';
-      default:
-        return enumValue;
-    }
-  };
+	const updateYield = async () => {
+		setIsSubmitting(true);
+		try {
+			// Update yield.
+			const response = await fetch("/api/updateCharacterizationDataYieldAvg", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					yield_avg: calculateConcentration(),
+				}),
+			});
 
-  const updateYieldAverage = async () => {
-    setIsSubmitting(true);
-    const roundedValue = parseFloat(parseFloat(yieldAvg).toFixed(2));
-    try {
-      const yield_units_mapped = mapYieldUnits(selectedUnit);
+			if (!response.ok) {
+				throw new Error("Failed to update yield average in CharacterizationData.");
+			}
 
-      // Update KineticRawData
-      const response1 = await fetch('/api/updateKineticRawDataYield', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-		  enzyme: enzyme,
-          parent_id: entryData.id,
-          yield_value: roundedValue,
-          yield_units: yield_units_mapped,
-        }),
-      });
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating yield average:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
 
-      if (!response1.ok) {
-        throw new Error('Failed to update yield average in KineticRawData');
-      }
+		// Only set the expressed flag if the gel has not been run.
+		if (entryData.band_visible === null) {
+			try {
+				// Update expressed flag.
+				const response = await fetch("/api/updateCharacterizationDataExpressed", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						enzyme: enzyme,
+						id: entryData.id,
+						expressed: calculateConcentration() >= 0.2,
+					}),
+				});
 
-      // Update CharacterizationData
-      const response2 = await fetch('/api/updateCharacterizationDataYieldAvg', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-		  enzyme: enzyme,
-          id: entryData.id,
-          yield_avg: roundedValue,
-        }),
-      });
+				if (!response.ok) {
+					throw new Error("Failed to update expression status in CharacterizationData.");
+				}
 
-      if (!response2.ok) {
-        throw new Error('Failed to update yield average in CharacterizationData');
-      }
-
-      const updatedEntry = await response2.json();
-      updateEntryData(updatedEntry);
-      setCurrentView('checklist');
-    } catch (error) {
-      console.error('Error updating yield average:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+				const updatedEntry = await response.json();
+				updateEntryData(updatedEntry);
+				setCurrentView("checklist");
+			} catch (error) {
+				console.error("Error updating expression status:", error);
+			} finally {
+				setIsSubmitting(false);
+			}
+		}
+	};
 
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-col items-start px-6 pt-6 pb-4 border-b border-gray-100">
         <button 
           className="text-[#06B7DB] hover:text-[#05a5c6] text-sm mb-4 flex items-center gap-2 transition-colors"
-          onClick={() => setCurrentView('checklist')}
+          onClick={() => setCurrentView("checklist")}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -142,7 +147,7 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-800">Expressed Yield</h2>
+          <h2 className="text-xl font-bold text-gray-800">Protein Yield</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
             entryData.yield_avg !== null 
               ? "text-green-700 bg-green-100" 
@@ -152,7 +157,13 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Enter the expressed yield value and units
+          Enter the value of your measurement of protein yield,
+		  and <strong>be sure to also select the correct units</strong>{' '}
+		  from the dropdown menu.{' '}
+		  {'('}Measurements can be provided as absorbances
+		  or concentrations.
+		  Absorbances will automatically be converted to concentrations
+		  using Beer&apos;s Law.{')'}
         </p>
       </CardHeader>
 
@@ -160,57 +171,136 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
         <div className="space-y-6">
           <div className="flex gap-4">
             <Input
+				isRequired
               type="number"
-              label="Yield"
-              value={yieldAvg}
-              onChange={(e) => setYieldAvg(e.target.value)}
+              label="Value"
+              value={yieldVal.toString()}
+              onChange={(e) => setYieldVal(Number(e.target.value))}
               step="0.01"
-              className="flex-1"
+			  isInvalid={yieldVal < 0}
+				errorMessage="Negative values for yield are impossible."
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
               }}
             />
             <Select
+				isRequired
               label="Units"
               selectedKeys={selectedUnit ? [selectedUnit] : []}
               onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-32"
+              className="w-48"
             >
-              <SelectItem key="mg/mL" value="mg/mL">mg/mL</SelectItem>
-              <SelectItem key="A280*" value="A280*">A_280*</SelectItem>
-              <SelectItem key="mM" value="mM">mM</SelectItem>
-              <SelectItem key="M" value="M">M</SelectItem>
+              	<SelectItem key="mg_per_mL" value="mg_per_mL">mg/mL</SelectItem>
+              	<SelectItem key="absorbance" value="absorbance">
+					&#120328;&#8322;&#8328;&#8320;&dagger;
+				</SelectItem>
+				<SelectItem key="molar" value="molar">ᴍ</SelectItem>
+              	<SelectItem key="millimolar" value="millimolar">mᴍ</SelectItem>
+				<SelectItem key="micromolar" value="micromolar">μᴍ</SelectItem>
             </Select>
+			{selectedUnit === "absorbance" && (
+            <Input
+				isRequired
+              type="number"
+              label="Path length"
+              value={pathLength.toString()}
+			  endContent="cm"
+              onChange={(e) => setPathLength(Number(e.target.value))}
+              step="0.01"
+			  isInvalid={pathLength <= 0}
+				errorMessage="Negative or null values for path length are impossible."
+              classNames={{
+				base: "w-48",
+                label: "text-default-600 text-small",
+                input: "text-small",
+              }}
+            />
+			)}
           </div>
           
           {/* Add the new informational text for A280 */}
-          {selectedUnit === 'A280*' && (
-            <div className="text-xs text-gray-600 italic">
-              *If used, raw A<sub>280</sub> values should be preadjusted for a path length of 1 cm.
+          {selectedUnit === "absorbance" && (
+            <div className="text-small text-gray-600">
+              <sup>&dagger;</sup>Raw <i>A</i><sub>280</sub> values can only be used
+			  to report on protein yield if the path length is also known.{' '}
+			  <em>Some</em> instruments preadjust the reported value of <i>A</i>{' '}
+			  for a path length of 1&nbsp;cm,
+			  even if that is not the actual path length.
+			  If that is the case for your instrument,
+			  set the path length here to <code>1&nbsp;cm</code>.
+			  Otherwise, enter the path length for your case.{' '}
+			  <strong>
+				It is imperative that the path length not be misreported!
+			  </strong>
             </div>
           )}
 
           {/* Current value display */}
-          {kineticRawDataEntryData && kineticRawDataEntryData.yield !== null && (
-            <div className="text-sm text-gray-600 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Current yield: 
-              <span className="font-medium text-gray-900">
-                {`${kineticRawDataEntryData.yield} ${mapYieldUnitsBack(kineticRawDataEntryData.yield_units)}`}
-              </span>
-            </div>
-          )}
+			<div className="text-sm text-gray-600 flex items-center gap-2">
+				<svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+			{entryData.yield_avg !== null && (
+				<p>
+					Current <abbr title="concentration">
+						<i>c</i>
+					</abbr> ={" "}
+					<span className="font-medium text-gray-900">
+						{entryData.yield_avg.toFixed(2)}
+					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
+				</p>
+			)}
+
+			{selectedUnit && (
+				<p>
+					New <abbr title="concentration">
+						<i>c</i>
+					</abbr> ={" "}
+					<span className="font-medium text-gray-900">
+						{calculateConcentration().toFixed(2)}
+					</span>&nbsp;<abbr title="milligrams per milliliter">mg/mL</abbr>
+				</p>
+			)}
+			</div>
+
+		  {/* Extra explanatory material */}
+		  {selectedUnit && (calculateConcentration() < 0.2) && !entryData.band_visible && (
+			<p className="text-sm text-gray-600">
+				A protein with a concentration less than 0.2 mg/mL in yield
+				is considered <em>not</em> to have expressed,{' '}
+				<em>unless</em> a potein band is clearly visible in the
+				uploaded{' '}
+				<abbr title="Sodium Dodecyl Sulfate–PolyacrylAmide Gel Electrophoresis">
+					SDS-PAGE
+				</abbr> gel.
+				A protein not expressing is <strong>still useful data!</strong>
+				{' '}Please <em>do</em> submit this dataset for curation.
+			</p>
+		  )}
+		  <p className="text-sm text-gray-600">
+		  		<strong>Note:</strong>{' '}
+				Enter the initial protein yield here,{' '}
+				<em>not</em> whatever diluted concentration that you used for
+				any assays performed.
+				Submission of data for individual assays will include a field
+				for recording dilution factors used for that assay.
+				{selectedUnit}
+		  </p>
         </div>
       </CardBody>
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
         <button 
-          onClick={updateYieldAverage}
+          onClick={updateYield}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!yieldAvg || isSubmitting || entryData.curated}
+          disabled={
+			!selectedUnit ||
+			yieldVal < 0 ||
+			pathLength <= 0 ||
+			isSubmitting ||
+			entryData.curated
+			}
         >
           {isSubmitting ? (
             <>
@@ -218,19 +308,19 @@ const ExpressedView: React.FC<ExpressedViewProps> = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Submitting...
+              Submitting&hellip;
             </>
           ) : (
-            'Submit'
+            "Submit"
           )}
         </button>
         
         <span className="text-xs text-gray-500">
-          Both value and units are required
+          *Both value and units are required.
         </span>
       </CardFooter>
     </Card>
   );
 };
 
-export default ExpressedView;
+export default ProteinYieldView;

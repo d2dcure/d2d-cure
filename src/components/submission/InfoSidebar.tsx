@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
 import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
 import { Button, Chip, Link, Textarea, Tooltip } from '@nextui-org/react';
+import { format } from 'date-fns';
 
 
 interface SidebarProps {
@@ -103,8 +104,10 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 	};
 
     const fetchPossibleTeammates = async () => {
-      if (user?.pi) {
-        const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(user.pi)}`);
+		let pi = user?.pi;
+		if (user?.status === "professor") { pi = user?.given_name; }
+      if (pi) {
+        const response = await fetch(`/api/getUsersFromPI?pi=${encodeURIComponent(pi)}`);
         const data = await response.json();
         setPossibleTeammates(data);
       }
@@ -301,7 +304,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 
         <div>
           <span className="font-medium text-sm">Date Created</span>
-          <p className='text-gray-500 text-sm'>{new Date().toLocaleDateString()}</p>
+          <p className='text-gray-500 text-sm'>{format(entryData.created_date, "yyyy.MM.dd")}</p>
         </div>
 
         <div>
@@ -380,14 +383,14 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
       {/* Section 3: Comment */}
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
-          <span className="font-medium text-sm">Comment</span>
+          <span className="font-medium text-sm">Comments</span>
           {comment && !editMode ? (
             <div className="mt-2">
               <div className="bg-white rounded-lg p-3 relative">
                 <p className="text-sm whitespace-pre-wrap">{comment}</p>
-                <div className="text-[11px] text-gray-400 mt-2">
-                  Last updated by {entryData.creator} • {formatTimestamp(new Date())}
-                </div>
+                {/*<div className="text-[11px] text-gray-400 mt-2">
+                  Last updated by {user?.user_name} • {formatTimestamp(new Date())}
+                </div>*/}
               </div>
               <Button
                 color="primary"

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/card";
+import Image from 'next/image';
 import {RadioGroup, Radio} from "@nextui-org/radio";
 
 
-interface ProteinInducedViewProps {
+interface ProteinBandVisibleViewProps {
 	enzyme: string;
 	entryData: any;
 	setCurrentView: (view: string) => void;
@@ -11,19 +12,19 @@ interface ProteinInducedViewProps {
 }
 
 
-const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
+const ProteinBandVisibleView: React.FC<ProteinBandVisibleViewProps> = ({
 	enzyme,
 	entryData,
 	setCurrentView,
 	updateEntryData
 }) => {
-	const [induced, setInduced] = useState<boolean>(entryData.induced);
+	const [bandVisible, setBandVisible] = useState<boolean>(entryData.band_visible);
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-	const updateProteinInduced = async () => {
+	const updateProteinBandVisible = async () => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/updateCharacterizationDataInduced", {
+			const response = await fetch("/api/updateCharacterizationDataBandVisible", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -31,19 +32,45 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
 				body: JSON.stringify({
 					enzyme: enzyme,
 					id: entryData.id,
-					induced: induced
+					band_visible: bandVisible
 				}),
 			});
 
 			if (!response.ok) {
-				throw new Error("Failed to update protein induced status.");
+				throw new Error("Failed to update protein band-visibility status.");
 			}
 			
 			const updatedEntry = await response.json();
 			updateEntryData(updatedEntry);
 			setCurrentView("checklist");
 		} catch (error) {
-			console.error("Error updating protein induced status:", error);
+			console.error("Error updating protein band-visibility status:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+		try {
+			// Update expressed flag.
+			const response = await fetch("/api/updateCharacterizationDataExpressed", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					expressed: bandVisible,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update expression status in CharacterizationData.");
+			}
+
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating expression status:", error);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -62,40 +89,67 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
           Back to checklist
         </button>
         <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-800">Protein-Induction Status</h2>
+          <h2 className="text-xl font-bold text-gray-800">SDS-PAGE Gel Protein Band-Visibility Status</h2>
           <span className={`text-xs font-medium rounded-full px-3 py-1 ${
-            entryData.induced 
+            entryData.band_visible 
               ? "text-green-700 bg-green-100" 
               : "text-yellow-700 bg-yellow-100"
           }`}>
-            {entryData.induced ? "Complete" : "Incomplete"}
+            {entryData.band_visible ? "Complete" : "Incomplete"}
           </span>
         </div>
         <p className="text-sm text-gray-600">
-          Was protein production induced by addition of{' '}
-		  <abbr title="IsoPropyl β-ᴅ-1-ThioGalactopyranoside">IPTG</abbr>?
+          Can you see the protein band in the{' '}
+			<abbr title="Sodium Dodecyl Sulfate–PolyacrylAmide Gel Electrophoresis">
+				SDS-PAGE
+			</abbr>
+		  {' '}gel?
         </p>
       </CardHeader>
 
-      <CardBody className="px-6 py-6 space-y-6">
-        <div className="space-y-4">
-			<RadioGroup
-				label="Induced?"
-				defaultValue={`${entryData.induced ? "yes" : "no"}`}
-				orientation="horizontal"
-				onChange={(e) => setInduced(e.target.value === "yes")}
-			>
-				<Radio value="yes">Yes</Radio>
-				<Radio value="no">No</Radio>
-			</RadioGroup>
-        </div>
+      <CardBody className="mb-3 px-6 py-6 space-y-6">
+		<div className="flex gap-4">
+			<div className="space-y-4">
+				<RadioGroup
+					isRequired
+					label="Band visible?"
+					defaultValue={
+						(entryData.band_visible !== null)
+						? `${entryData.band_visible ? "yes" : "no"}`
+						: ''
+					}
+					orientation="horizontal"
+					onChange={(e) => setBandVisible(e.target.value === "yes")}
+				>
+					<Radio value="yes">Yes</Radio>
+					<Radio value="no">No</Radio>
+				</RadioGroup>
+			</div>
+			<div className="space-y-4 bg-gray-50 rounded-lg border border-gray-100">
+				<Image
+					src={`https://d2dcurebucketprod.s3.amazonaws.com/gel-images/${entryData.gel_filename}`}
+					alt="Gel"
+					height={300}
+					width={300}
+					className="inset-0 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+					onError={(e) => {
+						console.error('Error loading gel image');
+						e.currentTarget.style.display = 'none';
+					}}
+				/>
+			</div>
+		</div>
       </CardBody>
 
       <CardFooter className="px-6 pb-6 pt-6 flex justify-between items-center border-t border-gray-100">
         <button 
-          onClick={updateProteinInduced}
+          onClick={updateProteinBandVisible}
           className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={isSubmitting || entryData.curated}
+          disabled={
+			(bandVisible === null) ||
+			isSubmitting ||
+			entryData.curated
+			}
         >
           {isSubmitting ? (
             <>
@@ -109,9 +163,13 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
             "Submit"
           )}
         </button>
+
+		<span className="text-xs text-gray-500">
+          *Response required.
+        </span>
       </CardFooter>
     </Card>
   );
 };
 
-export default ProteinInducedView;
+export default ProteinBandVisibleView;

@@ -4,7 +4,12 @@ import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import InfoSidebar from '@/components/submission/InfoSidebar';
-import { Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, dataFocusVisibleClasses } from "@nextui-org/react";
+import {
+	Breadcrumbs, BreadcrumbItem,
+	Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
+	Tooltip,
+	Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
+} from "@nextui-org/react";
 import { ChevronLeft, ChevronRight, BugIcon } from 'lucide-react';
 import { Link } from "@nextui-org/react";
 import StatusChip from '@/components/StatusChip';
@@ -27,6 +32,7 @@ import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
 import WildTypeThermoDataView from '@/components/submission/WildTypeThermoDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
+import ProteinBandVisibleView from '@/components/submission/ProteinBandVisibleView';
 
 
 const SingleVariant = () => {
@@ -37,7 +43,6 @@ const SingleVariant = () => {
   const [currentView, setCurrentView] = useState('checklist');
   const [selectedDetail, setSelectedDetail] = useState('');
   const [entryData, setEntryData] = useState<any>({});
-  const [entryData2, setEntryData2] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   console.log(user)
@@ -73,6 +78,7 @@ const SingleVariant = () => {
     'Wild-type thermostability assay data uploaded?',
     'Melting point values uploaded?',
     'SDS-PAGE gel uploaded?',
+	'Protein band visible?',
   ];
 
   // Helper function to show toast
@@ -88,6 +94,36 @@ const SingleVariant = () => {
       message,
     });
   };
+
+    // Helper function to determine if an item should be accessible
+    const isItemAccessible = (item: string) => {
+      switch (item) {
+        case 'Protein modeled?':
+        case 'Oligonucleotide ordered?':
+        case 'Protein production induced?':
+          return true;
+        
+        case 'Plasmid sequence verified?':
+          return entryData.oligo_ordered === true;
+        
+        case 'Protein yield?':
+        case 'SDS-PAGE gel uploaded?':
+          return entryData.induced === true;
+        
+        case 'Kinetic assay data uploaded?':
+        case 'Wild-type kinetic assay data uploaded?':
+        case 'Thermostability assay data uploaded?':
+        case 'Wild-type thermostability assay data uploaded?':
+        case 'Melting point values uploaded?':
+          return entryData.expressed === true;
+        
+		case 'Protein band visible?':
+			return entryData.gel_filename !== null;
+
+        default:
+          return false;
+      }
+    };
 
   useEffect(() => {
     const fetchEntryData = async () => {
@@ -110,59 +146,35 @@ const SingleVariant = () => {
     fetchEntryData();
   }, [enzyme, id]);
 
-  // Fetch entryData2 using entryData.id
-  useEffect(() => {
-    const fetchEntryData2 = async () => {
-      if (!entryData.id) return;
-      try {
-        const response = await fetch(`/api/getKineticRawDataEntryData?enzyme=${enzyme}&parent_id=${entryData.id}`);
-        if (!response.ok) {
-          // Silently set data to null - this is expected for new entries
-          setEntryData2(null);
-          return;
-        }
-        const data = await response.json();
-        setEntryData2(data);
-      } catch (error) {
-        showToast('Error', 'Failed to fetch KineticRawData entry. Please try again.', 'error');
-        setEntryData2(null);
-      }
-    };
-
-    fetchEntryData2();
-  }, [enzyme, entryData.id]);
-
-  // Mapping function to convert enum to display value (for yield_units in KineticRawData)
-  const mapYieldUnitsBack = (enumValue: string): string => {
-    switch (enumValue.trim()) {
-      case 'A280_':
-        return 'A280*';
-      case 'mg_mL_':
-        return 'mg/mL';
-      case 'mM_':
-        return 'mM';
-      case 'M_':
-        return 'M';
-      default:
-        return enumValue;
-    }
-  };
 
   // Function to check if all items are complete
   const checkAllComplete = (data: any) => {
-    return (
-      data.Rosetta_score !== null &&
-      data.oligo_ordered === true &&
-      data.plasmid_verified === true &&
-      data.expressed !== null &&
-      data.yield_avg !== null &&
-      data.KM_avg !== null &&
-      data.WT_raw_data_id !== 0 &&
-      data.T50 !== null &&
-      data.WT_temp_raw_data_id !== 0 &&
-      data.Tm !== null &&
-      data.gel_filename !== null
-    );
+	if (data.expressed) {
+		return (
+			data.Rosetta_score !== null &&
+			data.oligo_ordered === true &&
+			data.plasmid_verified === true &&
+			data.induced === true &&
+			data.expressed !== null &&
+			data.yield_avg !== null &&
+			data.KM_avg !== null &&
+			data.WT_raw_data_id !== 0 &&
+			data.T50 !== null &&
+			data.WT_temp_raw_data_id !== 0 &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	} else {
+		return (
+			data.Rosetta_score !== null &&
+			data.oligo_ordered === true &&
+			data.plasmid_verified === true &&
+			data.induced === true &&
+			data.expressed !== null &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	}
   };
 
   // Function to check if an item was just completed
@@ -177,7 +189,7 @@ const SingleVariant = () => {
     if (oldData.plasmid_verified === false && newData.plasmid_verified === true) {
       return 'Plasmid sequence verified?';
     }
-    if (oldData.expressed === null && newData.expressed !== null) {
+    if (oldData.induced === null && newData.induced !== null) {
       return 'Protein production induced?';
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
@@ -200,6 +212,9 @@ const SingleVariant = () => {
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
       return 'SDS-PAGE gel uploaded?';
+    }
+    if (oldData.band_visible === null && newData.band_visible !== null) {
+      return 'Protein band visible?';
     }
     return null;
   };
@@ -297,7 +312,8 @@ const SingleVariant = () => {
 
   // Determine if the "Submit For Curation" button should be disabled
   const isSubmitDisabled = useMemo(() => {
-    if (!entryData) return true;
+    if (!entryData) { return true };
+	if (!entryData.induced) { return true; }
     const status = entryData.curated 
       ? 'Curated'
       : entryData.approved_by_pi
@@ -427,14 +443,13 @@ const SingleVariant = () => {
 
         case 'Protein production induced?':
           // Reset induction data
-		  // TODO: Induction is NOT expression. Fix this!
-          response = await fetch('/api/updateCharacterizationDataExpressed', {
+          response = await fetch('/api/updateCharacterizationDataInduced', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
 			  enzyme: enzyme,
               id: entryData.id,
-              expressed: false, 
+              induced: false, 
             })
           });
           break;
@@ -570,6 +585,19 @@ const SingleVariant = () => {
             })
           });
           break;
+
+        case 'Protein band visible?':
+          // Reset band-visibility data
+          response = await fetch('/api/updateCharacterizationDataBandVisible', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+				enzyme: enzyme,
+              id: entryData.id, 
+              band_visible: null, 
+            })
+          });
+          break;
       }
 
       if (response && response.status == 200) {
@@ -642,28 +670,6 @@ const SingleVariant = () => {
     }
   };
 
-  /*const renderPagination = () => (
-    <div className="flex items-center justify-end gap-2 mt-4">
-      <button
-        onClick={() => navigateEntry('prev')}
-        disabled={currentIndex <= 0}
-        className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="w-5 h-5 text-[#06B7DB]" />
-      </button>
-      <span className="text-sm text-gray-600">
-        {currentIndex + 1} of {totalEntries}
-      </span>
-      <button
-        onClick={() => navigateEntry('next')}
-        disabled={currentIndex >= totalEntries - 1}
-        className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="w-5 h-5 text-[#06B7DB]" />
-      </button>
-    </div>
-  );*/
-
   const renderChecklistTable = () => {
     // For the "complete"/"incomplete" pills 
     const getStatusStyle = (item: any) => {
@@ -681,13 +687,13 @@ const SingleVariant = () => {
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein production induced?":
-          return entryData.expressed === null
+          return entryData.induced === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein yield?":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
+            : { text: entryData.expressed ? "Complete" : "No Expression", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Kinetic assay data uploaded?":
           return entryData.kcat_over_KM === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
@@ -712,30 +718,60 @@ const SingleVariant = () => {
           return entryData.gel_filename === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
+        case "Protein band visible?":
+          return entryData.band_visible === null
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         default:
           return { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" };
       }
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold">ΔΔ<i>G</i> =</span>
-            <span>{entryData.Rosetta_score} <abbr title="Rosetta Energy Units">REU</abbr></span>
-          </div>
-        );
-      }
+		if (item === "Protein modeled?" && entryData.Rosetta_score !== null) {
+			return (
+				<div className="flex items-center gap-1">
+					<span className="font-semibold">
+						<abbr title="change in change in Gibbʼs free energy">
+							ΔΔ<i>G</i>
+						</abbr>
+						{' '}={' '}
+					</span>
+					<span>
+						{entryData.Rosetta_score?.toFixed(3)}&nbsp;
+						<abbr title="Rosetta Energy Units">REU</abbr>
+					</span>
+				</div>
+			);
+		}
 
-      if (item === "Protein yield?" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
-        const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold"><i>c</i> =</span>
-            <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
-          </div>
-        );
-      }
+		if ((item === "Oligonucleotide ordered?" && entryData.oligo_ordered) ||
+				(item === "Protein production induced?" && entryData.induced)) {
+			return (<div className="flex items-center gap-2">✔ yes </div>);
+		}
+
+		if (item === "Protein band visible?" && entryData.band_visible !== null) {
+			return entryData.band_visible
+			? (<div className="flex items-center gap-2">✔ yes </div>)
+			: (<div className="flex items-center gap-2">❌ no </div>);
+		}
+
+		if (item === "Protein yield?" && entryData.yield_avg !== null) {
+			return (
+				<div className="flex items-center gap-1">
+					<span className="font-semibold">
+						<abbr title="concentration">
+							<i>c</i>
+						</abbr>
+						{' '}={' '}
+					</span>
+					<span>
+						{entryData.yield_avg?.toFixed(2)}&nbsp;
+						<abbr title="milligrams per milliliter">mg/mL</abbr>
+					</span>
+				</div>
+			);
+		}
 
       if (item === "Kinetic assay data uploaded?" && entryData.kcat_over_KM !== null) {
 		if (entryData.KM_avg !== null && entryData.kcat_avg !== null) {
@@ -755,7 +791,7 @@ const SingleVariant = () => {
 					<span className="font-semibold"><i>K</i><sub>M</sub> =</span>
 					<span>
 						{kmAvgRounded}
-						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mᴍ
 					</span>
 					</div>
 					<div className="flex items-center gap-1">
@@ -779,7 +815,7 @@ const SingleVariant = () => {
 					<span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
 					<span>
 						{kcatOverKMRounded}
-						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
+						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mᴍ
 					</span>
 					</div>
 				</div>
@@ -847,39 +883,12 @@ const SingleVariant = () => {
       return null;
     };
 
-    // Helper function to determine if an item should be accessible
-    const isItemAccessible = (item: string) => {
-      switch (item) {
-        case 'Protein modeled?':
-        case 'Oligonucleotide ordered?':
-        case 'Protein production induced?':
-          return true;
-        
-        case 'Plasmid sequence verified?':
-          return entryData.oligo_ordered === true;
-        
-        case 'Protein yield?':
-        case 'SDS-PAGE gel uploaded?':
-          return entryData.expressed === true;
-        
-        case 'Kinetic assay data uploaded?':
-        case 'Wild-type kinetic assay data uploaded?':
-        case 'Thermostability assay data uploaded?':
-        case 'Wild-type thermostability assay data uploaded?':
-        case 'Melting point values uploaded?':
-          return entryData.yield_avg !== null;
-        
-        default:
-          return false;
-      }
-    };
-
     return (
       <>
         <Table 
           aria-label="Checklist items"
           classNames={{
-            base: "max-h-[700px]",
+            base: "max-h-[800px]",
             table: "min-h-[100px]",
             td: "h-[52px]",
             th: "h-[52px] text-sm",
@@ -935,7 +944,7 @@ const SingleVariant = () => {
                             ? "Complete prerequisites first"
                             : entryData.curated
                               ? "Cannot edit after curation; recall dataset first" 
-                              : "Edit"
+                              : (getStatusStyle(item).text === "Incomplete" ? "Set" : "Edit")
                         }
                       >
                         <span 
@@ -1002,19 +1011,21 @@ const SingleVariant = () => {
     );
   };
 
+  // Generate the "Subview".
   const renderDetailView = () => {
     const checklistItems = [
       "Protein modeled?",
       "Oligonucleotide ordered?",
       "Plasmid sequence verified?",
-      'Protein production induced?',
-      'Protein yield?',
+      "Protein production induced?",
+      "Protein yield?",
       "Kinetic assay data uploaded?",
       "Wild-type kinetic assay data uploaded?",
       "Thermostability assay data uploaded?",
       "Wild-type thermostability assay data uploaded?",
       "Melting point values uploaded?",
-      "SDS-PAGE gel uploaded?"
+      "SDS-PAGE gel uploaded?",
+	  "Protein band visible?"
     ];
 
     const currentIndex = checklistItems.indexOf(selectedDetail);
@@ -1045,7 +1056,8 @@ const SingleVariant = () => {
           return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "SDS-PAGE gel uploaded?":
           return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-
+		case "Protein band visible?":
+          return <ProteinBandVisibleView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         default:
           return <div>Detail view for {selectedDetail}</div>;
       }
@@ -1053,19 +1065,17 @@ const SingleVariant = () => {
 
     return (
       <div className="flex flex-col">
-        {DetailComponent}
-        
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+        <div className="flex justify-between items-center mb-2 pb-2">
           {/* Previous Button */}
           <button
             onClick={() => prevItem && setSelectedDetail(prevItem)}
             className={`flex items-center gap-2 transition-colors ${
-              prevItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+              (prevItem && isItemAccessible(prevItem))
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!prevItem}
+			disabled={(!prevItem) || (!isItemAccessible(prevItem)) }
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="text-sm hidden sm:inline">{prevItem}</span>
@@ -1096,16 +1106,18 @@ const SingleVariant = () => {
           <button
             onClick={() => nextItem && setSelectedDetail(nextItem)}
             className={`flex items-center gap-2 transition-colors ${
-              nextItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+              (nextItem && isItemAccessible(nextItem)) 
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!nextItem}
+            disabled={(!nextItem) || (!isItemAccessible(nextItem)) }
           >
             <span className="text-sm hidden sm:inline">{nextItem}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+		{DetailComponent}
       </div>
     );
   };

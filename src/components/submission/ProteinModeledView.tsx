@@ -40,7 +40,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: `The expected score for the WT enzyme is ${folditScore}. Please confirm before submitting.`,
 				field: 'WT'
 				});
-				//isValid = false;
 			}
 
 			if (startingScore === endingScore) {
@@ -49,7 +48,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: 'It is not possible for both WT and variant scores to be the same! Please correct before submitting.',
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 
 			const delta = endingScore - startingScore;
@@ -59,7 +57,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: 'Variants rarely express if the change in score is greater than 20. Please review the values before submitting.',
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 		} else {
 			if (startingScore == null) {
@@ -68,7 +65,6 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: "Please enter a valid number for WT score.",
 				field: 'WT'
 				});
-				//isValid = false;
 			}
 			if (endingScore == null) {
 				messages.push({
@@ -76,12 +72,10 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 				message: "Please enter a valid number for Variant score.",
 				field: 'variant'
 				});
-				//isValid = false;
 			}
 		}
 
 		setValidationMessages(messages);
-		//return isValid;
 	}, [startingScore, endingScore, folditScore]);
 
 	useEffect(() => {
@@ -230,6 +224,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
 			  placeholder="loading values&hellip;"
 			  endContent="REU"
               onChange={(e) => setEndingScore(Number(e.target.value))}
+			  step="0.001"
               classNames={{
                 label: "text-default-600 text-small",
                 input: "text-small",
@@ -251,7 +246,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           </div>
         </div>
 
-        {/* Simplified current score display */}
+        {/* Current score display */}
           <div className="text-sm text-gray-600 flex items-center gap-2">
 			{/* TODO: Remove hardcoded icons like this. */}
             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,16 +254,20 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
             </svg>
         {entryData.Rosetta_score !== null && (
             <p>
-				Current ΔΔ<i>G</i> ={" "}
+				Current <abbr title="change in change in Gibbʼs free energy">
+					ΔΔ<i>G</i>
+				</abbr> ={" "}
 				<span className="font-medium text-gray-900">
-					{entryData.Rosetta_score}
+					{entryData.Rosetta_score.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
 			</p>
         )}
 
 		{startingScore != null && endingScore != null && (
 			<p>
-				New ΔΔ<i>G</i> ={" "}
+				New <abbr title="change in change in Gibbʼs free energy">
+					ΔΔ<i>G</i>
+				</abbr> ={" "}
 				<span className="font-medium text-gray-900">
 					{(endingScore - startingScore)?.toFixed(3)}
 				</span>&nbsp;<abbr title="Rosetta Energy Units">REU</abbr>
@@ -282,7 +281,13 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
           <button 
             onClick={updateRosettaScore}
             className="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl bg-[#06B7DB] text-white hover:bg-[#05a5c6] transition-colors focus:ring-2 focus:ring-[#06B7DB] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!startingScore || !endingScore || validationMessages.some(msg => msg.type === 'error') || isSubmitting}
+            disabled={
+				!startingScore ||
+				!endingScore ||
+				validationMessages.some(msg => msg.type === 'error') ||
+				isSubmitting ||
+				entryData.curated
+			}
           >
             {isSubmitting ? (
               <>
@@ -290,14 +295,14 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Saving...
+                Submitting&hellip;
               </>
             ) : (
-              'Submit'
+              "Submit"
             )}
           </button>
 
-          {/* Move success message here */}
+          {/* Validation success message */}
           {allChecksPass() && (
             <div className="text-sm text-green-600 flex items-center gap-2">
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,7 +314,7 @@ const ProteinModeledView: React.FC<ProteinModeledViewProps> = ({
         </div>
         
         <span className="text-xs text-gray-500">
-          *All fields are required
+          *All fields are required.
         </span>
       </CardFooter>
     </Card>

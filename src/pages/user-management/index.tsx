@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import NavBar from '@/components/NavBar';
-import { getAuth, deleteUser } from "firebase/auth";
-import { auth } from "firebase-admin";
 import {
   Table,
   TableHeader,
@@ -14,8 +12,6 @@ import {
 } from "@nextui-org/table";
 import { useAsyncList } from "@react-stately/data";
 import { Button, Link, Checkbox, Input, Pagination } from "@nextui-org/react";
-import StatusChip from '@/components/StatusChip';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/breadcrumbs";
 import { AuthChecker } from '@/components/AuthChecker';
 import { format } from 'date-fns';

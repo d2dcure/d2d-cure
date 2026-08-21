@@ -44,6 +44,7 @@ model CharacterizationData {
   WT_temp_raw_data_id       Int       @default(0) @db.UnsignedMediumInt
   ab1_filename              String?   @db.VarChar(84)
   gel_filename              String?   @db.VarChar(84)
+  band_visible              Boolean?
   creator                   String    @default("unknown") @db.VarChar(30)
   created_date              DateTime  @default(now()) @db.Date
   teammate                  String?   @db.VarChar(30)
