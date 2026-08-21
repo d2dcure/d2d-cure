@@ -3,7 +3,7 @@ import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import StatusChip from '@/components/StatusChip';
+import StatusChip, { StatusChipProps} from '@/components/StatusChip';
 import { 
 	Breadcrumbs, BreadcrumbItem,
 	Button,
@@ -102,17 +102,6 @@ const columns = [
     },
     { name: "Comments", uid: "comments", sortable: false },
 ];
-
-interface StatusChipProps {
-    status:
-		"in_progress" |
-		"pending_approval" |
-		"needs_revision" |
-		"approved" |
-		"awaiting_replication" |
-		"pi_approved" |
-		"rejected";
-}
 
 const CuratePage = () => {
     interface Institution {
@@ -220,21 +209,22 @@ const CuratePage = () => {
 
         switch (columnKey) {
             case "status":
-                let status: StatusChipProps["status"];
-                if (data.curated) {
-                    status = "approved"
-				} else if (!data.rejected) {  // TEMP inverted
-                    status = "rejected"
+				if (data.rejected) {
+					if (data.approved_by_pi) {
+						return (<>
+							<StatusChip status={"rejected"} /><br />
+							<StatusChip status={"pi_approved"} /><br />
+						</>);
+					} else {
+						return (<StatusChip status={"rejected"} />);
+					}
                 } else if (data.approved_by_pi) {
-                    status = "pi_approved"
+					return (<StatusChip status={"pi_approved"} />);
                 } else if (data.submitted_for_curation) {
-                    status = "pending_approval"
+					return (<StatusChip status={"pending_approval"} />);
                 } else {
-                    status = "in_progress"
+					return (<StatusChip status={"in_progress"} />);
                 }
-                return (
-                    <StatusChip status={status} />
-                )
             case "id":
                 return (<div className="text-right">{data.id}</div>)
             case "variant":

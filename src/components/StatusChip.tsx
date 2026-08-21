@@ -43,7 +43,7 @@ const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
       case 'pi_approved':
         return {
           className: "bg-[#EFE0FF] text-[#7828C8]",
-          children: "PI Approved"
+          children: "PI-Approved"
         }
 		case "rejected":
 			return {
