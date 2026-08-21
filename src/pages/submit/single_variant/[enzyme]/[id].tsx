@@ -149,21 +149,32 @@ const SingleVariant = () => {
 
   // Function to check if all items are complete
   const checkAllComplete = (data: any) => {
-    return (
-      data.Rosetta_score !== null &&
-      data.oligo_ordered === true &&
-      data.plasmid_verified === true &&
-      data.induced === true &&
-	  data.expressed !== null &&
-      data.yield_avg !== null &&
-      data.KM_avg !== null &&
-      data.WT_raw_data_id !== 0 &&
-      data.T50 !== null &&
-      data.WT_temp_raw_data_id !== 0 &&
-      data.Tm !== null &&
-      data.gel_filename !== null &&
-	  data.band_visible !== null
-    );
+	if (data.expressed) {
+		return (
+			data.Rosetta_score !== null &&
+			data.oligo_ordered === true &&
+			data.plasmid_verified === true &&
+			data.induced === true &&
+			data.expressed !== null &&
+			data.yield_avg !== null &&
+			data.KM_avg !== null &&
+			data.WT_raw_data_id !== 0 &&
+			data.T50 !== null &&
+			data.WT_temp_raw_data_id !== 0 &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	} else {
+		return (
+			data.Rosetta_score !== null &&
+			data.oligo_ordered === true &&
+			data.plasmid_verified === true &&
+			data.induced === true &&
+			data.expressed !== null &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	}
   };
 
   // Function to check if an item was just completed
