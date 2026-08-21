@@ -17,8 +17,8 @@ const ProteinInducedView: React.FC<ProteinInducedViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-	const [induced, setInduced] = useState(entryData.induced);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [induced, setInduced] = useState<boolean>(entryData.induced);
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
 	const updateProteinInduced = async () => {
 		setIsSubmitting(true);

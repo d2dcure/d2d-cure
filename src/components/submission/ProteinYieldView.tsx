@@ -103,31 +103,34 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 			setIsSubmitting(false);
 		}
 
-		try {
-			// Update expressed flag.
-			const response = await fetch("/api/updateCharacterizationDataExpressed", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					enzyme: enzyme,
-					id: entryData.id,
-					expressed: calculateConcentration() >= 0.2,
-				}),
-			});
+		// Only set the expressed flag if the gel has not been run.
+		if (entryData.band_visible === null) {
+			try {
+				// Update expressed flag.
+				const response = await fetch("/api/updateCharacterizationDataExpressed", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						enzyme: enzyme,
+						id: entryData.id,
+						expressed: calculateConcentration() >= 0.2,
+					}),
+				});
 
-			if (!response.ok) {
-				throw new Error("Failed to update yield average in CharacterizationData.");
+				if (!response.ok) {
+					throw new Error("Failed to update expression status in CharacterizationData.");
+				}
+
+				const updatedEntry = await response.json();
+				updateEntryData(updatedEntry);
+				setCurrentView("checklist");
+			} catch (error) {
+				console.error("Error updating expression status:", error);
+			} finally {
+				setIsSubmitting(false);
 			}
-
-			const updatedEntry = await response.json();
-			updateEntryData(updatedEntry);
-			setCurrentView("checklist");
-		} catch (error) {
-			console.error("Error updating yield average:", error);
-		} finally {
-			setIsSubmitting(false);
 		}
 	};
 
@@ -262,7 +265,7 @@ const ProteinYieldView: React.FC<ProteinYieldViewProps> = ({
 			</div>
 
 		  {/* Extra explanatory material */}
-		  {selectedUnit && (calculateConcentration() < 0.2) && (
+		  {selectedUnit && (calculateConcentration() < 0.2) && !entryData.band_visible && (
 			<p className="text-sm text-gray-600">
 				A protein with a concentration less than 0.2 mg/mL in yield
 				is considered <em>not</em> to have expressed,{' '}

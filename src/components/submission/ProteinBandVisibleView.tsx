@@ -18,8 +18,8 @@ const ProteinBandVisibleView: React.FC<ProteinBandVisibleViewProps> = ({
 	setCurrentView,
 	updateEntryData
 }) => {
-	const [bandVisible, setBandVisible] = useState(entryData.band_visible);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [bandVisible, setBandVisible] = useState<boolean>(entryData.band_visible);
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
 	const updateProteinBandVisible = async () => {
 		setIsSubmitting(true);
@@ -45,6 +45,32 @@ const ProteinBandVisibleView: React.FC<ProteinBandVisibleViewProps> = ({
 			setCurrentView("checklist");
 		} catch (error) {
 			console.error("Error updating protein band-visibility status:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+		try {
+			// Update expressed flag.
+			const response = await fetch("/api/updateCharacterizationDataExpressed", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					enzyme: enzyme,
+					id: entryData.id,
+					expressed: bandVisible,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update expression status in CharacterizationData.");
+			}
+
+			const updatedEntry = await response.json();
+			updateEntryData(updatedEntry);
+			setCurrentView("checklist");
+		} catch (error) {
+			console.error("Error updating expression status:", error);
 		} finally {
 			setIsSubmitting(false);
 		}
