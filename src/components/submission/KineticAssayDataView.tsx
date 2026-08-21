@@ -19,7 +19,6 @@ interface KineticAssayDataViewProps {
 
 interface EnzymeParameters {
 	molar_mass: number;
-	ext_coefficient: number;
 	byproduct_ext_coefficient: number;
 	experimental_number: int | 0;
 }
@@ -152,7 +151,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
 
     formData.append('file', sanitizedFile);
 	formData.append("enzyme", enzyme);
-	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("c_enz", entryData.yield_avg);
 	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
 	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
@@ -198,7 +197,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     const formData = new FormData();
     formData.append('file', editedFile);
 	formData.append("enzyme", enzyme);
-	formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+	formData.append("c_enz", entryData.yield_avg);
 	formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 	formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
 	formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
@@ -364,8 +363,8 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           
           // Add this section to update the experiment details immediately
           setKineticRawDataEntryData({
-            yield: parsedData[2]?.[6],         // G3
-            yield_units: parsedData[1]?.[6],   // G2
+            yield: entryData.yield_avg,  // Pull from the dataset's yield, not the assay.
+            yield_units: "(mg/mL)",  // always mg/mL now
             dilution: parsedData[2]?.[7],      // H3
             purification_date: parsedData[2]?.[8],  // I3
             assay_date: parsedData[2]?.[9],    // J3
@@ -384,7 +383,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           const formData = new FormData();
           formData.append('file', sanitizedFile);
 		  formData.append("enzyme", enzyme);
-		  formData.append("epsilon_enz", String(enzymeParameters?.ext_coefficient));
+		  formData.append("c_enz", entryData.yield_avg);
 		  formData.append("epsilon_byprod", String(enzymeParameters?.byproduct_ext_coefficient));
 		  formData.append("molar_mass_enz", String(enzymeParameters?.molar_mass));
 		  formData.append("assay_well_len", String(experimentalParameters?.assay_well_len));
@@ -477,7 +476,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
       const variant = `${entryData.resid}${entryData.resnum}${entryData.resmut}`;
       const slope_units = kineticAssayData[1][4];
       const yield_value = entryData.yield_avg;
-      const yield_units = kineticAssayData[1][6];
+      const yield_units = "(mg/mL)";
       const dilution = kineticAssayData[2][7];
       let purification_date = kineticAssayData[2][8];
       if (purification_date && purification_date.includes('#')) {
@@ -567,7 +566,6 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           kcat_over_KM,
           kcat_over_KM_SD,
           raw_data_id,
-          yield: yield_value,
         });
   
         if (response2.status === 200) {
@@ -1017,7 +1015,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                     <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    <h3 className="font-medium text-gray-900">Experiment Details</h3>
+                    <h3 className="font-medium text-gray-900">Experimental Details</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
@@ -1027,25 +1025,15 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                         <div>
-                          <span className="text-sm text-gray-500">Yield</span>
+                          <span className="text-sm text-gray-500">Enzyme Concentration</span>
                           <p className="text-sm font-medium text-gray-900">
-                            {kineticRawDataEntryData.yield} {kineticRawDataEntryData.yield_units?.replace(/_/g, '/')}
+							{kineticRawDataEntryData.dilution}&times; dilution
+							of {Number(kineticRawDataEntryData.yield).toFixed(3)}&nbsp;mg/mL
+							= {Number(kineticRawDataEntryData.yield / kineticRawDataEntryData.dilution).toFixed(3)}&nbsp;mg/mL
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
-                        <div>
-                          <span className="text-sm text-gray-500">Dilution</span>
-                          <p className="text-sm font-medium text-gray-900">
-                            {kineticRawDataEntryData.dilution}x
-                          </p>
-                        </div>
-                      </div>
-                      
                       {/* New: Kinetic Constants */}
                       <div className="flex items-start gap-2">
                         <svg className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1054,16 +1042,16 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                         <div>
                           <span className="text-sm text-gray-500">Kinetic Constants</span>
                           <p className="text-sm font-medium text-gray-900">
-                            k<sub>cat</sub> = {kineticConstants.kcat !== null ? Number(kineticConstants.kcat).toFixed(5) : 'N/A'}
-                            {kineticConstants.kcat_SD !== null && <> ± {Number(kineticConstants.kcat_SD).toFixed(5)}</>} min <sup>-1</sup>
+                            <i>k</i><sub>cat</sub> = {kineticConstants.kcat !== null ? Number(kineticConstants.kcat).toFixed(1) : 'N/A'}
+                            {kineticConstants.kcat_SD !== null && <> ± {Number(kineticConstants.kcat_SD).toFixed(1)}</>}&nbsp;min<sup>&minus;1</sup>
                           </p>
                           <p className="text-sm font-medium text-gray-900">
-                            K<sub>M</sub>: {kineticConstants.KM !== null ? Number(kineticConstants.KM).toFixed(4) : 'N/A'} 
-                            {kineticConstants.KM_SD !== null && <> ± {Number(kineticConstants.KM_SD).toFixed(4)}</>} mᴍ
+                            <i>K</i><sub>M</sub> = {kineticConstants.KM !== null ? Number(kineticConstants.KM).toFixed(2) : 'N/A'} 
+                            {kineticConstants.KM_SD !== null && <> ± {Number(kineticConstants.KM_SD).toFixed(2)}</>}&nbsp;mᴍ
                           </p>
                           <p className="text-sm font-medium text-gray-900">
-                            k<sub>cat</sub>/K<sub>M</sub>: {kineticConstants.kcat_over_KM !== null ? Number(kineticConstants.kcat_over_KM).toFixed(4) : 'N/A'} 
-                            {kineticConstants.kcat_over_KM_SD !== null && <> ± {Number(kineticConstants.kcat_over_KM_SD).toFixed(4)}</>} mᴍ<sup>-1</sup> min<sup>-1</sup>
+                            <i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> = {kineticConstants.kcat_over_KM !== null ? Number(kineticConstants.kcat_over_KM).toFixed(2) : 'N/A'} 
+                            {kineticConstants.kcat_over_KM_SD !== null && <> ± {Number(kineticConstants.kcat_over_KM_SD).toFixed(2)}</>}&nbsp;mᴍ<sup>&minus;1</sup>&nbsp;min<sup>&minus;1</sup>
                           </p>
                         </div>
                       </div>

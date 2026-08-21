@@ -791,7 +791,7 @@ const SingleVariant = () => {
 					<span className="font-semibold"><i>K</i><sub>M</sub> =</span>
 					<span>
 						{kmAvgRounded}
-						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mᴍ
 					</span>
 					</div>
 					<div className="flex items-center gap-1">
@@ -815,7 +815,7 @@ const SingleVariant = () => {
 					<span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
 					<span>
 						{kcatOverKMRounded}
-						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
+						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mᴍ
 					</span>
 					</div>
 				</div>

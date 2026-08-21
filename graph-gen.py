@@ -60,17 +60,12 @@ def plot_kinetic():
 
     # Grab experimental details from the datafile.
     slope_u = df.iloc[1, 4]
-    cleaned_yield = re.sub(r'[^\x00-\x7F]+', '', str(df.iloc[2, 6])).strip()
-    yld = float(cleaned_yield)
-    yld_u = df.iloc[1, 6].strip()
     dil = float(df.iloc[2, 7])  # "Traditionally", either 10 or 100
 
     # Set constant values
-    epsilon_enz = float(request.form.get("epsilon_enz"))  # M^-1 cm^-1
     epsilon_byprod = float(request.form.get("epsilon_byprod"))  # M^-1 cm^-1
     molar_mass_enz = float(request.form.get("molar_mass_enz"))  # g/mol
     assay_cell_length = float(request.form.get("assay_well_len"))  # cm
-    A280_cell_length = 1  # cm  (It is actually 0.5 mm, but the reported A280 values are pre-adjusted for 1 cm.)
     assay_vol = float(request.form.get("assay_vol"))  # L
     enz_vol = float(request.form.get("enz_vol"))  # L
 
@@ -110,35 +105,20 @@ def plot_kinetic():
     if slope_u.endswith("/s)"):  # Convert inverse seconds to inverse minutes.
         slopes = [s * 60 for s in slopes]
 
-    # Convert yield into common units.
+    # Obtain enzyme yield and dilute.
+    yld = float(request.form.get("c_enz"))  # mg/mL, equivalent to g/L
     diluted_yld = yld / dil
-    c_enz_molar = 0
-    c_enz_mg_per_mL = 0  # equivalent to c in g/L
-    if yld_u == "A280*":
-        # Calculate enzyme concentrations, using Beer's law.
-        c_enz_molar = diluted_yld / (epsilon_enz * A280_cell_length)
-        c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == "(mg/mL)":
-        c_enz_molar = diluted_yld / molar_mass_enz
-        c_enz_mg_per_mL = diluted_yld
-    elif yld_u == "(M)":
-        c_enz_molar = diluted_yld
-        c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == "(mM)":
-        c_enz_molar = diluted_yld / 1000
-        c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
-    elif yld_u == "(uM)":
-        c_enz_molar = diluted_yld / 1e6
-        c_enz_mg_per_mL = c_enz_molar * molar_mass_enz
+    c_enz_molar = diluted_yld / molar_mass_enz
 
     if debug_mode:
         with open("plot_script_log", 'a') as log_file:
+            log_file.write("c_enz_mg_per_mL: ")
+            log_file.write(str(yld))
+            log_file.write("\n")
             log_file.write("c_enz_molar: ")
             log_file.write(str(c_enz_molar))
             log_file.write("\n")
-            log_file.write("c_enz_mg_per_mL: ")
-            log_file.write(str(c_enz_mg_per_mL))
-            log_file.write("\n")
+
 
     # Calculate the rate of byproduct formation for each slope.
     rates = [s / (epsilon_byprod * assay_cell_length) for s in slopes]  # values in M/min
