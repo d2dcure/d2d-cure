@@ -46,7 +46,6 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [enzymeParameters, setEnzymeParameters] = useState<EnzymeParameters>();
   const [experimentalParameters, setExperimentalParameters] = useState<ExperimentalParameters>();
-
   const [kineticConstants, setKineticConstants] = useState({
     kcat: null,
     kcat_SD: null,
@@ -55,18 +54,12 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     kcat_over_KM: null,
     kcat_over_KM_SD: null,
   });
-
   const [kineticRawDataEntryData, setKineticRawDataEntryData] = useState<any>(null);
-
-    const [isDragging, setIsDragging] = useState(false);
-  const [fileError, setFileError] = useState('');
-
-  // Add a new state for loading
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [approvedByStudent, setApprovedByStudent] = useState(false);
-
-  // Add these state variables at the top with other states
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [fileError, setFileError] = useState<string>('');
+  const [fileWarning, setFileWarning] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [approvedByStudent, setApprovedByStudent] = useState<boolean>(false);
   const [sanitizationMessages, setSanitizationMessages] = useState<string[]>([]);
 
 
@@ -350,6 +343,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
         setFile(null);
       } else {
         setFileError('');
+		setFileWarning('');
         setFile(file);
 
         try {
@@ -360,7 +354,17 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
           });
 
           const parsedData = Papa.parse(fileContent, { header: false }).data as any[][];
-          
+
+		  	// Are they using the deprecated template that reported enzyme yield in cell G3?	
+			if (parsedData[2]?.[6] !== '') {
+				const message =
+					"The template that you used to upload your data has been deprecated " +
+					"Any enzyme yield information provided has been ignored. " +
+					"Ensure that the enzyme yield reported for the variant is correct. " +
+					"Moving forward, please download and use the updated template below.";
+				setFileWarning(message);
+			}
+
           // Add this section to update the experiment details immediately
           setKineticRawDataEntryData({
             yield: entryData.yield_avg,  // Pull from the dataset's yield, not the assay.
@@ -611,7 +615,7 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
     }
     
     const typedData = data as any[][];
-    
+
     // Check for empty rows
     let hasEmptyRows = false;
     for (let rowIndex = 4; rowIndex <= 11; rowIndex++) {
@@ -864,6 +868,14 @@ const KineticAssayDataView: React.FC<KineticAssayDataViewProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 {fileError}
+              </div>
+            )}
+			{fileWarning && (
+              <div className="mt-2 text-sm flex items-center gap-2 text-blue-500 bg-blue-50 p-2 rounded-md">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {fileWarning}
               </div>
             )}
           </div>
