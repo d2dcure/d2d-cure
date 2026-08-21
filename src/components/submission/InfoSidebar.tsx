@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserProvider';
 import { compareAAsAndReturnTags } from "@/functions/biochemical_functions";
 import { Button, Chip, Link, Textarea, Tooltip } from '@nextui-org/react';
+import { format } from 'date-fns';
 
 
 interface SidebarProps {
@@ -303,7 +304,7 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
 
         <div>
           <span className="font-medium text-sm">Date Created</span>
-          <p className='text-gray-500 text-sm'>{new Date().toLocaleDateString()}</p>
+          <p className='text-gray-500 text-sm'>{format(entryData.created_date, "yyyy.MM.dd")}</p>
         </div>
 
         <div>
