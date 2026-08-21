@@ -42,7 +42,7 @@ const columns = [
         uid: "id",
         sortable: true,
         renderHeader: () => (
-            <div className="text-right">
+            <div className="pt-4 text-right">
                 ID
             </div>
         )
@@ -52,7 +52,7 @@ const columns = [
         uid: "variant",
         sortable: true,
         renderHeader: () => (
-            <div className="text-center">
+            <div className="pt-4 text-center">
                 Variant
             </div>
         )
@@ -220,9 +220,11 @@ const CuratePage = () => {
 
         switch (columnKey) {
             case "status":
-                let status: StatusChipProps['status'];
+                let status: StatusChipProps["status"];
                 if (data.curated) {
                     status = "approved"
+				} else if (!data.rejected) {  // TEMP inverted
+                    status = "rejected"
                 } else if (data.approved_by_pi) {
                     status = "pi_approved"
                 } else if (data.submitted_for_curation) {
@@ -861,7 +863,7 @@ const CuratePage = () => {
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
                                         <TableColumn
-                                            className="w-32"
+                                            //className="w-32"
                                             key={column.uid}
                                             allowsSorting={column.sortable}
                                         >
