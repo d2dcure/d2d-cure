@@ -383,14 +383,14 @@ const SingleVarSidebar: React.FC<SidebarProps> = (
       {/* Section 3: Comment */}
       <div className="space-y-3 bg-gray-50 rounded-lg p-3">
         <div>
-          <span className="font-medium text-sm">Comment</span>
+          <span className="font-medium text-sm">Comments</span>
           {comment && !editMode ? (
             <div className="mt-2">
               <div className="bg-white rounded-lg p-3 relative">
                 <p className="text-sm whitespace-pre-wrap">{comment}</p>
-                <div className="text-[11px] text-gray-400 mt-2">
-                  Last updated by {entryData.creator} • {formatTimestamp(new Date())}
-                </div>
+                {/*<div className="text-[11px] text-gray-400 mt-2">
+                  Last updated by {user?.user_name} • {formatTimestamp(new Date())}
+                </div>*/}
               </div>
               <Button
                 color="primary"
