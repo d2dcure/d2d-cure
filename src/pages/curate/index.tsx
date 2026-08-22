@@ -175,7 +175,8 @@ const CuratePage = () => {
         setIsLoading(false);
     }, [showNonSubmitted, showOnlyNoComments, showRejected, selectedInstitution, searchTerm])
 
-    const renderCell = useCallback((data:any, columnKey:Key) => {
+    //const renderCell = useCallback((data:any, columnKey:Key) => {
+	const renderCell = (data:any, columnKey:Key) => {
         function assayDetails(assayData:any, type:string) {
             return (
                 <div>
@@ -324,7 +325,8 @@ const CuratePage = () => {
             case "comments":
                 return decodeHTML(data.comments)
         }
-    }, []);
+    //}, []);
+	};
 
     const filterAndSortData = (data:any) => {
         let filteredData = data;
@@ -488,7 +490,7 @@ const CuratePage = () => {
 
             removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully approved data.");
-            alert('Datasets approved and/or curated successfully');
+            alert('Dataset(s) approved and/or curated successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -515,32 +517,20 @@ const CuratePage = () => {
                 throw new Error('Failed to reject data, server responded with ' + response.status);
             }
 
-			// Make approved data invisible
-            setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-
-			if (user.status === "ADMIN") {
-                if (viewAs === "ADMIN") {
-                    // Remove data from page, since it has been fully curated
-                    setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-                } else {
-                    // Just keep data invisible, but update for when viewAs changed to "ADMIN"
-                    data.map((item) => {
-                        if (selectedIds.includes(item.id)) {
-                            item.approved_by_pi = true;
-                        }
-                        return item;
-                    })
-                }
-            } else {
-                // Remove data from page
-                setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-            }
-
-
+			// Set the flags also in memory, to avoid reloading all data again.
+			data.map((item) => {
+				if (selectedIds.includes(item.id)) {
+					item.curated = false;
+					item.approved_by_pi = false;  // so the PI can see it was rejected
+					item.rejected = true;
+				}
+				return item;
+			})
+			filterAndSortData(data);
 
             removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully rejected data.");
-            alert('Datasets rejected successfully');
+            alert('Dataset(s) rejected successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -573,7 +563,7 @@ const CuratePage = () => {
  
 			removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully deleted data.");
-            alert('Datasets deleted successfully');
+            alert('Dataset(s) deleted successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -788,7 +778,7 @@ const CuratePage = () => {
                                                         </div>
                                                         <Select
                                                             size="sm"
-                                                            placeholder="Included"
+                                                            placeholder="Excluded"
                                                             selectedKeys={[showNonSubmitted ? "included" : "excluded"]}
                                                             onChange={(e) => setShowNonSubmitted(e.target.value === "included")}
                                                             className="w-full text-sm"

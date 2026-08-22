@@ -1,7 +1,7 @@
 import { getClient } from "../../functions/database_functions";
 
 export default async function handler(req: any, res: any) {
-  const { enzyme, ids, status } = req.body;
+  const { enzyme, ids, status, tag='' } = req.body;
 	if (enzyme == '') {
 		return res.status(400).json({ error: "Enzyme is required." });
 	}
@@ -54,16 +54,35 @@ export default async function handler(req: any, res: any) {
 
       res.status(200).json({ message: 'Records and associated data deleted successfully' });
     } else if (req.method === 'PUT') {
-      let data;
-      if (status === "ADMIN") {
-        data = {
-          curated: true
-        }
-      } else {    // status === "Professor"
-        data = {
-          approved_by_pi: true
-        }
-      }
+		let data;
+		if (tag === "reject") {
+			if (status === "ADMIN") {
+				data = {
+					curated: false,
+					approved_by_pi: false,  // so the PI can see it was rejected
+					rejected: true
+				}
+			} else {  // status === "professor"
+				data = {
+					approved_by_pi: false,
+					rejected: true
+				}
+			}
+		} else {  // if not setting a tag or deleting, then approving
+			if (status === "ADMIN") {
+				data = {
+					curated: true,
+					needs_revision: false,
+					rejected: false
+				}
+			} else {  // status === "professor"
+				data = {
+					approved_by_pi: true,
+					needs_revision: false,
+					rejected: false
+				}
+			}
+		}
 
       // Update the entries
       await client.characterizationData.updateMany({
