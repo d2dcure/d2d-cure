@@ -209,20 +209,30 @@ const CuratePage = () => {
 
         switch (columnKey) {
             case "status":
-				if (data.rejected) {
+				// Curated data are not in curation list.
+				if (data.rejected) {  // not in curation list by default
 					if (data.approved_by_pi) {
 						return (<>
 							<StatusChip status={"rejected"} /><br />
-							<StatusChip status={"pi_approved"} /><br />
+							<StatusChip status={"pi_approved"} />
 						</>);
 					} else {
 						return (<StatusChip status={"rejected"} />);
 					}
-                } else if (data.approved_by_pi) {
-					return (<StatusChip status={"pi_approved"} />);
-                } else if (data.submitted_for_curation) {
+                } else if (data.awaiting_replication) {  // in curation list by default
+					if (data.approved_by_pi) {
+						return (<>
+							<StatusChip status={"awaiting_replication"} /><br />
+							<StatusChip status={"pi_approved"} />
+						</>);
+					} else {
+						return (<StatusChip status={"awaiting_replication"} />);
+					}
+				} else if (data.submitted_for_curation) {  // in curation list by default
 					return (<StatusChip status={"pending_approval"} />);
-                } else {
+                } else if (data.needs_revision) {  // not in curation list by default
+					return (<StatusChip status={"needs_revision"} />);
+				} else {  // not in curation list by deafult
 					return (<StatusChip status={"in_progress"} />);
                 }
             case "id":
@@ -792,7 +802,7 @@ const CuratePage = () => {
 													<Tooltip
 														content="Permanently remove dataset(s) from the database (cannot be undone)."
 													>
-														Delete Datasets
+														Delete Dataset(s)
 													</Tooltip>
 												</DropdownItem>
 												<DropdownItem>
@@ -822,7 +832,7 @@ const CuratePage = () => {
 															It/they will no longer remain in the curation list by default but will not be deleted.
 														</p>)}
 													>
-														Reject
+														Reject Dataset(s)
 													</Tooltip>
 												</DropdownItem>
                                             </DropdownMenu>
