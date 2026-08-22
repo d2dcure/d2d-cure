@@ -118,13 +118,14 @@ const CuratePage = () => {
         direction: "ascending"
     });
     const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
-    const [viewAs, setViewAs] = useState<string>("")
+    const [viewAs, setViewAs] = useState<string>('')
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [institutions, setInstitutions] = useState<Institution[]>([]);
-	const [showOnlyNoComments, setShowOnlyNoComments] = useState(false);
-    const [showNonSubmitted, setShowNonSubmitted] = useState(false);
-    const [selectedInstitution, setSelectedInstitution] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+	const [showOnlyNoComments, setShowOnlyNoComments] = useState<boolean>(false);
+    const [showNonSubmitted, setShowNonSubmitted] = useState<boolean>(false);
+	const [showRejected, setShowRejected] = useState<boolean>(false)
+    const [selectedInstitution, setSelectedInstitution] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibleColumns, setVisibleColumns] = useState(new Set([
         "status", "id", "variant", "creator", "created_date", 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
@@ -172,7 +173,7 @@ const CuratePage = () => {
         setIsLoading(true);
         filterAndSortData(data);
         setIsLoading(false);
-    }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
+    }, [showNonSubmitted, showOnlyNoComments, showRejected, selectedInstitution, searchTerm])
 
     const renderCell = useCallback((data:any, columnKey:Key) => {
         function assayDetails(assayData:any, type:string) {
@@ -337,6 +338,10 @@ const CuratePage = () => {
             sortedData = sortedData
                 .filter((item:any) => item.submitted_for_curation === true);
         }
+		if (!showRejected) {
+            sortedData = sortedData
+                .filter((item:any) => item.rejected === false);
+        }
 		if (showOnlyNoComments) {
 			sortedData = sortedData
                 .filter((item:any) => item.comments === null);
@@ -450,12 +455,18 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP assume BglB
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs,
+				tag: "approve"
+			}),
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to approve data, server responded with ' + response.status);
             }
-            // Make approved data invisible
+
+			// Make approved data invisible
             setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
             if (user.status === "ADMIN") {
                 if (viewAs === "ADMIN") {
@@ -483,6 +494,58 @@ const CuratePage = () => {
         })
     }
 
+    const rejectData = () => {
+        // TODO: handle checkedItems === "all" properly!
+        if (checkedItems === "all") return;
+        const selectedIds = getSelectedIds();
+        console.log(selectedIds);
+        fetch(`/api/curateData`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs,
+				tag: "reject"
+			}),
+        }).then((response) => {
+            if (!response.ok) {  // Checks if response status code is not in the 200-299 range
+                throw new Error('Failed to reject data, server responded with ' + response.status);
+            }
+
+			// Make approved data invisible
+            setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
+
+			if (user.status === "ADMIN") {
+                if (viewAs === "ADMIN") {
+                    // Remove data from page, since it has been fully curated
+                    setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
+                } else {
+                    // Just keep data invisible, but update for when viewAs changed to "ADMIN"
+                    data.map((item) => {
+                        if (selectedIds.includes(item.id)) {
+                            item.approved_by_pi = true;
+                        }
+                        return item;
+                    })
+                }
+            } else {
+                // Remove data from page
+                setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
+            }
+
+
+
+            removeIdsFromCheckedItems(selectedIds);
+            console.log("Successfully rejected data.");
+            alert('Datasets rejected successfully');
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+
     const deleteData = () => {
         // TODO: handle checkedItems === "all" properly!
         if (checkedItems === "all") return;
@@ -493,17 +556,24 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP assume BglB
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs
+			}),
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
-                throw new Error('Failed to reject data, server responded with ' + response.status);
+                throw new Error('Failed to delete data, server responded with ' + response.status);
             }
+
             // Remove data from table and page
             setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-            setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-            removeIdsFromCheckedItems(selectedIds);
-            console.log("Successfully rejected data.");
-            alert('Datasets rejected and deleted successfully');
+
+			setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
+ 
+			removeIdsFromCheckedItems(selectedIds);
+            console.log("Successfully deleted data.");
+            alert('Datasets deleted successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -550,7 +620,7 @@ const CuratePage = () => {
                             { viewAs === "ADMIN" &&
                                 <h2 className="text-xl">Data from the full D2D Network</h2>
                             }
-                            <p className='text'>Please approve, reject, or delete the data below.</p>
+                            <p className='text'>Please approve, tag, reject, or delete the data below.</p>
                             <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
                             <p className='text'>Hovering over any kinetic or thermodynamic parameter will provide details on the specific assay used to obtain the values.</p>
 
@@ -667,7 +737,9 @@ const CuratePage = () => {
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">Institution</span>
+                                                            <span className="text-sm text-gray-600">
+																Institution
+															</span>
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
@@ -702,7 +774,9 @@ const CuratePage = () => {
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">Non-Submitted/Incomplete Datasets</span>
+                                                            <span className="text-sm text-gray-600">
+																Non-Submitted/Incomplete Datasets
+															</span>
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
@@ -717,6 +791,34 @@ const CuratePage = () => {
                                                             placeholder="Included"
                                                             selectedKeys={[showNonSubmitted ? "included" : "excluded"]}
                                                             onChange={(e) => setShowNonSubmitted(e.target.value === "included")}
+                                                            className="w-full text-sm"
+                                                        >
+                                                            <SelectItem key="included" value="included">Included</SelectItem>
+                                                            <SelectItem key="excluded" value="excluded">Excluded</SelectItem>
+                                                        </Select>
+                                                    </div>
+                                                </DropdownItem>
+
+                                                <DropdownItem className="p-0 mb-2">
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-gray-600">
+																Rejected Datasets
+															</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                className="text-blue-500 text-sm"
+                                                                onPress={() => setShowRejected(true)}
+                                                            >
+                                                                Clear
+                                                            </Button>
+                                                        </div>
+                                                        <Select
+                                                            size="sm"
+                                                            placeholder="Excluded"
+                                                            selectedKeys={[showRejected ? "included" : "excluded"]}
+                                                            onChange={(e) => setShowRejected(e.target.value === "included")}
                                                             className="w-full text-sm"
                                                         >
                                                             <SelectItem key="included" value="included">Included</SelectItem>
@@ -808,8 +910,10 @@ const CuratePage = () => {
 												<DropdownItem>
 													<Tooltip
 														content={(<p>
-															Flag dataset(s) so that other users can see that the variant(s) needs replication.<br />
-															It/They will remain in the curation list.
+															Flag dataset(s) so that other users can see the need for replication.<br />
+															Data flagged such are suspicious.<br />
+															They are hidden from the public-facing database by default but can still be viewed.<br />
+															They will remain in the curation list.
 														</p>)}
 													>
 														Mark as &quot;Awaiting Replication&quot;
@@ -819,17 +923,22 @@ const CuratePage = () => {
 													<Tooltip
 														content={(<p>
 															Flag dataset(s) so that other users can see that revision is needed.<br />
-															It/they will also be marked as incomplete and will need to be resubmitted for curation.
+															Data in need of revision have obvious errors in submission that can likely be corrected.<br />
+															They will also be marked as incomplete and will need to be resubmitted for curation.
 														</p>)}
 													>
                                                     	Mark as &quot;Needs Revision&quot;
 													</Tooltip>
                                                 </DropdownItem>
-												<DropdownItem>
+												<DropdownItem
+													isDisabled={isCheckedItemsEmpty()}
+													onClick={rejectData}
+												>
 													<Tooltip
 														content={(<p>
 															Flag dataset(s) as rejected data.<br />
-															It/they will no longer remain in the curation list by default but will not be deleted.
+															Rejected data are nonsensical data; they will not appear in the public-facing database.< br />
+															They will no longer remain in the curation list by default but will not be deleted.
 														</p>)}
 													>
 														Reject Dataset(s)
