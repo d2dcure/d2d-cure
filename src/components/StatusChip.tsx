@@ -1,12 +1,19 @@
 import React from 'react';
 import { Chip } from "@nextui-org/react";
 
-interface StatusChipProps {
-  status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
+export interface StatusChipProps {
+    status:
+		"in_progress" |
+		"pending_approval" |
+		"needs_revision" |
+		"approved" |
+		"awaiting_replication" |
+		"pi_approved" |
+		"rejected";
 }
 
 const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
-  const getChipProps = (status: StatusChipProps['status']) => {
+  const getChipProps = (status: StatusChipProps["status"]) => {
     switch (status) {
       case 'in_progress':
         return {
@@ -36,7 +43,12 @@ const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
       case 'pi_approved':
         return {
           className: "bg-[#EFE0FF] text-[#7828C8]",
-          children: "PI Approved"
+          children: "PI-Approved"
+        }
+		case "rejected":
+			return {
+          className: "bg-red-50 text-red-500",
+          children: "Rejected"
         }
       // default not necessary if we are strict about what can be passed in,
       // by making the type of status StatusChipProps['status']

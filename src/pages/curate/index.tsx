@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import "../../app/globals.css";
 import { useUser } from '@/components/UserProvider';
 import { AuthChecker } from '@/components/AuthChecker';
 import NavBar from '@/components/NavBar';
-import StatusChip from '@/components/StatusChip';
-import { Breadcrumbs, BreadcrumbItem, Button, Checkbox, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip } from "@nextui-org/react";
-import { FaFilter, FaInfoCircle, FaArrowUp, FaArrowDown, FaColumns } from 'react-icons/fa';
+import Footer from '@/components/Footer';
+import StatusChip, { StatusChipProps} from '@/components/StatusChip';
+import { 
+	Breadcrumbs, BreadcrumbItem,
+	Button,
+	Dropdown, DropdownItem, DropdownMenu, DropdownTrigger,
+	Input, Select, SelectItem,
+	Spinner,
+	Table, TableBody, TableCell, TableColumn, TableHeader, TableRow,
+	Tooltip
+} from "@nextui-org/react";
+import { FaFilter, FaColumns } from 'react-icons/fa';
 import { Key, Selection, SortDescriptor } from '@react-types/shared';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -34,7 +42,7 @@ const columns = [
         uid: "id",
         sortable: true,
         renderHeader: () => (
-            <div className="text-right">
+            <div className="pt-4 text-right">
                 ID
             </div>
         )
@@ -44,7 +52,7 @@ const columns = [
         uid: "variant",
         sortable: true,
         renderHeader: () => (
-            <div className="text-center">
+            <div className="pt-4 text-center">
                 Variant
             </div>
         )
@@ -95,12 +103,13 @@ const columns = [
     { name: "Comments", uid: "comments", sortable: false },
 ];
 
-interface StatusChipProps {
-    status: 'in_progress' | 'pending_approval' | 'needs_revision' | 'approved' | 'awaiting_replication' | 'pi_approved';
-}
-
 const CuratePage = () => {
-    const { user, loading } = useUser();
+    interface Institution {
+        abbr: string;
+        fullname: string;
+    }
+
+	const { user } = useUser();
 
     const [data, setData] = useState<any[]>([]);
     const [viewableData, setViewableData] = useState<any[]>([]);
@@ -109,21 +118,16 @@ const CuratePage = () => {
         direction: "ascending"
     });
     const [checkedItems, setCheckedItems] = useState<Selection>(new Set([]));
-    const [viewAs, setViewAs] = useState<string>("")
-    const [isLoading, setIsLoading] = useState(true);
-
-    interface Institution {
-        abbr: string;
-        fullname: string;
-    }
+    const [viewAs, setViewAs] = useState<string>('')
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [institutions, setInstitutions] = useState<Institution[]>([]);
-	const [showOnlyNoComments, setShowOnlyNoComments] = useState(false);
-    const [showNonSubmitted, setShowNonSubmitted] = useState(false);
-    const [selectedInstitution, setSelectedInstitution] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-
+	const [showOnlyNoComments, setShowOnlyNoComments] = useState<boolean>(false);
+    const [showNonSubmitted, setShowNonSubmitted] = useState<boolean>(false);
+	const [showRejected, setShowRejected] = useState<boolean>(false)
+    const [selectedInstitution, setSelectedInstitution] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
     const [visibleColumns, setVisibleColumns] = useState(new Set([
-        "status", "id", "variant", "creator", "date", 
+        "status", "id", "variant", "creator", "created_date", 
         /*"km", "kcat",*/ "kcat_km", "t50", "comments"
     ]));
 
@@ -169,9 +173,10 @@ const CuratePage = () => {
         setIsLoading(true);
         filterAndSortData(data);
         setIsLoading(false);
-    }, [showNonSubmitted, showOnlyNoComments, selectedInstitution, searchTerm])
+    }, [showNonSubmitted, showOnlyNoComments, showRejected, selectedInstitution, searchTerm])
 
-    const renderCell = useCallback((data:any, columnKey:Key) => {
+    //const renderCell = useCallback((data:any, columnKey:Key) => {
+	const renderCell = (data:any, columnKey:Key) => {
         function assayDetails(assayData:any, type:string) {
             return (
                 <div>
@@ -206,19 +211,25 @@ const CuratePage = () => {
 
         switch (columnKey) {
             case "status":
-                let status: StatusChipProps['status'];
-                if (data.curated) {
-                    status = "approved"
-                } else if (data.approved_by_pi) {
-                    status = "pi_approved"
-                } else if (data.submitted_for_curation) {
-                    status = "pending_approval"
-                } else {
-                    status = "in_progress"
+				// Curated data are not in curation list.
+				if (data.rejected) {  // not in curation list by default
+					return (<StatusChip status={"rejected"} />);
+                } else if (data.awaiting_replication) {  // in curation list by default
+					if (data.approved_by_pi) {
+						return (<>
+							<StatusChip status={"awaiting_replication"} /><br />
+							<StatusChip status={"pi_approved"} />
+						</>);
+					} else {
+						return (<StatusChip status={"awaiting_replication"} />);
+					}
+				} else if (data.submitted_for_curation) {  // in curation list by default
+					return (<StatusChip status={"pending_approval"} />);
+                } else if (data.needs_revision) {  // not in curation list by default
+					return (<StatusChip status={"needs_revision"} />);
+				} else {  // not in curation list by deafult
+					return (<StatusChip status={"in_progress"} />);
                 }
-                return (
-                    <StatusChip status={status} />
-                )
             case "id":
                 return (<div className="text-right">{data.id}</div>)
             case "variant":
@@ -307,7 +318,8 @@ const CuratePage = () => {
             case "comments":
                 return decodeHTML(data.comments)
         }
-    }, []);
+    //}, []);
+	};
 
     const filterAndSortData = (data:any) => {
         let filteredData = data;
@@ -320,6 +332,10 @@ const CuratePage = () => {
         if (!showNonSubmitted) {
             sortedData = sortedData
                 .filter((item:any) => item.submitted_for_curation === true);
+        }
+		if (!showRejected) {
+            sortedData = sortedData
+                .filter((item:any) => item.rejected === false);
         }
 		if (showOnlyNoComments) {
 			sortedData = sortedData
@@ -434,12 +450,18 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs,
+				tag: "approve"
+			}),
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
                 throw new Error('Failed to approve data, server responded with ' + response.status);
             }
-            // Make approved data invisible
+
+			// Make approved data invisible
             setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
             if (user.status === "ADMIN") {
                 if (viewAs === "ADMIN") {
@@ -461,13 +483,66 @@ const CuratePage = () => {
 
             removeIdsFromCheckedItems(selectedIds);
             console.log("Successfully approved data.");
-            alert('Datasets approved and/or curated successfully');
+            alert('Dataset(s) approved and/or curated successfully');
         }).catch((error) => {
             console.log(error);
         })
     }
 
-    const rejectData = () => {
+    const tagData = (tag: string) => {
+        // TODO: handle checkedItems === "all" properly!
+        if (checkedItems === "all") return;
+        const selectedIds = getSelectedIds();
+        console.log(selectedIds);
+        fetch(`/api/curateData`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs,
+				tag: tag
+			}),
+        }).then((response) => {
+            if (!response.ok) {  // Checks if response status code is not in the 200-299 range
+                throw new Error(`Failed to tag data as ${tag}; server responded with ` + response.status);
+            }
+
+			// Set the flags also in memory, to avoid reloading all data again.
+			if (tag === "rejected") {
+				data.map((item) => {
+					if (selectedIds.includes(item.id)) {
+						item.curated = false;
+						item.approved_by_pi = false;  // so the PI can see it was rejected
+						item.rejected = true;
+					}
+					return item;
+				})
+			} else if (tag === "awaiting_replication") {
+				data.map((item) => {
+					if (selectedIds.includes(item.id)) {
+						item.awaiting_replication = true;
+					}
+					return item;
+				})
+			}
+			filterAndSortData(data);
+
+            removeIdsFromCheckedItems(selectedIds);
+            console.log("Successfully tagged data.");
+            //alert('Dataset(s) tagged successfully');
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+
+	const rejectData = () => { return tagData("rejected"); }
+
+	const replicateData = () => { return tagData("awaiting_replication"); }
+
+    const deleteData = () => {
         // TODO: handle checkedItems === "all" properly!
         if (checkedItems === "all") return;
         const selectedIds = getSelectedIds();
@@ -477,17 +552,24 @@ const CuratePage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ enzyme: "BglB", ids: selectedIds, status: viewAs }),  // TEMP
+            body: JSON.stringify({
+				enzyme: "BglB",  // TEMP assume BglB
+				ids: selectedIds,
+				status: viewAs
+			}),
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
-                throw new Error('Failed to reject data, server responded with ' + response.status);
+                throw new Error('Failed to delete data, server responded with ' + response.status);
             }
+
             // Remove data from table and page
             setViewableData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-            setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
-            removeIdsFromCheckedItems(selectedIds);
-            console.log("Successfully rejected data.");
-            alert('Datasets rejected and deleted successfully');
+
+			setData((originalData) => originalData.filter((item) => !selectedIds.includes(item.id) ));
+ 
+			removeIdsFromCheckedItems(selectedIds);
+            console.log("Successfully deleted data.");
+            alert('Dataset(s) deleted successfully');
         }).catch((error) => {
             console.log(error);
         })
@@ -513,6 +595,48 @@ const CuratePage = () => {
         return new DOMParser().parseFromString(html, "text/html").documentElement.textContent;
     }
 
+	// This helper function simply returns the dropdown item for an
+	// institutional filter.
+	const showInstitutionalFilter = () => {
+		return (
+			<DropdownItem className="p-0 mb-2">
+				<div className="space-y-1">
+					<div className="flex justify-between items-center">
+						<span className="text-sm text-gray-600">
+							Institution
+						</span>
+						<Button
+							size="sm"
+							variant="light"
+							className="text-blue-500 text-sm"
+							onPress={() => setSelectedInstitution('')}
+						>
+							Clear
+						</Button>
+					</div>
+					<Select
+						size="sm"
+						placeholder="All"
+						selectedKeys={selectedInstitution ? [selectedInstitution] : []}
+						onChange={(e) => setSelectedInstitution(e.target.value)}
+						className="w-full text-sm"
+					>
+						{[
+							<SelectItem key="" value="">All</SelectItem>,
+							...institutions.map((institution: Institution) => (
+							<SelectItem
+								key={institution.abbr}
+								value={institution.abbr}
+							>
+								{institution.fullname || institution.abbr}
+							</SelectItem>
+							))
+						]}
+					</Select>
+				</div>
+			</DropdownItem>);
+	}
+
     return (
         <div>
             <NavBar/>
@@ -532,12 +656,11 @@ const CuratePage = () => {
                                 <h2 className="text-xl">Data from the {user?.user_name} Lab or other labs at {user?.institution}</h2>
                             }
                             { viewAs === "ADMIN" &&
-                                <h2 className="text-xl">Data from the D2D Network</h2>
+                                <h2 className="text-xl">Data from the full D2D Network</h2>
                             }
-                            <p className='text'>Please approve or reject the data below.</p>
+                            <p className='text'>Please approve, tag, reject, or delete the data below.</p>
                             <p className='text'>Clicking on a variant name/code opens a new window, so that you may view and/or edit the full dataset.</p>
                             <p className='text'>Hovering over any kinetic or thermodynamic parameter will provide details on the specific assay used to obtain the values.</p>
-                            {/* <p>{viewableData.length} records of data remain to be curated. Please approve or reject the data below.</p> */}
 
                             { (user?.status === "ADMIN") &&
                                 <div>
@@ -649,45 +772,15 @@ const CuratePage = () => {
                                                 closeOnSelect={false}
                                             >
                                                 {/* Display Options */}
-                                                <DropdownItem className="p-0 mb-2">
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">Institution</span>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="light"
-                                                                className="text-blue-500 text-sm"
-                                                                onPress={() => setSelectedInstitution('')}
-                                                            >
-                                                                Clear
-                                                            </Button>
-                                                        </div>
-                                                        <Select
-                                                            size="sm"
-                                                            placeholder="All"
-                                                            selectedKeys={selectedInstitution ? [selectedInstitution] : []}
-                                                            onChange={(e) => setSelectedInstitution(e.target.value)}
-                                                            className="w-full text-sm"
-                                                        >
-                                                            {[
-                                                                <SelectItem key="" value="">All</SelectItem>,
-                                                                ...institutions.map((institution: Institution) => (
-                                                                <SelectItem
-                                                                    key={institution.abbr}
-                                                                    value={institution.abbr}
-                                                                >
-                                                                    {institution.fullname || institution.abbr}
-                                                                </SelectItem>
-                                                                ))
-                                                            ]}
-                                                        </Select>
-                                                    </div>
-                                                </DropdownItem>
+												
+												{(viewAs === "ADMIN") ? showInstitutionalFilter() : <DropdownItem></DropdownItem>}
 
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">Non-Submitted/Incomplete Datasets</span>
+                                                            <span className="text-sm text-gray-600">
+																Non-Submitted/Incomplete Datasets
+															</span>
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
@@ -699,9 +792,37 @@ const CuratePage = () => {
                                                         </div>
                                                         <Select
                                                             size="sm"
-                                                            placeholder="Included"
+                                                            placeholder="Excluded"
                                                             selectedKeys={[showNonSubmitted ? "included" : "excluded"]}
                                                             onChange={(e) => setShowNonSubmitted(e.target.value === "included")}
+                                                            className="w-full text-sm"
+                                                        >
+                                                            <SelectItem key="included" value="included">Included</SelectItem>
+                                                            <SelectItem key="excluded" value="excluded">Excluded</SelectItem>
+                                                        </Select>
+                                                    </div>
+                                                </DropdownItem>
+
+                                                <DropdownItem className="p-0 mb-2">
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-gray-600">
+																Rejected Datasets
+															</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                className="text-blue-500 text-sm"
+                                                                onPress={() => setShowRejected(true)}
+                                                            >
+                                                                Clear
+                                                            </Button>
+                                                        </div>
+                                                        <Select
+                                                            size="sm"
+                                                            placeholder="Excluded"
+                                                            selectedKeys={[showRejected ? "included" : "excluded"]}
+                                                            onChange={(e) => setShowRejected(e.target.value === "included")}
                                                             className="w-full text-sm"
                                                         >
                                                             <SelectItem key="included" value="included">Included</SelectItem>
@@ -741,18 +862,22 @@ const CuratePage = () => {
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                     <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
-                                        <Button
-                                            size="sm"
-                                            variant="solid"
-                                            className="w-full bg-[#06B7DB]"
-                                            isDisabled={isCheckedItemsEmpty()}
-                                            onClick={approveData}
-                                        >
-                                            {viewAs === "ADMIN" 
-                                              ? "Curate"
-                                              : "Approve as PI"
-                                            }
-                                        </Button>
+                                        <Tooltip
+											content="Approve dataset(s) to make visible to the public as curated data by default."
+										>
+											<Button
+												size="sm"
+												variant="solid"
+												className="w-full bg-[#06B7DB]"
+												isDisabled={isCheckedItemsEmpty()}
+												onClick={approveData}
+											>
+												{viewAs === "ADMIN" 
+												? "Curate/Approve"
+												: "Approve as PI"
+												}
+											</Button>
+										</Tooltip>
 
                                         <Dropdown>
                                             <DropdownTrigger>
@@ -760,6 +885,7 @@ const CuratePage = () => {
                                                     size="sm"
                                                     variant="flat"
                                                     className="w-full"
+													isDisabled={isCheckedItemsEmpty()}
                                                     endContent={
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                             <path d="M4 6L8 10L12 6" stroke="#11181C" stroke-linecap="round" stroke-linejoin="round"/>
@@ -774,19 +900,56 @@ const CuratePage = () => {
                                                 closeOnSelect={true}
                                                 selectionMode="single"
                                             >
-                                                <DropdownItem
-                                                    color="danger"
-                                                    className="text-danger"
-                                                    onClick={rejectData}
-                                                >
-                                                    Delete Datasets
-                                                </DropdownItem>
+												<DropdownItem
+													color="danger"
+													className="text-danger"
+													onClick={deleteData}
+												>
+													<Tooltip
+														content="Permanently remove dataset(s) from the database (cannot be undone)."
+													>
+														Delete Dataset(s)
+													</Tooltip>
+												</DropdownItem>
+												<DropdownItem
+													onClick={replicateData}
+												>
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) so that other users can see the need for replication.<br />
+															Data flagged such are suspicious.<br />
+															They are hidden from the public-facing database by default but can still be viewed.<br />
+															They will remain in the curation list.
+														</p>)}
+													>
+														Mark as &quot;Awaiting Replication&quot;
+													</Tooltip>
+												</DropdownItem>
                                                 <DropdownItem>
-                                                    Mark as &quot;Awaiting Replication&quot;
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) so that other users can see that revision is needed.<br />
+															Data in need of revision have obvious errors in submission that can likely be corrected.<br />
+															They will also be marked as incomplete and will need to be resubmitted for curation.
+														</p>)}
+													>
+                                                    	Mark as &quot;Needs Revision&quot;
+													</Tooltip>
                                                 </DropdownItem>
-                                                <DropdownItem>
-                                                    Mark as &quot;Needs Revision&quot;
-                                                </DropdownItem>
+												<DropdownItem
+													isDisabled={isCheckedItemsEmpty()}
+													onClick={rejectData}
+												>
+													<Tooltip
+														content={(<p>
+															Flag dataset(s) as rejected data.<br />
+															Rejected data are nonsensical data; they will not appear in the public-facing database.< br />
+															They will no longer remain in the curation list by default but will not be deleted.
+														</p>)}
+													>
+														Reject Dataset(s)
+													</Tooltip>
+												</DropdownItem>
                                             </DropdownMenu>
                                         </Dropdown>
                                     </div>
@@ -809,12 +972,13 @@ const CuratePage = () => {
                                 sortDescriptor={sortDescriptor}
                                 onSortChange={handleColumnClick}
                                 //className="mt-2 mb-8 sm:mb-12"
-                                className="table-fixed"
+                                //className="table-fixed"
+								className="max-h-[800px] overflow-scroll"
                             >
                                 <TableHeader columns={headerColumns}>
                                     {(column) => (
                                         <TableColumn
-                                            className="w-32"
+                                            //className="w-32"
                                             key={column.uid}
                                             allowsSorting={column.sortable}
                                         >
@@ -837,11 +1001,11 @@ const CuratePage = () => {
                         </div>
                     </div>
                 </div>
+
             </AuthChecker>
+		<Footer />
         </div>
-
-
-    )
-}
+    );
+};
 
 export default CuratePage;
