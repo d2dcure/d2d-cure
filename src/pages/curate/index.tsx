@@ -213,14 +213,7 @@ const CuratePage = () => {
             case "status":
 				// Curated data are not in curation list.
 				if (data.rejected) {  // not in curation list by default
-					if (data.approved_by_pi) {
-						return (<>
-							<StatusChip status={"rejected"} /><br />
-							<StatusChip status={"pi_approved"} />
-						</>);
-					} else {
-						return (<StatusChip status={"rejected"} />);
-					}
+					return (<StatusChip status={"rejected"} />);
                 } else if (data.awaiting_replication) {  // in curation list by default
 					if (data.approved_by_pi) {
 						return (<>
@@ -496,7 +489,7 @@ const CuratePage = () => {
         })
     }
 
-    const rejectData = () => {
+    const tagData = (tag: string) => {
         // TODO: handle checkedItems === "all" properly!
         if (checkedItems === "all") return;
         const selectedIds = getSelectedIds();
@@ -510,31 +503,44 @@ const CuratePage = () => {
 				enzyme: "BglB",  // TEMP assume BglB
 				ids: selectedIds,
 				status: viewAs,
-				tag: "reject"
+				tag: tag
 			}),
         }).then((response) => {
             if (!response.ok) {  // Checks if response status code is not in the 200-299 range
-                throw new Error('Failed to reject data, server responded with ' + response.status);
+                throw new Error(`Failed to tag data as ${tag}; server responded with ` + response.status);
             }
 
 			// Set the flags also in memory, to avoid reloading all data again.
-			data.map((item) => {
-				if (selectedIds.includes(item.id)) {
-					item.curated = false;
-					item.approved_by_pi = false;  // so the PI can see it was rejected
-					item.rejected = true;
-				}
-				return item;
-			})
+			if (tag === "rejected") {
+				data.map((item) => {
+					if (selectedIds.includes(item.id)) {
+						item.curated = false;
+						item.approved_by_pi = false;  // so the PI can see it was rejected
+						item.rejected = true;
+					}
+					return item;
+				})
+			} else if (tag === "awaiting_replication") {
+				data.map((item) => {
+					if (selectedIds.includes(item.id)) {
+						item.awaiting_replication = true;
+					}
+					return item;
+				})
+			}
 			filterAndSortData(data);
 
             removeIdsFromCheckedItems(selectedIds);
-            console.log("Successfully rejected data.");
-            alert('Dataset(s) rejected successfully');
+            console.log("Successfully tagged data.");
+            //alert('Dataset(s) tagged successfully');
         }).catch((error) => {
             console.log(error);
         })
     }
+
+	const rejectData = () => { return tagData("rejected"); }
+
+	const replicateData = () => { return tagData("awaiting_replication"); }
 
     const deleteData = () => {
         // TODO: handle checkedItems === "all" properly!
@@ -724,6 +730,8 @@ const CuratePage = () => {
                                                 closeOnSelect={false}
                                             >
                                                 {/* Display Options */}
+												
+												{ (viewAs === "ADMIN") && (
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between items-center">
@@ -760,6 +768,7 @@ const CuratePage = () => {
                                                         </Select>
                                                     </div>
                                                 </DropdownItem>
+												)}
 
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
@@ -897,7 +906,9 @@ const CuratePage = () => {
 														Delete Dataset(s)
 													</Tooltip>
 												</DropdownItem>
-												<DropdownItem>
+												<DropdownItem
+													onClick={replicateData}
+												>
 													<Tooltip
 														content={(<p>
 															Flag dataset(s) so that other users can see the need for replication.<br />

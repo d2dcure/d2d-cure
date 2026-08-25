@@ -56,17 +56,15 @@ export default async function handler(req: any, res: any) {
     } else if (req.method === 'PUT') {
 		let data;
 		if (tag === "reject") {
-			if (status === "ADMIN") {
-				data = {
-					curated: false,
-					approved_by_pi: false,  // so the PI can see it was rejected
-					rejected: true
-				}
-			} else {  // status === "professor"
-				data = {
-					approved_by_pi: false,
-					rejected: true
-				}
+			data = {
+				curated: false,
+				approved_by_pi: false,  // so the PI can see it was rejected
+				awaiting_replication: false,
+				rejected: true
+			}
+		} else if (tag === "awaiting_replication") {
+			data = {
+				awaiting_replication: true
 			}
 		} else {  // if not setting a tag or deleting, then approving
 			if (status === "ADMIN") {
