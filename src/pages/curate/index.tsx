@@ -595,6 +595,48 @@ const CuratePage = () => {
         return new DOMParser().parseFromString(html, "text/html").documentElement.textContent;
     }
 
+	// This helper function simply returns the dropdown item for an
+	// institutional filter.
+	const showInstitutionalFilter = () => {
+		return (
+			<DropdownItem className="p-0 mb-2">
+				<div className="space-y-1">
+					<div className="flex justify-between items-center">
+						<span className="text-sm text-gray-600">
+							Institution
+						</span>
+						<Button
+							size="sm"
+							variant="light"
+							className="text-blue-500 text-sm"
+							onPress={() => setSelectedInstitution('')}
+						>
+							Clear
+						</Button>
+					</div>
+					<Select
+						size="sm"
+						placeholder="All"
+						selectedKeys={selectedInstitution ? [selectedInstitution] : []}
+						onChange={(e) => setSelectedInstitution(e.target.value)}
+						className="w-full text-sm"
+					>
+						{[
+							<SelectItem key="" value="">All</SelectItem>,
+							...institutions.map((institution: Institution) => (
+							<SelectItem
+								key={institution.abbr}
+								value={institution.abbr}
+							>
+								{institution.fullname || institution.abbr}
+							</SelectItem>
+							))
+						]}
+					</Select>
+				</div>
+			</DropdownItem>);
+	}
+
     return (
         <div>
             <NavBar/>
@@ -731,44 +773,7 @@ const CuratePage = () => {
                                             >
                                                 {/* Display Options */}
 												
-												{ (viewAs === "ADMIN") && (
-                                                <DropdownItem className="p-0 mb-2">
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="text-sm text-gray-600">
-																Institution
-															</span>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="light"
-                                                                className="text-blue-500 text-sm"
-                                                                onPress={() => setSelectedInstitution('')}
-                                                            >
-                                                                Clear
-                                                            </Button>
-                                                        </div>
-                                                        <Select
-                                                            size="sm"
-                                                            placeholder="All"
-                                                            selectedKeys={selectedInstitution ? [selectedInstitution] : []}
-                                                            onChange={(e) => setSelectedInstitution(e.target.value)}
-                                                            className="w-full text-sm"
-                                                        >
-                                                            {[
-                                                                <SelectItem key="" value="">All</SelectItem>,
-                                                                ...institutions.map((institution: Institution) => (
-                                                                <SelectItem
-                                                                    key={institution.abbr}
-                                                                    value={institution.abbr}
-                                                                >
-                                                                    {institution.fullname || institution.abbr}
-                                                                </SelectItem>
-                                                                ))
-                                                            ]}
-                                                        </Select>
-                                                    </div>
-                                                </DropdownItem>
-												)}
+												{(viewAs === "ADMIN") ? showInstitutionalFilter() : <DropdownItem></DropdownItem>}
 
                                                 <DropdownItem className="p-0 mb-2">
                                                     <div className="space-y-1">
