@@ -80,6 +80,29 @@ const SingleVariant = () => {  // TODO Is this correct?
     });
   };
 
+    // Helper function to determine if an item should be accessible
+    const isItemAccessible = (item: string) => {
+      switch (item) {
+        case "Protein production induced?":
+          return true;
+        
+        case "Protein yield?":
+        case "SDS-PAGE gel uploaded?":
+          return entryData.induced === true;
+        
+        case "Kinetic assay data uploaded?":
+        case "Thermostability assay data uploaded?":
+        case "Melting point values uploaded?":
+          return entryData.expressed === true;
+
+		case 'Protein band visible?':
+			return entryData.gel_filename !== null;
+		
+        default:
+          return false;
+      }
+    };
+
   useEffect(() => {
     const fetchEntryData = async () => {
       if (!id) return;
@@ -725,29 +748,6 @@ const SingleVariant = () => {  // TODO Is this correct?
       }
 
       return null;
-    };
-
-    // Helper function to determine if an item should be accessible
-    const isItemAccessible = (item: string) => {
-      switch (item) {
-        case "Protein production induced?":
-          return true;
-        
-        case "Protein yield?":
-        case "SDS-PAGE gel uploaded?":
-          return entryData.induced === true;
-        
-        case "Kinetic assay data uploaded?":
-        case "Thermostability assay data uploaded?":
-        case "Melting point values uploaded?":
-          return entryData.expressed === true;
-
-		case 'Protein band visible?':
-			return entryData.gel_filename !== null;
-		
-        default:
-          return false;
-      }
     };
 
     return (
