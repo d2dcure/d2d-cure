@@ -20,6 +20,7 @@ import KineticAssayDataView from '@/components/submission/KineticAssayDataView';
 import ThermoAssayDataView from '@/components/submission/ThermoAssayDataView';
 import MeltingPointView from '@/components/submission/MeltingPointView';
 import GelUploadedView from '@/components/submission/GelUploadedView';
+import ProteinBandVisibleView from '@/components/submission/ProteinBandVisibleView';
 
 
 const SingleVariant = () => {  // TODO Is this correct?
@@ -62,6 +63,7 @@ const SingleVariant = () => {  // TODO Is this correct?
     "Thermostability assay data uploaded?",
     "Melting point values uploaded?",
     "SDS-PAGE gel uploaded?",
+	"Protein band visible?",
   ];
 
   // Helper function to show toast
@@ -77,6 +79,29 @@ const SingleVariant = () => {  // TODO Is this correct?
       message,
     });
   };
+
+    // Helper function to determine if an item should be accessible
+    const isItemAccessible = (item: string) => {
+      switch (item) {
+        case "Protein production induced?":
+          return true;
+        
+        case "Protein yield?":
+        case "SDS-PAGE gel uploaded?":
+          return entryData.induced === true;
+        
+        case "Kinetic assay data uploaded?":
+        case "Thermostability assay data uploaded?":
+        case "Melting point values uploaded?":
+          return entryData.expressed === true;
+
+		case 'Protein band visible?':
+			return entryData.gel_filename !== null;
+		
+        default:
+          return false;
+      }
+    };
 
   useEffect(() => {
     const fetchEntryData = async () => {
@@ -147,6 +172,24 @@ const SingleVariant = () => {  // TODO Is this correct?
 
   // Function to check if all items are complete
   const checkAllComplete = (data: any) => {
+	  if (data.expressed) {
+		  return (
+			data.induced === true &&
+			data.expressed !== null &&
+			data.yield_avg !== null &&
+			data.KM_avg !== null &&
+			data.T50 !== null &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	  } else {
+		  return (
+			data.induced === true &&
+			data.expressed !== null &&
+			data.gel_filename !== null &&
+			data.band_visible !== null
+		);
+	  }
     return (
       data.expressed !== null &&
       data.yield_avg !== null &&
@@ -160,7 +203,7 @@ const SingleVariant = () => {  // TODO Is this correct?
   // Function to check if an item was just completed
   const checkItemCompletion = (oldData: any, newData: any) => {
     // Check each field to see if it changed from incomplete to complete
-    if (oldData.expressed === null && newData.expressed !== null) {
+    if (oldData.induced === null && newData.induced !== null) {
       return "Protein production induced?";
     }
     if (oldData.yield_avg === null && newData.yield_avg !== null) {
@@ -177,6 +220,9 @@ const SingleVariant = () => {  // TODO Is this correct?
     }
     if (oldData.gel_filename === null && newData.gel_filename !== null) {
       return "SDS-PAGE gel uploaded?";
+    }
+    if (oldData.band_visible === null && newData.band_visible !== null) {
+      return "Protein band visible?";
     }
     return null;
   };
@@ -374,13 +420,13 @@ const SingleVariant = () => {  // TODO Is this correct?
       switch (itemToDelete) {
         case "Protein production induced?":
           // Reset induction data
-          response = await fetch('/api/updateCharacterizationDataExpressed', {
+          response = await fetch('/api/updateCharacterizationDataInduced', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
 			  enzyme: enzyme,
               id: entryData.id,
-              expressed: false, 
+              induced: false, 
             })
           });
           break;
@@ -493,6 +539,19 @@ const SingleVariant = () => {  // TODO Is this correct?
             })
           });
           break;
+
+        case 'Protein band visible?':
+          // Reset band-visibility data
+          response = await fetch('/api/updateCharacterizationDataBandVisible', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+				enzyme: enzyme,
+              id: entryData.id, 
+              band_visible: null, 
+            })
+          });
+          break;
       }
 
       if (response && response.status == 200) {
@@ -538,13 +597,13 @@ const SingleVariant = () => {  // TODO Is this correct?
     const getStatusStyle = (item: any) => {
       switch (item) {
         case "Protein production induced?":
-          return entryData.expressed === null
+          return entryData.induced === false
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Protein yield?":
           return entryData.yield_avg === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
-            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
+            : { text: entryData.expressed ? "Complete" : "No Expression", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         case "Kinetic assay data uploaded?":
           return entryData.kcat_over_KM === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
@@ -561,21 +620,38 @@ const SingleVariant = () => {  // TODO Is this correct?
           return entryData.gel_filename === null
             ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
             : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
+        case "Protein band visible?":
+          return entryData.band_visible === null
+            ? { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" }
+            : { text: "Complete", className: "bg-[#D4F4D9] text-[#17C964] rounded-full px-4 py-1" };
         default:
           return { text: "Incomplete", className: "bg-[#FFF4CF] text-[#F5A524] rounded-full px-4 py-1" };
       }
     };
 
     const renderAdditionalInfo = (item: string) => {
-      if (item === "Protein yield?" && entryData.yield_avg !== null && entryData2 && entryData2.yield_units) {
-        const yieldUnitsDisplay = mapYieldUnitsBack(entryData2.yield_units);
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-semibold"><i>c</i> =</span>
-            <span>{entryData.yield_avg} {yieldUnitsDisplay}</span>
-          </div>
-        );
-      }
+      	if (item === "Protein band visible?" && entryData.band_visible !== null) {
+			return entryData.band_visible
+			? (<div className="flex items-center gap-2">✔ yes </div>)
+			: (<div className="flex items-center gap-2">❌ no </div>);
+		}
+
+		if (item === "Protein yield?" && entryData.yield_avg !== null) {
+			return (
+				<div className="flex items-center gap-1">
+					<span className="font-semibold">
+						<abbr title="concentration">
+							<i>c</i>
+						</abbr>
+						{' '}={' '}
+					</span>
+					<span>
+						{entryData.yield_avg?.toFixed(2)}&nbsp;
+						<abbr title="milligrams per milliliter">mg/mL</abbr>
+					</span>
+				</div>
+			);
+		}
 
       if (item === "Kinetic assay data uploaded?" && entryData.kcat_over_KM !== null) {
 		if (entryData.KM_avg !== null && entryData.kcat_avg !== null) {
@@ -595,7 +671,7 @@ const SingleVariant = () => {  // TODO Is this correct?
 					<span className="font-semibold"><i>K</i><sub>M</sub> =</span>
 					<span>
 						{kmAvgRounded}
-						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mM
+						{kmSdRounded !== null && <> ± {kmSdRounded}</>} mᴍ
 					</span>
 					</div>
 					<div className="flex items-center gap-1">
@@ -619,7 +695,7 @@ const SingleVariant = () => {  // TODO Is this correct?
 					<span className="font-semibold"><i>k</i><sub>cat</sub>/<i>K</i><sub>M</sub> =</span>
 					<span>
 						{kcatOverKMRounded}
-						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mM
+						{kcatOverKMSDRounded !== null && <> ± {kcatOverKMSDRounded}</>} min<sup>-1</sup>/mᴍ
 					</span>
 					</div>
 				</div>
@@ -674,32 +750,12 @@ const SingleVariant = () => {  // TODO Is this correct?
       return null;
     };
 
-    // Helper function to determine if an item should be accessible
-    const isItemAccessible = (item: string) => {
-      switch (item) {
-        case "Protein production induced?":
-          return true;
-        
-        case "Protein yield?":
-        case "SDS-PAGE gel uploaded?":
-          return entryData.expressed === true;
-        
-        case "Kinetic assay data uploaded?":
-        case "Thermostability assay data uploaded?":
-        case "Melting point values uploaded?":
-          return entryData.yield_avg !== null;
-        
-        default:
-          return false;
-      }
-    };
-
     return (
       <>
         <Table 
           aria-label="Checklist items"
           classNames={{
-            base: "max-h-[700px]",
+            base: "max-h-[800px]",
             table: "min-h-[100px]",
             td: "h-[52px]",
             th: "h-[52px] text-sm",
@@ -821,7 +877,8 @@ const SingleVariant = () => {  // TODO Is this correct?
       "Kinetic assay data uploaded?",
       "Thermostability assay data uploaded?",
       "Melting point values uploaded?",
-      "SDS-PAGE gel uploaded"
+      "SDS-PAGE gel uploaded",
+		"Protein band visible?"
     ];
 
     const currentIndex = checklistItems.indexOf(selectedDetail);
@@ -842,7 +899,8 @@ const SingleVariant = () => {  // TODO Is this correct?
           return <MeltingPointView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />;
         case "SDS-PAGE gel uploaded?":
           return <GelUploadedView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
-
+		case "Protein band visible?":
+          return <ProteinBandVisibleView enzyme={enzyme as string} entryData={entryData} setCurrentView={setCurrentView} updateEntryData={updateEntryData} />; 
         default:
           return <div>Detail view for {selectedDetail}</div>;
       }
@@ -850,19 +908,17 @@ const SingleVariant = () => {  // TODO Is this correct?
 
     return (
       <div className="flex flex-col">
-        {DetailComponent}
-        
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+        <div className="flex justify-between items-center mb-2 pb-2">
           {/* Previous Button */}
           <button
             onClick={() => prevItem && setSelectedDetail(prevItem)}
             className={`flex items-center gap-2 transition-colors ${
-              prevItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+             (prevItem && isItemAccessible(prevItem))
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!prevItem}
+            disabled={(!prevItem) || (!isItemAccessible(prevItem)) }
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="text-sm hidden sm:inline">{prevItem}</span>
@@ -893,16 +949,18 @@ const SingleVariant = () => {  // TODO Is this correct?
           <button
             onClick={() => nextItem && setSelectedDetail(nextItem)}
             className={`flex items-center gap-2 transition-colors ${
-              nextItem 
-                ? 'text-gray-600 hover:text-[#06B7DB]' 
+              (nextItem && isItemAccessible(nextItem)) 
+                ? 'text-gray-800 hover:text-[#06B7DB]' 
                 : 'text-gray-200 cursor-not-allowed'
             }`}
-            disabled={!nextItem}
+           disabled={(!nextItem) || (!isItemAccessible(nextItem)) }
           >
             <span className="text-sm hidden sm:inline">{nextItem}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+		{DetailComponent}
       </div>
     );
   };
@@ -921,7 +979,8 @@ const SingleVariant = () => {  // TODO Is this correct?
 
   // Add this near the other useMemo hooks
   const isSubmitDisabled = useMemo(() => {
-    if (!entryData) return true;
+    if (!entryData) { return true };
+	if (!entryData.induced) { return true; }
     const status = entryData.curated 
       ? 'Curated'
       : entryData.approved_by_pi
